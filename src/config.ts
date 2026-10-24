@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CONFIG >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Codemos v2: the settings its palette is solved from. Each change from the defaults says why.     |
+| EK Palette: the settings its palette is solved from. Each change from the defaults says why.     |
 \*------------------------------------------------------------------------------------------------*/
 
 import { DEFAULTS, type Settings } from "./palette/settings";

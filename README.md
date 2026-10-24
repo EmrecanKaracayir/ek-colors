@@ -1,4 +1,4 @@
-# Codemos palette v2
+# EK Palette
 
 Eight hues (red, orange, yellow, green, mint, blue, purple, pink) plus brown, for light and dark, solved
 rather than picked.
@@ -41,8 +41,10 @@ per swatch) and `palette.md` (tables per mode and variant).
 ## Site
 
 `site/` solves the palette live in the browser, in a worker: an overview, every tier, one page per
-colour, the comparison with v1, all the settings, and export. After changing `src/`, rebuild it:
+colour, the comparison with Codemos, all the settings, and export. After changing `src/`, rebuild it:
 
 ```sh
 pnpm build
 ```
+
+The site is published to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`.

@@ -7,7 +7,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./model";
-import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings, V1 } from "./settings";
+import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings, CODEMOS } from "./settings";
 
 export interface Swatch {
   /** The colour as CSS: #RRGGBB on the standard tier, color() on wider ones. */
@@ -190,7 +190,7 @@ function space({ model, base, mode, tier, start, anchor, window, targets }: Spac
 /**
  * The hues a mode starts from, in hue order, with which one is yellow.
  *
- * Eight hues start from Codemos v1 and keep its names; any other count is spread evenly around the
+ * Eight hues start from Codemos and keep its names; any other count is spread evenly around the
  * circle from yellow and named later by CAM16.
  *
  * @param settings  The settings.
@@ -201,7 +201,7 @@ function space({ model, base, mode, tier, start, anchor, window, targets }: Spac
 function seeds(settings: Settings, model: Model, mode: Mode) {
   if (settings.hues === NAMES.length) {
     const start = NAMES.map((n) =>
-      n === "yellow" ? settings.yellowHue[mode] : model.cam(mode, V1[mode][n]!).hue,
+      n === "yellow" ? settings.yellowHue[mode] : model.cam(mode, CODEMOS[mode][n]!).hue,
     );
     return { keys: [...NAMES] as string[], start, anchor: NAMES.indexOf("yellow") };
   }
@@ -315,7 +315,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     });
     if (settings.brown !== null) {
       const target = solved.target * settings.brown;
-      const hue = model.cam(mode, V1[mode]["brown"]!).hue;
+      const hue = model.cam(mode, CODEMOS[mode]["brown"]!).hue;
       tiers[tier]!["brown"] = {
         default: swatch(model, base, mode, strongest(model, base, mode, hue, target, tier), target),
         muted: null,

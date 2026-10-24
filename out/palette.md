@@ -1,4 +1,4 @@
-# Codemos palette v2
+# EK Palette
 
 ## Standard gamut
 

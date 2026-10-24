@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Everything a palette is solved from, with Codemos v2's defaults: bases, the two viewing rooms,   |
-| the colourfulness target and per-colour offsets, the yellow anchor per mode, how many hues, the  |
-| APCA tiers and the muted share.                                                                  |
+| Everything a palette is solved from, with EK Palette's defaults: bases, the two viewing rooms,   |
+| the colourfulness target and per-colour exceptions, the yellow anchor per mode, how many hues,   |
+| the APCA tiers and the muted share.                                                              |
 \*------------------------------------------------------------------------------------------------*/
 
 /* >-----------------------------------------< Types >------------------------------------------< */
@@ -45,7 +45,7 @@ export interface Settings {
   /** Yellow's CAM16 hue, the anchor the others are spaced from. */
   readonly yellowHue: Readonly<Record<Mode, number>>;
 
-  /** How many hues share the circle; 8 uses Codemos's names and v1 as a start. */
+  /** How many hues share the circle; 8 uses Codemos's names and colours as a start. */
   readonly hues: number;
 
   /** The APCA contrasts every hue gets a colour for. */
@@ -98,10 +98,10 @@ export const NAMES = [
   "pink",
 ] as const;
 
-/* >---------------------------------------< Codemos v1 >---------------------------------------< */
+/* >---------------------------------------< Codemos >---------------------------------------< */
 
-/** Codemos v1's colours: where eight hues start, and the comparison. */
-export const V1: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
+/** Codemos's colours, the palette this one replaces: where eight hues start, and the comparison. */
+export const CODEMOS: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#B70004",
     orange: "#9F5500",
@@ -126,8 +126,8 @@ export const V1: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   },
 };
 
-/** Codemos v1's alternative (now: muted) colours, for the comparison. */
-export const V1_MUTED: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
+/** Codemos's alternative (now: muted) colours, for the comparison. */
+export const CODEMOS_MUTED: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#C35354",
     orange: "#8D7252",

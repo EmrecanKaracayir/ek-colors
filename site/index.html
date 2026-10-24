@@ -1,4 +1,10 @@
-<title>Codemos Palette v2</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EK Palette</title>
+<meta name="description" content="An accessible colour palette solved in CAM16: every colour exactly on its APCA contrast, equally colourful and evenly spaced, for light and dark and three kinds of screen.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -32,7 +38,9 @@
     color-scheme: dark;
   }
 
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
   body {
+    margin: 0;
     background: var(--bg);
     color: var(--fg);
     font: 400 1rem/1.5 var(--sans);
@@ -215,14 +223,15 @@
   }
   @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 </style>
-
+</head>
+<body>
 <header>
-  <a class="brand" href="#overview">Codemos v2</a>
+  <a class="brand" href="#overview">EK Palette</a>
   <nav class="nav" aria-label="Views">
     <a href="#overview">Overview</a>
     <a href="#tiers">Tiers</a>
     <a href="#colours">Colours</a>
-    <a href="#compare">Compare with v1</a>
+    <a href="#compare">Compare with Codemos</a>
     <a href="#how">How it works</a>
     <a href="#tune">Settings</a>
     <a href="#export">Export</a>
@@ -243,3 +252,5 @@
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colours exactly; it shows the closest it can.</p>
 <main></main>
 <script type="module" src="app.js"></script>
+</body>
+</html>

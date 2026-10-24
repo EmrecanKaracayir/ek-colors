@@ -164,7 +164,7 @@ function tier(ctx: Context): string {
   const cam = model(ctx.settings, ctx.gamut).cam(ctx.mode, color);
   const ratio = wcag(color, base);
   return `<span class="demo-swatch" style="--c:${color}"></span>
-    <span class="demo-sample" style="color:${color}">Aa Codemos</span>
+    <span class="demo-sample" style="color:${color}">Aa Palette</span>
     <dl class="demo-numbers">
       <div><dt>APCA</dt><dd class="mono">Lc ${apca(color, base).toFixed(1)}</dd></div>
       <div><dt>WCAG 2</dt><dd class="mono">${ratio.toFixed(2)} · ${wcagLevel(ratio)}</dd></div>
@@ -339,7 +339,7 @@ export function explain(ctx: Context): string {
   const swatches = count * s.tiers.length * 2 * 2 * GAMUTS.length;
   return `<section class="intro">
       <h1>How it works</h1>
-      <p>Codemos v2 isn't picked by eye. A small program solves it from a handful of rules, so every colour can be explained and solved again when a rule changes. This page walks through those rules one at a time. Every demo runs the same code as the solver.</p>
+      <p>EK Palette isn't picked by eye. A small program solves it from a handful of rules, so every colour can be explained and solved again when a rule changes. This page walks through those rules one at a time. Every demo runs the same code as the solver.</p>
     </section>
 
     <section class="step">

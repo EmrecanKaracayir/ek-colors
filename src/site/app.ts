@@ -1,14 +1,15 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< APP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| The palette site: overview, tiers, one page per colour, the comparison with v1, settings and     |
-| export. One view at a time, one mode at a time; the page itself is the mode's base.              |
+| The palette site: overview, tiers, one page per colour, the comparison with Codemos, how it      |
+| works, settings and export. One view at a time, one mode at a time; the page itself is the       |
+| mode's base.                                                                                     |
 \*------------------------------------------------------------------------------------------------*/
 
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, REFERENCES, wcag, wcagLevel } from "../palette/model";
-import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, V1, V1_MUTED } from "../palette/settings";
+import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, CODEMOS, CODEMOS_MUTED } from "../palette/settings";
 import type { Colour, GamutPalette, Palette, Swatch } from "../palette/solve";
 import { type Context, explain, updateDemo } from "./explain";
 import type { Request, Response } from "./worker";
@@ -20,7 +21,7 @@ type Format = "json" | "csv" | "md";
 
 const VIEWS = ["overview", "tiers", "compare", "how", "tune", "export"] as const;
 
-const STORE = "codemos-palette:settings";
+const STORE = "ek-palette:settings";
 
 /** What each tier is for. */
 const ROLES: Readonly<Record<number, string>> = {
@@ -53,7 +54,7 @@ const state = {
 };
 
 /**
- * The saved settings, or Codemos v2's.
+ * The saved settings, or EK Palette's.
  *
  * @returns  Settings.
  */
@@ -309,7 +310,7 @@ function overview(): string {
   const list = colours();
   const ring = current()?.[mode].ring[tier] ?? [];
   return `<section class="intro">
-      <h1>Codemos palette v2</h1>
+      <h1>EK Palette</h1>
       <p>${String(list.length)} colours that read the same on the ${mode} base: each sits exactly on its APCA contrast, aims at the same colourfulness, and is as different from its neighbours as they are from theirs.</p>
     </section>
     <section>
@@ -412,7 +413,7 @@ function colour(key: string): string {
 /* >----------------------------------------< Compare >-----------------------------------------< */
 
 /**
- * Codemos v1 next to v2 on the identity tier: the hue circle, each colour, and how even the
+ * Codemos next to EK Palette on the identity tier: the hue circle, each colour, and how even the
  * differences between neighbours are.
  *
  * @returns  HTML.
@@ -420,11 +421,11 @@ function colour(key: string): string {
 function compare(): string {
   const { settings, mode, variant } = state;
   if (settings.hues !== NAMES.length)
-    return `<section class="intro"><h1>Compare with v1</h1><p>v1 has eight hues. Set Hues to 8 in Settings to compare.</p></section>`;
+    return `<section class="intro"><h1>Compare with Codemos</h1><p>Codemos has eight hues. Set Hues to 8 in Settings to compare.</p></section>`;
   const model = makeModel(settings);
   const base = settings.bases[mode];
   const tier = settings.identityTier;
-  const source = variant === "default" ? V1[mode] : V1_MUTED[mode];
+  const source = variant === "default" ? CODEMOS[mode] : CODEMOS_MUTED[mode];
   const rows = colours()
     .filter((c) => source[c.key] && c.tiers[tier]![variant])
     .map((c) => {
@@ -458,21 +459,21 @@ function compare(): string {
       )
       .join("");
   return `<section class="intro">
-      <h1>Compare with v1</h1>
-      <p>v1's ${variant} colours next to v2's on Lc ${String(tier)}, on the ${mode} base. v1 was picked by eye; v2 is solved.</p>
+      <h1>Compare with Codemos</h1>
+      <p>Codemos's ${variant} colours next to EK Palette's on Lc ${String(tier)}, on the ${mode} base. Codemos was picked by eye; EK Palette is solved.</p>
     </section>
     <section class="split">
       <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colourfulness, color: r.old.color, hollow: true })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colourfulness, color: r.now.color }))])}</div>
       <div class="legend">
-        <p><span class="key hollow"></span> v1 <span class="key"></span> v2</p>
-        <p class="soft">Distance from the centre is colourfulness. v2's dots share one ring; v1's scatter, so some of its colours look stronger than others.</p>
+        <p><span class="key hollow"></span> Codemos <span class="key"></span> EK Palette</p>
+        <p class="soft">Distance from the centre is colourfulness. EK Palette's dots share one ring; Codemos's scatter, so some of its colours look stronger than others.</p>
       </div>
     </section>
     <section>
       <h2>Each colour</h2>
       <div class="pairs">${rows
         .map(
-          (r) => `<div class="versus"><h3>${label(r.key)}</h3>${card(r.old, "v1")}${card(r.now, "v2", r.key)}</div>`,
+          (r) => `<div class="versus"><h3>${label(r.key)}</h3>${card(r.old, "Codemos")}${card(r.now, "EK Palette", r.key)}</div>`,
         )
         .join("")}</div>
     </section>
@@ -480,8 +481,8 @@ function compare(): string {
       <h2>Neighbour differences <span class="soft">· CAM16-UCS</span></h2>
       <p class="soft">How different each colour looks from the next one around the circle. Even bars mean no two neighbours are easier to confuse than the rest.</p>
       <div class="split even">
-        <div><h3>v1 <span class="soft">· ${range(oldRing)}</span></h3>${bars(oldRing)}</div>
-        <div><h3>v2 <span class="soft">· ${range(newRing)}</span></h3>${bars(newRing)}</div>
+        <div><h3>Codemos <span class="soft">· ${range(oldRing)}</span></h3>${bars(oldRing)}</div>
+        <div><h3>EK Palette <span class="soft">· ${range(newRing)}</span></h3>${bars(newRing)}</div>
       </div>
     </section>`;
 }
@@ -550,7 +551,7 @@ function tune(): string {
   return `<section class="intro">
       <h1>Settings</h1>
       <p>Change a setting and the palette solves again. Changes stay in this browser.</p>
-      <p><button type="button" data-action="reset">Reset to Codemos v2</button></p>
+      <p><button type="button" data-action="reset">Reset to EK Palette</button></p>
     </section>
     <div id="tune-preview" class="strip"></div>
     <section class="group">

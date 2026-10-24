@@ -1,8 +1,8 @@
 {
-  "name": "codemos-palette",
+  "name": "ek-palette",
   "version": "2.0.0-dev",
   "private": true,
-  "description": "Codemos palette v2: accessible, evenly spaced colours solved in CAM16, for light and dark.",
+  "description": "EK Palette: accessible, evenly spaced colours solved in CAM16, for light and dark.",
   "type": "module",
   "scripts": {
     "solve": "tsx src/cli.ts",
@@ -20,5 +20,6 @@
     "prettier": "3.4.2",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
-  }
+  },
+  "packageManager": "pnpm@10.34.6"
 }
