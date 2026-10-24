@@ -49,10 +49,9 @@ function conditions(ctx: Context): string {
  */
 export function technical(ctx: Context): string {
   const s = ctx.settings;
-  const starts = NAMES.map((n) =>
-    n === "yellow"
-      ? `<tr><th scope="row">${ctx.label(n)}</th><td class="mono">anchor</td><td class="mono">${String(s.yellowHue.light)}° / ${String(s.yellowHue.dark)}°</td></tr>`
-      : `<tr><th scope="row">${ctx.label(n)}</th><td class="mono">${STARTS[n]!}</td><td class="mono">${fixed(hueOf(STARTS[n]!), 2)}°</td></tr>`,
+  const starts = NAMES.map(
+    (n) =>
+      `<tr><th scope="row">${ctx.label(n)}${n === "yellow" ? " (anchor)" : ""}</th><td class="mono">${STARTS[n]!}</td><td class="mono">${fixed(hueOf(STARTS[n]!), 2)}°</td><td class="mono">${s.homes[n] === undefined ? "—" : `${fixed(s.homes[n], 0)}°`}</td></tr>`,
   ).join("");
   return `<section class="intro">
       <h1>The algorithm</h1>
@@ -64,9 +63,9 @@ export function technical(ctx: Context): string {
 <pre class="formula">for each gamut tier g in (standard, wide, ultra):            // solved independently
   for each mode m in (light, dark):
     VC[m]   ← viewing conditions from room[m] and base[m]
-    hues    ← starting hues (names → CAM16 hue), yellow = anchor[m]
-    identity tier: T ← target ceiling; hues ← space(hues, ±20°)
-    other tiers:   T ← target ceiling; hues ← space(identity hues, ±6°)
+    homes   ← each color's home (its name → CAM16 hue, or one you set); yellow is the anchor
+    identity tier: T ← target ceiling; hues ← pull(space(homes, ±20°), homes)
+    other tiers:   T ← target ceiling; hues ← pull(space(identity hues, ±6°), homes)
     per tier, per hue: default ← strongest(h, T + curve(h))
                        muted   ← strongest(h, M(default) × muted share)
     brown per tier:    strongest(hue of "R 25 Y", T × brown share)</pre>
@@ -141,11 +140,11 @@ curve(h) = Σ_i  [ d_i(h) &lt; w_i ]  ·  a_i · (1 + cos(π · d_i(h) / w_i)) /
     </section>
 
     <section class="step">
-      <h2>6. Starting hues: names to angles</h2>
+      <h2>6. Homes: names to angles</h2>
       <p>CAM16's unique hues and their eccentricity weights (the hue-quadrature table): R 20.14° (e 0.8), Y 90° (0.7), G 164.25° (1.0), B 237.53° (1.2), and R again at 380.14° (0.8). Between two unique hues, a hue's share of the next one is:</p>
 <pre class="formula">p(h) = ((h − h_i)/e_i) / ((h − h_i)/e_i + (h_(i+1) − h)/e_(i+1))</pre>
       <p>A name like "R 33 B" (33% toward the other hue, from B's side) is turned back into an angle by bisecting p(h) on that segment. The same formula names every swatch ("Y 11 G").</p>
-      <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Name</th><th>Starts at</th></tr></thead><tbody>${starts}</tbody></table></div>
+      <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Name</th><th>Home by name</th><th>Your home</th></tr></thead><tbody>${starts}</tbody></table></div>
     </section>
 
     <section class="step">
@@ -165,6 +164,13 @@ a*, b* = M*·cos h, M*·sin h
         h ← hue_i + step;  skip if |h − start_i| &gt; window
         try color_i ← strongest(h, target(h));  rescore
         keep it if the score drops by more than 10⁻⁴</pre>
+<pre class="formula">pull(colors, homes, most = ${String(s.pull)}):            // after spacing, per tier
+  for each color i except the anchor:
+    Δh ← signed hue distance from its spaced hue to its home
+    find the largest t in [0, 1] (12 bisection steps) with
+      ΔE(strongest(h_i + t·Δh, target), spaced color_i) ≤ most
+    color_i ← that color</pre>
+      <p>So every color stays within <code>most</code> (CAM16-UCS ΔE) of perfectly even spacing, and uses that room to sit as close to its home as it can. With the default of 2, about the smallest difference people see side by side, the departure from even spacing is meant to stay below notice.</p>
       <p>The identity tier (light Lc ${String(s.identityTier.light)}, dark Lc ${String(s.identityTier.dark)}) is spaced first from the starting hues with a window of ±${String(s.hueWindow.identity)}°. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other.</p>
     </section>
 

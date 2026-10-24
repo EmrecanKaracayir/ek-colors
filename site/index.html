@@ -177,6 +177,18 @@
   .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
   .curve-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
   .curve-editor .hit { fill: transparent; }
+  .homes-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-width: 52rem; }
+  .homes-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .homes-editor .reference { stroke: var(--fg); stroke-opacity: 0.35; }
+  .homes-editor .reference.half { stroke-dasharray: 3 4; stroke-opacity: 0.25; }
+  .homes-editor .axis { fill: var(--soft); font: 500 8px var(--sans); }
+  .homes-editor .hit { fill: transparent; }
+  .homes-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
+  .home-marker { cursor: ew-resize; outline: none; }
+  .home-ring { fill: var(--bg); stroke-width: 2.5; }
+  .home-marker:focus-visible .home-ring { stroke: var(--focus) !important; }
+  .home-link { stroke: var(--soft); stroke-opacity: 0.6; stroke-width: 1; }
+  .homes-readout { margin: 0; font-size: 0.8125rem; }
   .curve-point { cursor: grab; outline: none; }
   .curve-point circle:last-child { fill: var(--fg); stroke: var(--bg); stroke-width: 2; }
   .curve-point:focus-visible circle:last-child { stroke: var(--focus); stroke-width: 3; }
@@ -333,6 +345,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=d70d22a39c"></script>
+<script type="module" src="app.js?v=2e8b43453f"></script>
 </body>
 </html>

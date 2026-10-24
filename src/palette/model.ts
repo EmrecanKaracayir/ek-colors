@@ -234,11 +234,12 @@ export function hueOf(name: string): number {
 
 /** CAM16's reference hues: the unique ones and the halfway mixes, for the hue circle. */
 export const REFERENCES = [
-  { label: "R", hue: 20.14, unique: true },
-  { label: "R 50 Y", hue: 57.4, unique: false },
-  { label: "Y", hue: 90, unique: true },
-  { label: "G", hue: 164.25, unique: true },
-  { label: "G 50 B", hue: 197.6, unique: false },
-  { label: "B", hue: 237.53, unique: true },
-  { label: "B 50 R", hue: 323.1, unique: false },
-] as const;
+  { label: "R", unique: true },
+  { label: "R 50 Y", unique: false },
+  { label: "Y", unique: true },
+  { label: "Y 50 G", unique: false },
+  { label: "G", unique: true },
+  { label: "G 50 B", unique: false },
+  { label: "B", unique: true },
+  { label: "B 50 R", unique: false },
+].map((r) => ({ ...r, hue: hueOf(r.label) }));

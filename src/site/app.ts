@@ -10,9 +10,10 @@ import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, type Model, REFERENCES, wcag, wcagLevel } from "../palette/model";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
-import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { boost, type Color, type GamutPalette, home, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
+import { bindHomes, homesEditor, homesLayers, homesReadout, type HomesView } from "./homes";
 import { technical } from "./technical";
 import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
@@ -77,6 +78,10 @@ function load(): Settings {
       // Settings saved before exceptions became the curve still hold them; they're left out.
       const { offsets: _, ...stored } = JSON.parse(saved) as Partial<Settings> & { offsets?: unknown };
       const settings = { ...CONFIG, ...stored } as { -readonly [K in keyof Settings]: Settings[K] };
+      // Settings saved before homes held yellow's hue per mode; it becomes yellow's home.
+      const old = (stored as { yellowHue?: Record<Mode, number> }).yellowHue;
+      if (old && settings.homes.yellow === undefined) settings.homes = { ...settings.homes, yellow: old.light };
+      delete (settings as { yellowHue?: unknown }).yellowHue;
       // Settings saved before the identity tier was per mode hold one number.
       const identity = settings.identityTier as Settings["identityTier"] | number;
       if (typeof identity === "number") settings.identityTier = { light: identity, dark: identity };
@@ -253,6 +258,39 @@ function curveView(mode: Mode): CurveView {
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
   return { mode, points: s.curve[mode], dots, band };
 }
+
+/**
+ * The homes editor's contents: every color's home and where it lands on the identity tier of the
+ * mode on screen.
+ *
+ * @returns  The view.
+ */
+function homesView(): HomesView {
+  const mode = state.mode;
+  const tier = state.settings.identityTier[mode];
+  const palette = current()?.[mode];
+  const items = (palette?.colors ?? [])
+    .filter((c) => c.key !== "brown")
+    .map((c) => {
+      const s = c.tiers[tier]!.default;
+      const homeHue = state.settings.homes[c.key] ?? (state.settings.hues === NAMES.length ? home(state.settings, c.key) : s.hue);
+      return { key: c.key, label: label(c.key), home: homeHue, hue: s.hue, color: s.color, anchor: c.key === "yellow" };
+    });
+  return { items, band: curveView(mode).band, ring: palette?.ring[tier] ?? [], pull: state.settings.pull };
+}
+
+bindHomes(
+  homesView,
+  (key, hue) => {
+    write(`homes.${key}`, hue);
+    solve(150);
+  },
+  (key) => {
+    const { [key]: _, ...rest } = state.settings.homes;
+    write("homes", rest);
+    solve(150);
+  },
+);
 
 bindCurves(curveView, (mode, points) => {
   write(`curve.${mode}`, points);
@@ -486,7 +524,7 @@ function overview(): string {
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${["dark", "dim", "average"][room.surround] ?? ""} surround</dd></div>
         <div><dt>Colorfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
-        <div><dt>Yellow</dt><dd>hue ${String(settings.yellowHue[mode])}°</dd></div>
+        <div><dt>Yellow</dt><dd>hue ${home(settings, "yellow").toFixed(0)}°, the anchor</dd></div>
         <div><dt>Neighbor differences</dt><dd>${ring.length ? range(ring) : "…"} (CAM16-UCS)</dd></div>
         <div><dt>▾</dt><dd>The screen held this color below its colorfulness.</dd></div>
       </dl>
@@ -650,7 +688,7 @@ function compare(): string {
 /**
  * A number control bound to a setting.
  *
- * @param path   The setting, e.g. "colorfulness" or "yellowHue.light".
+ * @param path   The setting, e.g. "colorfulness" or "rooms.dark.lux".
  * @param title  Its label.
  * @param range  Min, max and step.
  * @param range.0  Minimum.
@@ -725,9 +763,9 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Hues</h2>
-      <p class="soft">Yellow stays put; every other hue moves to even out the differences. CAM16's pure yellow is 90°.</p>
-      ${number("yellowHue.light", "Yellow, light", [80, 120, 1], true)}
-      ${number("yellowHue.dark", "Yellow, dark", [80, 120, 1], true)}
+      <p class="soft">Every color has a home, where it belongs; by default, where its name puts it on CAM16's hue circle. The spacing evens out the differences between neighbors, then each color is pulled back toward its home, by at most the pull below. Yellow is the anchor and lands exactly on its home.</p>
+      ${homesEditor(homesView())}
+      ${number("pull", "Pull toward homes", [0, 6, 0.5], true)}
       ${number("hues", "How many hues", [4, 16, 1])}
     </section>
     <section class="group">
@@ -803,6 +841,12 @@ function updateStrip(): void {
  */
 function updateTune(): void {
   updateStrip();
+  const layers = document.querySelector(".homes-layers");
+  if (layers) {
+    const view = homesView();
+    layers.innerHTML = homesLayers(view);
+    document.querySelector(".homes-readout")!.textContent = homesReadout(view);
+  }
   for (const m of ["light", "dark"] as const) {
     const editor = document.querySelector(`[data-curve="${m}"]`);
     if (!editor) continue;

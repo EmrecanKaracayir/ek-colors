@@ -60,9 +60,6 @@ export interface Settings {
    */
   readonly curve: Readonly<Record<Mode, readonly CurvePoint[]>>;
 
-  /** Yellow's CAM16 hue, the anchor the others are spaced from. */
-  readonly yellowHue: Readonly<Record<Mode, number>>;
-
   /** How many hues share the circle; 8 uses Codemos's names and colors as a start. */
   readonly hues: number;
 
@@ -80,6 +77,16 @@ export interface Settings {
 
   /** How far a hue may move to even out the spacing: on the identity tier, then per tier. */
   readonly hueWindow: Readonly<{ identity: number; tier: number }>;
+
+  /**
+   * Where each color belongs, as a CAM16 hue, shared by both modes; a color without one belongs
+   * where its name puts it (see STARTS). Colors start there and are pulled back toward it after
+   * the spacing.
+   */
+  readonly homes: Readonly<Record<string, number>>;
+
+  /** How far, at most, a color moves from even spacing toward its home (CAM16-UCS difference). */
+  readonly pull: number;
 }
 
 /* >----------------------------------------< Defaults >----------------------------------------< */
@@ -95,13 +102,14 @@ export const DEFAULTS: Settings = {
   colorfulness: 40,
   equalTiers: true,
   curve: { light: [], dark: [] },
-  yellowHue: { light: 100, dark: 100 },
   hues: 8,
   tiers: [15, 30, 45, 60, 75, 90],
   identityTier: { light: 60, dark: 45 },
   muted: 0.5,
   brown: 0.6,
   hueWindow: { identity: 20, tier: 6 },
+  homes: {},
+  pull: 2,
 };
 
 /** The eight hues' names, in hue order. */
@@ -117,13 +125,14 @@ export const NAMES = [
 ] as const;
 
 /**
- * Where each hue starts, by its name on CAM16's hue circle: a pure hue (R, Y, G, B) or a mix of two
- * ("R 50 Y" is halfway from red to yellow). Yellow starts at its anchor instead; brown isn't spaced
- * and stays where it starts.
+ * Where each color belongs by default, by its name on CAM16's hue circle: a pure hue (R, Y, G, B) or
+ * a mix of two ("R 50 Y" is halfway from red to yellow). Yellow's "Y 11 G" (about 96°) is NCS yellow
+ * and it's the anchor, the one color that never moves from its home; brown isn't spaced.
  */
 export const STARTS: Readonly<Record<string, string>> = {
   red: "R",
   orange: "R 50 Y",
+  yellow: "Y 11 G",
   green: "G",
   mint: "G 50 B",
   blue: "B",

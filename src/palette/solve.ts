@@ -202,34 +202,91 @@ function space({ model, base, mode, tier, start, anchor, window, target }: Spaci
   return { hues, colors, ring: ring(colors) };
 }
 
+/* >---------------------------------------< Pull home >----------------------------------------< */
+
+/**
+ * Where a color belongs: its home if one is set, otherwise where its name puts it.
+ *
+ * @param settings  The settings.
+ * @param key       The color.
+ * @returns         CAM16 hue.
+ */
+export function home(settings: Pick<Settings, "homes">, key: string): number {
+  return settings.homes[key] ?? hueOf(STARTS[key] ?? "R");
+}
+
+interface Pull {
+  readonly model: Model;
+  readonly base: string;
+  readonly mode: Mode;
+  readonly tier: number;
+  readonly spaced: { readonly hues: readonly number[]; readonly colors: readonly string[] };
+  readonly homes: readonly number[];
+  readonly aim: (hue: number) => number;
+
+  /** The most a color may change, in CAM16-UCS difference. */
+  readonly most: number;
+}
+
+/**
+ * Evenly spaced colors, each moved toward its home as far as it can without looking more than
+ * `most` different from where the spacing put it.
+ *
+ * @param pull  The spaced colors, their homes, and how far they may move.
+ * @returns     The hues, colors and neighbor distances.
+ */
+function pull({ model, base, mode, tier, spaced, homes, aim, most }: Pull) {
+  const hues = [...spaced.hues];
+  const colors = [...spaced.colors];
+  for (let i = 0; i < hues.length; i++) {
+    const toward = ((((homes[i]! - hues[i]!) % 360) + 540) % 360) - 180;
+    if (most <= 0 || Math.abs(toward) < 0.05) continue;
+    const at = (t: number) => {
+      const hue = (spaced.hues[i]! + toward * t + 360) % 360;
+      return { hue, color: strongest(model, base, mode, hue, aim(hue), tier) };
+    };
+    let [lo, hi] = [0, 1];
+    for (let k = 0; k < 12; k++) {
+      const t = (lo + hi) / 2;
+      if (model.distance(mode, at(t).color, spaced.colors[i]!) <= most) lo = t;
+      else hi = t;
+    }
+    ({ hue: hues[i], color: colors[i] } = at(lo));
+  }
+  const ring = colors.map((c, i) => model.distance(mode, c, colors[(i + 1) % colors.length]!));
+  return { hues, colors, ring };
+}
+
 /* >----------------------------------------< Palette >-----------------------------------------< */
 
 /**
- * The hues a mode starts from, in hue order, with which one is yellow.
+ * The hues both modes start from, which are also their homes, in hue order, with which one is
+ * yellow, the anchor.
  *
- * Eight hues start where their names put them on CAM16's hue circle (red at R, orange at R 50 Y…),
- * the same in both modes, and yellow at its anchor. Any other count is spread evenly around the
- * circle from yellow and named later by CAM16.
+ * Eight hues start at their homes: where their names put them on CAM16's hue circle (red at R,
+ * orange at R 50 Y…) unless a home is set. Any other count is spread evenly around the circle from
+ * yellow, unless a home is set, and named later by CAM16.
  *
  * @param settings  The settings.
- * @param model     The color model.
- * @param mode      The mode.
  * @returns         The keys, starting hues and the anchor's index.
  */
-function seeds(settings: Settings, model: Model, mode: Mode) {
+function seeds(settings: Settings) {
   if (settings.hues === NAMES.length) {
-    const start = NAMES.map((n) => (n === "yellow" ? settings.yellowHue[mode] : hueOf(STARTS[n]!)));
+    const start = NAMES.map((n) => home(settings, n));
     return { keys: [...NAMES] as string[], start, anchor: NAMES.indexOf("yellow") };
   }
   const step = 360 / settings.hues;
-  const start = Array.from(
+  const even = Array.from(
     { length: settings.hues },
-    (_, k) => (settings.yellowHue[mode] + k * step) % 360,
+    (_, k) => (home(settings, "yellow") + k * step) % 360,
   );
-  const order = start.map((h, i) => [h, i] as const).toSorted((a, b) => a[0] - b[0]);
+  const order = even.map((h, i) => [h, i] as const).toSorted((a, b) => a[0] - b[0]);
+  const keys = order.map(([, i]) => `hue-${String(i + 1)}`);
   return {
-    keys: order.map(([, i]) => `hue-${String(i + 1)}`),
-    start: order.map(([h]) => h),
+    keys,
+    start: order.map(([h], k) =>
+      k === order.findIndex(([, i]) => i === 0) ? h : (settings.homes[keys[k]!] ?? h),
+    ),
     anchor: order.findIndex(([, i]) => i === 0),
   };
 }
@@ -276,7 +333,7 @@ function swatch(model: Model, base: string, mode: Mode, color: string, target: n
  */
 function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const base = settings.bases[mode];
-  const { keys, start, anchor } = seeds(settings, model, mode);
+  const { keys, start, anchor } = seeds(settings);
   const window =
     settings.hues === NAMES.length
       ? settings.hueWindow.identity
@@ -295,7 +352,9 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     const { target, limit } = ceiling(tier, hues);
     const aim = (hue: number) => target + boost(settings, mode, hue);
     const spaced = space({ model, base, mode, anchor, tier, start: hues, window, target: aim });
-    return { target, limit, targets: spaced.hues.map(aim), ...spaced };
+    const homes = start.map((h, i) => (i === anchor ? spaced.hues[i]! : h));
+    const pulled = pull({ model, base, mode, tier, spaced, homes, aim, most: settings.pull });
+    return { target, limit, targets: pulled.hues.map(aim), ...pulled };
   };
 
   const identity = solveTier(settings.identityTier[mode], start, window);
@@ -326,7 +385,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     });
     if (settings.brown !== null) {
       const target = solved.target * settings.brown;
-      const hue = hueOf(STARTS.brown!);
+      const hue = home(settings, "brown");
       tiers[tier]!["brown"] = {
         default: swatch(model, base, mode, strongest(model, base, mode, hue, target, tier), target),
         muted: null,

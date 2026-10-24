@@ -40,9 +40,10 @@ WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
    the whole tier drops to what its least colorful hue can reach, so nothing stands out by
    accident.
 4. **Evenly different.** Each hue starts where its name puts it on CAM16's hue circle (red at pure
-   red, orange halfway to yellow…), the same in both modes. Yellow stays fixed, a few degrees toward
-   green from CAM16's pure yellow; every other hue moves within its name until neighbors are equally
-   different in CAM16-UCS.
+   red, orange halfway to yellow…), its home, the same in both modes. Yellow stays fixed at NCS yellow,
+   a few degrees toward green from CAM16's pure yellow; every other hue moves within its name until
+   neighbors are equally different in CAM16-UCS, then is pulled back toward its home by at most 2,
+   about the smallest difference people see side by side.
 
 ## Use
 
