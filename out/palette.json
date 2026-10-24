@@ -16,677 +16,677 @@
         "15": {
           "default": {
             "red": {
-              "hex": "#B34650",
-              "hue": 15.8,
-              "chroma": 50.5,
-              "lightness": 28.7,
-              "name": "R 5 B",
-              "apca": 64.2,
-              "wcag": 4.51
+              "hex": "#FBBDC2",
+              "hue": 12.2,
+              "chroma": 24.5,
+              "lightness": 72.8,
+              "name": "R 8 B",
+              "apca": 15,
+              "wcag": 1.34
             },
             "orange": {
-              "hex": "#A55500",
-              "hue": 55.5,
-              "chroma": 46.2,
-              "lightness": 27.8,
-              "name": "R 47 Y",
-              "apca": 64.4,
-              "wcag": 4.52
+              "hex": "#F9C28C",
+              "hue": 65,
+              "chroma": 28.5,
+              "lightness": 72.1,
+              "name": "Y 39 R",
+              "apca": 15.1,
+              "wcag": 1.34
             },
             "yellow": {
-              "hex": "#7B6A00",
-              "hue": 99.5,
-              "chroma": 38.2,
-              "lightness": 26.7,
-              "name": "Y 17 G",
-              "apca": 64.8,
-              "wcag": 4.51
+              "hex": "#E5CC4B",
+              "hue": 99.7,
+              "chroma": 49.9,
+              "lightness": 70.7,
+              "name": "Y 18 G",
+              "apca": 15.3,
+              "wcag": 1.35
             },
             "green": {
-              "hex": "#007B3D",
-              "hue": 153.7,
-              "chroma": 47.3,
-              "lightness": 25.4,
-              "name": "G 10 Y",
-              "apca": 64.3,
-              "wcag": 4.52
+              "hex": "#8FDF90",
+              "hue": 147.7,
+              "chroma": 49.5,
+              "lightness": 69,
+              "name": "G 17 Y",
+              "apca": 15.1,
+              "wcag": 1.34
             },
             "mint": {
-              "hex": "#00767C",
-              "hue": 202.7,
-              "chroma": 33.4,
-              "lightness": 25.7,
-              "name": "B 43 G",
-              "apca": 64.6,
-              "wcag": 4.54
+              "hex": "#47E1DD",
+              "hue": 194.2,
+              "chroma": 50,
+              "lightness": 68.6,
+              "name": "G 45 B",
+              "apca": 15,
+              "wcag": 1.35
             },
             "blue": {
-              "hex": "#006EB4",
-              "hue": 252.1,
-              "chroma": 45.7,
-              "lightness": 26.4,
-              "name": "B 7 R",
-              "apca": 64.4,
-              "wcag": 4.53
+              "hex": "#A6D1F7",
+              "hue": 244.4,
+              "chroma": 31.3,
+              "lightness": 70.6,
+              "name": "B 3 R",
+              "apca": 15.3,
+              "wcag": 1.35
             },
             "purple": {
-              "hex": "#6E5AC1",
-              "hue": 294.9,
-              "chroma": 50,
-              "lightness": 27.8,
-              "name": "B 31 R",
-              "apca": 64.8,
-              "wcag": 4.52
+              "hex": "#CFC6F9",
+              "hue": 293.2,
+              "chroma": 29.1,
+              "lightness": 71.8,
+              "name": "B 30 R",
+              "apca": 15.3,
+              "wcag": 1.34
             },
             "pink": {
-              "hex": "#9F4A97",
-              "hue": 335.4,
-              "chroma": 50,
-              "lightness": 28.6,
-              "name": "R 41 B",
-              "apca": 64.5,
-              "wcag": 4.52
+              "hex": "#FCB4FC",
+              "hue": 329.4,
+              "chroma": 45,
+              "lightness": 73.3,
+              "name": "R 45 B",
+              "apca": 15.3,
+              "wcag": 1.35
             },
             "brown": {
-              "hex": "#9A5A41",
-              "hue": 39.3,
-              "chroma": 30.1,
-              "lightness": 27.8,
-              "name": "R 25 Y",
-              "apca": 64.6,
-              "wcag": 4.5
+              "hex": "#FABFAA",
+              "hue": 38.9,
+              "chroma": 23.2,
+              "lightness": 72.3,
+              "name": "R 24 Y",
+              "apca": 15.3,
+              "wcag": 1.34
             }
           },
           "muted": {
             "red": {
-              "hex": "#945B5D",
-              "hue": 16.2,
-              "chroma": 25.4,
-              "lightness": 27.8,
-              "name": "R 4 B",
-              "apca": 64.7,
-              "wcag": 4.5
+              "hex": "#E5C5C7",
+              "hue": 11.8,
+              "chroma": 12.3,
+              "lightness": 72,
+              "name": "R 9 B",
+              "apca": 15.1,
+              "wcag": 1.34
             },
             "orange": {
-              "hex": "#8D6040",
-              "hue": 54,
-              "chroma": 23.1,
-              "lightness": 27.2,
-              "name": "R 45 Y",
-              "apca": 65,
-              "wcag": 4.54
+              "hex": "#E5C7AD",
+              "hue": 64.2,
+              "chroma": 14.4,
+              "lightness": 71.6,
+              "name": "Y 40 R",
+              "apca": 15.3,
+              "wcag": 1.34
             },
             "yellow": {
-              "hex": "#746A41",
-              "hue": 98.5,
-              "chroma": 18.8,
-              "lightness": 26.6,
-              "name": "Y 16 G",
-              "apca": 65.1,
-              "wcag": 4.54
+              "hex": "#DBCD92",
+              "hue": 99.6,
+              "chroma": 24.7,
+              "lightness": 71.2,
+              "name": "Y 18 G",
+              "apca": 15.1,
+              "wcag": 1.34
             },
             "green": {
-              "hex": "#4E7355",
-              "hue": 153.6,
-              "chroma": 23.9,
-              "lightness": 26.2,
-              "name": "G 10 Y",
-              "apca": 64.9,
-              "wcag": 4.51
+              "hex": "#B4D5B0",
+              "hue": 148,
+              "chroma": 24.4,
+              "lightness": 70.1,
+              "name": "G 16 Y",
+              "apca": 15.4,
+              "wcag": 1.35
             },
             "mint": {
-              "hex": "#517072",
-              "hue": 202.1,
-              "chroma": 16.8,
-              "lightness": 26.5,
-              "name": "B 44 G",
-              "apca": 64.9,
-              "wcag": 4.5
+              "hex": "#A4D6D4",
+              "hue": 195,
+              "chroma": 24.8,
+              "lightness": 70.3,
+              "name": "G 46 B",
+              "apca": 15.1,
+              "wcag": 1.34
             },
             "blue": {
-              "hex": "#536C89",
-              "hue": 252.5,
-              "chroma": 22.8,
-              "lightness": 26.5,
-              "name": "B 7 R",
-              "apca": 65.1,
-              "wcag": 4.55
+              "hex": "#BECEDF",
+              "hue": 245.1,
+              "chroma": 15.8,
+              "lightness": 70.9,
+              "name": "B 4 R",
+              "apca": 15.4,
+              "wcag": 1.35
             },
             "purple": {
-              "hex": "#6D6590",
-              "hue": 294.5,
-              "chroma": 25.5,
-              "lightness": 27.3,
-              "name": "B 31 R",
-              "apca": 64.9,
-              "wcag": 4.5
+              "hex": "#CFCAE0",
+              "hue": 291.5,
+              "chroma": 14.3,
+              "lightness": 71.7,
+              "name": "B 29 R",
+              "apca": 15,
+              "wcag": 1.34
             },
             "pink": {
-              "hex": "#855E7E",
-              "hue": 335.2,
-              "chroma": 24.7,
-              "lightness": 27.6,
-              "name": "R 41 B",
-              "apca": 64.9,
-              "wcag": 4.52
+              "hex": "#E5C2E2",
+              "hue": 329,
+              "chroma": 22.6,
+              "lightness": 72.4,
+              "name": "R 46 B",
+              "apca": 15.1,
+              "wcag": 1.34
             }
           },
           "ring": [
-            8.9,
-            9,
-            10.2,
-            9.5,
-            9.4,
-            9.3,
-            9.2,
-            9.2
+            7.9,
+            8.3,
+            10.1,
+            9.9,
+            9.8,
+            8,
+            8,
+            8.7
           ]
         },
         "30": {
           "default": {
             "red": {
-              "hex": "#B34650",
-              "hue": 15.8,
-              "chroma": 50.5,
-              "lightness": 28.7,
-              "name": "R 5 B",
-              "apca": 64.2,
-              "wcag": 4.51
+              "hex": "#DEA1A8",
+              "hue": 10.4,
+              "chroma": 25.1,
+              "lightness": 58.5,
+              "name": "R 10 B",
+              "apca": 30.3,
+              "wcag": 1.8
             },
             "orange": {
-              "hex": "#A55500",
-              "hue": 55.5,
-              "chroma": 46.2,
-              "lightness": 27.8,
-              "name": "R 47 Y",
-              "apca": 64.4,
-              "wcag": 4.52
+              "hex": "#DCA772",
+              "hue": 65,
+              "chroma": 28.5,
+              "lightness": 58.1,
+              "name": "Y 39 R",
+              "apca": 30.1,
+              "wcag": 1.79
             },
             "yellow": {
-              "hex": "#7B6A00",
-              "hue": 99.5,
-              "chroma": 38.2,
-              "lightness": 26.7,
-              "name": "Y 17 G",
-              "apca": 64.8,
-              "wcag": 4.51
+              "hex": "#C9B12D",
+              "hue": 99.7,
+              "chroma": 49.9,
+              "lightness": 57,
+              "name": "Y 18 G",
+              "apca": 30,
+              "wcag": 1.8
             },
             "green": {
-              "hex": "#007B3D",
-              "hue": 153.7,
-              "chroma": 47.3,
-              "lightness": 25.4,
-              "name": "G 10 Y",
-              "apca": 64.3,
-              "wcag": 4.52
+              "hex": "#72C375",
+              "hue": 147.6,
+              "chroma": 49.6,
+              "lightness": 55.2,
+              "name": "G 17 Y",
+              "apca": 30.1,
+              "wcag": 1.8
             },
             "mint": {
-              "hex": "#00767C",
-              "hue": 202.7,
-              "chroma": 33.4,
-              "lightness": 25.7,
-              "name": "B 43 G",
-              "apca": 64.6,
-              "wcag": 4.54
+              "hex": "#00C4C0",
+              "hue": 194,
+              "chroma": 49,
+              "lightness": 54.5,
+              "name": "G 45 B",
+              "apca": 30.2,
+              "wcag": 1.82
             },
             "blue": {
-              "hex": "#006EB4",
-              "hue": 252.1,
-              "chroma": 45.7,
-              "lightness": 26.4,
-              "name": "B 7 R",
-              "apca": 64.4,
-              "wcag": 4.53
+              "hex": "#8AB6DC",
+              "hue": 244.5,
+              "chroma": 31.3,
+              "lightness": 56.8,
+              "name": "B 3 R",
+              "apca": 30.1,
+              "wcag": 1.8
             },
             "purple": {
-              "hex": "#6E5AC1",
-              "hue": 294.9,
-              "chroma": 50,
-              "lightness": 27.8,
-              "name": "B 31 R",
-              "apca": 64.8,
-              "wcag": 4.52
+              "hex": "#B3ABDE",
+              "hue": 292.6,
+              "chroma": 29.3,
+              "lightness": 57.8,
+              "name": "B 30 R",
+              "apca": 30.2,
+              "wcag": 1.8
             },
             "pink": {
-              "hex": "#9F4A97",
-              "hue": 335.4,
-              "chroma": 50,
-              "lightness": 28.6,
-              "name": "R 41 B",
-              "apca": 64.5,
-              "wcag": 4.52
+              "hex": "#E099E1",
+              "hue": 329.4,
+              "chroma": 45.1,
+              "lightness": 59.4,
+              "name": "R 45 B",
+              "apca": 30,
+              "wcag": 1.8
             },
             "brown": {
-              "hex": "#9A5A41",
-              "hue": 39.3,
-              "chroma": 30.1,
-              "lightness": 27.8,
+              "hex": "#DDA48F",
+              "hue": 39.4,
+              "chroma": 23.3,
+              "lightness": 58.2,
               "name": "R 25 Y",
-              "apca": 64.6,
-              "wcag": 4.5
+              "apca": 30.2,
+              "wcag": 1.8
             }
           },
           "muted": {
             "red": {
-              "hex": "#945B5D",
-              "hue": 16.2,
-              "chroma": 25.4,
-              "lightness": 27.8,
-              "name": "R 4 B",
-              "apca": 64.7,
-              "wcag": 4.5
+              "hex": "#C9AAAD",
+              "hue": 9.7,
+              "chroma": 12.4,
+              "lightness": 58.1,
+              "name": "R 11 B",
+              "apca": 30,
+              "wcag": 1.79
             },
             "orange": {
-              "hex": "#8D6040",
-              "hue": 54,
-              "chroma": 23.1,
-              "lightness": 27.2,
-              "name": "R 45 Y",
-              "apca": 65,
-              "wcag": 4.54
+              "hex": "#C9AC93",
+              "hue": 63.5,
+              "chroma": 14.3,
+              "lightness": 57.7,
+              "name": "Y 41 R",
+              "apca": 30.2,
+              "wcag": 1.8
             },
             "yellow": {
-              "hex": "#746A41",
-              "hue": 98.5,
-              "chroma": 18.8,
-              "lightness": 26.6,
-              "name": "Y 16 G",
-              "apca": 65.1,
-              "wcag": 4.54
+              "hex": "#BFB177",
+              "hue": 99,
+              "chroma": 24.7,
+              "lightness": 57,
+              "name": "Y 17 G",
+              "apca": 30.3,
+              "wcag": 1.8
             },
             "green": {
-              "hex": "#4E7355",
-              "hue": 153.6,
-              "chroma": 23.9,
-              "lightness": 26.2,
-              "name": "G 10 Y",
-              "apca": 64.9,
-              "wcag": 4.51
+              "hex": "#99BA95",
+              "hue": 147.5,
+              "chroma": 24.6,
+              "lightness": 56.4,
+              "name": "G 17 Y",
+              "apca": 30.1,
+              "wcag": 1.8
             },
             "mint": {
-              "hex": "#517072",
-              "hue": 202.1,
-              "chroma": 16.8,
-              "lightness": 26.5,
-              "name": "B 44 G",
-              "apca": 64.9,
-              "wcag": 4.5
+              "hex": "#89BAB8",
+              "hue": 194.8,
+              "chroma": 24.2,
+              "lightness": 56.3,
+              "name": "G 46 B",
+              "apca": 30.3,
+              "wcag": 1.8
             },
             "blue": {
-              "hex": "#536C89",
-              "hue": 252.5,
-              "chroma": 22.8,
-              "lightness": 26.5,
-              "name": "B 7 R",
-              "apca": 65.1,
-              "wcag": 4.55
+              "hex": "#A3B3C4",
+              "hue": 245.8,
+              "chroma": 15.7,
+              "lightness": 57.1,
+              "name": "B 4 R",
+              "apca": 30.2,
+              "wcag": 1.8
             },
             "purple": {
-              "hex": "#6D6590",
-              "hue": 294.5,
-              "chroma": 25.5,
-              "lightness": 27.3,
+              "hex": "#B4AEC5",
+              "hue": 294.3,
+              "chroma": 14.9,
+              "lightness": 57.6,
               "name": "B 31 R",
-              "apca": 64.9,
-              "wcag": 4.5
+              "apca": 30.2,
+              "wcag": 1.8
             },
             "pink": {
-              "hex": "#855E7E",
-              "hue": 335.2,
-              "chroma": 24.7,
-              "lightness": 27.6,
-              "name": "R 41 B",
-              "apca": 64.9,
-              "wcag": 4.52
+              "hex": "#C9A7C7",
+              "hue": 328.7,
+              "chroma": 22.7,
+              "lightness": 58.4,
+              "name": "R 46 B",
+              "apca": 30,
+              "wcag": 1.79
             }
           },
           "ring": [
-            8.9,
-            9,
-            10.2,
-            9.5,
-            9.4,
-            9.3,
-            9.2,
-            9.2
+            8.1,
+            8.3,
+            10.1,
+            9.9,
+            9.8,
+            8,
+            8,
+            8.5
           ]
         },
         "45": {
           "default": {
             "red": {
-              "hex": "#B34650",
-              "hue": 15.8,
-              "chroma": 50.5,
-              "lightness": 28.7,
-              "name": "R 5 B",
-              "apca": 64.2,
-              "wcag": 4.51
+              "hex": "#E47076",
+              "hue": 16.7,
+              "chroma": 50.4,
+              "lightness": 45.8,
+              "name": "R 4 B",
+              "apca": 45,
+              "wcag": 2.56
             },
             "orange": {
-              "hex": "#A55500",
-              "hue": 55.5,
-              "chroma": 46.2,
-              "lightness": 27.8,
-              "name": "R 47 Y",
-              "apca": 64.4,
-              "wcag": 4.52
+              "hex": "#D77D23",
+              "hue": 58.6,
+              "chroma": 50.1,
+              "lightness": 44.6,
+              "name": "Y 48 R",
+              "apca": 45.3,
+              "wcag": 2.57
             },
             "yellow": {
-              "hex": "#7B6A00",
-              "hue": 99.5,
-              "chroma": 38.2,
-              "lightness": 26.7,
-              "name": "Y 17 G",
-              "apca": 64.8,
-              "wcag": 4.51
+              "hex": "#A99400",
+              "hue": 100.5,
+              "chroma": 49.2,
+              "lightness": 43.4,
+              "name": "Y 19 G",
+              "apca": 45.1,
+              "wcag": 2.54
             },
             "green": {
-              "hex": "#007B3D",
-              "hue": 153.7,
-              "chroma": 47.3,
-              "lightness": 25.4,
-              "name": "G 10 Y",
-              "apca": 64.3,
-              "wcag": 4.52
+              "hex": "#4FA55A",
+              "hue": 148.7,
+              "chroma": 49.7,
+              "lightness": 41.6,
+              "name": "G 16 Y",
+              "apca": 45.4,
+              "wcag": 2.57
             },
             "mint": {
-              "hex": "#00767C",
-              "hue": 202.7,
-              "chroma": 33.4,
-              "lightness": 25.7,
-              "name": "B 43 G",
-              "apca": 64.6,
-              "wcag": 4.54
+              "hex": "#00A3A8",
+              "hue": 200.4,
+              "chroma": 42.5,
+              "lightness": 41.5,
+              "name": "B 46 G",
+              "apca": 45.3,
+              "wcag": 2.59
             },
             "blue": {
-              "hex": "#006EB4",
-              "hue": 252.1,
-              "chroma": 45.7,
-              "lightness": 26.4,
-              "name": "B 7 R",
-              "apca": 64.4,
-              "wcag": 4.53
+              "hex": "#3D99E4",
+              "hue": 250.3,
+              "chroma": 50.1,
+              "lightness": 42.9,
+              "name": "B 6 R",
+              "apca": 45.2,
+              "wcag": 2.56
             },
             "purple": {
-              "hex": "#6E5AC1",
-              "hue": 294.9,
-              "chroma": 50,
-              "lightness": 27.8,
-              "name": "B 31 R",
-              "apca": 64.8,
-              "wcag": 4.52
+              "hex": "#9587EB",
+              "hue": 292.6,
+              "chroma": 50.2,
+              "lightness": 44.9,
+              "name": "B 30 R",
+              "apca": 45,
+              "wcag": 2.54
             },
             "pink": {
-              "hex": "#9F4A97",
-              "hue": 335.4,
-              "chroma": 50,
-              "lightness": 28.6,
-              "name": "R 41 B",
-              "apca": 64.5,
-              "wcag": 4.52
+              "hex": "#CB76C3",
+              "hue": 334.2,
+              "chroma": 50.1,
+              "lightness": 45.9,
+              "name": "R 42 B",
+              "apca": 45,
+              "wcag": 2.55
             },
             "brown": {
-              "hex": "#9A5A41",
-              "hue": 39.3,
-              "chroma": 30.1,
-              "lightness": 27.8,
+              "hex": "#C88369",
+              "hue": 39.1,
+              "chroma": 30,
+              "lightness": 44.8,
               "name": "R 25 Y",
-              "apca": 64.6,
-              "wcag": 4.5
+              "apca": 45.2,
+              "wcag": 2.55
             }
           },
           "muted": {
             "red": {
-              "hex": "#945B5D",
-              "hue": 16.2,
-              "chroma": 25.4,
-              "lightness": 27.8,
+              "hex": "#C18486",
+              "hue": 15.9,
+              "chroma": 25.5,
+              "lightness": 44.9,
               "name": "R 4 B",
-              "apca": 64.7,
-              "wcag": 4.5
+              "apca": 45.2,
+              "wcag": 2.55
             },
             "orange": {
-              "hex": "#8D6040",
-              "hue": 54,
-              "chroma": 23.1,
-              "lightness": 27.2,
-              "name": "R 45 Y",
-              "apca": 65,
-              "wcag": 4.54
+              "hex": "#BC8A62",
+              "hue": 58.2,
+              "chroma": 25.1,
+              "lightness": 44.6,
+              "name": "Y 49 R",
+              "apca": 45,
+              "wcag": 2.53
             },
             "yellow": {
-              "hex": "#746A41",
-              "hue": 98.5,
-              "chroma": 18.8,
-              "lightness": 26.6,
-              "name": "Y 16 G",
-              "apca": 65.1,
-              "wcag": 4.54
+              "hex": "#A1945C",
+              "hue": 99.1,
+              "chroma": 24.4,
+              "lightness": 43.5,
+              "name": "Y 17 G",
+              "apca": 45.3,
+              "wcag": 2.55
             },
             "green": {
-              "hex": "#4E7355",
-              "hue": 153.6,
-              "chroma": 23.9,
-              "lightness": 26.2,
-              "name": "G 10 Y",
-              "apca": 64.9,
-              "wcag": 4.51
+              "hex": "#7B9D7A",
+              "hue": 149,
+              "chroma": 24.4,
+              "lightness": 43,
+              "name": "G 15 Y",
+              "apca": 45.1,
+              "wcag": 2.54
             },
             "mint": {
-              "hex": "#517072",
-              "hue": 202.1,
-              "chroma": 16.8,
-              "lightness": 26.5,
-              "name": "B 44 G",
-              "apca": 64.9,
-              "wcag": 4.5
+              "hex": "#729C9D",
+              "hue": 199.3,
+              "chroma": 21.4,
+              "lightness": 43.2,
+              "name": "B 48 G",
+              "apca": 45,
+              "wcag": 2.53
             },
             "blue": {
-              "hex": "#536C89",
-              "hue": 252.5,
-              "chroma": 22.8,
-              "lightness": 26.5,
+              "hex": "#7B97B7",
+              "hue": 251.2,
+              "chroma": 25.1,
+              "lightness": 43.6,
               "name": "B 7 R",
-              "apca": 65.1,
-              "wcag": 4.55
+              "apca": 45.1,
+              "wcag": 2.53
             },
             "purple": {
-              "hex": "#6D6590",
-              "hue": 294.5,
+              "hex": "#968FBA",
+              "hue": 292.9,
               "chroma": 25.5,
-              "lightness": 27.3,
-              "name": "B 31 R",
-              "apca": 64.9,
-              "wcag": 4.5
+              "lightness": 44.2,
+              "name": "B 30 R",
+              "apca": 45.2,
+              "wcag": 2.54
             },
             "pink": {
-              "hex": "#855E7E",
-              "hue": 335.2,
-              "chroma": 24.7,
-              "lightness": 27.6,
-              "name": "R 41 B",
-              "apca": 64.9,
-              "wcag": 4.52
+              "hex": "#B088A9",
+              "hue": 333.9,
+              "chroma": 24.8,
+              "lightness": 44.8,
+              "name": "R 42 B",
+              "apca": 45.1,
+              "wcag": 2.54
             }
           },
           "ring": [
-            8.9,
-            9,
-            10.2,
-            9.5,
             9.4,
             9.3,
-            9.2,
-            9.2
+            10.1,
+            10.2,
+            10.1,
+            9.4,
+            9.3,
+            9.5
           ]
         },
         "60": {
           "default": {
             "red": {
-              "hex": "#B34650",
-              "hue": 15.8,
-              "chroma": 50.5,
-              "lightness": 28.7,
-              "name": "R 5 B",
-              "apca": 64.2,
-              "wcag": 4.51
+              "hex": "#BD505D",
+              "hue": 13.8,
+              "chroma": 49.7,
+              "lightness": 32.2,
+              "name": "R 7 B",
+              "apca": 60.2,
+              "wcag": 3.94
             },
             "orange": {
-              "hex": "#A55500",
-              "hue": 55.5,
-              "chroma": 46.2,
-              "lightness": 27.8,
-              "name": "R 47 Y",
-              "apca": 64.4,
-              "wcag": 4.52
+              "hex": "#B35D00",
+              "hue": 55.7,
+              "chroma": 49.1,
+              "lightness": 31.5,
+              "name": "R 48 Y",
+              "apca": 60.1,
+              "wcag": 3.93
             },
             "yellow": {
-              "hex": "#7B6A00",
-              "hue": 99.5,
-              "chroma": 38.2,
-              "lightness": 26.7,
-              "name": "Y 17 G",
-              "apca": 64.8,
-              "wcag": 4.51
+              "hex": "#867400",
+              "hue": 99.7,
+              "chroma": 40.9,
+              "lightness": 30.4,
+              "name": "Y 18 G",
+              "apca": 60.3,
+              "wcag": 3.9
             },
             "green": {
-              "hex": "#007B3D",
-              "hue": 153.7,
-              "chroma": 47.3,
-              "lightness": 25.4,
-              "name": "G 10 Y",
-              "apca": 64.3,
-              "wcag": 4.52
+              "hex": "#318436",
+              "hue": 145.8,
+              "chroma": 49.7,
+              "lightness": 28.9,
+              "name": "G 19 Y",
+              "apca": 60.3,
+              "wcag": 3.93
             },
             "mint": {
-              "hex": "#00767C",
-              "hue": 202.7,
-              "chroma": 33.4,
-              "lightness": 25.7,
-              "name": "B 43 G",
-              "apca": 64.6,
-              "wcag": 4.54
+              "hex": "#00817F",
+              "hue": 194.7,
+              "chroma": 35.7,
+              "lightness": 29,
+              "name": "G 46 B",
+              "apca": 60.4,
+              "wcag": 3.96
             },
             "blue": {
-              "hex": "#006EB4",
-              "hue": 252.1,
-              "chroma": 45.7,
-              "lightness": 26.4,
-              "name": "B 7 R",
-              "apca": 64.4,
-              "wcag": 4.53
+              "hex": "#007AB5",
+              "hue": 244.3,
+              "chroma": 44.1,
+              "lightness": 29.6,
+              "name": "B 3 R",
+              "apca": 60.3,
+              "wcag": 3.96
             },
             "purple": {
-              "hex": "#6E5AC1",
-              "hue": 294.9,
-              "chroma": 50,
-              "lightness": 27.8,
-              "name": "B 31 R",
-              "apca": 64.8,
-              "wcag": 4.52
+              "hex": "#6E68CE",
+              "hue": 288.5,
+              "chroma": 50.2,
+              "lightness": 31.5,
+              "name": "B 27 R",
+              "apca": 60.1,
+              "wcag": 3.88
             },
             "pink": {
-              "hex": "#9F4A97",
-              "hue": 335.4,
-              "chroma": 50,
-              "lightness": 28.6,
-              "name": "R 41 B",
-              "apca": 64.5,
-              "wcag": 4.52
+              "hex": "#A656A7",
+              "hue": 331.2,
+              "chroma": 49.9,
+              "lightness": 32.4,
+              "name": "R 44 B",
+              "apca": 60.1,
+              "wcag": 3.91
             },
             "brown": {
-              "hex": "#9A5A41",
-              "hue": 39.3,
-              "chroma": 30.1,
-              "lightness": 27.8,
+              "hex": "#A6644A",
+              "hue": 39.6,
+              "chroma": 30.4,
+              "lightness": 31.8,
               "name": "R 25 Y",
-              "apca": 64.6,
-              "wcag": 4.5
+              "apca": 60,
+              "wcag": 3.88
             }
           },
           "muted": {
             "red": {
-              "hex": "#945B5D",
-              "hue": 16.2,
-              "chroma": 25.4,
-              "lightness": 27.8,
-              "name": "R 4 B",
-              "apca": 64.7,
-              "wcag": 4.5
+              "hex": "#9E656A",
+              "hue": 12.9,
+              "chroma": 25.2,
+              "lightness": 31.6,
+              "name": "R 7 B",
+              "apca": 60.3,
+              "wcag": 3.89
             },
             "orange": {
-              "hex": "#8D6040",
-              "hue": 54,
-              "chroma": 23.1,
-              "lightness": 27.2,
-              "name": "R 45 Y",
-              "apca": 65,
-              "wcag": 4.54
+              "hex": "#9A6A46",
+              "hue": 55.5,
+              "chroma": 24.7,
+              "lightness": 31.3,
+              "name": "R 47 Y",
+              "apca": 60.3,
+              "wcag": 3.89
             },
             "yellow": {
-              "hex": "#746A41",
-              "hue": 98.5,
-              "chroma": 18.8,
-              "lightness": 26.6,
-              "name": "Y 16 G",
-              "apca": 65.1,
-              "wcag": 4.54
+              "hex": "#7F7548",
+              "hue": 99.7,
+              "chroma": 20.3,
+              "lightness": 30.7,
+              "name": "Y 18 G",
+              "apca": 60.3,
+              "wcag": 3.88
             },
             "green": {
-              "hex": "#4E7355",
-              "hue": 153.6,
-              "chroma": 23.9,
-              "lightness": 26.2,
-              "name": "G 10 Y",
-              "apca": 64.9,
-              "wcag": 4.51
+              "hex": "#5D7D59",
+              "hue": 146.1,
+              "chroma": 24.4,
+              "lightness": 30.1,
+              "name": "G 18 Y",
+              "apca": 60.2,
+              "wcag": 3.88
             },
             "mint": {
-              "hex": "#517072",
-              "hue": 202.1,
-              "chroma": 16.8,
-              "lightness": 26.5,
-              "name": "B 44 G",
-              "apca": 64.9,
-              "wcag": 4.5
+              "hex": "#5A7B7A",
+              "hue": 195.5,
+              "chroma": 17.5,
+              "lightness": 30.3,
+              "name": "G 47 B",
+              "apca": 60.2,
+              "wcag": 3.87
             },
             "blue": {
-              "hex": "#536C89",
-              "hue": 252.5,
-              "chroma": 22.8,
-              "lightness": 26.5,
-              "name": "B 7 R",
-              "apca": 65.1,
-              "wcag": 4.55
+              "hex": "#5C7891",
+              "hue": 245.1,
+              "chroma": 22,
+              "lightness": 30.6,
+              "name": "B 4 R",
+              "apca": 60.2,
+              "wcag": 3.87
             },
             "purple": {
-              "hex": "#6D6590",
-              "hue": 294.5,
-              "chroma": 25.5,
-              "lightness": 27.3,
-              "name": "B 31 R",
-              "apca": 64.9,
-              "wcag": 4.5
+              "hex": "#74719B",
+              "hue": 288.8,
+              "chroma": 25.1,
+              "lightness": 31.3,
+              "name": "B 27 R",
+              "apca": 60,
+              "wcag": 3.85
             },
             "pink": {
-              "hex": "#855E7E",
-              "hue": 335.2,
-              "chroma": 24.7,
-              "lightness": 27.6,
-              "name": "R 41 B",
-              "apca": 64.9,
-              "wcag": 4.52
+              "hex": "#8F698C",
+              "hue": 331.3,
+              "chroma": 25.4,
+              "lightness": 31.8,
+              "name": "R 44 B",
+              "apca": 60,
+              "wcag": 3.86
             }
           },
           "ring": [
-            8.9,
-            9,
-            10.2,
-            9.5,
-            9.4,
             9.3,
-            9.2,
-            9.2
+            9.3,
+            9.5,
+            9.7,
+            9.4,
+            9.5,
+            9.5,
+            9.4
           ]
         },
         "75": {
@@ -701,13 +701,13 @@
               "wcag": 6.75
             },
             "orange": {
-              "hex": "#833E00",
-              "hue": 51.9,
-              "chroma": 40,
-              "lightness": 19,
-              "name": "R 42 Y",
-              "apca": 75,
-              "wcag": 6.64
+              "hex": "#823E00",
+              "hue": 52.3,
+              "chroma": 39.6,
+              "lightness": 18.9,
+              "name": "R 43 Y",
+              "apca": 75.2,
+              "wcag": 6.68
             },
             "yellow": {
               "hex": "#5F5200",
@@ -719,22 +719,22 @@
               "wcag": 6.54
             },
             "green": {
-              "hex": "#005E26",
-              "hue": 150.6,
-              "chroma": 41.2,
-              "lightness": 17.1,
-              "name": "G 14 Y",
-              "apca": 75.2,
-              "wcag": 6.7
+              "hex": "#005E21",
+              "hue": 148.8,
+              "chroma": 42.8,
+              "lightness": 17,
+              "name": "G 15 Y",
+              "apca": 75.3,
+              "wcag": 6.72
             },
             "mint": {
-              "hex": "#005B5E",
-              "hue": 200.4,
-              "chroma": 27.6,
-              "lightness": 17.6,
-              "name": "B 46 G",
-              "apca": 75,
-              "wcag": 6.63
+              "hex": "#005B5C",
+              "hue": 197.8,
+              "chroma": 27.5,
+              "lightness": 17.5,
+              "name": "G 50 B",
+              "apca": 75.1,
+              "wcag": 6.65
             },
             "blue": {
               "hex": "#00548C",
@@ -784,13 +784,13 @@
               "wcag": 6.56
             },
             "orange": {
-              "hex": "#704930",
-              "hue": 51,
-              "chroma": 20.3,
-              "lightness": 18.9,
-              "name": "R 41 Y",
-              "apca": 75.2,
-              "wcag": 6.56
+              "hex": "#6F4A30",
+              "hue": 53.6,
+              "chroma": 19.6,
+              "lightness": 19,
+              "name": "R 45 Y",
+              "apca": 75,
+              "wcag": 6.53
             },
             "yellow": {
               "hex": "#5A5231",
@@ -802,31 +802,31 @@
               "wcag": 6.56
             },
             "green": {
-              "hex": "#3C593F",
-              "hue": 151.1,
-              "chroma": 20.3,
-              "lightness": 18.1,
-              "name": "G 13 Y",
+              "hex": "#3C593D",
+              "hue": 149.2,
+              "chroma": 21,
+              "lightness": 18,
+              "name": "G 15 Y",
               "apca": 75.2,
-              "wcag": 6.54
+              "wcag": 6.55
             },
             "mint": {
-              "hex": "#3E5758",
-              "hue": 200.4,
-              "chroma": 13.9,
+              "hex": "#3F5757",
+              "hue": 197.6,
+              "chroma": 13.5,
               "lightness": 18.4,
-              "name": "B 46 G",
+              "name": "G 50 B",
               "apca": 75,
-              "wcag": 6.5
+              "wcag": 6.49
             },
             "blue": {
-              "hex": "#40546B",
-              "hue": 252.3,
-              "chroma": 18.9,
-              "lightness": 18.5,
-              "name": "B 7 R",
-              "apca": 75.1,
-              "wcag": 6.53
+              "hex": "#41546C",
+              "hue": 254.6,
+              "chroma": 19.1,
+              "lightness": 18.6,
+              "name": "B 8 R",
+              "apca": 75,
+              "wcag": 6.5
             },
             "purple": {
               "hex": "#544D78",
@@ -849,10 +849,10 @@
           },
           "ring": [
             8.9,
-            8.8,
+            8.7,
             9.1,
-            8.9,
-            8.8,
+            9,
+            9,
             8.9,
             8.9,
             8.8
@@ -861,22 +861,22 @@
         "90": {
           "default": {
             "red": {
-              "hex": "#490015",
-              "hue": 10.9,
-              "chroma": 37.7,
-              "lightness": 6.2,
+              "hex": "#490014",
+              "hue": 11.6,
+              "chroma": 37.8,
+              "lightness": 6.1,
               "name": "R 9 B",
               "apca": 90.1,
-              "wcag": 13.61
+              "wcag": 13.62
             },
             "orange": {
-              "hex": "#401A00",
-              "hue": 50.5,
-              "chroma": 23.8,
+              "hex": "#3F1B00",
+              "hue": 52.8,
+              "chroma": 23,
               "lightness": 6.7,
-              "name": "R 40 Y",
+              "name": "R 43 Y",
               "apca": 90.1,
-              "wcag": 12.9
+              "wcag": 12.88
             },
             "yellow": {
               "hex": "#2E2600",
@@ -888,22 +888,22 @@
               "wcag": 12.64
             },
             "green": {
-              "hex": "#002C09",
-              "hue": 147.5,
-              "chroma": 25.8,
-              "lightness": 6.1,
-              "name": "G 17 Y",
+              "hex": "#002C02",
+              "hue": 143.5,
+              "chroma": 28.8,
+              "lightness": 6,
+              "name": "G 21 Y",
               "apca": 90.1,
-              "wcag": 12.91
+              "wcag": 12.94
             },
             "mint": {
-              "hex": "#002A2B",
-              "hue": 199,
-              "chroma": 16.1,
-              "lightness": 6.2,
-              "name": "B 48 G",
-              "apca": 90.2,
-              "wcag": 12.9
+              "hex": "#002B2A",
+              "hue": 194.2,
+              "chroma": 16.4,
+              "lightness": 6.4,
+              "name": "G 45 B",
+              "apca": 90,
+              "wcag": 12.77
             },
             "blue": {
               "hex": "#002648",
@@ -924,13 +924,13 @@
               "wcag": 13.68
             },
             "pink": {
-              "hex": "#410043",
-              "hue": 333.3,
-              "chroma": 37.1,
-              "lightness": 6.4,
+              "hex": "#410042",
+              "hue": 333.9,
+              "chroma": 36.9,
+              "lightness": 6.3,
               "name": "R 42 B",
               "apca": 90,
-              "wcag": 13.49
+              "wcag": 13.51
             },
             "brown": {
               "hex": "#451400",
@@ -953,12 +953,12 @@
               "wcag": 12.76
             },
             "orange": {
-              "hex": "#372114",
-              "hue": 48.8,
-              "chroma": 12.2,
+              "hex": "#352214",
+              "hue": 55,
+              "chroma": 11.1,
               "lightness": 6.9,
-              "name": "R 38 Y",
-              "apca": 90,
+              "name": "R 47 Y",
+              "apca": 90.1,
               "wcag": 12.67
             },
             "yellow": {
@@ -971,13 +971,13 @@
               "wcag": 12.59
             },
             "green": {
-              "hex": "#1B2A1A",
-              "hue": 146.9,
-              "chroma": 12.5,
-              "lightness": 6.6,
-              "name": "G 18 Y",
+              "hex": "#1A2A17",
+              "hue": 144,
+              "chroma": 14,
+              "lightness": 6.5,
+              "name": "G 21 Y",
               "apca": 90.1,
-              "wcag": 12.65
+              "wcag": 12.7
             },
             "mint": {
               "hex": "#1C2929",
@@ -1017,11 +1017,11 @@
             }
           },
           "ring": [
-            7.6,
-            6.7,
-            7,
+            7.8,
+            6.4,
             7.1,
-            7.2,
+            7.5,
+            7.5,
             8,
             7.7,
             7.6
@@ -1035,337 +1035,337 @@
         "15": {
           "default": {
             "red": {
-              "hex": "#B26D74",
-              "hue": 12.4,
-              "chroma": 49.2,
-              "lightness": 51.6,
-              "name": "R 8 B",
-              "apca": 34,
-              "wcag": 4.51
+              "hex": "#7E4349",
+              "hue": 13.2,
+              "chroma": 50.1,
+              "lightness": 34.8,
+              "name": "R 7 B",
+              "apca": 15,
+              "wcag": 2.36
             },
             "orange": {
-              "hex": "#AE7344",
-              "hue": 56.4,
-              "chroma": 50.3,
-              "lightness": 51.1,
-              "name": "R 49 Y",
-              "apca": 34,
-              "wcag": 4.51
+              "hex": "#7A4920",
+              "hue": 56.2,
+              "chroma": 50.5,
+              "lightness": 34.5,
+              "name": "R 48 Y",
+              "apca": 15.1,
+              "wcag": 2.37
             },
             "yellow": {
-              "hex": "#8F813A",
-              "hue": 100,
-              "chroma": 50,
-              "lightness": 50.4,
-              "name": "Y 18 G",
-              "apca": 34.1,
-              "wcag": 4.54
+              "hex": "#605515",
+              "hue": 100.6,
+              "chroma": 50.2,
+              "lightness": 33.8,
+              "name": "Y 19 G",
+              "apca": 15,
+              "wcag": 2.37
             },
             "green": {
-              "hex": "#628B5C",
-              "hue": 145,
-              "chroma": 50.3,
-              "lightness": 49.7,
-              "name": "G 20 Y",
-              "apca": 34.1,
-              "wcag": 4.54
+              "hex": "#385E36",
+              "hue": 146,
+              "chroma": 50.5,
+              "lightness": 33.3,
+              "name": "G 19 Y",
+              "apca": 15.2,
+              "wcag": 2.39
             },
             "mint": {
-              "hex": "#4C8B87",
-              "hue": 192.1,
+              "hex": "#1F5E5C",
+              "hue": 193.9,
               "chroma": 45.4,
-              "lightness": 49.6,
-              "name": "G 42 B",
-              "apca": 34,
-              "wcag": 4.52
+              "lightness": 33.3,
+              "name": "G 45 B",
+              "apca": 15.2,
+              "wcag": 2.38
             },
             "blue": {
-              "hex": "#5286A7",
-              "hue": 238.3,
-              "chroma": 50.4,
-              "lightness": 49.9,
-              "name": "B",
-              "apca": 33.8,
-              "wcag": 4.5
+              "hex": "#295978",
+              "hue": 241.4,
+              "chroma": 50.1,
+              "lightness": 33.5,
+              "name": "B 2 R",
+              "apca": 15,
+              "wcag": 2.36
             },
             "purple": {
-              "hex": "#797CB0",
-              "hue": 283,
-              "chroma": 49.6,
-              "lightness": 50.6,
-              "name": "B 24 R",
-              "apca": 33.7,
-              "wcag": 4.5
+              "hex": "#505180",
+              "hue": 284.9,
+              "chroma": 49.8,
+              "lightness": 34.4,
+              "name": "B 25 R",
+              "apca": 15.2,
+              "wcag": 2.39
             },
             "pink": {
-              "hex": "#9D729F",
-              "hue": 327.7,
-              "chroma": 49.2,
-              "lightness": 51.4,
-              "name": "R 47 B",
-              "apca": 33.9,
-              "wcag": 4.52
+              "hex": "#6E4870",
+              "hue": 328.4,
+              "chroma": 49.5,
+              "lightness": 34.9,
+              "name": "R 46 B",
+              "apca": 15.2,
+              "wcag": 2.39
             },
             "brown": {
-              "hex": "#A17766",
-              "hue": 41.3,
-              "chroma": 29.8,
-              "lightness": 51,
-              "name": "R 28 Y",
-              "apca": 33.9,
-              "wcag": 4.52
+              "hex": "#704D3F",
+              "hue": 40.6,
+              "chroma": 29.6,
+              "lightness": 34.6,
+              "name": "R 27 Y",
+              "apca": 15.2,
+              "wcag": 2.39
             }
           },
           "muted": {
             "red": {
-              "hex": "#9B787A",
-              "hue": 13.4,
-              "chroma": 24.2,
-              "lightness": 51.1,
+              "hex": "#6C4D4F",
+              "hue": 13.5,
+              "chroma": 25.5,
+              "lightness": 34.5,
               "name": "R 7 B",
-              "apca": 34,
-              "wcag": 4.53
+              "apca": 15,
+              "wcag": 2.38
             },
             "orange": {
-              "hex": "#9A7A63",
-              "hue": 56.5,
-              "chroma": 25.5,
-              "lightness": 50.8,
-              "name": "R 49 Y",
-              "apca": 33.8,
-              "wcag": 4.51
+              "hex": "#6A503C",
+              "hue": 57.8,
+              "chroma": 25.1,
+              "lightness": 34.4,
+              "name": "Y 49 R",
+              "apca": 15.1,
+              "wcag": 2.39
             },
             "yellow": {
-              "hex": "#88815F",
-              "hue": 101.7,
-              "chroma": 25.5,
-              "lightness": 50.4,
-              "name": "Y 21 G",
-              "apca": 33.9,
-              "wcag": 4.53
+              "hex": "#5C5639",
+              "hue": 101,
+              "chroma": 25.1,
+              "lightness": 34.2,
+              "name": "Y 20 G",
+              "apca": 15.3,
+              "wcag": 2.41
             },
             "green": {
-              "hex": "#74856E",
-              "hue": 144.1,
-              "chroma": 25.3,
-              "lightness": 49.9,
-              "name": "G 21 Y",
-              "apca": 33.7,
-              "wcag": 4.5
+              "hex": "#4A5A46",
+              "hue": 144.9,
+              "chroma": 25.8,
+              "lightness": 33.9,
+              "name": "G 20 Y",
+              "apca": 15.2,
+              "wcag": 2.4
             },
             "mint": {
-              "hex": "#6D8582",
-              "hue": 190.1,
-              "chroma": 22.9,
-              "lightness": 50,
-              "name": "G 40 B",
-              "apca": 33.7,
-              "wcag": 4.5
+              "hex": "#445958",
+              "hue": 194.6,
+              "chroma": 22.2,
+              "lightness": 33.7,
+              "name": "G 46 B",
+              "apca": 15,
+              "wcag": 2.38
             },
             "blue": {
-              "hex": "#6F8391",
-              "hue": 236.2,
-              "chroma": 25.6,
-              "lightness": 50.2,
-              "name": "B 1 G",
-              "apca": 33.8,
-              "wcag": 4.51
+              "hex": "#475764",
+              "hue": 241.1,
+              "chroma": 24.6,
+              "lightness": 33.9,
+              "name": "B 2 R",
+              "apca": 15,
+              "wcag": 2.38
             },
             "purple": {
-              "hex": "#7E7F95",
-              "hue": 281,
-              "chroma": 24.4,
-              "lightness": 50.6,
-              "name": "B 23 R",
-              "apca": 33.9,
-              "wcag": 4.53
+              "hex": "#545468",
+              "hue": 284.2,
+              "chroma": 24.7,
+              "lightness": 34.4,
+              "name": "B 25 R",
+              "apca": 15.3,
+              "wcag": 2.41
             },
             "pink": {
-              "hex": "#8F7A8D",
-              "hue": 328.9,
-              "chroma": 24.1,
-              "lightness": 50.8,
+              "hex": "#625061",
+              "hue": 328.7,
+              "chroma": 24.3,
+              "lightness": 34.6,
               "name": "R 46 B",
-              "apca": 33.8,
-              "wcag": 4.51
+              "apca": 15.2,
+              "wcag": 2.4
             }
           },
           "ring": [
-            9.6,
-            9.6,
+            9.5,
+            9.7,
             9.8,
-            9.8,
-            9.7,
-            9.7,
-            9.7,
-            9.6
+            10,
+            9.9,
+            9.6,
+            9.5,
+            9.7
           ]
         },
         "30": {
           "default": {
             "red": {
-              "hex": "#B26D74",
-              "hue": 12.4,
-              "chroma": 49.2,
-              "lightness": 51.6,
-              "name": "R 8 B",
-              "apca": 34,
-              "wcag": 4.51
+              "hex": "#A8656B",
+              "hue": 13.2,
+              "chroma": 49.1,
+              "lightness": 48.3,
+              "name": "R 7 B",
+              "apca": 30,
+              "wcag": 4.01
             },
             "orange": {
-              "hex": "#AE7344",
-              "hue": 56.4,
+              "hex": "#A46B3D",
+              "hue": 56.6,
               "chroma": 50.3,
-              "lightness": 51.1,
+              "lightness": 47.9,
               "name": "R 49 Y",
-              "apca": 34,
-              "wcag": 4.51
+              "apca": 30.1,
+              "wcag": 4.02
             },
             "yellow": {
-              "hex": "#8F813A",
-              "hue": 100,
-              "chroma": 50,
-              "lightness": 50.4,
-              "name": "Y 18 G",
-              "apca": 34.1,
-              "wcag": 4.54
+              "hex": "#867933",
+              "hue": 100.6,
+              "chroma": 50.3,
+              "lightness": 47.3,
+              "name": "Y 19 G",
+              "apca": 30.3,
+              "wcag": 4.06
             },
             "green": {
-              "hex": "#628B5C",
-              "hue": 145,
-              "chroma": 50.3,
-              "lightness": 49.7,
-              "name": "G 20 Y",
-              "apca": 34.1,
-              "wcag": 4.54
+              "hex": "#5A8255",
+              "hue": 145.3,
+              "chroma": 49.7,
+              "lightness": 46.4,
+              "name": "G 19 Y",
+              "apca": 30,
+              "wcag": 4.02
             },
             "mint": {
-              "hex": "#4C8B87",
-              "hue": 192.1,
-              "chroma": 45.4,
-              "lightness": 49.6,
+              "hex": "#44837F",
+              "hue": 192,
+              "chroma": 45.6,
+              "lightness": 46.6,
               "name": "G 42 B",
-              "apca": 34,
-              "wcag": 4.52
+              "apca": 30.4,
+              "wcag": 4.06
             },
             "blue": {
-              "hex": "#5286A7",
-              "hue": 238.3,
-              "chroma": 50.4,
-              "lightness": 49.9,
-              "name": "B",
-              "apca": 33.8,
-              "wcag": 4.5
+              "hex": "#4C7E9F",
+              "hue": 239.6,
+              "chroma": 50.1,
+              "lightness": 47,
+              "name": "B 1 R",
+              "apca": 30.3,
+              "wcag": 4.05
             },
             "purple": {
-              "hex": "#797CB0",
-              "hue": 283,
-              "chroma": 49.6,
-              "lightness": 50.6,
-              "name": "B 24 R",
-              "apca": 33.7,
-              "wcag": 4.5
+              "hex": "#7374A7",
+              "hue": 284.8,
+              "chroma": 49.3,
+              "lightness": 47.7,
+              "name": "B 25 R",
+              "apca": 30.2,
+              "wcag": 4.05
             },
             "pink": {
-              "hex": "#9D729F",
-              "hue": 327.7,
-              "chroma": 49.2,
-              "lightness": 51.4,
-              "name": "R 47 B",
-              "apca": 33.9,
-              "wcag": 4.52
+              "hex": "#966996",
+              "hue": 329.4,
+              "chroma": 50.9,
+              "lightness": 48.2,
+              "name": "R 45 B",
+              "apca": 30,
+              "wcag": 4.02
             },
             "brown": {
-              "hex": "#A17766",
-              "hue": 41.3,
+              "hex": "#986F5F",
+              "hue": 40.5,
               "chroma": 29.8,
-              "lightness": 51,
-              "name": "R 28 Y",
-              "apca": 33.9,
-              "wcag": 4.52
+              "lightness": 47.9,
+              "name": "R 26 Y",
+              "apca": 30.1,
+              "wcag": 4.04
             }
           },
           "muted": {
             "red": {
-              "hex": "#9B787A",
+              "hex": "#927072",
               "hue": 13.4,
               "chroma": 24.2,
-              "lightness": 51.1,
+              "lightness": 47.9,
               "name": "R 7 B",
-              "apca": 34,
-              "wcag": 4.53
+              "apca": 30.1,
+              "wcag": 4.04
             },
             "orange": {
-              "hex": "#9A7A63",
-              "hue": 56.5,
-              "chroma": 25.5,
-              "lightness": 50.8,
-              "name": "R 49 Y",
-              "apca": 33.8,
-              "wcag": 4.51
+              "hex": "#91725C",
+              "hue": 56.1,
+              "chroma": 25.3,
+              "lightness": 47.7,
+              "name": "R 48 Y",
+              "apca": 30,
+              "wcag": 4.03
             },
             "yellow": {
-              "hex": "#88815F",
-              "hue": 101.7,
-              "chroma": 25.5,
-              "lightness": 50.4,
-              "name": "Y 21 G",
-              "apca": 33.9,
-              "wcag": 4.53
+              "hex": "#807958",
+              "hue": 101.3,
+              "chroma": 25.3,
+              "lightness": 47.4,
+              "name": "Y 20 G",
+              "apca": 30.2,
+              "wcag": 4.05
             },
             "green": {
-              "hex": "#74856E",
-              "hue": 144.1,
-              "chroma": 25.3,
-              "lightness": 49.9,
+              "hex": "#6D7D67",
+              "hue": 143.7,
+              "chroma": 24.6,
+              "lightness": 47,
               "name": "G 21 Y",
-              "apca": 33.7,
-              "wcag": 4.5
+              "apca": 30.1,
+              "wcag": 4.04
             },
             "mint": {
-              "hex": "#6D8582",
-              "hue": 190.1,
-              "chroma": 22.9,
-              "lightness": 50,
-              "name": "G 40 B",
-              "apca": 33.7,
-              "wcag": 4.5
+              "hex": "#657D7A",
+              "hue": 189.9,
+              "chroma": 23.2,
+              "lightness": 46.9,
+              "name": "G 39 B",
+              "apca": 30,
+              "wcag": 4.03
             },
             "blue": {
-              "hex": "#6F8391",
-              "hue": 236.2,
-              "chroma": 25.6,
-              "lightness": 50.2,
-              "name": "B 1 G",
-              "apca": 33.8,
-              "wcag": 4.51
+              "hex": "#697B89",
+              "hue": 239,
+              "chroma": 24.8,
+              "lightness": 47.3,
+              "name": "B 1 R",
+              "apca": 30.2,
+              "wcag": 4.05
             },
             "purple": {
-              "hex": "#7E7F95",
-              "hue": 281,
-              "chroma": 24.4,
-              "lightness": 50.6,
-              "name": "B 23 R",
-              "apca": 33.9,
-              "wcag": 4.53
+              "hex": "#78768D",
+              "hue": 287.8,
+              "chroma": 25.3,
+              "lightness": 47.5,
+              "name": "B 27 R",
+              "apca": 30,
+              "wcag": 4.04
             },
             "pink": {
-              "hex": "#8F7A8D",
-              "hue": 328.9,
-              "chroma": 24.1,
-              "lightness": 50.8,
-              "name": "R 46 B",
-              "apca": 33.8,
-              "wcag": 4.51
+              "hex": "#877285",
+              "hue": 329.2,
+              "chroma": 24.6,
+              "lightness": 47.8,
+              "name": "R 45 B",
+              "apca": 30.1,
+              "wcag": 4.04
             }
           },
           "ring": [
-            9.6,
-            9.6,
-            9.8,
-            9.8,
+            9.5,
             9.7,
             9.7,
+            9.8,
+            9.9,
+            9.8,
             9.7,
             9.6
           ]

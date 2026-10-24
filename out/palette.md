@@ -6,28 +6,28 @@
 
 | Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#B34650` | `#B34650` | `#B34650` | `#B34650` | `#912A40` | `#490015` |
-| orange | `#A55500` | `#A55500` | `#A55500` | `#A55500` | `#833E00` | `#401A00` |
-| yellow | `#7B6A00` | `#7B6A00` | `#7B6A00` | `#7B6A00` | `#5F5200` | `#2E2600` |
-| green | `#007B3D` | `#007B3D` | `#007B3D` | `#007B3D` | `#005E26` | `#002C09` |
-| mint | `#00767C` | `#00767C` | `#00767C` | `#00767C` | `#005B5E` | `#002A2B` |
-| blue | `#006EB4` | `#006EB4` | `#006EB4` | `#006EB4` | `#00548C` | `#002648` |
-| purple | `#6E5AC1` | `#6E5AC1` | `#6E5AC1` | `#6E5AC1` | `#533FAB` | `#24006B` |
-| pink | `#9F4A97` | `#9F4A97` | `#9F4A97` | `#9F4A97` | `#802E81` | `#410043` |
-| brown | `#9A5A41` | `#9A5A41` | `#9A5A41` | `#9A5A41` | `#7D4129` | `#451400` |
+| red | `#FBBDC2` WCAG 1.34 | `#DEA1A8` WCAG 1.80 | `#E47076` WCAG 2.56 | `#BD505D` WCAG 3.94 | `#912A40` WCAG 6.75 | `#490014` WCAG 13.62 |
+| orange | `#F9C28C` WCAG 1.34 | `#DCA772` WCAG 1.79 | `#D77D23` WCAG 2.57 | `#B35D00` WCAG 3.93 | `#823E00` WCAG 6.68 | `#3F1B00` WCAG 12.88 |
+| yellow | `#E5CC4B` WCAG 1.35 | `#C9B12D` WCAG 1.80 | `#A99400` WCAG 2.54 | `#867400` WCAG 3.90 | `#5F5200` WCAG 6.54 | `#2E2600` WCAG 12.64 |
+| green | `#8FDF90` WCAG 1.34 | `#72C375` WCAG 1.80 | `#4FA55A` WCAG 2.57 | `#318436` WCAG 3.93 | `#005E21` WCAG 6.72 | `#002C02` WCAG 12.94 |
+| mint | `#47E1DD` WCAG 1.35 | `#00C4C0` WCAG 1.82 | `#00A3A8` WCAG 2.59 | `#00817F` WCAG 3.96 | `#005B5C` WCAG 6.65 | `#002B2A` WCAG 12.77 |
+| blue | `#A6D1F7` WCAG 1.35 | `#8AB6DC` WCAG 1.80 | `#3D99E4` WCAG 2.56 | `#007AB5` WCAG 3.96 | `#00548C` WCAG 6.66 | `#002648` WCAG 12.85 |
+| purple | `#CFC6F9` WCAG 1.34 | `#B3ABDE` WCAG 1.80 | `#9587EB` WCAG 2.54 | `#6E68CE` WCAG 3.88 | `#533FAB` WCAG 6.61 | `#24006B` WCAG 13.68 |
+| pink | `#FCB4FC` WCAG 1.35 | `#E099E1` WCAG 1.80 | `#CB76C3` WCAG 2.55 | `#A656A7` WCAG 3.91 | `#802E81` WCAG 6.71 | `#410042` WCAG 13.51 |
+| brown | `#FABFAA` WCAG 1.34 | `#DDA48F` WCAG 1.80 | `#C88369` WCAG 2.55 | `#A6644A` WCAG 3.88 | `#7D4129` WCAG 6.62 | `#451400` WCAG 13.02 |
 
 ### Muted
 
 | Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#945B5D` | `#945B5D` | `#945B5D` | `#945B5D` | `#77434A` | `#3F1A20` |
-| orange | `#8D6040` | `#8D6040` | `#8D6040` | `#8D6040` | `#704930` | `#372114` |
-| yellow | `#746A41` | `#746A41` | `#746A41` | `#746A41` | `#5A5231` | `#2A2715` |
-| green | `#4E7355` | `#4E7355` | `#4E7355` | `#4E7355` | `#3C593F` | `#1B2A1A` |
-| mint | `#517072` | `#517072` | `#517072` | `#517072` | `#3E5758` | `#1C2929` |
-| blue | `#536C89` | `#536C89` | `#536C89` | `#536C89` | `#40546B` | `#1D2735` |
-| purple | `#6D6590` | `#6D6590` | `#6D6590` | `#6D6590` | `#544D78` | `#292143` |
-| pink | `#855E7E` | `#855E7E` | `#855E7E` | `#855E7E` | `#6B4668` | `#371D35` |
+| red | `#E5C5C7` WCAG 1.34 | `#C9AAAD` WCAG 1.79 | `#C18486` WCAG 2.55 | `#9E656A` WCAG 3.89 | `#77434A` WCAG 6.56 | `#3F1A20` WCAG 12.76 |
+| orange | `#E5C7AD` WCAG 1.34 | `#C9AC93` WCAG 1.80 | `#BC8A62` WCAG 2.53 | `#9A6A46` WCAG 3.89 | `#6F4A30` WCAG 6.53 | `#352214` WCAG 12.67 |
+| yellow | `#DBCD92` WCAG 1.34 | `#BFB177` WCAG 1.80 | `#A1945C` WCAG 2.55 | `#7F7548` WCAG 3.88 | `#5A5231` WCAG 6.56 | `#2A2715` WCAG 12.59 |
+| green | `#B4D5B0` WCAG 1.35 | `#99BA95` WCAG 1.80 | `#7B9D7A` WCAG 2.54 | `#5D7D59` WCAG 3.88 | `#3C593D` WCAG 6.55 | `#1A2A17` WCAG 12.70 |
+| mint | `#A4D6D4` WCAG 1.34 | `#89BAB8` WCAG 1.80 | `#729C9D` WCAG 2.53 | `#5A7B7A` WCAG 3.87 | `#3F5757` WCAG 6.49 | `#1C2929` WCAG 12.60 |
+| blue | `#BECEDF` WCAG 1.35 | `#A3B3C4` WCAG 1.80 | `#7B97B7` WCAG 2.53 | `#5C7891` WCAG 3.87 | `#41546C` WCAG 6.50 | `#1D2735` WCAG 12.64 |
+| purple | `#CFCAE0` WCAG 1.34 | `#B4AEC5` WCAG 1.80 | `#968FBA` WCAG 2.54 | `#74719B` WCAG 3.85 | `#544D78` WCAG 6.50 | `#292143` WCAG 12.65 |
+| pink | `#E5C2E2` WCAG 1.34 | `#C9A7C7` WCAG 1.79 | `#B088A9` WCAG 2.54 | `#8F698C` WCAG 3.86 | `#6B4668` WCAG 6.52 | `#371D35` WCAG 12.68 |
 
 ## Dark · base #181818
 
@@ -35,26 +35,26 @@
 
 | Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#B26D74` | `#B26D74` | `#CE8287` | `#EE9DA3` | `#FFBCC3` | `#FFDEE1` |
-| orange | `#AE7344` | `#AE7344` | `#C88956` | `#E8A46E` | `#FFC08D` | `#FFE0C4` |
-| yellow | `#8F813A` | `#8F813A` | `#A7974C` | `#C4B464` | `#DFCE79` | `#F8E68E` |
-| green | `#628B5C` | `#628B5C` | `#75A273` | `#8EBF8E` | `#ABD9A1` | `#C2F2B8` |
-| mint | `#4C8B87` | `#4C8B87` | `#57A3A2` | `#73C0BE` | `#8CDBD4` | `#A3F4EC` |
-| blue | `#5286A7` | `#5286A7` | `#6C9DC1` | `#85B9DF` | `#9BD4F8` | `#CBEAFF` |
-| purple | `#797CB0` | `#797CB0` | `#9392C9` | `#AEAEE8` | `#C5C9FF` | `#E3E3FF` |
-| pink | `#9D729F` | `#9D729F` | `#B887B7` | `#D6A2D4` | `#EFBDF3` | `#FFDAFF` |
-| brown | `#A17766` | `#A17766` | `#BA8D7B` | `#D9A895` | `#F6C2AE` | `#FFDFD3` |
+| red | `#7E4349` WCAG 2.36 | `#A8656B` WCAG 4.01 | `#CE8287` WCAG 6.06 | `#EE9DA3` WCAG 8.44 | `#FFBCC3` WCAG 11.19 | `#FFDEE1` WCAG 14.19 |
+| orange | `#7A4920` WCAG 2.37 | `#A46B3D` WCAG 4.02 | `#C88956` WCAG 6.06 | `#E8A46E` WCAG 8.43 | `#FFC08D` WCAG 11.14 | `#FFE0C4` WCAG 14.13 |
+| yellow | `#605515` WCAG 2.37 | `#867933` WCAG 4.06 | `#A7974C` WCAG 6.07 | `#C4B464` WCAG 8.51 | `#DFCE79` WCAG 11.20 | `#F8E68E` WCAG 14.12 |
+| green | `#385E36` WCAG 2.39 | `#5A8255` WCAG 4.02 | `#75A273` WCAG 6.06 | `#8EBF8E` WCAG 8.45 | `#ABD9A1` WCAG 11.14 | `#C2F2B8` WCAG 14.11 |
+| mint | `#1F5E5C` WCAG 2.38 | `#44837F` WCAG 4.06 | `#57A3A2` WCAG 6.06 | `#73C0BE` WCAG 8.47 | `#8CDBD4` WCAG 11.16 | `#A3F4EC` WCAG 14.13 |
+| blue | `#295978` WCAG 2.36 | `#4C7E9F` WCAG 4.05 | `#6C9DC1` WCAG 6.11 | `#85B9DF` WCAG 8.46 | `#9BD4F8` WCAG 11.13 | `#CBEAFF` WCAG 14.16 |
+| purple | `#505180` WCAG 2.39 | `#7374A7` WCAG 4.05 | `#9392C9` WCAG 6.08 | `#AEAEE8` WCAG 8.47 | `#C5C9FF` WCAG 11.14 | `#E3E3FF` WCAG 14.12 |
+| pink | `#6E4870` WCAG 2.39 | `#966996` WCAG 4.02 | `#B887B7` WCAG 6.08 | `#D6A2D4` WCAG 8.44 | `#EFBDF3` WCAG 11.20 | `#FFDAFF` WCAG 14.14 |
+| brown | `#704D3F` WCAG 2.39 | `#986F5F` WCAG 4.04 | `#BA8D7B` WCAG 6.07 | `#D9A895` WCAG 8.44 | `#F6C2AE` WCAG 11.20 | `#FFDFD3` WCAG 14.16 |
 
 ### Muted
 
 | Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#9B787A` | `#9B787A` | `#B58E8F` | `#D2A9AB` | `#E7C5C7` | `#F3E2E3` |
-| orange | `#9A7A63` | `#9A7A63` | `#B29177` | `#D0AC91` | `#E8C7AE` | `#F4E3D5` |
-| yellow | `#88815F` | `#88815F` | `#A09874` | `#BDB38D` | `#D8CDA4` | `#F1E6BB` |
-| green | `#74856E` | `#74856E` | `#899D86` | `#A4B9A1` | `#BFD3B8` | `#D8EBCF` |
-| mint | `#6D8582` | `#6D8582` | `#809D9C` | `#9BB9B7` | `#B5D3D0` | `#CCECE7` |
-| blue | `#6F8391` | `#6F8391` | `#889AA9` | `#A2B6C6` | `#BAD0DF` | `#DBE7F0` |
-| purple | `#7E7F95` | `#7E7F95` | `#9695AC` | `#B2B1CA` | `#CBCBE2` | `#E6E4F0` |
-| pink | `#8F7A8D` | `#8F7A8D` | `#A890A5` | `#C5ACC2` | `#DEC6DD` | `#F3E0F0` |
+| red | `#6C4D4F` WCAG 2.38 | `#927072` WCAG 4.04 | `#B58E8F` WCAG 6.11 | `#D2A9AB` WCAG 8.46 | `#E7C5C7` WCAG 11.17 | `#F3E2E3` WCAG 14.20 |
+| orange | `#6A503C` WCAG 2.39 | `#91725C` WCAG 4.03 | `#B29177` WCAG 6.10 | `#D0AC91` WCAG 8.45 | `#E8C7AE` WCAG 11.17 | `#F4E3D5` WCAG 14.20 |
+| yellow | `#5C5639` WCAG 2.41 | `#807958` WCAG 4.05 | `#A09874` WCAG 6.12 | `#BDB38D` WCAG 8.45 | `#D8CDA4` WCAG 11.15 | `#F1E6BB` WCAG 14.19 |
+| green | `#4A5A46` WCAG 2.40 | `#6D7D67` WCAG 4.04 | `#899D86` WCAG 6.11 | `#A4B9A1` WCAG 8.48 | `#BFD3B8` WCAG 11.18 | `#D8EBCF` WCAG 14.12 |
+| mint | `#445958` WCAG 2.38 | `#657D7A` WCAG 4.03 | `#809D9C` WCAG 6.11 | `#9BB9B7` WCAG 8.47 | `#B5D3D0` WCAG 11.16 | `#CCECE7` WCAG 14.14 |
+| blue | `#475764` WCAG 2.38 | `#697B89` WCAG 4.05 | `#889AA9` WCAG 6.12 | `#A2B6C6` WCAG 8.49 | `#BAD0DF` WCAG 11.14 | `#DBE7F0` WCAG 14.12 |
+| purple | `#545468` WCAG 2.41 | `#78768D` WCAG 4.04 | `#9695AC` WCAG 6.08 | `#B2B1CA` WCAG 8.48 | `#CBCBE2` WCAG 11.14 | `#E6E4F0` WCAG 14.14 |
+| pink | `#625061` WCAG 2.40 | `#877285` WCAG 4.04 | `#A890A5` WCAG 6.09 | `#C5ACC2` WCAG 8.50 | `#DEC6DD` WCAG 11.18 | `#F3E0F0` WCAG 14.15 |
 

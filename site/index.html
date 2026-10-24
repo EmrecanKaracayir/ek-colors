@@ -61,11 +61,11 @@ p { margin:0; max-width:74ch; color:var(--ink-2) }
   <header style="display:grid;gap:10px">
     <span class="eyebrow">Codemos · palette · version 2</span>
     <h1>Codemos palette v2, next to v1</h1>
-    <p>Eight hues plus brown, solved live in this page. Each colour sits exactly on its contrast target: the harder of WCAG 4.5 and the APCA bar, never below it and only as far above as hex rounding forces. All aim at one CAM16 chroma, measured as each colour appears on its own base, so equal numbers look equally colourful there; a colour can take its own target, and where the screen can't reach one the colour goes as far as it can (▼ in the table). Yellow is the anchor: you set its hue (a little warmer than pure yellow's 111 keeps a darkened yellow from turning olive), and the other hues move within their names until every neighbour is equally different, measured in CAM16-UCS (made for differences this large). The muted version keeps each hue at half its chroma on the same contrast target; brown sits at 60% of the global target. Bases: #EBEBEB light, #181818 dark.</p>
+    <p>Eight hues plus brown, solved live in this page. Each colour sits exactly on the APCA bar against its base, never below it and only as far above as hex rounding forces; its WCAG 2 contrast is shown everywhere. All aim at one CAM16 chroma, measured as each colour appears on its own base, so equal numbers look equally colourful there; a colour can take its own target, and where the screen can't reach one the colour goes as far as it can (▼ in the table). Yellow is the anchor: you set its hue (a little warmer than pure yellow's 111 keeps a darkened yellow from turning olive), and the other hues move within their names until every neighbour is equally different, measured in CAM16-UCS (made for differences this large). The muted version keeps each hue at half its chroma on the same contrast target; brown sits at 60% of the global target. Bases: #EBEBEB light, #181818 dark.</p>
   </header>
   <div class="controls">
     <span class="eyebrow">Accessibility bar</span>
-    <span class="seg" id="bar"><button data-v="60" aria-pressed="false">APCA 60 + WCAG 4.5</button><button data-v="45" aria-pressed="true">APCA 45 + WCAG 4.5</button></span>
+    <span class="seg" id="bar"><button data-v="60" aria-pressed="false">APCA 60</button><button data-v="45" aria-pressed="true">APCA 45</button></span>
     <label for="target" style="display:grid;gap:4px;font-size:12.5px;color:var(--ink-2);min-width:220px">Chroma target (CAM16 on the base) <b id="target-out" style="font:600 16px var(--mono);color:var(--ink)"></b><input id="target" type="range" min="30" max="70" step="5" value="50"></label>
     <span class="eyebrow">Set</span>
     <span class="seg" id="set"><button data-v="def" aria-pressed="true">Default</button><button data-v="alt" aria-pressed="false">Muted</button></span>
@@ -176,7 +176,7 @@ function at(mode, H, Cc, J) {
   const c = new Color("xyz-d65", [x / 100, y / 100, z / 100]);
   return c.inGamut("srgb", { epsilon: 0.0005 }) ? sRGBhex(c) : null;
 }
-const meets = (hex, base, bar) => wcag(hex, base) >= 4.5 && apca(hex, base) >= bar;
+const meets = (hex, base, bar) => apca(hex, base) >= bar;
 function onTarget(H, Cc, mode, bar) {
   const base = D.bases[mode], dark = mode === "dark";
   let lo = 0, hi = 100; // contrast grows with CAM16 lightness in dark mode and falls with it in light mode

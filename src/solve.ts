@@ -22,7 +22,6 @@ import {
   type Tier,
   TIERS,
   V1,
-  WCAG_MIN,
   YELLOW_HUE,
 } from "./config.js";
 import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
@@ -32,9 +31,9 @@ import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
 /**
  * The colour at a hue and chroma that sits exactly on a tier.
  *
- * Its CAM16 lightness is searched until APCA against the base just reaches the tier and WCAG 2
- * reaches WCAG_MIN: the lowest that does in dark mode, the highest in light mode, so it is never
- * below either target and only as far above as hex rounding forces.
+ * Its CAM16 lightness is searched until APCA against the base just reaches the tier: the lowest
+ * that does in dark mode, the highest in light mode, so it is never below the tier and only as far
+ * above as hex rounding forces.
  *
  * @param mode    The mode.
  * @param hue     CAM16 hue.
@@ -45,7 +44,7 @@ import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
 function place(mode: Mode, hue: number, chroma: number, tier: Tier): string | null {
   const base = BASES[mode];
   const dark = mode === "dark";
-  const meets = (hex: string) => apca(hex, base) >= tier && wcag(hex, base) >= WCAG_MIN;
+  const meets = (hex: string) => apca(hex, base) >= tier;
   const ok = (j: number) => {
     const hex = colorAt(mode, hue, chroma, j);
     return hex !== null && meets(hex);
@@ -254,7 +253,9 @@ for (const mode of MODES) {
     );
     for (const n of names) {
       const cells = TIERS.map((t) => palette[mode].tiers[t][variant][n]);
-      md.push(`| ${n} | ${cells.map((s) => (s ? `\`${s.hex}\`` : "")).join(" | ")} |`);
+      md.push(
+        `| ${n} | ${cells.map((s) => (s ? `\`${s.hex}\` WCAG ${s.wcag.toFixed(2)}` : "")).join(" | ")} |`,
+      );
       for (const [i, s] of cells.entries()) {
         if (s)
           rows.push(
