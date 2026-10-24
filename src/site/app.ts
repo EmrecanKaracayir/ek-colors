@@ -13,6 +13,7 @@ import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode,
 import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
+import { technical } from "./technical";
 import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
 
@@ -21,7 +22,7 @@ import type { Request, Response } from "./worker";
 type Variant = "default" | "muted";
 type Format = "json" | "csv" | "md";
 
-const VIEWS = ["overview", "tiers", "compare", "how", "curve-test", "tune", "export"] as const;
+const VIEWS = ["overview", "tiers", "compare", "how", "algorithm", "curve-test", "tune", "export"] as const;
 
 const STORE = "ek-colors:settings";
 
@@ -846,7 +847,7 @@ function render(): void {
   const isColor = !(VIEWS as readonly string[]).includes(view);
   for (const a of document.querySelectorAll<HTMLAnchorElement>(".nav a")) {
     const target = a.getAttribute("href")!.slice(1);
-    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && view === "curve-test"));
+    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && view === "curve-test") || (target === "how" && view === "algorithm"));
   }
   for (const row of document.querySelectorAll(".tools")) fadeEdges(row);
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
@@ -867,6 +868,7 @@ function render(): void {
     : view === "tune" ? tune()
     : view === "export" ? exporting()
     : view === "how" ? explain(context())
+    : view === "algorithm" ? technical(context())
     : view === "curve-test" ? testPage(testContext())
     : color(view === "colors" ? first : view);
   if (view === "tune") updateTune();

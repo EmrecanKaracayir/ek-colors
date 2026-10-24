@@ -340,6 +340,7 @@ export function explain(ctx: Context): string {
   return `<section class="intro">
       <h1>How it works</h1>
       <p>EK Colors isn't picked by eye. A small program solves it from a handful of rules, so every color can be explained and solved again when a rule changes. This page walks through those rules one at a time. Every demo runs the same code as the solver.</p>
+      <p class="soft">This is the plain-words version. For every formula, constant and search rule, see <a href="#algorithm">the algorithm</a>.</p>
     </section>
 
     <section class="step">
