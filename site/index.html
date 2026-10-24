@@ -166,6 +166,7 @@
   .curve-values .field, .curve-values .field:not(:has(input[type="range"])) { grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.5rem; }
   .curve-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
   .curve-band { opacity: 0.28; }
+  .curve-caption { grid-column: 2; margin: 0; font-size: 0.8125rem; }
   .curve-editor .grid { stroke: var(--line); }
   .curve-editor .reference { stroke: var(--fg); stroke-opacity: 0.35; }
   .curve-editor .reference.half { stroke-dasharray: 3 4; stroke-opacity: 0.25; }
@@ -256,7 +257,8 @@
   @media (max-width: 48rem) {
     .curve-editor { grid-template-columns: minmax(0, 1fr); }
     .curve-values { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .curve-values > p, .curve-values > .row { grid-column: 1 / -1; }
+    .curve-values > p { grid-column: 1 / -1; }
+    .curve-caption { grid-column: 1; }
     .curve-values .field, .curve-values .field:not(:has(input[type="range"])) { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
     /* Phones: name and status, then the views and the switches each on one line that scrolls sideways. */
     header { gap: 0.375rem 0.75rem; padding-block: 0.5rem; }
@@ -314,6 +316,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=31861ae65a"></script>
+<script type="module" src="app.js?v=15c30bd73d"></script>
 </body>
 </html>

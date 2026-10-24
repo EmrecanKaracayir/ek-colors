@@ -718,7 +718,7 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Curve</h2>
-      <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Points add up. Double-click the graph to add a point, drag a point to move it, drag the selected point's edges (or hold Option and scroll) to set its width, and double-click a point to remove it.</p>
+      <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Its points add up.</p>
       <p><a href="#curve-test" class="button">Measure it with the blind curve test</a></p>
       ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
     </section>

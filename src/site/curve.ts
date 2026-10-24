@@ -2,9 +2,9 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CURVE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | The colorfulness curve editor: the curve over the hue circle, drawn on the colors it changes,    |
-| made of points that add up. Double-click the graph to add a point; drag a point to move its hue  |
-| and amount; drag the selected point's edges, or hold Option and scroll, to set its width;        |
-| double-click a point to remove it. The selected point's values can be typed in too.              |
+| made of points that add up. Double-click the graph to add a point and a point to remove it; drag |
+| a point to move its hue and amount; drag the selected point's edges, or hold Option and scroll,  |
+| to set its width. The selected point's values can be typed in too.                               |
 \*------------------------------------------------------------------------------------------------*/
 
 import { REFERENCES } from "../palette/model";
@@ -89,7 +89,7 @@ export function curveLayers(view: CurveView): string {
 }
 
 /**
- * The selected point's values, and adding or removing points.
+ * The selected point's values.
  *
  * @param view  What to show.
  * @returns     HTML.
@@ -97,13 +97,11 @@ export function curveLayers(view: CurveView): string {
 function valuesPanel(view: CurveView): string {
   const { mode, points } = view;
   const i = selected[mode];
-  const add = `<button type="button" data-curve-action="add" ${points.length >= MAX_POINTS ? "disabled" : ""}>Add point</button>`;
-  if (!points[i]) return `<p class="soft">No points: the curve is flat. Double-click the graph or add one.</p>${add}`;
+  if (!points[i]) return `<p class="soft">No points: the curve is flat.</p>`;
   return `<p class="soft">Point ${String(i + 1)} of ${String(points.length)}</p>
     ${field(`curve.${mode}.${String(i)}.amount`, "Amount", [-LIMIT, LIMIT, 1])}
     ${field(`curve.${mode}.${String(i)}.center`, "Hue", [0, 359, 1])}
-    ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, 180, 5])}
-    <div class="row">${add}<button type="button" data-curve-action="remove">Remove</button></div>`;
+    ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, 180, 5])}`;
 }
 
 /**
@@ -149,6 +147,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       ${hues.join("")}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
+    <p class="curve-caption soft">Double-click the graph to add a point (up to ${String(MAX_POINTS)}); double-click a point to remove it. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
   </div>`;
 }
 
@@ -237,19 +236,6 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     if ((event.target as Element).closest("[data-drag]") || points.length >= MAX_POINTS) return;
     const { hue, amount } = point(svg, event);
     points.push({ amount: amount || 4, center: hue, width: 60 });
-    selected[mode] = points.length - 1;
-    apply(mode, points, true);
-  });
-
-  document.addEventListener("click", (event) => {
-    const button = (event.target as Element).closest<HTMLElement>("[data-curve-action]");
-    const editor = editorOf(button);
-    if (!button || !editor) return;
-    const mode = editor.dataset.curve as Mode;
-    if (button.dataset.curveAction === "remove") return remove(mode, selected[mode]);
-    const points = [...get(mode).points];
-    if (points.length >= MAX_POINTS) return;
-    points.push({ amount: 4, center: 0, width: 60 });
     selected[mode] = points.length - 1;
     apply(mode, points, true);
   });
