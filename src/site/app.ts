@@ -848,9 +848,7 @@ function render(): void {
     const target = a.getAttribute("href")!.slice(1);
     a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && view === "curve-test"));
   }
-  // On phones the views scroll sideways; keep the current one in sight.
-  document.querySelector(".nav a[aria-current]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  for (const row of document.querySelectorAll(".nav, .tools")) fadeEdges(row);
+  for (const row of document.querySelectorAll(".tools")) fadeEdges(row);
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-gamut]")) {
     b.setAttribute("aria-pressed", String(b.dataset.gamut === state.gamut));
@@ -1035,7 +1033,7 @@ new ResizeObserver(([entry]) => {
 /**
  * Marks a row that scrolls sideways with which of its ends have more to scroll to.
  *
- * @param row  The menu or the switches.
+ * @param row  The switches.
  */
 function fadeEdges(row: Element): void {
   const more = row.scrollWidth - row.clientWidth;
@@ -1043,7 +1041,22 @@ function fadeEdges(row: Element): void {
   row.classList.toggle("fade-end", more > 1 && row.scrollLeft < more - 1);
 }
 
-for (const row of document.querySelectorAll(".nav, .tools")) {
+// The phone menu: the button opens the views; choosing one, Escape, or a tap elsewhere closes it.
+const toggle = $<HTMLButtonElement>("#menu-toggle");
+const openMenu = (open: boolean) => {
+  $("header").classList.toggle("menu-open", open);
+  toggle.setAttribute("aria-expanded", String(open));
+};
+toggle.addEventListener("click", () => openMenu(toggle.getAttribute("aria-expanded") !== "true"));
+document.addEventListener("click", (event) => {
+  if (!(event.target as Element).closest("#menu-toggle, #views")) openMenu(false);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") openMenu(false);
+});
+addEventListener("hashchange", () => openMenu(false));
+
+for (const row of document.querySelectorAll(".tools")) {
   row.addEventListener("scroll", () => fadeEdges(row), { passive: true });
   new ResizeObserver(() => fadeEdges(row)).observe(row);
 }
