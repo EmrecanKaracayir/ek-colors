@@ -20,7 +20,8 @@ export const MODES = ["light", "dark"] as const satisfies readonly Mode[];
 /* >-----------------------------------------< Tiers >------------------------------------------< */
 
 /*
- * Each hue gets one colour per tier, exactly on that APCA contrast against the base:
+ * Each hue gets one colour per tier, exactly on that APCA contrast against the base, and never below
+ * WCAG_MIN; where WCAG asks for more, the colour sits on WCAG instead:
  *   15 dividers, faint fills · 30 icons, outlines · 45 large text, the colour itself
  *   60 labels, links · 75 body text · 90 long reading
  */
@@ -28,11 +29,11 @@ export const TIERS = [15, 30, 45, 60, 75, 90] as const;
 
 export type Tier = (typeof TIERS)[number];
 
+/** The WCAG 2 contrast every colour reaches on its base, whatever its tier. */
+export const WCAG_MIN = 4.5;
+
 /** The tier whose colour stands for the hue: it sets every tier's hues. */
 export const IDENTITY_TIER: Tier = 45;
-
-/** The identity tier must also reach this WCAG 2 contrast, so the colour itself passes both. */
-export const IDENTITY_WCAG = 4.5;
 
 /* >-----------------------------------------< Chroma >-----------------------------------------< */
 

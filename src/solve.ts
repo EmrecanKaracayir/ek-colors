@@ -14,7 +14,6 @@ import {
   CHROMA_OVERRIDES,
   HUE_WINDOW,
   IDENTITY_TIER,
-  IDENTITY_WCAG,
   type Mode,
   MODES,
   MUTED,
@@ -23,6 +22,7 @@ import {
   type Tier,
   TIERS,
   V1,
+  WCAG_MIN,
   YELLOW_HUE,
 } from "./config.js";
 import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
@@ -32,9 +32,9 @@ import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
 /**
  * The colour at a hue and chroma that sits exactly on a tier.
  *
- * Its CAM16 lightness is searched until APCA against the base just reaches the tier (and, on the
- * identity tier, WCAG 2 reaches IDENTITY_WCAG): the lowest that does in dark mode, the highest in
- * light mode, so it is never below the target and only as far above as hex rounding forces.
+ * Its CAM16 lightness is searched until APCA against the base just reaches the tier and WCAG 2
+ * reaches WCAG_MIN: the lowest that does in dark mode, the highest in light mode, so it is never
+ * below either target and only as far above as hex rounding forces.
  *
  * @param mode    The mode.
  * @param hue     CAM16 hue.
@@ -45,8 +45,7 @@ import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
 function place(mode: Mode, hue: number, chroma: number, tier: Tier): string | null {
   const base = BASES[mode];
   const dark = mode === "dark";
-  const wcagMin = tier === IDENTITY_TIER ? IDENTITY_WCAG : 1;
-  const meets = (hex: string) => apca(hex, base) >= tier && wcag(hex, base) >= wcagMin;
+  const meets = (hex: string) => apca(hex, base) >= tier && wcag(hex, base) >= WCAG_MIN;
   const ok = (j: number) => {
     const hex = colorAt(mode, hue, chroma, j);
     return hex !== null && meets(hex);
