@@ -254,7 +254,13 @@
     .split { grid-template-columns: minmax(0, 1fr); }
     .facts-list div { grid-template-columns: 8rem 1fr; }
     .field { grid-template-columns: 7rem minmax(0, 1fr) 4.5rem; }
-    .strip { position: static; }
+    /* The strip stays pinned on phones too, compact: thinner swatches, only the curve's changes named. */
+    .strip { gap: 0.25rem; padding-block: 0.5rem; }
+    .strip-items { grid-template-columns: repeat(auto-fit, minmax(1.75rem, 1fr)); gap: 0.25rem; }
+    .strip-item .fill { height: 1.25rem; border-radius: 0.375rem; }
+    .strip-item .name { display: none; }
+    .strip-item .mono { font-size: 0.625rem; min-height: 0.8rem; }
+    .strip-items:first-of-type .mono { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 </style>
@@ -286,6 +292,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=419fafd318"></script>
+<script type="module" src="app.js?v=f3e4bc9acc"></script>
 </body>
 </html>

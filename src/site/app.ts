@@ -692,8 +692,8 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Curve</h2>
-      <p class="soft">Colorfulness added or taken away smoothly over hue, for a part of the circle that looks weaker or stronger than the model says. Drag the point to set its hue and amount, drag an edge to set its width, or hold Option (Alt) and scroll over the graph for fine steps. Double-click the point to flatten it.</p>
-      ${(["light", "dark"] as const).map((m) => `<h3>${label(m)}</h3>${curveEditor(curveView(m), (path, title, range) => number(path, title, range))}`).join("")}
+      <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for a part of the circle that looks weaker or stronger than the model says. Drag the point to set its hue and amount, drag an edge to set its width, or hold Option (Alt) and scroll over the graph for fine steps. Double-click the point to flatten it.</p>
+      ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
     </section>
     <section class="group">
       <h2>Hues</h2>
@@ -733,27 +733,38 @@ function tune(): string {
 }
 
 /**
- * Draws the strip: the palette without the curve above the palette with it.
+ * Draws a mode's palette without the curve above the palette with it, each color marked with what
+ * the curve adds.
+ *
+ * @param el    Where to draw.
+ * @param mode  The mode.
  */
-function updateStrip(): void {
-  const strip = document.querySelector("#tune-preview");
-  if (!strip) return;
-  const tier = state.settings.identityTier[state.mode];
+function drawComparison(el: Element, mode: Mode): void {
+  const tier = state.settings.identityTier[mode];
   const row = (list: readonly Color[], marked: boolean) =>
     `<div class="strip-items">${list
       .map((c) => {
         const s = c.tiers[tier]?.default;
         if (!s) return "";
-        const added = marked && c.key !== "brown" ? Math.round(boost(state.settings, state.mode, s.hue)) : 0;
-        const name = `${label(c.key)}${added ? ` ${added > 0 ? "+" : ""}${String(added)}` : ""}`;
-        return `<span class="strip-item${added ? " changed" : ""}" style="--c:${s.color}" title="${name} ${s.color}"><span class="fill"></span><span class="mono">${name}</span></span>`;
+        const added = marked && c.key !== "brown" ? Math.round(boost(state.settings, mode, s.hue)) : 0;
+        const delta = added ? `${added > 0 ? "+" : ""}${String(added)}` : "";
+        return `<span class="strip-item${added ? " changed" : ""}" style="--c:${s.color}" title="${label(c.key)} ${delta} ${s.color}"><span class="fill"></span><span class="mono"><span class="name">${label(c.key)}</span> ${delta}</span></span>`;
       })
       .join("")}</div>`;
-  compareCurve();
-  const without = uncurved()?.[state.mode].colors;
+  const without = uncurved()?.[mode].colors;
+  const withCurve = current()?.[mode].colors ?? [];
   // Both rows are always drawn, so the page doesn't jump while one of them solves.
-  const previous = strip.querySelector(".strip-items")?.outerHTML;
-  strip.innerHTML = `<span class="strip-label">Without curve</span>${without ? row(without, false) : (previous ?? row(colors(), false))}<span class="strip-label">With curve</span>${row(colors(), true)}`;
+  const previous = el.querySelector(".strip-items")?.outerHTML;
+  el.innerHTML = `<span class="strip-label">Without curve</span>${without ? row(without, false) : (previous ?? row(withCurve, false))}<span class="strip-label">With curve</span>${row(withCurve, true)}`;
+}
+
+/**
+ * Draws the strip at the top of Settings.
+ */
+function updateStrip(): void {
+  compareCurve();
+  const strip = document.querySelector("#tune-preview");
+  if (strip) drawComparison(strip, state.mode);
 }
 
 /**
