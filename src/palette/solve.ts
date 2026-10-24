@@ -207,8 +207,9 @@ function space({ model, base, mode, tier, start, anchor, window, target }: Spaci
 /**
  * The hues a mode starts from, in hue order, with which one is yellow.
  *
- * Eight hues start from Codemos and keep its names; any other count is spread evenly around the
- * circle from yellow and named later by CAM16.
+ * Eight hues start from Codemos and keep its names, at the same hues in both modes: halfway between
+ * where Codemos put each one in light and in dark, so the modes can't drift apart. Any other count
+ * is spread evenly around the circle from yellow and named later by CAM16.
  *
  * @param settings  The settings.
  * @param model     The color model.
@@ -217,9 +218,14 @@ function space({ model, base, mode, tier, start, anchor, window, target }: Spaci
  */
 function seeds(settings: Settings, model: Model, mode: Mode) {
   if (settings.hues === NAMES.length) {
-    const start = NAMES.map((n) =>
-      n === "yellow" ? settings.yellowHue[mode] : model.cam(mode, CODEMOS[mode][n]!).hue,
-    );
+    const midway = (n: string) => {
+      const [light, dark] = [
+        model.cam("light", CODEMOS.light[n]!).hue,
+        model.cam("dark", CODEMOS.dark[n]!).hue,
+      ];
+      return (light + (((dark - light + 540) % 360) - 180) / 2 + 360) % 360;
+    };
+    const start = NAMES.map((n) => (n === "yellow" ? settings.yellowHue[mode] : midway(n)));
     return { keys: [...NAMES] as string[], start, anchor: NAMES.indexOf("yellow") };
   }
   const step = 360 / settings.hues;
