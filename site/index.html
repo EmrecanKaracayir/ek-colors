@@ -172,6 +172,20 @@
   .demo-numbers div { display: grid; }
   .demo-numbers dt { font-size: 0.75rem; color: var(--soft); }
   .demo-numbers dd { margin: 0; }
+  .demo-pair { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .demo-pair figure { margin: 0; display: grid; gap: 0.5rem; }
+  .demo-pair figcaption { display: grid; gap: 0.125rem; font-size: 0.875rem; }
+  .demo-swatch.empty { background: repeating-linear-gradient(45deg, var(--line) 0 6px, transparent 6px 12px); }
+  .demo-verdict { margin-top: 0.75rem; }
+  .demo-touch { display: flex; height: 4.5rem; border-radius: 0.75rem; overflow: hidden; }
+  .demo-touch span { flex: 1; background: var(--c); }
+  .demo-out.wide > * + * { margin-top: 0.875rem; }
+  .scale { position: relative; height: 0.5rem; border-radius: 999px; background: var(--line); margin-bottom: 1.75rem; }
+  .scale-fill { position: absolute; inset: 0 auto 0 0; border-radius: inherit; background: var(--fg); }
+  .scale-mark { position: absolute; top: -0.25rem; bottom: -0.25rem; width: 2px; background: var(--fair); }
+  .scale-mark span { position: absolute; top: 1.25rem; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 0.75rem; color: var(--soft); }
+  .chart .follower { opacity: 0.55; }
+  .chart .limiter .label { fill: var(--fair); font-weight: 600; }
   table.roles { min-width: 0; width: auto; }
   .chart { width: 100%; display: block; }
   .chart .grid { stroke: var(--line); }

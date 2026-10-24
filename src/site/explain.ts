@@ -68,7 +68,7 @@ function hues(ctx: Context) {
 /* >-----------------------------------------< Demos >------------------------------------------< */
 
 /**
- * The room demo: one colour, seen in a brighter or darker room.
+ * The room demo: the palette's colour, and the colour that would look the same, in another room.
  *
  * @param ctx  What the page shows.
  * @returns    HTML.
@@ -76,20 +76,22 @@ function hues(ctx: Context) {
 function room(ctx: Context): string {
   const first = hues(ctx)[0];
   if (!first) return "Solving…";
-  const lux = Number(value("demo-lux") || ctx.settings.rooms[ctx.mode].lux);
-  const surround = Number(value("demo-surround") || ctx.settings.rooms[ctx.mode].surround);
-  const here = { lux, surround };
-  const cam = model({ bases: ctx.settings.bases, rooms: { light: here, dark: here } }, "standard").cam(
-    ctx.mode,
-    first.color,
-  );
-  return `<span class="demo-swatch" style="--c:${first.color}"></span>
-    <dl class="demo-numbers">
-      <div><dt>Colourfulness M</dt><dd class="mono">${cam.m.toFixed(1)}</dd></div>
-      <div><dt>Chroma C</dt><dd class="mono">${cam.chroma.toFixed(1)}</dd></div>
-      <div><dt>Lightness J</dt><dd class="mono">${cam.j.toFixed(1)}</dd></div>
-    </dl>
-    <p class="soft">${ctx.label(first.key)} at ${String(lux)} lux. The colour on the screen doesn't change; how colourful it looks does.</p>`;
+  const solvedIn = ctx.settings.rooms[ctx.mode];
+  const here = {
+    lux: Number(value("demo-lux") || solvedIn.lux),
+    surround: Number(value("demo-surround") || solvedIn.surround),
+  };
+  const there = model({ bases: ctx.settings.bases, rooms: { light: here, dark: here } }, ctx.gamut);
+  const look = model(ctx.settings, ctx.gamut).cam(ctx.mode, first.color);
+  const seen = there.cam(ctx.mode, first.color);
+  const same = there.colorAt(ctx.mode, look.hue, look.m, look.j);
+  return `<div class="demo-pair">
+      <figure><span class="demo-swatch" style="--c:${first.color}"></span>
+        <figcaption><strong>The palette's ${ctx.label(first.key).toLowerCase()}</strong><span class="soft">Looks M ${seen.m.toFixed(1)} here, M ${look.m.toFixed(1)} in its own room</span></figcaption></figure>
+      <figure>${same ? `<span class="demo-swatch" style="--c:${same}"></span>` : `<span class="demo-swatch empty"></span>`}
+        <figcaption><strong>Looks the same here</strong><span class="soft">${same ? `M ${look.m.toFixed(1)}, as in its own room` : "The screen can't show it"}</span></figcaption></figure>
+    </div>
+    <p class="soft">${String(here.lux)} lux, ${["dark", "dim", "average"][here.surround] ?? ""} surround. The palette was solved for ${String(solvedIn.lux)} lux. In a brighter room the same screen colour looks stronger, so a colour that looks the same is a quieter one; in a darker room it's the other way round.</p>`;
 }
 
 /**
@@ -122,10 +124,24 @@ function tier(ctx: Context): string {
 }
 
 /**
- * The reach chart: how colourful each hue can be on a tier, on each gamut tier.
+ * A colour as a gamut tier's bar: quieter for standard, as is for wide, stronger for ultra.
+ *
+ * @param color  The hue's colour.
+ * @param gamut  The gamut tier.
+ * @returns      A CSS colour.
+ */
+function shade(color: string, gamut: Gamut): string {
+  if (gamut === "standard") return `color-mix(in oklch, ${color} 45%, var(--soft))`;
+  if (gamut === "ultra") return `oklch(from ${color} l calc(c * 1.6) h)`;
+  return color;
+}
+
+/**
+ * The reach chart: how colourful each hue can be on a tier, on each gamut tier, with the hue that
+ * sets the tier picked out.
  *
  * @param ctx  What the page shows.
- * @returns    SVG.
+ * @returns    SVG and its legend.
  */
 function reach(ctx: Context): string {
   const list = hues(ctx);
@@ -143,10 +159,13 @@ function reach(ctx: Context): string {
       }
     }),
   }));
+  const shown = GAMUTS.indexOf(ctx.gamut);
   const target = ctx.settings.colourfulness;
-  const ceiling = Math.min(target, ...rows.map((r) => r.reach[GAMUTS.indexOf(ctx.gamut)]!));
+  const least = rows.reduce((a, r) => (r.reach[shown]! < a.reach[shown]! ? r : a));
+  const limited = least.reach[shown]! < target;
+  const ceiling = limited ? least.reach[shown]! : target;
   const most = Math.ceil(Math.max(target, ...rows.flatMap((r) => r.reach)) / 20) * 20;
-  const [left, width, row] = [80, 520, 34];
+  const [left, width, row] = [96, 504, 34];
   const x = (m: number) => left + (Math.min(m, most) / most) * width;
   const height = rows.length * row + 40;
   const ticks = Array.from({ length: most / 20 + 1 }, (_, i) => i * 20).map(
@@ -155,21 +174,71 @@ function reach(ctx: Context): string {
   );
   const bars = rows.map((r, i) => {
     const y = i * row + 6;
-    return `<text x="0" y="${String(y + 15)}" class="axis label">${ctx.label(r.key)}</text>
+    const limit = limited && r === least;
+    return `<g class="${limit ? "limiter" : limited ? "follower" : ""}">
+      <text x="0" y="${String(y + 15)}" class="axis label">${ctx.label(r.key)}${limit ? " ▾" : ""}</text>
       ${r.reach
         .map(
           (m, g) =>
-            `<rect x="${String(left)}" y="${String(y + g * 8)}" width="${(x(m) - left).toFixed(1)}" height="6" rx="3" fill="${r.color}" opacity="${String([1, 0.6, 0.3][g])}"></rect>`,
+            `<rect x="${String(left)}" y="${String(y + g * 8)}" width="${(x(m) - left).toFixed(1)}" height="6" rx="3" fill="${r.color}" style="fill:${shade(r.color, GAMUTS[g]!)}"></rect>`,
         )
-        .join("")}`;
+        .join("")}</g>`;
   });
+  const key = (g: Gamut) =>
+    `<span><i class="bar-key" style="background:${shade(least.color, g)}"></i>${GAMUT_NAMES[g]}</span>`;
   return `<svg class="chart" viewBox="0 0 ${String(left + width + 20)} ${String(height)}" role="img" aria-label="How colourful each hue can be on Lc ${String(lc)}">
       ${ticks.join("")}${bars.join("")}
       <line x1="${String(x(target))}" x2="${String(x(target))}" y1="0" y2="${String(height - 24)}" class="target"></line>
       <line x1="${x(ceiling).toFixed(1)}" x2="${x(ceiling).toFixed(1)}" y1="0" y2="${String(height - 24)}" class="ceiling"></line>
     </svg>
-    <p class="legend-row soft"><span><i class="bar-key" style="opacity:1"></i>Standard</span><span><i class="bar-key" style="opacity:.6"></i>Wide</span><span><i class="bar-key" style="opacity:.3"></i>Ultra</span>
-      <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}: M ${ceiling.toFixed(1)}</span></p>`;
+    <p class="demo-verdict">${
+      limited
+        ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach M ${ceiling.toFixed(1)} on Lc ${String(lc)}, so every colour on this tier stops there.`
+        : `On ${GAMUT_NAMES[ctx.gamut]}, every hue reaches the target on Lc ${String(lc)}.`
+    }</p>
+    <p class="legend-row soft">${GAMUTS.map(key).join("")}
+      <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span></p>`;
+}
+
+/**
+ * The difference demo: how different two colours of the palette look, and what the difference is
+ * made of.
+ *
+ * @param ctx  What the page shows.
+ * @returns    HTML.
+ */
+function difference(ctx: Context): string {
+  const colours = (ctx.palette?.[ctx.mode].colours ?? []).filter((c) => c.key !== "brown");
+  if (colours.length < 2) return "Solving…";
+  const lc = Number(value("demo-dtier") || ctx.settings.identityTier);
+  const pick = (id: string, fallback: number) =>
+    colours.find((c) => c.key === value(id)) ?? colours[fallback]!;
+  const [a, b] = [pick("demo-a", 0), pick("demo-b", 1)];
+  const [ca, cb] = [a.tiers[lc]!.default.color, b.tiers[lc]!.default.color];
+  const m = model(ctx.settings, ctx.gamut);
+  const [x, y] = [m.cam(ctx.mode, ca), m.cam(ctx.mode, cb)];
+  const total = x.distance(y);
+  const lightness = Math.abs(x.jstar - y.jstar);
+  const colourfulness = Math.abs(Math.hypot(x.astar, x.bstar) - Math.hypot(y.astar, y.bstar));
+  const hue = Math.sqrt(Math.max(0, total ** 2 - lightness ** 2 - colourfulness ** 2));
+  const ring = ctx.palette?.[ctx.mode].ring[lc] ?? [];
+  const typical = ring.length ? ring.reduce((s, d) => s + d, 0) / ring.length : 0;
+  const scale = Math.max(30, Math.ceil(total / 10) * 10);
+  const at = (d: number) => `${((Math.min(d, scale) / scale) * 100).toFixed(1)}%`;
+  return `<div class="demo-touch"><span style="--c:${ca}"></span><span style="--c:${cb}"></span></div>
+    <p class="demo-sample"><span style="color:${ca}">${ctx.label(a.key)}</span> <span style="color:${cb}">${ctx.label(b.key)}</span></p>
+    <dl class="demo-numbers">
+      <div><dt>Difference</dt><dd class="mono">${total.toFixed(1)}</dd></div>
+      <div><dt>From lightness</dt><dd class="mono">${lightness.toFixed(1)}</dd></div>
+      <div><dt>From colourfulness</dt><dd class="mono">${colourfulness.toFixed(1)}</dd></div>
+      <div><dt>From hue</dt><dd class="mono">${hue.toFixed(1)}</dd></div>
+    </dl>
+    <div class="scale">
+      <span class="scale-fill" style="width:${at(total)}"></span>
+      <span class="scale-mark" style="left:${at(1.5)}"><span>Just visible</span></span>
+      ${typical ? `<span class="scale-mark" style="left:${at(typical)}"><span>Neighbours on this tier</span></span>` : ""}
+    </div>
+    <p class="soft">CAM16-UCS distance. Around 1 to 2 is the smallest difference most people see with two colours side by side. On a tier, every colour solves to sit about the same distance from its neighbours, which is why the circle below stays even.</p>`;
 }
 
 /**
@@ -191,7 +260,7 @@ function spacing(ctx: Context): string {
     .join("");
 }
 
-const DEMOS = { room, tier, reach } as const;
+const DEMOS = { room, tier, reach, difference } as const;
 
 /**
  * Redraws one demo after its controls change.
@@ -276,6 +345,15 @@ export function explain(ctx: Context): string {
       <h2>Evenly different</h2>
       <p>Two neighbouring colours should be as easy to tell apart as any other two. CAM16 has a uniform space (CAM16-UCS) where distance matches how different colours look. The solver nudges each hue, a few degrees at a time and never out of its name, until the distances around the circle are as even as they can be.</p>
       <p>Yellow is the one hue that never moves. It is set a little warmer than pure yellow (${String(s.yellowHue[ctx.mode])}° rather than 90°), so a darkened yellow doesn't turn olive. Every other hue is spaced from it.</p>
+      <div class="demo">
+        <div class="demo-controls">
+          <label for="demo-a">First colour <select id="demo-a" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 0 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>
+          <label for="demo-b">Second colour <select id="demo-b" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 1 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>
+          <label for="demo-dtier">Tier <select id="demo-dtier" data-demo="difference">${s.tiers.map((t) => `<option value="${String(t)}" ${t === s.identityTier ? "selected" : ""}>Lc ${String(t)}</option>`).join("")}</select></label>
+        </div>
+        <div id="demo-difference-out" class="demo-out wide">${difference(ctx)}</div>
+      </div>
+      <p>Around the circle on the tier that stands for each hue:</p>
       <div class="demo"><div class="demo-out wide">${spacing(ctx)}</div></div>
     </section>
 
