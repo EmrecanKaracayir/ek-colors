@@ -14,7 +14,7 @@ import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode,
 import { boost, type Color, type GamutPalette, home, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
-import { bindHomes, homesEditor, homesLayers, homesReadout, type HomesView } from "./homes";
+import { bindHomes, homesEditor, homesLayers, homesReadout, homesRows, type HomesView } from "./homes";
 import { technical } from "./technical";
 import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
@@ -858,6 +858,7 @@ function updateTune(): void {
     const view = homesView();
     layers.innerHTML = homesLayers(view);
     document.querySelector(".homes-readout")!.textContent = homesReadout(view);
+    document.querySelector(".homes-table tbody")!.innerHTML = homesRows(view);
   }
   for (const m of ["light", "dark"] as const) {
     const editor = document.querySelector(`[data-curve="${m}"]`);

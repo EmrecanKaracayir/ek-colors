@@ -7,6 +7,8 @@
 | others are spaced around it.                                                                     |
 \*------------------------------------------------------------------------------------------------*/
 
+import { composition } from "../palette/model";
+
 /** One color on the strip. */
 export interface HomeItem {
   readonly key: string;
@@ -36,16 +38,17 @@ export interface HomesView {
   readonly guides: readonly { readonly label: string; readonly hue: number; readonly unique: boolean }[];
 }
 
-/** Drawing space: hue across; homes on the upper line, landings on the lower. */
-const [WIDTH, HEIGHT, HOME_Y, LAND_Y] = [360, 44, 13, 31];
+/** Drawing space: hue across; homes on the upper row, landings on the lower. */
+const [WIDTH, HEIGHT, HOME_Y, LAND_Y] = [360, 110, 32, 80];
 
 const wrap = (hue: number) => ((hue % 360) + 360) % 360;
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
+const degrees = (hue: number) => `${hue.toFixed(1)}°`;
 
 /* >----------------------------------------< Drawing >-----------------------------------------< */
 
 /**
- * The parts that move: each color's home marker, where it lands, and a line between them.
+ * The parts that move: each color's home ring, where it lands, and a line between them.
  *
  * @param view  What to show.
  * @returns     SVG.
@@ -54,12 +57,33 @@ export function homesLayers(view: HomesView): string {
   return view.items
     .map((it) => {
       const link = `<line x1="${it.home.toFixed(1)}" y1="${String(HOME_Y)}" x2="${it.hue.toFixed(1)}" y2="${String(LAND_Y)}" class="home-link"></line>`;
-      const landing = `<circle cx="${it.hue.toFixed(1)}" cy="${String(LAND_Y)}" r="5" style="fill:${it.color}" class="mark"></circle>`;
+      const landing = `<circle cx="${it.hue.toFixed(1)}" cy="${String(LAND_Y)}" r="6.5" style="fill:${it.color}" class="mark"></circle>`;
       const marker = `<g data-home="${it.key}" class="home-marker" tabindex="0" role="slider" aria-label="${it.label}'s home: ${it.home.toFixed(0)}°" aria-valuenow="${it.home.toFixed(0)}">
-        <circle cx="${it.home.toFixed(1)}" cy="${String(HOME_Y)}" r="12" class="hit"></circle>
-        <circle cx="${it.home.toFixed(1)}" cy="${String(HOME_Y)}" r="5.5" style="stroke:${it.color}" class="home-ring"></circle>
+        <circle cx="${it.home.toFixed(1)}" cy="${String(HOME_Y)}" r="14" class="hit"></circle>
+        <circle cx="${it.home.toFixed(1)}" cy="${String(HOME_Y)}" r="7" style="stroke:${it.color}" class="home-ring"></circle>
       </g>`;
       return link + landing + marker;
+    })
+    .join("");
+}
+
+/**
+ * Each color's home and landing as numbers, in hue order.
+ *
+ * @param view  What to show.
+ * @returns     Table rows.
+ */
+export function homesRows(view: HomesView): string {
+  return view.items
+    .toSorted((a, b) => a.home - b.home)
+    .map((it) => {
+      const off = ((((it.hue - it.home) % 360) + 540) % 360) - 180;
+      return `<tr>
+        <th scope="row"><span class="dot" style="--c:${it.color}"></span> ${it.label}${it.anchor ? ' <span class="soft">anchor</span>' : ""}</th>
+        <td class="mono">${degrees(it.home)} <span class="soft">${composition(it.home)}</span></td>
+        <td class="mono">${degrees(it.hue)} <span class="soft">${composition(it.hue)}</span></td>
+        <td class="mono">${Math.abs(off) < 0.05 ? "on it" : `${off > 0 ? "+" : "−"}${Math.abs(off).toFixed(1)}°`}</td>
+      </tr>`;
     })
     .join("");
 }
@@ -76,27 +100,35 @@ export function homesReadout(view: HomesView): string {
 }
 
 /**
- * The editor.
+ * The editor: the strip, the readout, and the numbers.
  *
  * @param view  What to show.
  * @returns     HTML.
  */
 export function homesEditor(view: HomesView): string {
   const stops = view.band.map((b) => `<stop offset="${(b.hue / 360).toFixed(4)}" stop-color="${b.color}"></stop>`).join("");
+  const scale = Array.from({ length: 13 }, (_, k) => k * 30).map(
+    (h) => `<line x1="${String(h)}" x2="${String(h)}" y1="0" y2="${String(HEIGHT)}" class="grid"></line>
+      <text x="${String(h)}" y="${String(HEIGHT + 13)}" class="axis" text-anchor="middle">${String(h)}°</text>`,
+  );
   const references = view.guides.map(
     (r) => `<line x1="${r.hue.toFixed(1)}" x2="${r.hue.toFixed(1)}" y1="0" y2="${String(HEIGHT)}" class="reference${r.unique ? "" : " half"}"></line>
       <text x="${r.hue.toFixed(1)}" y="-5" class="axis" text-anchor="middle">${r.label}</text>`,
   );
+  const rows = [
+    [HOME_Y, "Home"],
+    [LAND_Y, "Lands"],
+  ].map(([y, text]) => `<text x="-8" y="${String(Number(y) + 3)}" class="axis row-label" text-anchor="end">${String(text)}</text>`);
   return `<div class="homes-editor">
-    <svg viewBox="-8 -16 376 ${String(HEIGHT + 28)}" role="group" aria-label="Where each color belongs">
+    <svg viewBox="-40 -18 410 ${String(HEIGHT + 34)}" role="group" aria-label="Where each color belongs and where it lands">
       <defs><linearGradient id="homes-band">${stops}</linearGradient></defs>
       <rect x="0" y="0" width="${String(WIDTH)}" height="${String(HEIGHT)}" rx="6" fill="url(#homes-band)" class="curve-band"></rect>
-      ${references.join("")}
-      ${[0, 90, 180, 270, 360].map((h) => `<text x="${String(h)}" y="${String(HEIGHT + 12)}" class="axis" text-anchor="middle">${String(h)}°</text>`).join("")}
+      ${scale.join("")}${references.join("")}${rows.join("")}
       <g class="homes-layers">${homesLayers(view)}</g>
     </svg>
     <p class="homes-readout soft">${homesReadout(view)}</p>
-    <p class="curve-caption soft">Hollow rings are where colors belong, dots are where they land. Drag a ring to move a color's home; double-click it to put it back where its name puts it.</p>
+    <p class="curve-caption soft">Rings are where colors belong, dots are where they land; a line joins each pair. Drag a ring sideways to move a color's home, or double-click it to put it back where the reference system puts it.</p>
+    <div class="scroll"><table class="homes-table"><thead><tr><th>Color</th><th>Home</th><th>Lands</th><th>Off by</th></tr></thead><tbody>${homesRows(view)}</tbody></table></div>
   </div>`;
 }
 
@@ -116,6 +148,8 @@ export function bindHomes(get: () => HomesView, set: (key: string, hue: number) 
   const redraw = () => {
     const layers = document.querySelector(".homes-layers");
     if (layers) layers.innerHTML = homesLayers(get());
+    const rows = document.querySelector(".homes-table tbody");
+    if (rows) rows.innerHTML = homesRows(get());
   };
   const hueAt = (svg: SVGSVGElement, event: PointerEvent) =>
     wrap(Math.round(clamp(new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.getScreenCTM()!.inverse()).x, 0, WIDTH)));

@@ -181,13 +181,17 @@
   .homes-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
   .homes-editor .reference { stroke: var(--fg); stroke-opacity: 0.35; }
   .homes-editor .reference.half { stroke-dasharray: 3 4; stroke-opacity: 0.25; }
-  .homes-editor .axis { fill: var(--soft); font: 500 8px var(--sans); }
+  .homes-editor .axis { fill: var(--soft); font: 500 9px var(--sans); }
+  .homes-editor .row-label { fill: var(--fg); font-weight: 600; }
+  .homes-editor .grid { stroke: var(--line); }
+  table.homes-table { min-width: 0; width: auto; }
+  .homes-table td, .homes-table th { padding-right: 1.25rem; }
   .homes-editor .hit { fill: transparent; }
   .homes-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
   .home-marker { cursor: ew-resize; outline: none; }
   .home-ring { fill: var(--bg); stroke-width: 2.5; }
   .home-marker:focus-visible .home-ring { stroke: var(--focus) !important; }
-  .home-link { stroke: var(--soft); stroke-opacity: 0.6; stroke-width: 1; }
+  .home-link { stroke: var(--fg); stroke-opacity: 0.5; stroke-width: 1.25; }
   .homes-readout { margin: 0; font-size: 0.8125rem; }
   .reference-note { font-size: 0.875rem; }
   .reference-note .source { display: block; margin-top: 0.25rem; font-size: 0.8125rem; font-style: italic; }
@@ -347,6 +351,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=19c4ffb091"></script>
+<script type="module" src="app.js?v=6634a0abf1"></script>
 </body>
 </html>
