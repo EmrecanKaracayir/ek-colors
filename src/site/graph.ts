@@ -25,6 +25,31 @@ export const [WIDTH, PAD, LEFT, RIGHT] = [360, 12, 44, 14];
 /** How far in from the graph's left edge the band starts, for lining text up with it. */
 export const INSET = `${((LEFT / (WIDTH + 2 * PAD + LEFT + RIGHT)) * 100).toFixed(3)}%`;
 
+/**
+ * How visible a color difference is (CAM16-UCS ΔE): about 2 is the smallest difference people see
+ * with two colors side by side.
+ *
+ * @param difference  ΔE.
+ * @returns           Words.
+ */
+export function visibility(difference: number): string {
+  if (difference < 2) return "below notice";
+  if (difference < 3) return "just noticeable";
+  if (difference < 5) return "noticeable";
+  return "clearly visible";
+}
+
+/**
+ * A difference with its sign.
+ *
+ * @param x  The difference.
+ * @returns  E.g. "+0.6", "−1.0", "0.0".
+ */
+export function signed(x: number): string {
+  if (Math.abs(x) < 0.05) return "0.0";
+  return `${x < 0 ? "−" : "+"}${Math.abs(x).toFixed(1)}`;
+}
+
 /* >----------------------------------------< Drawing >-----------------------------------------< */
 
 /** Room above the data, and below it for the hue scale and the guides' labels and degrees. */

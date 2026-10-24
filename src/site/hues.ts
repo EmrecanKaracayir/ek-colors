@@ -8,7 +8,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { composition } from "../palette/model";
-import { band, INSET, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, stops, viewBox } from "./graph";
+import { band, INSET, signed, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on both rows. */
 export interface HueRow {
@@ -31,8 +31,16 @@ export interface HuesView {
   readonly guide: string;
   readonly guides: readonly Guide[];
 
-  /** Neighbor differences of the current lineup on the tier that stands for each hue. */
-  readonly ring: readonly number[];
+  /**
+   * What placing costs in evenness, on the tier that stands for each hue and without the curve:
+   * the uniform lineup's gap between neighbors, each color's gaps to its neighbors as differences
+   * from it, and the gaps themselves. Null while it solves.
+   */
+  readonly cost: {
+    readonly uniform: number;
+    readonly gaps: Readonly<Record<string, readonly [number, number]>>;
+    readonly ring: readonly number[];
+  } | null;
 }
 
 type Row = "uniform" | "current";
@@ -88,7 +96,7 @@ export function huesPanel(view: HuesView): string {
   const r = view.rows.find((row) => row.key === selected.key) ?? view.rows.find((row) => row.anchor);
   if (!r) return `<p class="soft">Solving…</p>`;
   selected = { key: r.key, row: r.key === selected.key ? selected.row : "current" };
-  const moved = r.uniform ? `${(((r.current.hue - r.uniform.hue + 540) % 360) - 180).toFixed(1)}°` : "…";
+  const moved = r.uniform ? `${signed((((r.current.hue - r.uniform.hue + 540) % 360) - 180))}°` : "…";
   if (selected.row === "uniform") {
     return `<p class="hue-name"><span class="dot" style="--c:${(r.uniform ?? r.current).color}"></span> ${r.label} <span class="soft">uniform</span></p>
       <dl class="hue-facts">
@@ -98,6 +106,7 @@ export function huesPanel(view: HuesView): string {
       </dl>
       <p class="soft hue-note">Evenly different, with nothing placed. It follows the anchor and can't be moved.</p>`;
   }
+  const gaps = view.cost?.gaps[r.key];
   const state = r.anchor ? "the anchor" : r.placed ? "placed" : "spaced";
   return `<p class="hue-name"><span class="dot" style="--c:${r.current.color}"></span> ${r.label} <span class="soft">${state}</span></p>
     <label class="field" for="hue-at"><span>Hue</span><input id="hue-at" type="number" data-hue-at min="0" max="359" step="1" value="${r.current.hue.toFixed(0)}"></label>
@@ -106,18 +115,21 @@ export function huesPanel(view: HuesView): string {
       <div><dt>Name</dt><dd class="mono">${composition(r.current.hue)}</dd></div>
       <div><dt>Uniform</dt><dd class="mono">${r.uniform ? degrees(r.uniform.hue) : "…"}</dd></div>
       <div><dt>Moved</dt><dd class="mono">${moved}</dd></div>
+      <div><dt>Gaps</dt><dd class="mono" title="Its gaps to the neighbors before and after it, against the uniform gap (ΔE)">${gaps ? `${signed(gaps[0])} / ${signed(gaps[1])}` : "…"}</dd></div>
     </dl>`;
 }
 
 /**
- * The neighbor differences under the graph.
+ * What placing costs in evenness, under the graph.
  *
  * @param view  What to show.
  * @returns     Text.
  */
 export function huesReadout(view: HuesView): string {
-  if (!view.ring.length) return "Solving…";
-  return `Current lineup: neighbor differences ${Math.min(...view.ring).toFixed(1)} to ${Math.max(...view.ring).toFixed(1)}.`;
+  const cost = view.cost;
+  if (!cost) return "Solving…";
+  const worst = Math.max(...cost.ring.map((d) => Math.abs(d - cost.uniform)));
+  return `Spacing: neighbor gaps ${Math.min(...cost.ring).toFixed(1)} to ${Math.max(...cost.ring).toFixed(1)} ΔE (uniform ${cost.uniform.toFixed(1)}). The worst gap is off by ${worst.toFixed(1)} ΔE: ${visibility(worst)}.`;
 }
 
 /**

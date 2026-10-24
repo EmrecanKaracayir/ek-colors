@@ -10,7 +10,7 @@
 
 import type { CurvePoint, Mode } from "../palette/settings";
 import { boost } from "../palette/solve";
-import { band, INSET, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
+import { band, INSET, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -22,6 +22,12 @@ export interface CurveView {
 
   /** Colors around the circle, painted behind the curve. */
   readonly band: readonly { readonly hue: number; readonly color: string }[];
+
+  /**
+   * What the curve costs: how far each color moved from equal colorfulness on the tier that stands
+   * for each hue, in colorfulness and as a color difference. Null while it solves.
+   */
+  readonly cost: readonly { readonly label: string; readonly added: number; readonly difference: number }[] | null;
 
   /** The chosen reference system and its guides. */
   readonly guide: string;
@@ -109,6 +115,24 @@ function valuesPanel(view: CurveView): string {
 }
 
 /**
+ * What the curve costs, under the graph.
+ *
+ * @param view  What to show.
+ * @returns     Text.
+ */
+export function curveReadout(view: CurveView): string {
+  if (!view.cost) return "Solving…";
+  const moved = view.cost.filter((c) => c.difference >= 0.05).toSorted((a, b) => b.difference - a.difference);
+  if (!moved.length) return "Colorfulness: every color is equally colorful, as the model says.";
+  const most = moved[0]!;
+  // A color the curve doesn't touch can still move: the others re-space around the ones it does.
+  const each = moved
+    .map((c) => `${c.label} ${c.added ? `${c.added > 0 ? "+" : "−"}${String(Math.abs(c.added))} M` : "re-spaced"} → ${c.difference.toFixed(1)}`)
+    .join(", ");
+  return `Colorfulness: up to ${most.difference.toFixed(1)} ΔE from equal (${most.label}): ${visibility(most.difference)}. ${each}.`;
+}
+
+/**
  * The colors painted behind the curve, as gradient stops.
  *
  * @param view  What to show.
@@ -144,6 +168,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
     <p class="graph-caption soft">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
+    <p class="graph-caption soft curve-readout">${curveReadout(view)}</p>
     <p class="graph-caption soft guide-source">${guideSource(view.guide)}</p>
   </div>`;
 }

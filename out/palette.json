@@ -41,9 +41,7 @@
     },
     "anchor": "ncs",
     "placed": {},
-    "guides": [
-      "cam16"
-    ]
+    "guide": "cam16"
   },
   "palette": {
     "standard": {

@@ -12,7 +12,7 @@ import { apca, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
 import { anchorHue, guides, SYSTEMS } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
 import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
-import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
+import { bandStops, bindCurves, curveEditor, curveLayers, curveReadout, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
 import { bindGuides } from "./graph";
 import { bindHues, huesEditor, huesLayers, huesPanel, huesReadout, type HuesView } from "./hues";
@@ -266,6 +266,60 @@ const bands = new Map<string, CurveView["band"]>();
 const models = new Map<string, Model>();
 
 /**
+ * The color model of the settings on screen, made once per bases, rooms and gamut tier.
+ *
+ * @returns  The model.
+ */
+function model(): Model {
+  const s = state.settings;
+  const key = JSON.stringify([s.bases, s.rooms, state.gamut]);
+  let made = models.get(key);
+  if (!made) models.set(key, (made = makeModel(s, state.gamut)));
+  return made;
+}
+
+/**
+ * What placing costs in evenness, on the identity tier and without the curve: the uniform
+ * lineup's mean gap between neighbors, and each color's gaps as differences from it.
+ *
+ * @param mode  The mode.
+ * @returns     The cost, or null while it solves.
+ */
+function spacingCost(mode: Mode): HuesView["cost"] {
+  const tier = state.settings.identityTier[mode];
+  const [hued, even] = [uncurved()?.[mode], plain()?.[mode]];
+  const ring = hued?.ring[tier];
+  const evenRing = even?.ring[tier];
+  if (!hued || !ring?.length || !evenRing?.length) return null;
+  const uniform = evenRing.reduce((a, b) => a + b, 0) / evenRing.length;
+  const n = ring.length;
+  const gaps = Object.fromEntries(
+    hued.colors.slice(0, n).map((c, i) => [c.key, [ring[(i - 1 + n) % n]! - uniform, ring[i]! - uniform] as const]),
+  );
+  return { uniform, gaps, ring };
+}
+
+/**
+ * What the curve costs: each color with and without it on the identity tier, as colorfulness
+ * added and as a color difference.
+ *
+ * @param mode  The mode.
+ * @returns     The cost, or null while it solves.
+ */
+function colorfulnessCost(mode: Mode): CurveView["cost"] {
+  const tier = state.settings.identityTier[mode];
+  const [before, after] = [uncurved()?.[mode], current()?.[mode]];
+  if (!before || !after) return null;
+  return after.colors
+    .filter((c) => c.key !== "brown")
+    .flatMap((c) => {
+      const [a, b] = [c.tiers[tier]?.default, before.colors.find((o) => o.key === c.key)?.tiers[tier]?.default];
+      if (!a || !b) return [];
+      return [{ label: label(c.key), added: Math.round(a.colorfulness - b.colorfulness), difference: model().distance(mode, a.color, b.color) }];
+    });
+}
+
+/**
  * One mode's curve editor contents: the curve, the palette's hues on it, and the colors around the
  * circle at the identity tier's colorfulness.
  *
@@ -280,12 +334,9 @@ function curveView(mode: Mode): CurveView {
   const key = JSON.stringify([s.bases, s.rooms, state.gamut, mode, tier, target]);
   let band = bands.get(key);
   if (!band) {
-    const mk = JSON.stringify([s.bases, s.rooms, state.gamut]);
-    let model = models.get(mk);
-    if (!model) models.set(mk, (model = makeModel(s, state.gamut)));
     band = Array.from({ length: 37 }, (_, i) => i * 10).flatMap((hue) => {
       try {
-        return [{ hue, color: strongest(model, s.bases[mode], mode, hue % 360, target, tier) }];
+        return [{ hue, color: strongest(model(), s.bases[mode], mode, hue % 360, target, tier) }];
       } catch {
         return [];
       }
@@ -295,7 +346,7 @@ function curveView(mode: Mode): CurveView {
   const dots = (palette?.colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
-  return { mode, points: s.curve[mode], dots, band, guide: s.guide, guides: guides(s) };
+  return { mode, points: s.curve[mode], dots, band, cost: colorfulnessCost(mode), guide: s.guide, guides: guides(s) };
 }
 
 /**
@@ -334,7 +385,7 @@ function huesView(): HuesView {
         anchor: c.key === anchored(),
       };
     });
-  return { rows, band: curveView(mode).band, guide: s.guide, guides: guides(s), ring: palette?.ring[tier] ?? [] };
+  return { rows, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode) };
 }
 
 /**
@@ -959,6 +1010,7 @@ function updateTune(): void {
     const view = curveView(m);
     editor.querySelector(".curve-layers")!.innerHTML = curveLayers(view);
     editor.querySelector("linearGradient")!.innerHTML = bandStops(view);
+    editor.querySelector(".curve-readout")!.textContent = curveReadout(view);
   }
 }
 
