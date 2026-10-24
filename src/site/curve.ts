@@ -30,8 +30,6 @@ type Field = (path: string, title: string, range: readonly [number, number, numb
 const LIMIT = 20;
 const MIN_WIDTH = 10;
 
-/** At most this many points per mode. */
-const MAX_POINTS = 6;
 
 /** Drawing space: hue across, amount up, zero in the middle. */
 const [WIDTH, HEIGHT] = [360, 120];
@@ -147,7 +145,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       ${hues.join("")}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
-    <p class="curve-caption soft">Double-click the graph to add a point (up to ${String(MAX_POINTS)}); double-click a point to remove it. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
+    <p class="curve-caption soft">Double-click the graph to add a point; double-click a point to remove it. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
   </div>`;
 }
 
@@ -233,7 +231,8 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     const node = (event.target as Element).closest<SVGElement>('[data-drag="point"]');
     if (node) return remove(mode, Number(node.dataset.index));
     const points = [...get(mode).points];
-    if ((event.target as Element).closest("[data-drag]") || points.length >= MAX_POINTS) return;
+    // No more points than hues: past that, a point has no color of its own to adjust.
+    if ((event.target as Element).closest("[data-drag]") || points.length >= get(mode).dots.length) return;
     const { hue, amount } = point(svg, event);
     points.push({ amount: amount || 4, center: hue, width: 60 });
     selected[mode] = points.length - 1;
