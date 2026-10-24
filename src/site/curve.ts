@@ -190,7 +190,10 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     const points = [...get(mode).points];
     const i = selected[mode];
     if (!points[i]) return;
-    points[i] = update(points[i]);
+    const next = update(points[i]);
+    // A press without movement changes nothing, so the point isn't redrawn under the pointer.
+    if (next.amount === points[i].amount && next.center === points[i].center && next.width === points[i].width) return;
+    points[i] = next;
     apply(mode, points);
   };
   const remove = (mode: Mode, index: number) => {
@@ -201,11 +204,32 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   };
   const editorOf = (target: EventTarget | null) => (target as Element | null)?.closest<HTMLElement>("[data-curve]") ?? null;
 
+  // Double-clicks are told apart here, not by the browser: the first click redraws the point, so the
+  // second lands on a new element and the browser wouldn't see a double-click on it.
+  let lastPress = { time: 0, on: "" };
+
   document.addEventListener("pointerdown", (event) => {
     const svg = (event.target as Element).closest<SVGSVGElement>("[data-curve] svg");
+    if (!svg) return;
     const part = (event.target as Element).closest<SVGElement>("[data-drag]");
-    if (!svg || !part) return;
     const mode = editorOf(svg)!.dataset.curve as Mode;
+    const on = part?.dataset.drag === "point" ? `point ${part.dataset.index!}` : part ? "edge" : "graph";
+    const twice = event.timeStamp - lastPress.time < 400 && on === lastPress.on;
+    lastPress = twice ? { time: 0, on: "" } : { time: event.timeStamp, on };
+    if (twice && part?.dataset.drag === "point") {
+      drag = null;
+      return remove(mode, Number(part.dataset.index));
+    }
+    if (twice && !part) {
+      const points = [...get(mode).points];
+      // No more points than hues: past that, a point has no color of its own to adjust.
+      if (points.length >= get(mode).dots.length) return;
+      const { hue, amount } = point(svg, event);
+      points.push({ amount: amount || 4, center: hue, width: 60 });
+      selected[mode] = points.length - 1;
+      return apply(mode, points, true);
+    }
+    if (!part) return;
     if (part.dataset.drag === "point" && Number(part.dataset.index) !== selected[mode]) {
       selected[mode] = Number(part.dataset.index);
       apply(mode, [...get(mode).points], true);
@@ -222,22 +246,6 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   });
   document.addEventListener("pointerup", () => (drag = null));
   document.addEventListener("pointercancel", () => (drag = null));
-
-  document.addEventListener("dblclick", (event) => {
-    const editor = editorOf(event.target);
-    const svg = (event.target as Element).closest<SVGSVGElement>("svg");
-    if (!editor || !svg) return;
-    const mode = editor.dataset.curve as Mode;
-    const node = (event.target as Element).closest<SVGElement>('[data-drag="point"]');
-    if (node) return remove(mode, Number(node.dataset.index));
-    const points = [...get(mode).points];
-    // No more points than hues: past that, a point has no color of its own to adjust.
-    if ((event.target as Element).closest("[data-drag]") || points.length >= get(mode).dots.length) return;
-    const { hue, amount } = point(svg, event);
-    points.push({ amount: amount || 4, center: hue, width: 60 });
-    selected[mode] = points.length - 1;
-    apply(mode, points, true);
-  });
 
   document.addEventListener(
     "wheel",
