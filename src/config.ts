@@ -31,6 +31,9 @@ export type Tier = (typeof TIERS)[number];
 /** The tier whose colour stands for the hue: it sets every tier's hues. */
 export const IDENTITY_TIER: Tier = 45;
 
+/** The identity tier must also reach this WCAG 2 contrast, so the colour itself passes both. */
+export const IDENTITY_WCAG = 4.5;
+
 /* >-----------------------------------------< Chroma >-----------------------------------------< */
 
 export const NAMES = [

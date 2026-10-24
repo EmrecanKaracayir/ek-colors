@@ -14,6 +14,7 @@ import {
   CHROMA_OVERRIDES,
   HUE_WINDOW,
   IDENTITY_TIER,
+  IDENTITY_WCAG,
   type Mode,
   MODES,
   MUTED,
@@ -31,9 +32,9 @@ import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
 /**
  * The colour at a hue and chroma that sits exactly on a tier.
  *
- * Its CAM16 lightness is searched until APCA against the base just reaches the tier: the lowest
- * that does in dark mode, the highest in light mode, so it is never below the tier and only as far
- * above as hex rounding forces.
+ * Its CAM16 lightness is searched until APCA against the base just reaches the tier (and, on the
+ * identity tier, WCAG 2 reaches IDENTITY_WCAG): the lowest that does in dark mode, the highest in
+ * light mode, so it is never below the target and only as far above as hex rounding forces.
  *
  * @param mode    The mode.
  * @param hue     CAM16 hue.
@@ -44,16 +45,18 @@ import { apca, cam, colorAt, composition, distance, wcag } from "./model.js";
 function place(mode: Mode, hue: number, chroma: number, tier: Tier): string | null {
   const base = BASES[mode];
   const dark = mode === "dark";
+  const wcagMin = tier === IDENTITY_TIER ? IDENTITY_WCAG : 1;
+  const meets = (hex: string) => apca(hex, base) >= tier && wcag(hex, base) >= wcagMin;
   const ok = (j: number) => {
     const hex = colorAt(mode, hue, chroma, j);
-    return hex !== null && apca(hex, base) >= tier;
+    return hex !== null && meets(hex);
   };
   let lo = 0;
   let hi = 100;
   for (let i = 0; i < 34; i++) {
     const m = (lo + hi) / 2;
     const hex = colorAt(mode, hue, chroma, m);
-    const passes = hex !== null && apca(hex, base) >= tier;
+    const passes = hex !== null && meets(hex);
     // Out of gamut counts as "too far" from the base, so the search moves back towards it.
     if (dark) passes || hex === null ? (hi = m) : (lo = m);
     else passes || hex === null ? (lo = m) : (hi = m);
