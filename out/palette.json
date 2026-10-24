@@ -28,10 +28,6 @@
         "width": 90
       }
     },
-    "offsets": {
-      "light": {},
-      "dark": {}
-    },
     "yellowHue": {
       "light": 100,
       "dark": 100

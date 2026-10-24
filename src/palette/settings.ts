@@ -2,7 +2,7 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | Everything a palette is solved from, with EK Colors' defaults: bases, the two viewing rooms, the |
-| colorfulness target and per-color exceptions, the yellow anchor per mode, how many hues, the     |
+| colorfulness target and its curve over hue, the yellow anchor per mode, how many hues, the       |
 | APCA tiers and the muted share.                                                                  |
 \*------------------------------------------------------------------------------------------------*/
 
@@ -28,7 +28,7 @@ export interface Room {
 
 /** Colorfulness added around a hue, for colors that look weaker than the model says. */
 export interface Curve {
-  /** Colorfulness added at the center. */
+  /** Colorfulness added at the center; below zero takes some away. */
   readonly amount: number;
 
   /** CAM16 hue where the most is added. */
@@ -56,9 +56,6 @@ export interface Settings {
    * at the width's edge on either side.
    */
   readonly curve: Readonly<Record<Mode, Curve>>;
-
-  /** Per mode, a color's change to the colorfulness target (e.g. red: +8). */
-  readonly offsets: Readonly<Record<Mode, Readonly<Record<string, number>>>>;
 
   /** Yellow's CAM16 hue, the anchor the others are spaced from. */
   readonly yellowHue: Readonly<Record<Mode, number>>;
@@ -95,7 +92,6 @@ export const DEFAULTS: Settings = {
   colorfulness: 40,
   equalTiers: true,
   curve: { light: { amount: 0, center: 0, width: 90 }, dark: { amount: 0, center: 0, width: 90 } },
-  offsets: { light: {}, dark: {} },
   yellowHue: { light: 100, dark: 100 },
   hues: 8,
   tiers: [15, 30, 45, 60, 75, 90],

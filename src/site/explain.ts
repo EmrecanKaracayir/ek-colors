@@ -420,7 +420,7 @@ export function explain(ctx: Context): string {
         <div><dt>CAM16</dt><dd>Google's <a href="https://github.com/material-foundation/material-color-utilities">material-color-utilities</a>: viewing conditions, colorfulness, and distance in CAM16-UCS. Material Design builds its colors on the same model.</dd></div>
         <div><dt>Contrast and screens</dt><dd><a href="https://colorjs.io">Color.js</a>: APCA, WCAG 2, color spaces for the three kinds of screen, and checking which colors a screen can show.</dd></div>
         <div><dt>The solver</dt><dd>TypeScript: settings, model, solve and formats. It runs in the browser in a background worker, and on the command line to write JSON, CSV and Markdown.</dd></div>
-        <div><dt>Settings</dt><dd>Everything above is a setting: bases, rooms, target, exceptions, yellow, number of hues, tiers, muted share. Change one in Settings and watch the palette follow.</dd></div>
+        <div><dt>Settings</dt><dd>Everything above is a setting: bases, rooms, target, curve, yellow, number of hues, tiers, muted share. Change one in Settings and watch the palette follow.</dd></div>
       </dl>
     </section>`;
 }

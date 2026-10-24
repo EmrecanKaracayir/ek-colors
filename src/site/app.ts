@@ -8,9 +8,10 @@
 
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
-import { apca, makeModel, REFERENCES, wcag, wcagLevel } from "../palette/model";
+import { apca, makeModel, type Model, REFERENCES, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, CODEMOS, CODEMOS_MUTED } from "../palette/settings";
-import { boost, type Color, type GamutPalette, type Palette, type Swatch } from "../palette/solve";
+import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
 import type { Request, Response } from "./worker";
 
@@ -52,8 +53,11 @@ const state = {
   gamut: SCREEN,
   palettes: {} as Partial<Record<Gamut, GamutPalette>>,
 
-  /** The same settings without exceptions, for comparing in Settings. */
-  baselines: {} as Partial<Record<Gamut, GamutPalette>>,
+  /** The gamut tiers solved from the current settings; the others still show their last solve. */
+  fresh: new Set<Gamut>(),
+
+  /** The same settings without the curve, per settings and gamut tier, for comparing in Settings. */
+  baselines: new Map<string, GamutPalette>(),
   solving: false,
   took: 0,
   error: null as string | null,
@@ -68,7 +72,9 @@ function load(): Settings {
   try {
     const saved = localStorage.getItem(STORE);
     if (saved) {
-      const settings = { ...CONFIG, ...(JSON.parse(saved) as Partial<Settings>) };
+      // Settings saved before exceptions became the curve still hold them; they're left out.
+      const { offsets: _, ...stored } = JSON.parse(saved) as Partial<Settings> & { offsets?: unknown };
+      const settings = { ...CONFIG, ...stored };
       // Settings saved before the identity tier was per mode hold one number.
       const identity = settings.identityTier as Settings["identityTier"] | number;
       return typeof identity === "number" ? { ...settings, identityTier: { light: identity, dark: identity } } : settings;
@@ -108,10 +114,11 @@ worker.addEventListener("message", (event: MessageEvent<Response>) => {
     return;
   }
   state.palettes[data.gamut] = data.palette;
+  state.fresh.add(data.gamut);
   const shown = data.gamut === state.gamut;
   if (shown) [state.solving, state.took, state.error] = [false, data.took, null];
   // The other gamut tiers solve after the one on screen, one at a time, so a newer change can start sooner.
-  const next = GAMUTS.find((g) => !state.palettes[g]);
+  const next = GAMUTS.find((g) => !state.fresh.has(g));
   if (next) post(next);
   if (shown || state.view === "export") {
     if (state.view === "tune") updateTune();
@@ -140,50 +147,110 @@ function solve(wait = 0): void {
   status();
   timer = window.setTimeout(() => {
     latest++;
-    state.palettes = {};
-    state.baselines = {};
+    state.fresh = new Set();
     post(state.gamut);
-    compareExceptions();
+    compareCurve();
   }, wait);
 }
 
-/* >---------------------------------------< Exceptions >---------------------------------------< */
+/* >-----------------------------------------< Curve >------------------------------------------< */
 
-// A second worker solves the settings without exceptions, so both can be shown side by side.
+// A second worker solves the settings without the curve, so both can be shown side by side.
 const baseline = new Worker(WORKER, { type: "module" });
-let asked = "";
 
 baseline.addEventListener("message", (event: MessageEvent<Response>) => {
   const data = event.data;
-  if (data.id !== latest || "error" in data) return;
-  state.baselines[data.gamut] = data.palette;
+  if ("error" in data) return;
+  state.baselines.set(`${String(data.id)}`, data.palette);
   if (state.view === "tune") updateTune();
 });
 
+let asks = 0;
+const asked = new Map<string, number>();
+
 /**
- * Whether any color has an exception.
+ * The settings with the curve flattened.
  *
- * @returns  True when an exception isn't zero.
+ * @returns  Settings.
  */
-function hasExceptions(): boolean {
-  const { offsets, curve } = state.settings;
-  return (
-    Object.values(offsets).some((o) => Object.values(o).some((v) => v !== 0)) ||
-    Object.values(curve).some((c) => c.amount !== 0)
-  );
+function flat(): Settings {
+  const off = (mode: Mode) => ({ ...state.settings.curve[mode], amount: 0 });
+  return { ...state.settings, curve: { light: off("light"), dark: off("dark") } };
 }
 
 /**
- * Asks for the gamut tier on screen without exceptions, once per change.
+ * Whether the curve changes anything.
+ *
+ * @returns  True when either mode's curve has an amount.
  */
-function compareExceptions(): void {
-  const key = `${String(latest)}:${state.gamut}`;
-  if (!hasExceptions() || state.baselines[state.gamut] || asked === key) return;
-  asked = key;
-  const off = (mode: Mode) => ({ ...state.settings.curve[mode], amount: 0 });
-  const settings = { ...state.settings, offsets: { light: {}, dark: {} }, curve: { light: off("light"), dark: off("dark") } };
-  baseline.postMessage({ id: latest, settings, gamut: state.gamut } satisfies Request);
+function curved(): boolean {
+  return Object.values(state.settings.curve).some((c) => c.amount !== 0);
 }
+
+/**
+ * The palette on screen without the curve, if it's been solved. It only depends on settings other
+ * than the curve, so moving the curve never has to wait for it.
+ *
+ * @returns  The palette, or null while it solves.
+ */
+function uncurved(): GamutPalette | null {
+  if (!curved()) return current();
+  const id = asked.get(`${JSON.stringify(flat())}|${state.gamut}`);
+  return id === undefined ? null : (state.baselines.get(String(id)) ?? null);
+}
+
+/**
+ * Asks for the palette on screen without the curve, once per settings and gamut tier.
+ */
+function compareCurve(): void {
+  const key = `${JSON.stringify(flat())}|${state.gamut}`;
+  if (!curved() || asked.has(key)) return;
+  asks++;
+  asked.set(key, asks);
+  baseline.postMessage({ id: asks, settings: flat(), gamut: state.gamut } satisfies Request);
+}
+
+const bands = new Map<string, CurveView["band"]>();
+const models = new Map<string, Model>();
+
+/**
+ * One mode's curve editor contents: the curve, the palette's hues on it, and the colors around the
+ * circle at the identity tier's colorfulness.
+ *
+ * @param mode  The mode.
+ * @returns     The view.
+ */
+function curveView(mode: Mode): CurveView {
+  const s = state.settings;
+  const tier = s.identityTier[mode];
+  const palette = current()?.[mode];
+  const target = palette?.targets[tier] ?? s.colorfulness;
+  const key = JSON.stringify([s.bases, s.rooms, state.gamut, mode, tier, target]);
+  let band = bands.get(key);
+  if (!band) {
+    const mk = JSON.stringify([s.bases, s.rooms, state.gamut]);
+    let model = models.get(mk);
+    if (!model) models.set(mk, (model = makeModel(s, state.gamut)));
+    band = Array.from({ length: 37 }, (_, i) => i * 10).flatMap((hue) => {
+      try {
+        return [{ hue, color: strongest(model, s.bases[mode], mode, hue % 360, target, tier) }];
+      } catch {
+        return [];
+      }
+    });
+    bands.set(key, band);
+  }
+  const dots = (palette?.colors ?? [])
+    .filter((c) => c.key !== "brown")
+    .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
+  return { mode, curve: s.curve[mode], dots, band };
+}
+
+bindCurves(curveView, (mode, curve) => {
+  write(`curve.${mode}`, curve);
+  updateStrip();
+  solve(150);
+});
 
 /**
  * What the explainer needs to know about the page.
@@ -469,7 +536,7 @@ function color(key: string): string {
     .join("")}</nav>
     <section class="intro hero" style="--c:${id.color}">
       <h1>${label(key)}</h1>
-      <p>CAM16 hue ${id.hue.toFixed(1)}°, read as ${id.name}. Aims at colorfulness ${c.target.toFixed(0)}${state.settings.offsets[state.mode][key] ? `, ${state.settings.offsets[state.mode][key]! > 0 ? "+" : ""}${String(state.settings.offsets[state.mode][key])} from the target` : ""}.${state.settings.equalTiers ? " A tier lowers it to what its least colorful hue can reach." : ""}</p>
+      <p>CAM16 hue ${id.hue.toFixed(1)}°, read as ${id.name}. Aims at colorfulness ${c.target.toFixed(0)}${state.settings.equalTiers ? ". A tier lowers it to what its least colorful hue can reach." : "."}</p>
     </section>
     ${table("default")}${table("muted")}`;
 }
@@ -607,11 +674,6 @@ function write(path: string, value: unknown): void {
  */
 function tune(): string {
   const s = state.settings;
-  const keys = colors()
-    .map((c) => c.key)
-    .filter((k) => k !== "brown");
-  const offsets = (mode: Mode) =>
-    keys.map((k) => number(`offsets.${mode}.${k}`, label(k), [-30, 30, 1])).join("");
   return `<section class="intro">
       <h1>Settings</h1>
       <p>Change a setting and the palette solves again. Changes stay in this browser.</p>
@@ -630,21 +692,8 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Curve</h2>
-      <p class="soft">Colorfulness added smoothly over hue, for a part of the circle that looks weaker than the model says: the full amount at the center hue, easing to none at the width on either side. One rule instead of several exceptions.</p>
-      ${(["light", "dark"] as const)
-        .map(
-          (m) => `<h3>${label(m)}</h3>
-            ${number(`curve.${m}.amount`, "Amount", [0, 20, 1], true)}
-            ${number(`curve.${m}.center`, "Center hue", [0, 359, 1], true)}
-            ${number(`curve.${m}.width`, "Width", [20, 180, 5], true)}
-            <div id="curve-${m}" class="curve"></div>`,
-        )
-        .join("")}
-    </section>
-    <section class="group">
-      <h2>Exceptions</h2>
-      <p class="soft">A color's change to the target, per mode. Keep these rare, each with a reason.</p>
-      <div class="split even"><div><h3>Light</h3>${offsets("light")}</div><div><h3>Dark</h3>${offsets("dark")}</div></div>
+      <p class="soft">Colorfulness added or taken away smoothly over hue, for a part of the circle that looks weaker or stronger than the model says. Drag the point to set its hue and amount, drag an edge to set its width, or scroll over the graph. Double-click the point to flatten it.</p>
+      ${(["light", "dark"] as const).map((m) => `<h3>${label(m)}</h3>${curveEditor(curveView(m), (path, title, range) => number(path, title, range))}`).join("")}
     </section>
     <section class="group">
       <h2>Hues</h2>
@@ -684,63 +733,41 @@ function tune(): string {
 }
 
 /**
- * A mode's curve across the hue circle, with its colors marked where they sit.
- *
- * @param mode  The mode.
- * @returns     SVG.
+ * Draws the strip: the palette without the curve above the palette with it.
  */
-function curveChart(mode: Mode): string {
-  const [width, height, top] = [360, 72, 8];
-  const most = Math.max(20, state.settings.curve[mode].amount);
-  const y = (m: number) => top + height - (m / most) * height;
-  const line = Array.from({ length: 181 }, (_, i) => i * 2)
-    .map((h, i) => `${i ? "L" : "M"}${String(h)} ${y(boost(state.settings, mode, h)).toFixed(1)}`)
-    .join(" ");
-  const tier = state.settings.identityTier[mode];
-  const dots = (state.palettes[state.gamut]?.[mode].colors ?? [])
-    .filter((c) => c.key !== "brown")
-    .map((c) => {
-      const s = c.tiers[tier]!.default;
-      return `<circle cx="${s.hue.toFixed(1)}" cy="${y(boost(state.settings, mode, s.hue)).toFixed(1)}" r="5" style="fill:${s.color}" class="mark"></circle>`;
-    });
-  return `<svg viewBox="-8 0 376 ${String(top + height + 22)}" role="img" aria-label="Curve for ${mode} mode">
-    <line x1="0" x2="${String(width)}" y1="${String(y(0))}" y2="${String(y(0))}" class="grid"></line>
-    <path d="${line}" class="curve-line"></path>${dots.join("")}
-    ${[0, 90, 180, 270, 360].map((h) => `<text x="${String(h)}" y="${String(top + height + 16)}" class="axis" text-anchor="middle">${String(h)}°</text>`).join("")}
-  </svg>`;
-}
-
-/**
- * Refreshes the live strip without redrawing the controls.
- */
-function updateTune(): void {
+function updateStrip(): void {
   const strip = document.querySelector("#tune-preview");
   if (!strip) return;
   const tier = state.settings.identityTier[state.mode];
-  const offsets = state.settings.offsets[state.mode];
   const row = (list: readonly Color[], marked: boolean) =>
     `<div class="strip-items">${list
       .map((c) => {
         const s = c.tiers[tier]?.default;
         if (!s) return "";
-        const offset = marked ? Math.round((offsets[c.key] ?? 0) + (c.key === "brown" ? 0 : boost(state.settings, state.mode, s.hue))) : 0;
-        const name = `${label(c.key)}${offset ? ` ${offset > 0 ? "+" : ""}${String(offset)}` : ""}`;
-        return `<span class="strip-item${offset ? " changed" : ""}" style="--c:${s.color}" title="${name} ${s.color}"><span class="fill"></span><span class="mono">${name}</span></span>`;
+        const added = marked && c.key !== "brown" ? Math.round(boost(state.settings, state.mode, s.hue)) : 0;
+        const name = `${label(c.key)}${added ? ` ${added > 0 ? "+" : ""}${String(added)}` : ""}`;
+        return `<span class="strip-item${added ? " changed" : ""}" style="--c:${s.color}" title="${name} ${s.color}"><span class="fill"></span><span class="mono">${name}</span></span>`;
       })
       .join("")}</div>`;
+  compareCurve();
+  const without = uncurved()?.[state.mode].colors;
+  // Both rows are always drawn, so the page doesn't jump while one of them solves.
+  const previous = strip.querySelector(".strip-items")?.outerHTML;
+  strip.innerHTML = `<span class="strip-label">Without curve</span>${without ? row(without, false) : (previous ?? row(colors(), false))}<span class="strip-label">With curve</span>${row(colors(), true)}`;
+}
+
+/**
+ * Refreshes the strip and the curve editors without redrawing the controls.
+ */
+function updateTune(): void {
+  updateStrip();
   for (const m of ["light", "dark"] as const) {
-    const chart = document.querySelector(`#curve-${m}`);
-    if (chart) chart.innerHTML = curveChart(m);
+    const editor = document.querySelector(`[data-curve="${m}"]`);
+    if (!editor) continue;
+    const view = curveView(m);
+    editor.querySelector(".curve-layers")!.innerHTML = curveLayers(view);
+    editor.querySelector("linearGradient")!.innerHTML = bandStops(view);
   }
-  compareExceptions();
-  const without = state.baselines[state.gamut]?.[state.mode].colors;
-  strip.innerHTML =
-    hasExceptions() && without
-      ? `<span class="strip-label">Without curve and exceptions</span>${row(without, false)}<span class="strip-label">With curve and exceptions</span>${row(colors(), true)}`
-      : row(colors(), false);
-  // A new hue count brings new colors, so their exceptions need drawing.
-  const shown = document.querySelectorAll('[data-set^="offsets.light."]').length;
-  if (shown !== colors().filter((c) => c.key !== "brown").length) render();
 }
 
 /* >-----------------------------------------< Export >-----------------------------------------< */
@@ -751,7 +778,7 @@ function updateTune(): void {
  * @returns  HTML.
  */
 function exporting(): string {
-  const p = GAMUTS.every((g) => state.palettes[g]) ? (state.palettes as Palette) : null;
+  const p = GAMUTS.every((g) => state.fresh.has(g)) ? (state.palettes as Palette) : null;
   const text = p ? { json: toJson, csv: toCsv, md: toMarkdown }[state.format](state.settings, p) : "Solving every gamut tier…";
   const tab = (f: Format, t: string) => `<button type="button" data-format="${f}" aria-pressed="${String(state.format === f)}">${t}</button>`;
   return `<section class="intro">
@@ -886,7 +913,7 @@ document.addEventListener("click", (event) => {
   const { mode, variant, gamut, format, action } = el.dataset;
   if (gamut) {
     state.gamut = gamut as Gamut;
-    if (!state.palettes[state.gamut]) {
+    if (!state.fresh.has(state.gamut)) {
       state.solving = true;
       status();
     }

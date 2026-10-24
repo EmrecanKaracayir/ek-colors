@@ -161,11 +161,22 @@
   .split > div { display: grid; gap: 0.5rem; align-content: start; }
   .checks { display: flex; flex-wrap: wrap; gap: 1rem; }
   .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem)); z-index: 4; background: var(--bg); display: grid; gap: 0.375rem; padding-block: 0.75rem; }
-  .curve svg { width: 100%; max-width: 36rem; display: block; }
-  .curve .grid { stroke: var(--line); }
-  .curve .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; }
-  .curve .axis { fill: var(--soft); font: 500 10px var(--sans); }
-  .curve .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.5; }
+  .curve-editor { max-width: 52rem; display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 1rem 1.5rem; align-items: center; }
+  .curve-values { display: grid; gap: 0.5rem; }
+  .curve-values .field, .curve-values .field:not(:has(input[type="range"])) { grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.5rem; }
+  .curve-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
+  .curve-band { opacity: 0.4; }
+  .curve-editor .grid { stroke: var(--line); }
+  .curve-editor .zero { stroke: var(--soft); stroke-opacity: 0.6; }
+  .curve-editor .axis { fill: var(--soft); font: 500 9px var(--sans); }
+  .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
+  .curve-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
+  .curve-editor .hit { fill: transparent; }
+  .curve-point { cursor: grab; outline: none; }
+  .curve-point circle:last-child { fill: var(--fg); stroke: var(--bg); stroke-width: 2; }
+  .curve-point:focus-visible circle:last-child { stroke: var(--focus); stroke-width: 3; }
+  .curve-edge { cursor: ew-resize; }
+  .curve-edge rect:last-child { fill: var(--fg); }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr)); gap: 0.5rem; }
   .strip-label { font-size: 0.75rem; color: var(--soft); }
   .strip-item.changed .mono { font-weight: 700; }
@@ -225,6 +236,9 @@
   textarea { width: 100%; min-height: 28rem; font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem; resize: vertical; }
 
   @media (max-width: 48rem) {
+    .curve-editor { grid-template-columns: minmax(0, 1fr); }
+    .curve-values { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .curve-values .field, .curve-values .field:not(:has(input[type="range"])) { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
     /* Phones: name and status, then the views and the switches each on one line that scrolls sideways. */
     header { gap: 0.375rem 0.75rem; padding-block: 0.5rem; }
     #status { order: 1; }
@@ -272,6 +286,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=7094afc839"></script>
+<script type="module" src="app.js?v=bdefdad2b7"></script>
 </body>
 </html>
