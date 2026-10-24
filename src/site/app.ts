@@ -295,7 +295,7 @@ function circle(dots: readonly Dot[]): string {
   const marks = dots.map((d) => {
     const [x, y] = at(d.hue, (Math.min(d.m, max) / max) * R);
     const [cx, cy] = [x.toFixed(1), y.toFixed(1)];
-    const paint = d.hollow ? `fill="none" stroke="${d.color}" stroke-width="2.5"` : `fill="${d.color}"`;
+    const paint = d.hollow ? `fill="none" stroke="${d.color}" stroke-width="2.5"` : `fill="${d.color}" class="mark"`;
     if (d.brown) {
       const r = d.hollow ? 8 : 10;
       return `<rect x="${(x - r / Math.SQRT2).toFixed(1)}" y="${(y - r / Math.SQRT2).toFixed(1)}" width="${(r * Math.SQRT2).toFixed(1)}" height="${(r * Math.SQRT2).toFixed(1)}" rx="${String(r / 4)}" transform="rotate(45 ${cx} ${cy})" ${paint}></rect>`;

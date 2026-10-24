@@ -39,8 +39,8 @@ WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
 3. **Equally colorful.** Every color aims at one colorfulness. Where the screen can't reach it,
    the whole tier drops to what its least colorful hue can reach, so nothing stands out by
    accident.
-4. **Evenly different.** Yellow stays fixed, a little warmer than pure yellow so dark yellows don't
-   turn olive. Every other hue moves within its name until neighbors are equally different in
+4. **Evenly different.** Yellow stays fixed, chosen by eye a few degrees toward green from CAM16's
+   pure yellow. Every other hue moves within its name until neighbors are equally different in
    CAM16-UCS.
 
 ## Use
