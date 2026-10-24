@@ -10,7 +10,7 @@ import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, REFERENCES, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, CODEMOS, CODEMOS_MUTED } from "../palette/settings";
-import type { Color, GamutPalette, Palette, Swatch } from "../palette/solve";
+import { boost, type Color, type GamutPalette, type Palette, type Swatch } from "../palette/solve";
 import { type Context, explain, updateDemo } from "./explain";
 import type { Request, Response } from "./worker";
 
@@ -166,7 +166,11 @@ baseline.addEventListener("message", (event: MessageEvent<Response>) => {
  * @returns  True when an exception isn't zero.
  */
 function hasExceptions(): boolean {
-  return Object.values(state.settings.offsets).some((o) => Object.values(o).some((v) => v !== 0));
+  const { offsets, curve } = state.settings;
+  return (
+    Object.values(offsets).some((o) => Object.values(o).some((v) => v !== 0)) ||
+    Object.values(curve).some((c) => c.amount !== 0)
+  );
 }
 
 /**
@@ -176,7 +180,8 @@ function compareExceptions(): void {
   const key = `${String(latest)}:${state.gamut}`;
   if (!hasExceptions() || state.baselines[state.gamut] || asked === key) return;
   asked = key;
-  const settings = { ...state.settings, offsets: { light: {}, dark: {} } };
+  const off = (mode: Mode) => ({ ...state.settings.curve[mode], amount: 0 });
+  const settings = { ...state.settings, offsets: { light: {}, dark: {} }, curve: { light: off("light"), dark: off("dark") } };
   baseline.postMessage({ id: latest, settings, gamut: state.gamut } satisfies Request);
 }
 
@@ -624,6 +629,19 @@ function tune(): string {
       ${s.brown === null ? "" : number("brown", "Brown share", [0.1, 1, 0.05], true)}
     </section>
     <section class="group">
+      <h2>Curve</h2>
+      <p class="soft">Colorfulness added smoothly over hue, for a part of the circle that looks weaker than the model says: the full amount at the center hue, easing to none at the width on either side. One rule instead of several exceptions.</p>
+      ${(["light", "dark"] as const)
+        .map(
+          (m) => `<h3>${label(m)}</h3>
+            ${number(`curve.${m}.amount`, "Amount", [0, 20, 1], true)}
+            ${number(`curve.${m}.center`, "Center hue", [0, 359, 1], true)}
+            ${number(`curve.${m}.width`, "Width", [20, 180, 5], true)}
+            <div id="curve-${m}" class="curve"></div>`,
+        )
+        .join("")}
+    </section>
+    <section class="group">
       <h2>Exceptions</h2>
       <p class="soft">A color's change to the target, per mode. Keep these rare, each with a reason.</p>
       <div class="split even"><div><h3>Light</h3>${offsets("light")}</div><div><h3>Dark</h3>${offsets("dark")}</div></div>
@@ -666,6 +684,33 @@ function tune(): string {
 }
 
 /**
+ * A mode's curve across the hue circle, with its colors marked where they sit.
+ *
+ * @param mode  The mode.
+ * @returns     SVG.
+ */
+function curveChart(mode: Mode): string {
+  const [width, height, top] = [360, 72, 8];
+  const most = Math.max(20, state.settings.curve[mode].amount);
+  const y = (m: number) => top + height - (m / most) * height;
+  const line = Array.from({ length: 181 }, (_, i) => i * 2)
+    .map((h, i) => `${i ? "L" : "M"}${String(h)} ${y(boost(state.settings, mode, h)).toFixed(1)}`)
+    .join(" ");
+  const tier = state.settings.identityTier[mode];
+  const dots = (state.palettes[state.gamut]?.[mode].colors ?? [])
+    .filter((c) => c.key !== "brown")
+    .map((c) => {
+      const s = c.tiers[tier]!.default;
+      return `<circle cx="${s.hue.toFixed(1)}" cy="${y(boost(state.settings, mode, s.hue)).toFixed(1)}" r="5" style="fill:${s.color}" class="mark"></circle>`;
+    });
+  return `<svg viewBox="-8 0 376 ${String(top + height + 22)}" role="img" aria-label="Curve for ${mode} mode">
+    <line x1="0" x2="${String(width)}" y1="${String(y(0))}" y2="${String(y(0))}" class="grid"></line>
+    <path d="${line}" class="curve-line"></path>${dots.join("")}
+    ${[0, 90, 180, 270, 360].map((h) => `<text x="${String(h)}" y="${String(top + height + 16)}" class="axis" text-anchor="middle">${String(h)}°</text>`).join("")}
+  </svg>`;
+}
+
+/**
  * Refreshes the live strip without redrawing the controls.
  */
 function updateTune(): void {
@@ -678,16 +723,20 @@ function updateTune(): void {
       .map((c) => {
         const s = c.tiers[tier]?.default;
         if (!s) return "";
-        const offset = marked ? (offsets[c.key] ?? 0) : 0;
+        const offset = marked ? Math.round((offsets[c.key] ?? 0) + (c.key === "brown" ? 0 : boost(state.settings, state.mode, s.hue))) : 0;
         const name = `${label(c.key)}${offset ? ` ${offset > 0 ? "+" : ""}${String(offset)}` : ""}`;
         return `<span class="strip-item${offset ? " changed" : ""}" style="--c:${s.color}" title="${name} ${s.color}"><span class="fill"></span><span class="mono">${name}</span></span>`;
       })
       .join("")}</div>`;
+  for (const m of ["light", "dark"] as const) {
+    const chart = document.querySelector(`#curve-${m}`);
+    if (chart) chart.innerHTML = curveChart(m);
+  }
   compareExceptions();
   const without = state.baselines[state.gamut]?.[state.mode].colors;
   strip.innerHTML =
     hasExceptions() && without
-      ? `<span class="strip-label">Without exceptions</span>${row(without, false)}<span class="strip-label">With exceptions</span>${row(colors(), true)}`
+      ? `<span class="strip-label">Without curve and exceptions</span>${row(without, false)}<span class="strip-label">With curve and exceptions</span>${row(colors(), true)}`
       : row(colors(), false);
   // A new hue count brings new colors, so their exceptions need drawing.
   const shown = document.querySelectorAll('[data-set^="offsets.light."]').length;
@@ -903,6 +952,7 @@ document.addEventListener("input", (event) => {
     write(path, Number(el.value));
     for (const twin of document.querySelectorAll<HTMLInputElement>(`[data-set="${path}"]`)) if (twin !== el) twin.value = el.value;
   }
+  if (path.startsWith("curve.")) updateTune();
   solve(150);
 });
 

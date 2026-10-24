@@ -26,6 +26,18 @@ export interface Room {
   readonly surround: number;
 }
 
+/** Colorfulness added around a hue, for colors that look weaker than the model says. */
+export interface Curve {
+  /** Colorfulness added at the center. */
+  readonly amount: number;
+
+  /** CAM16 hue where the most is added. */
+  readonly center: number;
+
+  /** How far from the center, in degrees, the addition reaches none. */
+  readonly width: number;
+}
+
 export interface Settings {
   /** The backgrounds colors are read on. */
   readonly bases: Readonly<Record<Mode, string>>;
@@ -38,6 +50,12 @@ export interface Settings {
 
   /** Whether a tier lowers its target to what its least colorful hue can reach. */
   readonly equalTiers: boolean;
+
+  /**
+   * Per mode, colorfulness added smoothly over hue: the full amount at the center, fading to none
+   * at the width's edge on either side.
+   */
+  readonly curve: Readonly<Record<Mode, Curve>>;
 
   /** Per mode, a color's change to the colorfulness target (e.g. red: +8). */
   readonly offsets: Readonly<Record<Mode, Readonly<Record<string, number>>>>;
@@ -76,6 +94,7 @@ export const DEFAULTS: Settings = {
   rooms: { light: { lux: 200, surround: 2 }, dark: { lux: 64, surround: 1 } },
   colorfulness: 40,
   equalTiers: true,
+  curve: { light: { amount: 0, center: 0, width: 90 }, dark: { amount: 0, center: 0, width: 90 } },
   offsets: { light: {}, dark: {} },
   yellowHue: { light: 100, dark: 100 },
   hues: 8,

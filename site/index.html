@@ -161,6 +161,11 @@
   .split > div { display: grid; gap: 0.5rem; align-content: start; }
   .checks { display: flex; flex-wrap: wrap; gap: 1rem; }
   .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem)); z-index: 4; background: var(--bg); display: grid; gap: 0.375rem; padding-block: 0.75rem; }
+  .curve svg { width: 100%; max-width: 36rem; display: block; }
+  .curve .grid { stroke: var(--line); }
+  .curve .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; }
+  .curve .axis { fill: var(--soft); font: 500 10px var(--sans); }
+  .curve .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.5; }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr)); gap: 0.5rem; }
   .strip-label { font-size: 0.75rem; color: var(--soft); }
   .strip-item.changed .mono { font-weight: 700; }
@@ -267,6 +272,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=79ea5edc0b"></script>
+<script type="module" src="app.js?v=7094afc839"></script>
 </body>
 </html>

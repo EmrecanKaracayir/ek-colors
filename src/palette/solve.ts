@@ -127,6 +127,20 @@ export function strongest(
   return color;
 }
 
+/**
+ * The colorfulness a mode's curve adds at a hue.
+ *
+ * @param settings  The settings.
+ * @param mode      The mode.
+ * @param hue       CAM16 hue.
+ * @returns         The amount at the center, easing to none at the width's edge.
+ */
+export function boost(settings: Pick<Settings, "curve">, mode: Mode, hue: number): number {
+  const { amount, center, width } = settings.curve[mode];
+  const away = Math.abs(((((hue - center) % 360) + 540) % 360) - 180);
+  return away >= width ? 0 : (amount * (1 + Math.cos((Math.PI * away) / width))) / 2;
+}
+
 /* >----------------------------------------< Spacing >-----------------------------------------< */
 
 /**
@@ -148,7 +162,9 @@ interface Spacing {
   readonly start: readonly number[];
   readonly anchor: number;
   readonly window: number;
-  readonly targets: readonly number[];
+
+  /** The colorfulness the i-th hue aims at, at a hue. */
+  readonly target: (i: number, hue: number) => number;
 }
 
 /**
@@ -159,11 +175,11 @@ interface Spacing {
  * @param spacing  What to space, where, and how far hues may move.
  * @returns        The hues, their colors and the neighbor distances.
  */
-function space({ model, base, mode, tier, start, anchor, window, targets }: Spacing) {
+function space({ model, base, mode, tier, start, anchor, window, target }: Spacing) {
   const ring = (cs: readonly string[]) =>
     cs.map((c, i) => model.distance(mode, c, cs[(i + 1) % cs.length]!));
   const hues = [...start];
-  const colors = hues.map((h, i) => strongest(model, base, mode, h, targets[i]!, tier));
+  const colors = hues.map((h, i) => strongest(model, base, mode, h, target(i, h), tier));
   let best = spread(ring(colors));
   for (let pass = 0; pass < 8; pass++) {
     let improved = false;
@@ -173,7 +189,7 @@ function space({ model, base, mode, tier, start, anchor, window, targets }: Spac
         const hue = hues[i]! + step;
         if (Math.abs(hue - start[i]!) > window) continue;
         const trial = [...colors];
-        trial[i] = strongest(model, base, mode, hue, targets[i]!, tier);
+        trial[i] = strongest(model, base, mode, hue, target(i, hue), tier);
         const score = spread(ring(trial));
         if (score < best - 1e-4)
           [best, hues[i], colors[i], improved] = [score, hue, trial[i]!, true];
@@ -277,13 +293,9 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   };
   const solveTier = (tier: number, hues: readonly number[], window: number) => {
     const { target, limit } = ceiling(tier, hues);
-    const targets = offsets.map((o) => target + o);
-    return {
-      target,
-      limit,
-      targets,
-      ...space({ model, base, mode, anchor, tier, start: hues, window, targets }),
-    };
+    const aim = (i: number, hue: number) => target + offsets[i]! + boost(settings, mode, hue);
+    const spaced = space({ model, base, mode, anchor, tier, start: hues, window, target: aim });
+    return { target, limit, targets: spaced.hues.map((h, i) => aim(i, h)), ...spaced };
   };
 
   const identity = solveTier(settings.identityTier[mode], start, window);

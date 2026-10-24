@@ -375,6 +375,7 @@ export function explain(ctx: Context): string {
     <section class="step">
       <h2>Equally colorful</h2>
       <p>Every color aims at the same colorfulness: M ${String(s.colorfulness)}. The screen doesn't always allow it. Near white, a screen can show a strong yellow but only a pale red; near black, the opposite. So on each tier, the target drops to what the least colorful hue can reach, and every color on the tier follows. Nothing stands out by accident.</p>
+      <p>Where a part of the circle still looks weaker to the eye than the model says, a curve adds colorfulness smoothly over hue: most at one hue, easing to none on either side. One rule, so neighbors never jump.</p>
       <p>The chart shows how far each hue could go on one tier, on each kind of screen.</p>
       <div class="demo">
         <div class="demo-controls">
