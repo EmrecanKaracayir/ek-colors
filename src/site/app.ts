@@ -23,6 +23,9 @@ const VIEWS = ["overview", "tiers", "compare", "how", "tune", "export"] as const
 
 const STORE = "ek-palette:settings";
 
+/** Remembers whether the comparison with Codemos is shown. */
+const COMPARE = "ek-palette:compare";
+
 /** What each tier is for. */
 const ROLES: Readonly<Record<number, string>> = {
   15: "Dividers and faint fills",
@@ -686,11 +689,67 @@ function status(): void {
   el.textContent = state.error ?? (state.solving ? "Solving…" : `Solved in ${(state.took / 1000).toFixed(1)} s`);
 }
 
+/* >-----------------------------------< Hidden comparison >------------------------------------< */
+
+/**
+ * Whether the comparison with Codemos is shown. It's hidden until Shift+C, or five quick taps on
+ * the name, shows it.
+ *
+ * @returns  Whether it's shown in this browser.
+ */
+function comparing(): boolean {
+  try {
+    return localStorage.getItem(COMPARE) === "on";
+  } catch {
+    return shown;
+  }
+}
+
+let shown = false;
+
+/**
+ * Shows or hides the comparison with Codemos, and says which.
+ */
+function toggleCompare(): void {
+  shown = !comparing();
+  try {
+    localStorage.setItem(COMPARE, shown ? "on" : "off");
+  } catch {
+    // Storage can be blocked; it then lasts until the page closes.
+  }
+  $<HTMLElement>("#nav-compare").hidden = !shown;
+  const el = $<HTMLElement>("#status");
+  el.textContent = shown ? "Compare with Codemos shown" : "Compare with Codemos hidden";
+  window.setTimeout(status, 2000);
+  if (!shown && state.view === "compare") location.hash = "overview";
+}
+
+document.addEventListener("keydown", (event) => {
+  const typing = event.target instanceof Element && event.target.closest("input, textarea, select");
+  if (event.shiftKey && event.code === "KeyC" && !event.metaKey && !event.ctrlKey && !typing) toggleCompare();
+});
+
+let taps: number[] = [];
+$("#brand").addEventListener("click", () => {
+  const now = performance.now();
+  taps = [...taps.filter((t) => now - t < 2000), now];
+  if (taps.length >= 5) {
+    taps = [];
+    toggleCompare();
+  }
+});
+
+$<HTMLElement>("#nav-compare").hidden = !comparing();
+
 /**
  * Opens the view the address names.
  */
 function route(): void {
   state.view = location.hash.slice(1) || "overview";
+  if (state.view === "compare" && !comparing()) {
+    location.replace("#overview");
+    return;
+  }
   render();
   window.scrollTo(0, 0);
 }

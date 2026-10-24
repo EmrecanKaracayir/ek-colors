@@ -41,7 +41,7 @@ per swatch) and `palette.md` (tables per mode and variant).
 ## Site
 
 `site/` solves the palette live in the browser, in a worker: an overview, every tier, one page per
-colour, the comparison with Codemos, all the settings, and export. After changing `src/`, rebuild it:
+colour, the comparison with Codemos (hidden until Shift+C, or five quick taps on the name), all the settings, and export. After changing `src/`, rebuild it:
 
 ```sh
 pnpm build
