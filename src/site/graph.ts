@@ -22,8 +22,9 @@ export interface Guide {
  */
 export const [WIDTH, PAD, LEFT, RIGHT] = [360, 12, 44, 14];
 
-/** How far in from the graph's left edge the band starts, for lining text up with it. */
-export const INSET = `${((LEFT / (WIDTH + 2 * PAD + LEFT + RIGHT)) * 100).toFixed(3)}%`;
+/** How far in from the graph's edges the band starts and ends, for lining things up with it. */
+const share = (units: number) => `${((units / (WIDTH + 2 * PAD + LEFT + RIGHT)) * 100).toFixed(3)}%`;
+export const INSETS = `--graph-inset:${share(LEFT)};--graph-inset-end:${share(RIGHT)}`;
 
 /**
  * How visible a color difference is (CAM16-UCS ΔE): about 2 is the smallest difference people see

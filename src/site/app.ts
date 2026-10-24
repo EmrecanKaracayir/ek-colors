@@ -11,7 +11,7 @@ import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
 import { anchorHue, guides, SYSTEMS } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
-import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { boost, type Color, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, curveReadout, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
 import { bindGuides } from "./graph";
@@ -359,9 +359,25 @@ function anchored(): string {
 }
 
 /**
- * The hue graph's contents: every color in the uniform lineup and the current one, on the identity
- * tier of the mode on screen. Placed colors and the anchor are drawn where they're set, so a drag
- * follows the pointer before the palette solves again.
+ * The gaps between neighbors on a palette's identity tier, each placed halfway between the two.
+ *
+ * @param palette  The mode's palette.
+ * @param tier     The identity tier.
+ * @returns        The gaps, or none while it solves.
+ */
+function gapsOf(palette: ModePalette | undefined, tier: number): HuesView["gaps"]["current"] {
+  const ring = palette?.ring[tier] ?? [];
+  const hues = (palette?.colors ?? []).slice(0, ring.length).map((c) => c.tiers[tier]!.default.hue);
+  return ring.map((gap, i) => {
+    const [a, b] = [hues[i]!, hues[(i + 1) % hues.length]!];
+    return { hue: (a + (((b - a + 360) % 360) / 2)) % 360, gap };
+  });
+}
+
+/**
+ * The hue graph's contents: every color in the uniform lineup and the current one, without the
+ * curve, on the identity tier of the mode on screen. Placed colors and the anchor are drawn where
+ * they're set, so a drag follows the pointer before the palette solves again.
  *
  * @returns  The view.
  */
@@ -369,8 +385,8 @@ function huesView(): HuesView {
   const s = state.settings;
   const mode = state.mode;
   const tier = s.identityTier[mode];
-  const palette = current()?.[mode];
-  const even = uniform()?.[mode];
+  const palette = uncurved()?.[mode] ?? current()?.[mode];
+  const even = plain()?.[mode];
   const rows = (palette?.colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => {
@@ -385,7 +401,8 @@ function huesView(): HuesView {
         anchor: c.key === anchored(),
       };
     });
-  return { rows, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode) };
+  const gaps = { uniform: gapsOf(even, tier), current: gapsOf(palette, tier) };
+  return { rows, gaps, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode) };
 }
 
 /**
@@ -982,6 +999,24 @@ function drawComparison(el: Element, mode: Mode): void {
   el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div>`;
 }
 
+let dock: IntersectionObserver | null = null;
+let barHeight = 0;
+
+/**
+ * Marks the strip at the top of Settings as docked once it sticks under the bar, so it shows a
+ * border. Docked, it sits 1px up under the bar, so it's no longer wholly below it.
+ */
+function watchDock(): void {
+  dock?.disconnect();
+  const strip = document.querySelector("#tune-preview");
+  if (!strip) return;
+  dock = new IntersectionObserver(
+    ([entry]) => strip.classList.toggle("docked", entry!.intersectionRatio < 1 && entry!.boundingClientRect.top < entry!.rootBounds!.top),
+    { rootMargin: `${String(-barHeight)}px 0px 0px 0px`, threshold: 1 },
+  );
+  dock.observe(strip);
+}
+
 /**
  * Draws the strip at the top of Settings.
  */
@@ -1074,6 +1109,7 @@ function render(): void {
     : view === "curve-test" ? testPage(testContext())
     : color(view === "colors" ? first : view);
   if (view === "tune") updateTune();
+  watchDock();
 }
 
 /**
@@ -1248,6 +1284,8 @@ new ResizeObserver(([entry]) => {
   // The exact height, fractions included, so the strip meets the bar without a gap.
   const height = entry!.borderBoxSize[0]?.blockSize ?? (entry!.target as HTMLElement).offsetHeight;
   document.documentElement.style.setProperty("--header-height", `${String(height)}px`);
+  barHeight = height;
+  watchDock();
 }).observe($("header"));
 
 /**

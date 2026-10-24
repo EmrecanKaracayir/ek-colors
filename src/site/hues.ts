@@ -8,7 +8,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { composition } from "../palette/model";
-import { band, INSET, signed, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, stops, viewBox } from "./graph";
+import { band, INSETS, signed, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on both rows. */
 export interface HueRow {
@@ -22,9 +22,18 @@ export interface HueRow {
   readonly anchor: boolean;
 }
 
+/** A gap between neighbors, labeled halfway between them. */
+export interface HueGap {
+  readonly hue: number;
+  readonly gap: number;
+}
+
 /** What the graph shows. */
 export interface HuesView {
   readonly rows: readonly HueRow[];
+
+  /** The gaps between neighbors on each row (CAM16-UCS ΔE). */
+  readonly gaps: Readonly<Record<Row, readonly HueGap[]>>;
   readonly band: readonly { readonly hue: number; readonly color: string }[];
 
   /** The chosen reference system and its guides. */
@@ -43,7 +52,7 @@ export interface HuesView {
   } | null;
 }
 
-type Row = "uniform" | "current";
+export type Row = "uniform" | "current";
 
 /** Drawing space: hue across, the two rows down. */
 const HEIGHT = 96;
@@ -58,14 +67,21 @@ let selected: { key: string; row: Row } = { key: "", row: "current" };
 /* >----------------------------------------< Drawing >-----------------------------------------< */
 
 /**
- * The parts that move: each color on both rows, joined by a line.
+ * The parts that move: each color on both rows, joined by a line, and the gaps between neighbors.
  *
  * @param view  What to show.
  * @returns     SVG.
  */
 export function huesLayers(view: HuesView): string {
   const on = (key: string, row: Row) => selected.key === key && selected.row === row;
-  return view.rows
+  // The gaps: above the uniform row, below the current one.
+  const gaps = (Object.entries(view.gaps) as [Row, readonly HueGap[]][]).flatMap(([row, list]) =>
+    list.map(
+      (g) =>
+        `<text x="${g.hue.toFixed(1)}" y="${String(row === "uniform" ? ROWS.uniform - 10 : ROWS.current + 18)}" class="axis hue-gap" text-anchor="middle">${g.gap.toFixed(1)}</text>`,
+    ),
+  );
+  return gaps.join("") + view.rows
     .map((r) => {
       const uniform = r.uniform ?? r.current;
       const [u, c] = [uniform.hue.toFixed(1), r.current.hue.toFixed(1)];
@@ -142,7 +158,7 @@ export function huesEditor(view: HuesView): string {
   const labels = (Object.entries(ROWS) as [Row, number][]).map(
     ([row, y]) => `<text x="-18" y="${String(y + 3)}" class="axis row-label" text-anchor="end">${row === "uniform" ? "Uniform" : "Current"}</text>`,
   );
-  return `<div class="graph-editor hues-editor" style="--graph-inset:${INSET}">
+  return `<div class="graph-editor hues-editor" style="${INSETS}">
     ${guidePicker(view.guide)}
     <div class="graph-values hues-values">${huesPanel(view)}</div>
     <svg viewBox="${viewBox(HEIGHT)}" data-height="${String(HEIGHT)}" role="group" aria-label="Where the uniform lineup puts each color, and where the current one does">
