@@ -176,9 +176,10 @@ function badge(level: Swatch["wcagLevel"]): string {
  * @param s      The swatch.
  * @param title  Its name on the card.
  * @param href   Where a click goes, if anywhere.
+ * @param limit  Whether this colour's reach lowered its tier's target.
  * @returns      HTML.
  */
-function card(s: Swatch, title: string, href?: string): string {
+function card(s: Swatch, title: string, href?: string, limit = false): string {
   const tag = href ? "a" : "div";
   return `<${tag} class="card"${href ? ` href="#${href}"` : ""} style="--c:${s.color}">
     <span class="fill"></span>
@@ -187,6 +188,7 @@ function card(s: Swatch, title: string, href?: string): string {
     <span class="mono value">${s.color}</span>
     <span class="facts"><span class="mono">Lc ${s.apca.toFixed(1)}</span>${badge(s.wcagLevel)}</span>
     <span class="mono soft">WCAG ${s.wcag.toFixed(2)} · M ${s.colourfulness.toFixed(1)}${s.short ? " ▾" : ""}</span>
+    ${limit ? `<span class="limit">▾ Sets this tier's colourfulness</span>` : ""}
   </${tag}>`;
 }
 
@@ -207,6 +209,38 @@ function colours(): readonly Colour[] {
  */
 function range(ring: readonly number[]): string {
   return `${Math.min(...ring).toFixed(1)} to ${Math.max(...ring).toFixed(1)}`;
+}
+
+/**
+ * A tier's colourfulness, and what lowered it.
+ *
+ * @param tier  The tier.
+ * @returns     E.g. "Colourfulness M 12.7, lowered from 40: Red can't reach more".
+ */
+function held(tier: number): string {
+  const p = current()?.[state.mode];
+  if (!p) return "Colourfulness …";
+  const limit = p.limits[tier];
+  return limit
+    ? `Colourfulness M ${String(p.targets[tier])}, lowered from ${String(state.settings.colourfulness)}: ${label(limit)} can't reach more`
+    : `Colourfulness M ${String(p.targets[tier])}, every colour reaches it`;
+}
+
+/**
+ * Why a colour on a tier is less colourful than the target, if it is.
+ *
+ * @param key   The colour.
+ * @param tier  The tier.
+ * @param s     Its swatch there.
+ * @returns     HTML: "sets the tier", "lowered from 40", "screen limit" or nothing.
+ */
+function lowered(key: string, tier: number, s: Swatch): string {
+  const p = current()?.[state.mode];
+  if (!p) return "";
+  if (p.limits[tier] === key) return ` <span class="limit">▾ sets the tier</span>`;
+  if (s.short) return ` <span class="limit">▾ screen limit</span>`;
+  if (p.limits[tier]) return ` <span class="soft">lowered from ${String(state.settings.colourfulness)}</span>`;
+  return "";
 }
 
 /* >---------------------------------------< Hue circle >---------------------------------------< */
@@ -270,7 +304,7 @@ function overview(): string {
     </section>
     <section>
       <h2>The colours <span class="soft">· Lc ${String(tier)}, the tier that stands for each hue</span></h2>
-      <div class="cards">${list.map((c) => card(c.tiers[tier]!.default, label(c.key), c.key)).join("")}</div>
+      <div class="cards">${list.map((c) => card(c.tiers[tier]!.default, label(c.key), c.key, current()?.[mode].limits[tier] === c.key)).join("")}</div>
       <h3>Muted</h3>
       <div class="cards small">${list
         .filter((c) => c.tiers[tier]!.muted)
@@ -282,7 +316,7 @@ function overview(): string {
       <dl class="facts-list">
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${["dark", "dim", "average"][room.surround] ?? ""} surround</dd></div>
-        <div><dt>Colourfulness</dt><dd>M ${String(current()?.[mode].targets[tier] ?? settings.colourfulness)} on this tier (target ${String(settings.colourfulness)}), muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
+        <div><dt>Colourfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
         <div><dt>Yellow</dt><dd>hue ${String(settings.yellowHue[mode])}°</dd></div>
         <div><dt>Neighbour differences</dt><dd>${ring.length ? range(ring) : "…"} (CAM16-UCS)</dd></div>
         <div><dt>▾</dt><dd>The screen held this colour below its colourfulness.</dd></div>
@@ -309,8 +343,8 @@ function tiers(): string {
         const list = colours().filter((c) => c.tiers[tier]![variant]);
         return `<section>
           <h2>Lc ${String(tier)} <span class="soft">· ${ROLES[tier] ?? ""}</span></h2>
-          <p class="soft">Colourfulness M ${String(current()?.[mode].targets[tier] ?? "…")} · neighbour differences ${ring.length ? range(ring) : "…"}</p>
-          <div class="cards small">${list.map((c) => card(c.tiers[tier]![variant]!, label(c.key), c.key)).join("")}</div>
+          <p class="soft">${held(tier)} · neighbour differences ${ring.length ? range(ring) : "…"}</p>
+          <div class="cards small">${list.map((c) => card(c.tiers[tier]![variant]!, label(c.key), c.key, current()?.[mode].limits[tier] === c.key)).join("")}</div>
         </section>`;
       })
       .join("")}`;
@@ -347,7 +381,7 @@ function colour(key: string): string {
               <td><span class="mono">${s.wcag.toFixed(2)}</span> ${badge(s.wcagLevel)}</td>
               <td class="mono">${s.lightness.toFixed(1)}</td>
               <td class="mono">${s.chroma.toFixed(1)}</td>
-              <td class="mono">${s.colourfulness.toFixed(1)}${s.short && variant === "default" ? ` <span class="soft">of ${((current()?.[state.mode].targets[t] ?? 0) + c.target - state.settings.colourfulness).toFixed(0)}</span>` : ""}</td>
+              <td class="mono">${s.colourfulness.toFixed(1)}${variant === "default" ? lowered(c.key, t, s) : ""}</td>
               <td class="mono">${s.hue.toFixed(1)}° <span class="soft">${s.name}</span></td>
             </tr>`;
           })

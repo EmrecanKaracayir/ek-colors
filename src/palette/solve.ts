@@ -40,6 +40,9 @@ export interface ModePalette {
   /** Per tier, the colourfulness its colours aim at (before exceptions). */
   readonly targets: Readonly<Record<number, number>>;
 
+  /** Per tier, the colour whose reach lowered the target, or null when every colour reaches it. */
+  readonly limits: Readonly<Record<number, string | null>>;
+
   /** Per tier, each hue's distance to the next around the circle (CAM16-UCS). */
   readonly ring: Readonly<Record<number, readonly number[]>>;
 }
@@ -265,18 +268,20 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
       : Math.min(settings.hueWindow.identity, 180 / settings.hues);
 
   // On an equal tier, the target drops to what its least colourful hue can reach.
-  const ceiling = (tier: number, hues: readonly number[]) =>
-    settings.equalTiers
-      ? Math.min(
-          settings.colourfulness,
-          ...hues.map((h) => model.cam(mode, strongest(model, base, mode, h, 200, tier)).m),
-        )
-      : settings.colourfulness;
+  const ceiling = (tier: number, hues: readonly number[]) => {
+    if (!settings.equalTiers) return { target: settings.colourfulness, limit: null };
+    const reach = hues.map((h) => model.cam(mode, strongest(model, base, mode, h, 200, tier)).m);
+    const least = reach.indexOf(Math.min(...reach));
+    return reach[least]! < settings.colourfulness
+      ? { target: reach[least]!, limit: keys[least]! }
+      : { target: settings.colourfulness, limit: null };
+  };
   const solveTier = (tier: number, hues: readonly number[], window: number) => {
-    const target = ceiling(tier, hues);
+    const { target, limit } = ceiling(tier, hues);
     const targets = offsets.map((o) => target + o);
     return {
       target,
+      limit,
       targets,
       ...space({ model, base, mode, anchor, tier, start: hues, window, targets }),
     };
@@ -285,6 +290,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const identity = solveTier(settings.identityTier, start, window);
   const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch | null }>> = {};
   const targets: Record<number, number> = {};
+  const limits: Record<number, string | null> = {};
   const ring: Record<number, number[]> = {};
   for (const tier of settings.tiers) {
     const solved =
@@ -293,6 +299,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
         : solveTier(tier, identity.hues, settings.hueWindow.tier);
     tiers[tier] = {};
     targets[tier] = Math.round(solved.target * 10) / 10;
+    limits[tier] = solved.limit;
     ring[tier] = solved.ring.map((d) => Math.round(d * 10) / 10);
     keys.forEach((key, i) => {
       const def = swatch(model, base, mode, solved.colors[i]!, solved.targets[i]!);
@@ -324,7 +331,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
         : settings.colourfulness + offsets[keys.indexOf(key)]!,
     tiers: Object.fromEntries(settings.tiers.map((t) => [t, tiers[t]![key]!])),
   }));
-  return { base, colours, targets, ring };
+  return { base, colours, targets, limits, ring };
 }
 
 /**
