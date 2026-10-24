@@ -591,13 +591,15 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Viewing</h2>
-      <p class="soft">The backgrounds and the rooms colors are seen in. Surround: 0 dark, 1 dim, 2 average.</p>
+      <p class="soft">The backgrounds and the rooms colors are seen in. Surround is how bright the room is around the screen.</p>
       <div class="split even">${(["light", "dark"] as const)
         .map(
           (m) => `<div><h3>${label(m)}</h3>
             <label class="field" for="set-base-${m}"><span>Base</span><input id="set-base-${m}" type="text" data-set="bases.${m}" value="${s.bases[m]}" spellcheck="false" pattern="#[0-9A-Fa-f]{6}"></label>
             ${number(`rooms.${m}.lux`, "Room lux", [1, 1000, 1])}
-            ${number(`rooms.${m}.surround`, "Surround", [0, 2, 1])}</div>`,
+            <label class="field" for="set-surround-${m}"><span>Surround</span><select id="set-surround-${m}" data-set="rooms.${m}.surround">${["Dark", "Dim", "Average"]
+              .map((name, i) => `<option value="${String(i)}" ${i === s.rooms[m].surround ? "selected" : ""}>${name}</option>`)
+              .join("")}</select></label></div>`,
         )
         .join("")}</div>
     </section>`;
