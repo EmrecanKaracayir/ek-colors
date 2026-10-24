@@ -7,11 +7,7 @@
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": false,
     "noEmit": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
