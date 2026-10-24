@@ -822,6 +822,12 @@ document.addEventListener("input", (event) => {
   solve(150);
 });
 
+// Settings' color strip sticks just below the bar, whose height changes as it wraps.
+new ResizeObserver(([entry]) => {
+  const height = (entry!.target as HTMLElement).offsetHeight;
+  document.documentElement.style.setProperty("--header-height", `${String(height)}px`);
+}).observe($("header"));
+
 addEventListener("hashchange", route);
 route();
 solve();
