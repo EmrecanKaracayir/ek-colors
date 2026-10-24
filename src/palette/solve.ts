@@ -6,8 +6,9 @@
 | the yellow anchor.                                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import { apca, composition, hueOf, makeModel, type Model, wcag, wcagLevel } from "./model";
-import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings, STARTS } from "./settings";
+import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./model";
+import { systemHome, systemHomes } from "./references";
+import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings } from "./settings";
 
 export interface Swatch {
   /** The color as CSS: #RRGGBB on the standard tier, color() on wider ones. */
@@ -205,14 +206,17 @@ function space({ model, base, mode, tier, start, anchor, window, target }: Spaci
 /* >---------------------------------------< Pull home >----------------------------------------< */
 
 /**
- * Where a color belongs: its home if one is set, otherwise where its name puts it.
+ * Where a color belongs: its home if one is set, otherwise where the reference system puts it.
  *
  * @param settings  The settings.
  * @param key       The color.
  * @returns         CAM16 hue.
  */
-export function home(settings: Pick<Settings, "homes">, key: string): number {
-  return settings.homes[key] ?? hueOf(STARTS[key] ?? "R");
+export function home(
+  settings: Pick<Settings, "homes" | "bases" | "rooms" | "reference">,
+  key: string,
+): number {
+  return settings.homes[key] ?? systemHome(settings, key);
 }
 
 interface Pull {
@@ -221,7 +225,8 @@ interface Pull {
   readonly mode: Mode;
   readonly tier: number;
   readonly spaced: { readonly hues: readonly number[]; readonly colors: readonly string[] };
-  readonly homes: readonly number[];
+  /** Per color, where it may belong; it's pulled toward the closest. */
+  readonly homes: readonly (readonly number[])[];
   readonly aim: (hue: number) => number;
 
   /** The most a color may change, in CAM16-UCS difference. */
@@ -239,7 +244,8 @@ function pull({ model, base, mode, tier, spaced, homes, aim, most }: Pull) {
   const hues = [...spaced.hues];
   const colors = [...spaced.colors];
   for (let i = 0; i < hues.length; i++) {
-    const toward = ((((homes[i]! - hues[i]!) % 360) + 540) % 360) - 180;
+    const offsets = homes[i]!.map((h) => ((((h - hues[i]!) % 360) + 540) % 360) - 180);
+    const toward = offsets.reduce((a, b) => (Math.abs(b) < Math.abs(a) ? b : a));
     if (most <= 0 || Math.abs(toward) < 0.05) continue;
     const at = (t: number) => {
       const hue = (spaced.hues[i]! + toward * t + 360) % 360;
@@ -352,7 +358,14 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     const { target, limit } = ceiling(tier, hues);
     const aim = (hue: number) => target + boost(settings, mode, hue);
     const spaced = space({ model, base, mode, anchor, tier, start: hues, window, target: aim });
-    const homes = start.map((h, i) => (i === anchor ? spaced.hues[i]! : h));
+    // A color pulls toward its home; under "nearest", toward whichever system's home is closest.
+    const homes = start.map((h, i) =>
+      i === anchor
+        ? [spaced.hues[i]!]
+        : settings.homes[keys[i]!] !== undefined || settings.hues !== NAMES.length
+          ? [h]
+          : systemHomes(settings, keys[i]!),
+    );
     const pulled = pull({ model, base, mode, tier, spaced, homes, aim, most: settings.pull });
     return { target, limit, targets: pulled.hues.map(aim), ...pulled };
   };

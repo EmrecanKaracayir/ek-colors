@@ -7,8 +7,6 @@
 | others are spaced around it.                                                                     |
 \*------------------------------------------------------------------------------------------------*/
 
-import { REFERENCES } from "../palette/model";
-
 /** One color on the strip. */
 export interface HomeItem {
   readonly key: string;
@@ -33,6 +31,9 @@ export interface HomesView {
   /** The neighbor differences on the tier that stands for each hue. */
   readonly ring: readonly number[];
   readonly pull: number;
+
+  /** The reference system's hues, drawn as guides: pure hues solid, mixes dashed. */
+  readonly guides: readonly { readonly label: string; readonly hue: number; readonly unique: boolean }[];
 }
 
 /** Drawing space: hue across; homes on the upper line, landings on the lower. */
@@ -82,7 +83,7 @@ export function homesReadout(view: HomesView): string {
  */
 export function homesEditor(view: HomesView): string {
   const stops = view.band.map((b) => `<stop offset="${(b.hue / 360).toFixed(4)}" stop-color="${b.color}"></stop>`).join("");
-  const references = REFERENCES.map(
+  const references = view.guides.map(
     (r) => `<line x1="${r.hue.toFixed(1)}" x2="${r.hue.toFixed(1)}" y1="0" y2="${String(HEIGHT)}" class="reference${r.unique ? "" : " half"}"></line>
       <text x="${r.hue.toFixed(1)}" y="-5" class="axis" text-anchor="middle">${r.label}</text>`,
   );

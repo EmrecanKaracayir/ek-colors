@@ -40,7 +40,8 @@
       "tier": 6
     },
     "homes": {},
-    "pull": 2
+    "pull": 2,
+    "reference": "cam16"
   },
   "palette": {
     "standard": {

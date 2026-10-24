@@ -87,6 +87,9 @@ export interface Settings {
 
   /** How far, at most, a color moves from even spacing toward its home (CAM16-UCS difference). */
   readonly pull: number;
+
+  /** Which body of color science says where colors belong by default (see references.ts). */
+  readonly reference: string;
 }
 
 /* >----------------------------------------< Defaults >----------------------------------------< */
@@ -110,6 +113,7 @@ export const DEFAULTS: Settings = {
   hueWindow: { identity: 20, tier: 6 },
   homes: {},
   pull: 2,
+  reference: "cam16",
 };
 
 /** The eight hues' names, in hue order. */

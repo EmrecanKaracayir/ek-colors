@@ -8,7 +8,8 @@
 
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
-import { apca, makeModel, type Model, REFERENCES, wcag, wcagLevel } from "../palette/model";
+import { apca, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
+import { guides, NEAREST, SYSTEMS, system } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
 import { boost, type Color, type GamutPalette, home, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
@@ -256,7 +257,7 @@ function curveView(mode: Mode): CurveView {
   const dots = (palette?.colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
-  return { mode, points: s.curve[mode], dots, band };
+  return { mode, points: s.curve[mode], dots, band, guides: guides(s) };
 }
 
 /**
@@ -276,7 +277,7 @@ function homesView(): HomesView {
       const homeHue = state.settings.homes[c.key] ?? (state.settings.hues === NAMES.length ? home(state.settings, c.key) : s.hue);
       return { key: c.key, label: label(c.key), home: homeHue, hue: s.hue, color: s.color, anchor: c.key === "yellow" };
     });
-  return { items, band: curveView(mode).band, ring: palette?.ring[tier] ?? [], pull: state.settings.pull };
+  return { items, band: curveView(mode).band, ring: palette?.ring[tier] ?? [], pull: state.settings.pull, guides: guides(state.settings) };
 }
 
 bindHomes(
@@ -469,7 +470,7 @@ function circle(dots: readonly Dot[]): string {
   const rings = [20, 40, 60].map(
     (m) => `<circle r="${String((m / max) * R)}" class="grid"></circle><text x="4" y="${String(-(m / max) * R - 4)}" class="axis">M ${String(m)}</text>`,
   );
-  const spokes = REFERENCES.map((ref) => {
+  const spokes = guides(state.settings).map((ref) => {
     const [x, y] = at(ref.hue, R + 6);
     const [lx, ly] = at(ref.hue, R + 24);
     return `<line x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="spoke${ref.unique ? "" : " half"}"></line>
@@ -764,6 +765,17 @@ function tune(): string {
     <section class="group">
       <h2>Hues</h2>
       <p class="soft">Every color has a home, where it belongs; by default, where its name puts it on CAM16's hue circle. The spacing evens out the differences between neighbors, then each color is pulled back toward its home, by at most the pull below. Yellow is the anchor and lands exactly on its home.</p>
+      <label class="field" for="set-reference"><span>Homes from</span><select id="set-reference" data-set="reference">${[
+        ...SYSTEMS.map((r) => [r.id, r.name] as const),
+        [NEAREST, "Nearest of all"] as const,
+      ]
+        .map(([id, name]) => `<option value="${id}" ${s.reference === id ? "selected" : ""}>${name}</option>`)
+        .join("")}</select></label>
+      <p class="soft reference-note">${
+        s.reference === NEAREST
+          ? "Each color is pulled toward whichever system's home is closest to where the spacing put it, so it moves as little as possible to sit on a recognized reference. Guides show CAM16."
+          : `${system(s).summary} <span class="source">Source: ${system(s).source}</span>`
+      }</p>
       ${homesEditor(homesView())}
       ${number("pull", "Pull toward homes", [0, 6, 0.5], true)}
       ${number("hues", "How many hues", [4, 16, 1])}
@@ -1057,6 +1069,12 @@ document.addEventListener("input", (event) => {
   }
   const path = el.dataset.set;
   if (!path) return;
+  if (path === "reference") {
+    write(path, el.value);
+    solve();
+    render();
+    return;
+  }
   if (path.startsWith("bases.")) {
     if (!/^#[0-9a-f]{6}$/i.test(el.value)) return;
     write(path, el.value.toUpperCase());

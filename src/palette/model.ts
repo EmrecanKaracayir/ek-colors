@@ -231,15 +231,3 @@ export function hueOf(name: string): number {
   }
   return ((lo + hi) / 2) % 360;
 }
-
-/** CAM16's reference hues: the unique ones and the halfway mixes, for the hue circle. */
-export const REFERENCES = [
-  { label: "R", unique: true },
-  { label: "R 50 Y", unique: false },
-  { label: "Y", unique: true },
-  { label: "Y 50 G", unique: false },
-  { label: "G", unique: true },
-  { label: "G 50 B", unique: false },
-  { label: "B", unique: true },
-  { label: "B 50 R", unique: false },
-].map((r) => ({ ...r, hue: hueOf(r.label) }));
