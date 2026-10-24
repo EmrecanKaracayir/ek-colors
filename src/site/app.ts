@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< APP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| The palette site: overview, tiers, one page per colour, the comparison with Codemos, how it      |
+| The palette site: overview, tiers, one page per color, the comparison with Codemos, how it       |
 | works, settings and export. One view at a time, one mode at a time; the page itself is the       |
 | mode's base.                                                                                     |
 \*------------------------------------------------------------------------------------------------*/
@@ -10,7 +10,7 @@ import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, REFERENCES, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, CODEMOS, CODEMOS_MUTED } from "../palette/settings";
-import type { Colour, GamutPalette, Palette, Swatch } from "../palette/solve";
+import type { Color, GamutPalette, Palette, Swatch } from "../palette/solve";
 import { type Context, explain, updateDemo } from "./explain";
 import type { Request, Response } from "./worker";
 
@@ -21,16 +21,16 @@ type Format = "json" | "csv" | "md";
 
 const VIEWS = ["overview", "tiers", "compare", "how", "tune", "export"] as const;
 
-const STORE = "ek-palette:settings";
+const STORE = "ek-colors:settings";
 
 /** Remembers whether the comparison with Codemos is shown. */
-const COMPARE = "ek-palette:compare";
+const COMPARE = "ek-colors:compare";
 
 /** What each tier is for. */
 const ROLES: Readonly<Record<number, string>> = {
   15: "Dividers and faint fills",
   30: "Icons, outlines and controls",
-  45: "Large text and the colour itself",
+  45: "Large text and the color itself",
   60: "Labels and links",
   75: "Body text",
   90: "Long reading",
@@ -57,7 +57,7 @@ const state = {
 };
 
 /**
- * The saved settings, or EK Palette's.
+ * The saved settings, or EK Colors'.
  *
  * @returns  Settings.
  */
@@ -157,7 +157,7 @@ function current(): GamutPalette | null {
 const $ = <T extends Element>(selector: string) => document.querySelector<T>(selector)!;
 
 /**
- * A colour key as people read it.
+ * A color key as people read it.
  *
  * @param key  E.g. "red" or "hue-3".
  * @returns    E.g. "Red" or "Hue 3".
@@ -185,12 +185,12 @@ function badge(level: Swatch["wcagLevel"]): string {
 }
 
 /**
- * A swatch as a card: the colour, a text sample in it, and its numbers.
+ * A swatch as a card: the color, a text sample in it, and its numbers.
  *
  * @param s      The swatch.
  * @param title  Its name on the card.
  * @param href   Where a click goes, if anywhere.
- * @param limit  Whether this colour's reach lowered its tier's target.
+ * @param limit  Whether this color's reach lowered its tier's target.
  * @returns      HTML.
  */
 function card(s: Swatch, title: string, href?: string, limit = false): string {
@@ -201,24 +201,24 @@ function card(s: Swatch, title: string, href?: string, limit = false): string {
     <span class="card-name">${title}</span>
     <span class="mono value">${s.color}</span>
     <span class="facts"><span class="mono">Lc ${s.apca.toFixed(1)}</span>${badge(s.wcagLevel)}</span>
-    <span class="mono soft">WCAG ${s.wcag.toFixed(2)} · M ${s.colourfulness.toFixed(1)}${s.short ? " ▾" : ""}</span>
-    ${limit ? `<span class="limit">▾ Sets this tier's colourfulness</span>` : ""}
+    <span class="mono soft">WCAG ${s.wcag.toFixed(2)} · M ${s.colorfulness.toFixed(1)}${s.short ? " ▾" : ""}</span>
+    ${limit ? `<span class="limit">▾ Sets this tier's colorfulness</span>` : ""}
   </${tag}>`;
 }
 
 /**
- * The colours of the current mode.
+ * The colors of the current mode.
  *
- * @returns  Its colours, or none before the first solve.
+ * @returns  Its colors, or none before the first solve.
  */
-function colours(): readonly Colour[] {
-  return current()?.[state.mode].colours ?? [];
+function colors(): readonly Color[] {
+  return current()?.[state.mode].colors ?? [];
 }
 
 /**
- * How even a ring of neighbour differences is, in words people can compare.
+ * How even a ring of neighbor differences is, in words people can compare.
  *
- * @param ring  Neighbour distances.
+ * @param ring  Neighbor distances.
  * @returns     E.g. "9.1 to 10.3".
  */
 function range(ring: readonly number[]): string {
@@ -226,24 +226,24 @@ function range(ring: readonly number[]): string {
 }
 
 /**
- * A tier's colourfulness, and what lowered it.
+ * A tier's colorfulness, and what lowered it.
  *
  * @param tier  The tier.
- * @returns     E.g. "Colourfulness M 12.7, lowered from 40: Red can't reach more".
+ * @returns     E.g. "Colorfulness M 12.7, lowered from 40: Red can't reach more".
  */
 function held(tier: number): string {
   const p = current()?.[state.mode];
-  if (!p) return "Colourfulness …";
+  if (!p) return "Colorfulness …";
   const limit = p.limits[tier];
   return limit
-    ? `Colourfulness M ${String(p.targets[tier])}, lowered from ${String(state.settings.colourfulness)}: ${label(limit)} can't reach more`
-    : `Colourfulness M ${String(p.targets[tier])}, every colour reaches it`;
+    ? `Colorfulness M ${String(p.targets[tier])}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`
+    : `Colorfulness M ${String(p.targets[tier])}, every color reaches it`;
 }
 
 /**
- * Why a colour on a tier is less colourful than the target, if it is.
+ * Why a color on a tier is less colorful than the target, if it is.
  *
- * @param key   The colour.
+ * @param key   The color.
  * @param tier  The tier.
  * @param s     Its swatch there.
  * @returns     HTML: "sets the tier", "lowered from 40", "screen limit" or nothing.
@@ -253,7 +253,7 @@ function lowered(key: string, tier: number, s: Swatch): string {
   if (!p) return "";
   if (p.limits[tier] === key) return ` <span class="limit">▾ sets the tier</span>`;
   if (s.short) return ` <span class="limit">▾ screen limit</span>`;
-  if (p.limits[tier]) return ` <span class="soft">lowered from ${String(state.settings.colourfulness)}</span>`;
+  if (p.limits[tier]) return ` <span class="soft">lowered from ${String(state.settings.colorfulness)}</span>`;
   return "";
 }
 
@@ -267,10 +267,10 @@ interface Dot {
 }
 
 /**
- * The hue circle: CAM16 hue around, colourfulness out from the centre, with CAM16's unique hues
+ * The hue circle: CAM16 hue around, colorfulness out from the center, with CAM16's unique hues
  * (solid) and halfway mixes (dashed) as spokes.
  *
- * @param dots  The colours to place.
+ * @param dots  The colors to place.
  * @returns     SVG.
  */
 function circle(dots: readonly Dot[]): string {
@@ -310,14 +310,14 @@ function overview(): string {
   const { settings, mode } = state;
   const tier = settings.identityTier;
   const room = settings.rooms[mode];
-  const list = colours();
+  const list = colors();
   const ring = current()?.[mode].ring[tier] ?? [];
   return `<section class="intro">
-      <h1>EK Palette</h1>
-      <p>${String(list.length)} colours that read the same on the ${mode} base: each sits exactly on its APCA contrast, aims at the same colourfulness, and is as different from its neighbours as they are from theirs.</p>
+      <h1>EK Colors</h1>
+      <p>${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast, aims at the same colorfulness, and is as different from its neighbors as they are from theirs.</p>
     </section>
     <section>
-      <h2>The colours <span class="soft">· Lc ${String(tier)}, the tier that stands for each hue</span></h2>
+      <h2>The colors <span class="soft">· Lc ${String(tier)}, the tier that stands for each hue</span></h2>
       <div class="cards">${list.map((c) => card(c.tiers[tier]!.default, label(c.key), c.key, current()?.[mode].limits[tier] === c.key)).join("")}</div>
       <h3>Muted</h3>
       <div class="cards small">${list
@@ -326,14 +326,14 @@ function overview(): string {
         .join("")}</div>
     </section>
     <section class="split">
-      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, ...(c.tiers[tier]!.muted ? [c.tiers[tier]!.muted!] : [])]).map((s) => ({ hue: s.hue, m: s.colourfulness, color: s.color })))}</div>
+      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, ...(c.tiers[tier]!.muted ? [c.tiers[tier]!.muted!] : [])]).map((s) => ({ hue: s.hue, m: s.colorfulness, color: s.color })))}</div>
       <dl class="facts-list">
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${["dark", "dim", "average"][room.surround] ?? ""} surround</dd></div>
-        <div><dt>Colourfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
+        <div><dt>Colorfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
         <div><dt>Yellow</dt><dd>hue ${String(settings.yellowHue[mode])}°</dd></div>
-        <div><dt>Neighbour differences</dt><dd>${ring.length ? range(ring) : "…"} (CAM16-UCS)</dd></div>
-        <div><dt>▾</dt><dd>The screen held this colour below its colourfulness.</dd></div>
+        <div><dt>Neighbor differences</dt><dd>${ring.length ? range(ring) : "…"} (CAM16-UCS)</dd></div>
+        <div><dt>▾</dt><dd>The screen held this color below its colorfulness.</dd></div>
       </dl>
     </section>`;
 }
@@ -349,31 +349,31 @@ function tiers(): string {
   const { settings, mode, variant } = state;
   return `<section class="intro">
       <h1>Tiers</h1>
-      <p>Every colour on every APCA contrast against the ${mode} base. Pick the tier by what the colour does.</p>
+      <p>Every color on every APCA contrast against the ${mode} base. Pick the tier by what the color does.</p>
     </section>
     ${settings.tiers
       .map((tier) => {
         const ring = current()?.[mode].ring[tier] ?? [];
-        const list = colours().filter((c) => c.tiers[tier]![variant]);
+        const list = colors().filter((c) => c.tiers[tier]![variant]);
         return `<section>
           <h2>Lc ${String(tier)} <span class="soft">· ${ROLES[tier] ?? ""}</span></h2>
-          <p class="soft">${held(tier)} · neighbour differences ${ring.length ? range(ring) : "…"}</p>
+          <p class="soft">${held(tier)} · neighbor differences ${ring.length ? range(ring) : "…"}</p>
           <div class="cards small">${list.map((c) => card(c.tiers[tier]![variant]!, label(c.key), c.key, current()?.[mode].limits[tier] === c.key)).join("")}</div>
         </section>`;
       })
       .join("")}`;
 }
 
-/* >-----------------------------------------< Colour >-----------------------------------------< */
+/* >-----------------------------------------< Color >------------------------------------------< */
 
 /**
- * One colour: every tier, default and muted, with all its numbers.
+ * One color: every tier, default and muted, with all its numbers.
  *
- * @param key  The colour.
+ * @param key  The color.
  * @returns    HTML.
  */
-function colour(key: string): string {
-  const list = colours();
+function color(key: string): string {
+  const list = colors();
   const c = list.find((x) => x.key === key);
   if (!c) return `<section class="intro"><h1>${label(key)}</h1><p>Solving…</p></section>`;
   const id = c.tiers[state.settings.identityTier]!.default;
@@ -383,7 +383,7 @@ function colour(key: string): string {
     return `<section>
       <h2>${variant === "default" ? "Default" : "Muted"}</h2>
       <div class="scroll"><table>
-        <thead><tr><th>Tier</th><th>Sample</th><th>Hex</th><th>APCA</th><th>WCAG 2</th><th>Lightness J</th><th>Chroma C</th><th>Colourfulness M</th><th>Hue</th></tr></thead>
+        <thead><tr><th>Tier</th><th>Sample</th><th>Hex</th><th>APCA</th><th>WCAG 2</th><th>Lightness J</th><th>Chroma C</th><th>Colorfulness M</th><th>Hue</th></tr></thead>
         <tbody>${rows
           .map((t) => {
             const s = c.tiers[t]![variant]!;
@@ -395,7 +395,7 @@ function colour(key: string): string {
               <td><span class="mono">${s.wcag.toFixed(2)}</span> ${badge(s.wcagLevel)}</td>
               <td class="mono">${s.lightness.toFixed(1)}</td>
               <td class="mono">${s.chroma.toFixed(1)}</td>
-              <td class="mono">${s.colourfulness.toFixed(1)}${variant === "default" ? lowered(c.key, t, s) : ""}</td>
+              <td class="mono">${s.colorfulness.toFixed(1)}${variant === "default" ? lowered(c.key, t, s) : ""}</td>
               <td class="mono">${s.hue.toFixed(1)}° <span class="soft">${s.name}</span></td>
             </tr>`;
           })
@@ -403,12 +403,12 @@ function colour(key: string): string {
       </table></div>
     </section>`;
   };
-  return `<nav class="chips" aria-label="Colours">${list
+  return `<nav class="chips" aria-label="Colors">${list
     .map((x) => `<a href="#${x.key}" style="--c:${x.tiers[state.settings.identityTier]!.default.color}"${x.key === key ? ' aria-current="page"' : ""}><span class="dot"></span>${label(x.key)}</a>`)
     .join("")}</nav>
     <section class="intro hero" style="--c:${id.color}">
       <h1>${label(key)}</h1>
-      <p>CAM16 hue ${id.hue.toFixed(1)}°, read as ${id.name}. Aims at colourfulness ${c.target.toFixed(0)}${state.settings.offsets[state.mode][key] ? `, ${state.settings.offsets[state.mode][key]! > 0 ? "+" : ""}${String(state.settings.offsets[state.mode][key])} from the target` : ""}.${state.settings.equalTiers ? " A tier lowers it to what its least colourful hue can reach." : ""}</p>
+      <p>CAM16 hue ${id.hue.toFixed(1)}°, read as ${id.name}. Aims at colorfulness ${c.target.toFixed(0)}${state.settings.offsets[state.mode][key] ? `, ${state.settings.offsets[state.mode][key]! > 0 ? "+" : ""}${String(state.settings.offsets[state.mode][key])} from the target` : ""}.${state.settings.equalTiers ? " A tier lowers it to what its least colorful hue can reach." : ""}</p>
     </section>
     ${table("default")}${table("muted")}`;
 }
@@ -416,8 +416,8 @@ function colour(key: string): string {
 /* >----------------------------------------< Compare >-----------------------------------------< */
 
 /**
- * Codemos next to EK Palette on the identity tier: the hue circle, each colour, and how even the
- * differences between neighbours are.
+ * Codemos next to EK Colors on the identity tier: the hue circle, each color, and how even the
+ * differences between neighbors are.
  *
  * @returns  HTML.
  */
@@ -429,7 +429,7 @@ function compare(): string {
   const base = settings.bases[mode];
   const tier = settings.identityTier;
   const source = variant === "default" ? CODEMOS[mode] : CODEMOS_MUTED[mode];
-  const rows = colours()
+  const rows = colors()
     .filter((c) => source[c.key] && c.tiers[tier]![variant])
     .map((c) => {
       const color = source[c.key]!;
@@ -439,7 +439,7 @@ function compare(): string {
         color,
         hue: cam.hue,
         chroma: cam.chroma,
-        colourfulness: cam.m,
+        colorfulness: cam.m,
         lightness: cam.j,
         name: "",
         apca: apca(color, base),
@@ -463,29 +463,29 @@ function compare(): string {
       .join("");
   return `<section class="intro">
       <h1>Compare with Codemos</h1>
-      <p>Codemos's ${variant} colours next to EK Palette's on Lc ${String(tier)}, on the ${mode} base. Codemos was picked by eye; EK Palette is solved.</p>
+      <p>Codemos's ${variant} colors next to EK Colors' on Lc ${String(tier)}, on the ${mode} base. Codemos was picked by eye; EK Colors is solved.</p>
     </section>
     <section class="split">
-      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colourfulness, color: r.old.color, hollow: true })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colourfulness, color: r.now.color }))])}</div>
+      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colorfulness, color: r.old.color, hollow: true })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colorfulness, color: r.now.color }))])}</div>
       <div class="legend">
-        <p><span class="key hollow"></span> Codemos <span class="key"></span> EK Palette</p>
-        <p class="soft">Distance from the centre is colourfulness. EK Palette's dots share one ring; Codemos's scatter, so some of its colours look stronger than others.</p>
+        <p><span class="key hollow"></span> Codemos <span class="key"></span> EK Colors</p>
+        <p class="soft">Distance from the center is colorfulness. EK Colors' dots share one ring; Codemos's scatter, so some of its colors look stronger than others.</p>
       </div>
     </section>
     <section>
-      <h2>Each colour</h2>
+      <h2>Each color</h2>
       <div class="pairs">${rows
         .map(
-          (r) => `<div class="versus"><h3>${label(r.key)}</h3>${card(r.old, "Codemos")}${card(r.now, "EK Palette", r.key)}</div>`,
+          (r) => `<div class="versus"><h3>${label(r.key)}</h3>${card(r.old, "Codemos")}${card(r.now, "EK Colors", r.key)}</div>`,
         )
         .join("")}</div>
     </section>
     <section>
-      <h2>Neighbour differences <span class="soft">· CAM16-UCS</span></h2>
-      <p class="soft">How different each colour looks from the next one around the circle. Even bars mean no two neighbours are easier to confuse than the rest.</p>
+      <h2>Neighbor differences <span class="soft">· CAM16-UCS</span></h2>
+      <p class="soft">How different each color looks from the next one around the circle. Even bars mean no two neighbors are easier to confuse than the rest.</p>
       <div class="split even">
         <div><h3>Codemos <span class="soft">· ${range(oldRing)}</span></h3>${bars(oldRing)}</div>
-        <div><h3>EK Palette <span class="soft">· ${range(newRing)}</span></h3>${bars(newRing)}</div>
+        <div><h3>EK Colors <span class="soft">· ${range(newRing)}</span></h3>${bars(newRing)}</div>
       </div>
     </section>`;
 }
@@ -495,7 +495,7 @@ function compare(): string {
 /**
  * A number control bound to a setting.
  *
- * @param path   The setting, e.g. "colourfulness" or "yellowHue.light".
+ * @param path   The setting, e.g. "colorfulness" or "yellowHue.light".
  * @param title  Its label.
  * @param range  Min, max and step.
  * @param range.0  Minimum.
@@ -546,7 +546,7 @@ function write(path: string, value: unknown): void {
  */
 function tune(): string {
   const s = state.settings;
-  const keys = colours()
+  const keys = colors()
     .map((c) => c.key)
     .filter((k) => k !== "brown");
   const offsets = (mode: Mode) =>
@@ -554,22 +554,22 @@ function tune(): string {
   return `<section class="intro">
       <h1>Settings</h1>
       <p>Change a setting and the palette solves again. Changes stay in this browser.</p>
-      <p><button type="button" data-action="reset">Reset to EK Palette</button></p>
+      <p><button type="button" data-action="reset">Reset to EK Colors</button></p>
     </section>
     <div id="tune-preview" class="strip"></div>
     <section class="group">
-      <h2>Colourfulness</h2>
-      <p class="soft">One CAM16 colourfulness every colour aims at, in both modes. A colour the screen can't make that colourful goes as far as it can.</p>
-      ${number("colourfulness", "Target M", [10, 80, 1], true)}
+      <h2>Colorfulness</h2>
+      <p class="soft">One CAM16 colorfulness every color aims at, in both modes. A color the screen can't make that colorful goes as far as it can.</p>
+      ${number("colorfulness", "Target M", [10, 80, 1], true)}
       ${number("muted", "Muted share", [0.1, 0.9, 0.05], true)}
       <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
-      <p class="soft">On: a tier aims at what its least colourful hue can reach, so every colour on it is equally colourful. Off: each colour goes as far as the screen allows.</p>
+      <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
       <label class="field" for="set-brown-on"><span>Brown</span><input id="set-brown-on" type="checkbox" data-action="brown" ${s.brown === null ? "" : "checked"}></label>
       ${s.brown === null ? "" : number("brown", "Brown share", [0.1, 1, 0.05], true)}
     </section>
     <section class="group">
       <h2>Exceptions</h2>
-      <p class="soft">A colour's change to the target, per mode. Keep these rare, each with a reason.</p>
+      <p class="soft">A color's change to the target, per mode. Keep these rare, each with a reason.</p>
       <div class="split even"><div><h3>Light</h3>${offsets("light")}</div><div><h3>Dark</h3>${offsets("dark")}</div></div>
     </section>
     <section class="group">
@@ -581,7 +581,7 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Tiers</h2>
-      <p class="soft">The APCA contrasts every colour gets. The identity tier stands for the hue and sets every tier's starting hues.</p>
+      <p class="soft">The APCA contrasts every color gets. The identity tier stands for the hue and sets every tier's starting hues.</p>
       <div class="checks">${[15, 30, 45, 60, 75, 90]
         .map((t) => `<label for="tier-${String(t)}"><input id="tier-${String(t)}" type="checkbox" data-tier="${String(t)}" ${s.tiers.includes(t) ? "checked" : ""}> Lc ${String(t)}</label>`)
         .join("")}</div>
@@ -591,7 +591,7 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Viewing</h2>
-      <p class="soft">The backgrounds and the rooms colours are seen in. Surround: 0 dark, 1 dim, 2 average.</p>
+      <p class="soft">The backgrounds and the rooms colors are seen in. Surround: 0 dark, 1 dim, 2 average.</p>
       <div class="split even">${(["light", "dark"] as const)
         .map(
           (m) => `<div><h3>${label(m)}</h3>
@@ -610,15 +610,15 @@ function updateTune(): void {
   const strip = document.querySelector("#tune-preview");
   if (!strip) return;
   const tier = state.settings.identityTier;
-  strip.innerHTML = colours()
+  strip.innerHTML = colors()
     .map((c) => {
       const s = c.tiers[tier]?.default;
       return s ? `<span class="strip-item" style="--c:${s.color}" title="${label(c.key)} ${s.color}"><span class="fill"></span><span class="mono">${s.color.startsWith("#") ? s.color : label(c.key)}</span></span>` : "";
     })
     .join("");
-  // A new hue count brings new colours, so their exceptions need drawing.
+  // A new hue count brings new colors, so their exceptions need drawing.
   const shown = document.querySelectorAll('[data-set^="offsets.light."]').length;
-  if (shown !== colours().filter((c) => c.key !== "brown").length) render();
+  if (shown !== colors().filter((c) => c.key !== "brown").length) render();
 }
 
 /* >-----------------------------------------< Export >-----------------------------------------< */
@@ -653,10 +653,10 @@ function render(): void {
   document.documentElement.dataset.theme = state.mode;
   document.documentElement.style.setProperty("--base-light", state.settings.bases.light);
   document.documentElement.style.setProperty("--base-dark", state.settings.bases.dark);
-  const isColour = !(VIEWS as readonly string[]).includes(view);
+  const isColor = !(VIEWS as readonly string[]).includes(view);
   for (const a of document.querySelectorAll<HTMLAnchorElement>(".nav a")) {
     const target = a.getAttribute("href")!.slice(1);
-    a.toggleAttribute("aria-current", target === view || (target === "colours" && isColour));
+    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor));
   }
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-gamut]")) {
@@ -668,7 +668,7 @@ function render(): void {
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-variant]")) b.setAttribute("aria-pressed", String(b.dataset.variant === state.variant));
   $<HTMLElement>("#variant").hidden = view !== "tiers" && view !== "compare";
   const main = $<HTMLElement>("main");
-  const first = colours()[0]?.key ?? "red";
+  const first = colors()[0]?.key ?? "red";
   main.innerHTML =
     view === "overview" ? overview()
     : view === "tiers" ? tiers()
@@ -676,7 +676,7 @@ function render(): void {
     : view === "tune" ? tune()
     : view === "export" ? exporting()
     : view === "how" ? explain(context())
-    : colour(view === "colours" ? first : view);
+    : color(view === "colors" ? first : view);
   if (view === "tune") updateTune();
 }
 
@@ -754,7 +754,7 @@ function route(): void {
   window.scrollTo(0, 0);
 }
 
-/* >----------------------------------------< Events >------------------------------------------< */
+/* >-----------------------------------------< Events >-----------------------------------------< */
 
 document.addEventListener("click", (event) => {
   const el = (event.target as Element).closest<HTMLElement>("[data-mode],[data-variant],[data-gamut],[data-format],[data-action]");

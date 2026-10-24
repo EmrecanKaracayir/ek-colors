@@ -1,8 +1,8 @@
 {
-  "name": "ek-palette",
+  "name": "ek-colors",
   "version": "2.0.0-dev",
   "private": true,
-  "description": "An accessible colour palette solved in CAM16: every colour exactly on its APCA contrast, equally colourful and evenly spaced, for light and dark.",
+  "description": "An accessible color palette solved in CAM16: every color exactly on its APCA contrast, equally colorful and evenly spaced, for light and dark.",
   "type": "module",
   "scripts": {
     "solve": "tsx src/cli.ts",
@@ -24,10 +24,10 @@
   "packageManager": "pnpm@10.34.6",
   "license": "MIT",
   "author": "Emrecan Karaçayır",
-  "homepage": "https://emrecankaracayir.github.io/ek-palette/",
+  "homepage": "https://emrecankaracayir.github.io/ek-colors/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EmrecanKaracayir/ek-palette.git"
+    "url": "git+https://github.com/EmrecanKaracayir/ek-colors.git"
   },
   "keywords": [
     "color",

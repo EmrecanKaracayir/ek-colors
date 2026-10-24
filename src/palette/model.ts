@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< MODEL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Colour as it appears on each base in its room, for one gamut tier: CAM16 under that mode's       |
+| Color as it appears on each base in its room, for one gamut tier: CAM16 under that mode's        |
 | viewing conditions (Google's material-color-utilities), contrast by WCAG 2 and APCA (Color.js),  |
 | and CAM16's hue names.                                                                           |
 \*------------------------------------------------------------------------------------------------*/
@@ -30,7 +30,7 @@ import type { Gamut, Mode, Settings } from "./settings";
 
 for (const space of [sRGB, P3, REC_2020, XYZ_D65]) ColorSpace.register(space);
 
-/** The colour space each gamut tier's colours are written in. */
+/** The color space each gamut tier's colors are written in. */
 const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies Record<
   Gamut,
   unknown
@@ -42,22 +42,22 @@ const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies 
 const LUX_TO_ADAPTING = 0.0586;
 
 export interface Model {
-  /** The colour in CAM16 as it appears in a mode. */
+  /** The color in CAM16 as it appears in a mode. */
   readonly cam: (mode: Mode, color: string) => Cam16;
 
-  /** The colour with a CAM16 lightness, colourfulness and hue, or null when the gamut can't show it. */
-  readonly colorAt: (mode: Mode, hue: number, colourfulness: number, j: number) => string | null;
+  /** The color with a CAM16 lightness, colorfulness and hue, or null when the gamut can't show it. */
+  readonly colorAt: (mode: Mode, hue: number, colorfulness: number, j: number) => string | null;
 
-  /** How different two colours look (CAM16-UCS). */
+  /** How different two colors look (CAM16-UCS). */
   readonly distance: (mode: Mode, a: string, b: string) => number;
 }
 
 /**
- * The colour model for a set of settings and a gamut: CAM16 told what each mode's eye looks at
- * (its base as the background) and where (its room), and which screens the colours are for.
+ * The color model for a set of settings and a gamut: CAM16 told what each mode's eye looks at
+ * (its base as the background) and where (its room), and which screens the colors are for.
  *
  * @param settings  The bases and rooms.
- * @param gamut     The gamut tier colours must fit.
+ * @param gamut     The gamut tier colors must fit.
  * @returns         CAM16 conversions and distance for both modes.
  */
 export function makeModel(
@@ -81,24 +81,23 @@ export function makeModel(
   };
   return {
     cam,
-    colorAt: (mode, hue, colourfulness, j) =>
-      colorAt(conditions[mode], gamut, hue, colourfulness, j),
+    colorAt: (mode, hue, colorfulness, j) => colorAt(conditions[mode], gamut, hue, colorfulness, j),
     distance: (mode, a, b) => cam(mode, a).distance(cam(mode, b)),
   };
 }
 
-/* >----------------------------------------< Colours >-----------------------------------------< */
+/* >-----------------------------------------< Colors >-----------------------------------------< */
 
 /**
- * The colour with a CAM16 lightness, colourfulness and hue in viewing conditions.
+ * The color with a CAM16 lightness, colorfulness and hue in viewing conditions.
  *
- * Colourfulness depends on the room as well as the colour; chroma is colourfulness with the room
+ * Colorfulness depends on the room as well as the color; chroma is colorfulness with the room
  * taken out (M divided by the fourth root of the luminance adaptation).
  *
  * @param conditions     Where it is seen.
  * @param gamut          The gamut tier it must fit.
  * @param hue            CAM16 hue (degrees).
- * @param colourfulness  CAM16 colourfulness (M).
+ * @param colorfulness  CAM16 colorfulness (M).
  * @param j              CAM16 lightness (0 to 100).
  * @returns              It as CSS (#RRGGBB on the standard tier), or null when the gamut can't show it.
  */
@@ -106,10 +105,10 @@ function colorAt(
   conditions: ViewingConditions,
   gamut: Gamut,
   hue: number,
-  colourfulness: number,
+  colorfulness: number,
   j: number,
 ): string | null {
-  const chroma = colourfulness / conditions.fLRoot;
+  const chroma = colorfulness / conditions.fLRoot;
   const [x, y, z] = Cam16.fromJchInViewingConditions(
     j,
     chroma,
@@ -137,8 +136,8 @@ function colorAt(
 /**
  * APCA contrast of text on a background.
  *
- * @param text        The text colour.
- * @param background  The colour behind it.
+ * @param text        The text color.
+ * @param background  The color behind it.
  * @returns           Lc, in either polarity.
  */
 export function apca(text: string, background: string): number {
@@ -146,9 +145,9 @@ export function apca(text: string, background: string): number {
 }
 
 /**
- * WCAG 2 contrast between two colours.
+ * WCAG 2 contrast between two colors.
  *
- * @param a  One colour.
+ * @param a  One color.
  * @param b  The other.
  * @returns  The ratio, 1 to 21.
  */
@@ -179,7 +178,7 @@ const UNIQUE = {
 } as const;
 
 /**
- * A hue as a mix of its two neighbouring unique hues.
+ * A hue as a mix of its two neighboring unique hues.
  *
  * @param hue  CAM16 hue (degrees).
  * @returns    E.g. "Y 10 G": yellow with 10% green; a single letter for a unique hue.

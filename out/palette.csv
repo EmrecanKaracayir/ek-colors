@@ -1,4 +1,4 @@
-gamut,mode,tier,variant,colour,color,cam16_hue,cam16_chroma,cam16_colourfulness,cam16_lightness,cam16_name,apca,wcag2,wcag2_level
+gamut,mode,tier,variant,name,value,cam16_hue,cam16_chroma,cam16_colorfulness,cam16_lightness,cam16_name,apca,wcag2,wcag2_level
 standard,light,15,default,red,"#FBBDC0",14.3,24.3,19.2,72.7,R 6 B,15.1,1.34,below
 standard,light,15,muted,red,"#E6C5C6",14.1,12.6,9.9,72.1,R 6 B,15,1.34,below
 standard,light,30,default,red,"#DEA2A5",14.4,24.2,19.1,58.7,R 6 B,30.1,1.79,below

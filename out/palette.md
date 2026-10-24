@@ -1,4 +1,4 @@
-# EK Palette
+# EK Colors
 
 ## Standard gamut
 
@@ -6,7 +6,7 @@
 
 #### Default
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `#FBBDC0` WCAG 1.34 | `#DEA2A5` WCAG 1.79 | `#DA767C` WCAG 2.57 | `#AD5D65` WCAG 3.89 | `#7B4145` WCAG 6.56 | `#3C1D1E` WCAG 12.70 |
 | orange | `#F7C29B` WCAG 1.34 | `#DAA780` WCAG 1.79 | `#D18138` WCAG 2.55 | `#A6652E` WCAG 3.90 | `#76471D` WCAG 6.55 | `#392009` WCAG 12.72 |
@@ -20,7 +20,7 @@
 
 #### Muted
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `#E6C5C6` WCAG 1.34 | `#C9AAAB` WCAG 1.79 | `#BB8789` WCAG 2.54 | `#946A6D` WCAG 3.88 | `#694A4C` WCAG 6.56 | `#332223` WCAG 12.64 |
 | orange | `#E4C7B5` WCAG 1.34 | `#C8AC99` WCAG 1.79 | `#B78B69` WCAG 2.55 | `#916E54` WCAG 3.86 | `#674D3A` WCAG 6.53 | `#312419` WCAG 12.61 |
@@ -35,7 +35,7 @@
 
 #### Default
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `#7A464A` WCAG 2.37 | `#B16068` WCAG 4.01 | `#D77D83` WCAG 6.05 | `#F997A0` WCAG 8.42 | `#FEBCC0` WCAG 11.13 | `#FEDEDE` WCAG 14.14 |
 | orange | `#764B28` WCAG 2.37 | `#AA6831` WCAG 4.00 | `#CF8648` WCAG 6.05 | `#F2A05F` WCAG 8.43 | `#FBC197` WCAG 11.14 | `#FDE0CD` WCAG 14.14 |
@@ -49,7 +49,7 @@
 
 #### Muted
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `#6A4E50` WCAG 2.38 | `#986E70` WCAG 4.06 | `#BB8B8D` WCAG 6.08 | `#D9A6AA` WCAG 8.44 | `#E7C5C6` WCAG 11.16 | `#F4E1E0` WCAG 14.11 |
 | orange | `#68513F` WCAG 2.40 | `#957156` WCAG 4.04 | `#B78F71` WCAG 6.07 | `#D7AA8A` WCAG 8.46 | `#E6C7B2` WCAG 11.14 | `#F3E2D9` WCAG 14.11 |
@@ -66,7 +66,7 @@
 
 #### Default
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(display-p3 0.9849 0.7356 0.7385)` WCAG 1.34 | `color(display-p3 0.8714 0.6293 0.6329)` WCAG 1.79 | `color(display-p3 0.838 0.4641 0.4656)` WCAG 2.56 | `color(display-p3 0.6702 0.3591 0.3732)` WCAG 3.91 | `color(display-p3 0.4768 0.2491 0.2593)` WCAG 6.60 | `color(display-p3 0.2316 0.1092 0.1147)` WCAG 12.77 |
 | orange | `color(display-p3 0.9673 0.7597 0.5764)` WCAG 1.34 | `color(display-p3 0.8535 0.6532 0.4745)` WCAG 1.79 | `color(display-p3 0.7986 0.5089 0.2219)` WCAG 2.55 | `color(display-p3 0.64 0.3963 0.1612)` WCAG 3.90 | `color(display-p3 0.4551 0.2764 0.1037)` WCAG 6.58 | `color(display-p3 0.2205 0.1242 0.0314)` WCAG 12.74 |
@@ -80,7 +80,7 @@
 
 #### Muted
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(display-p3 0.8988 0.7713 0.7702)` WCAG 1.34 | `color(display-p3 0.7884 0.665 0.6644)` WCAG 1.79 | `color(display-p3 0.7237 0.5301 0.5256)` WCAG 2.53 | `color(display-p3 0.5767 0.4158 0.4181)` WCAG 3.86 | `color(display-p3 0.4093 0.2916 0.2932)` WCAG 6.51 | `color(display-p3 0.1974 0.1341 0.1349)` WCAG 12.61 |
 | orange | `color(display-p3 0.892 0.7823 0.6914)` WCAG 1.34 | `color(display-p3 0.7816 0.6759 0.5872)` WCAG 1.79 | `color(display-p3 0.7074 0.5495 0.4046)` WCAG 2.53 | `color(display-p3 0.5647 0.4318 0.3132)` WCAG 3.86 | `color(display-p3 0.4008 0.3032 0.2161)` WCAG 6.51 | `color(display-p3 0.193 0.1403 0.0933)` WCAG 12.60 |
@@ -95,7 +95,7 @@
 
 #### Default
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(display-p3 0.4701 0.2693 0.2884)` WCAG 2.35 | `color(display-p3 0.6478 0.3927 0.4158)` WCAG 3.99 | `color(display-p3 0.793 0.5063 0.5253)` WCAG 6.03 | `color(display-p3 0.9217 0.6096 0.635)` WCAG 8.41 | `color(display-p3 0.999 0.7274 0.7457)` WCAG 11.11 | `color(display-p3 0.9994 0.865 0.8688)` WCAG 14.11 |
 | orange | `color(display-p3 0.4549 0.2913 0.146)` WCAG 2.35 | `color(display-p3 0.6292 0.4198 0.2359)` WCAG 4.00 | `color(display-p3 0.7724 0.5356 0.3302)` WCAG 6.03 | `color(display-p3 0.9011 0.641 0.4174)` WCAG 8.41 | `color(display-p3 0.9843 0.7527 0.5596)` WCAG 11.11 | `color(display-p3 0.9955 0.8755 0.7852)` WCAG 14.11 |
@@ -109,7 +109,7 @@
 
 #### Muted
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(display-p3 0.4086 0.3048 0.3109)` WCAG 2.37 | `color(display-p3 0.5677 0.4358 0.4432)` WCAG 4.02 | `color(display-p3 0.701 0.5526 0.5578)` WCAG 6.06 | `color(display-p3 0.8203 0.6589 0.6668)` WCAG 8.44 | `color(display-p3 0.9082 0.767 0.7721)` WCAG 11.13 | `color(display-p3 0.9551 0.8809 0.88)` WCAG 14.11 |
 | orange | `color(display-p3 0.4037 0.3141 0.2406)` WCAG 2.37 | `color(display-p3 0.5617 0.4475 0.3544)` WCAG 4.02 | `color(display-p3 0.6942 0.5654 0.4617)` WCAG 6.06 | `color(display-p3 0.8138 0.6727 0.5601)` WCAG 8.44 | `color(display-p3 0.9036 0.7784 0.6819)` WCAG 11.13 | `color(display-p3 0.9538 0.8858 0.8405)` WCAG 14.11 |
@@ -126,7 +126,7 @@
 
 #### Default
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(rec2020 0.9392 0.7606 0.7496)` WCAG 1.34 | `color(rec2020 0.8337 0.6596 0.6494)` WCAG 1.80 | `color(rec2020 0.7796 0.5163 0.4928)` WCAG 2.56 | `color(rec2020 0.6504 0.3986 0.3913)` WCAG 3.93 | `color(rec2020 0.4841 0.2849 0.2801)` WCAG 6.66 | `color(rec2020 0.2593 0.1521 0.1495)` WCAG 12.90 |
 | orange | `color(rec2020 0.9237 0.7798 0.5941)` WCAG 1.34 | `color(rec2020 0.8181 0.6786 0.4975)` WCAG 1.79 | `color(rec2020 0.7488 0.5493 0.2692)` WCAG 2.56 | `color(rec2020 0.6216 0.4313 0.164)` WCAG 3.92 | `color(rec2020 0.4615 0.312 0.0956)` WCAG 6.64 | `color(rec2020 0.2485 0.1677 0.05)` WCAG 12.83 |
@@ -140,7 +140,7 @@
 
 #### Muted
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(rec2020 0.8784 0.7885 0.7811)` WCAG 1.34 | `color(rec2020 0.7751 0.6875 0.6807)` WCAG 1.79 | `color(rec2020 0.6989 0.5648 0.5501)` WCAG 2.54 | `color(rec2020 0.5774 0.449 0.4418)` WCAG 3.87 | `color(rec2020 0.4293 0.3275 0.322)` WCAG 6.53 | `color(rec2020 0.2332 0.1782 0.1752)` WCAG 12.64 |
 | orange | `color(rec2020 0.872 0.7974 0.7054)` WCAG 1.34 | `color(rec2020 0.7686 0.6963 0.6063)` WCAG 1.79 | `color(rec2020 0.6857 0.5796 0.4381)` WCAG 2.53 | `color(rec2020 0.5657 0.4632 0.3292)` WCAG 3.86 | `color(rec2020 0.4198 0.339 0.2325)` WCAG 6.52 | `color(rec2020 0.2282 0.1845 0.1268)` WCAG 12.63 |
@@ -155,7 +155,7 @@
 
 #### Default
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(rec2020 0.4676 0.3153 0.3212)` WCAG 2.35 | `color(rec2020 0.6193 0.44 0.4455)` WCAG 3.99 | `color(rec2020 0.7504 0.5492 0.5445)` WCAG 6.03 | `color(rec2020 0.8665 0.6482 0.6531)` WCAG 8.41 | `color(rec2020 0.9509 0.7534 0.7558)` WCAG 11.11 | `color(rec2020 0.9901 0.8699 0.8679)` WCAG 14.10 |
 | orange | `color(rec2020 0.4537 0.3334 0.1792)` WCAG 2.35 | `color(rec2020 0.6038 0.4603 0.2793)` WCAG 4.00 | `color(rec2020 0.7316 0.572 0.3661)` WCAG 6.03 | `color(rec2020 0.8492 0.6718 0.4518)` WCAG 8.41 | `color(rec2020 0.9369 0.7738 0.5752)` WCAG 11.11 | `color(rec2020 0.9838 0.8811 0.7626)` WCAG 14.10 |
@@ -169,7 +169,7 @@
 
 #### Muted
 
-| Colour | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
+| Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
 | red | `color(rec2020 0.4221 0.3445 0.345)` WCAG 2.37 | `color(rec2020 0.5633 0.4721 0.472)` WCAG 4.02 | `color(rec2020 0.6862 0.5835 0.5783)` WCAG 6.06 | `color(rec2020 0.7961 0.6849 0.6839)` WCAG 8.44 | `color(rec2020 0.8859 0.7847 0.7827)` WCAG 11.13 | `color(rec2020 0.9504 0.8867 0.8827)` WCAG 14.11 |
 | orange | `color(rec2020 0.417 0.3524 0.2742)` WCAG 2.37 | `color(rec2020 0.5577 0.481 0.3896)` WCAG 4.02 | `color(rec2020 0.6788 0.5938 0.49)` WCAG 6.06 | `color(rec2020 0.7898 0.6955 0.5848)` WCAG 8.44 | `color(rec2020 0.8807 0.7941 0.6947)` WCAG 11.13 | `color(rec2020 0.948 0.8919 0.8327)` WCAG 14.11 |

@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Everything a palette is solved from, with EK Palette's defaults: bases, the two viewing rooms,   |
-| the colourfulness target and per-colour exceptions, the yellow anchor per mode, how many hues,   |
-| the APCA tiers and the muted share.                                                              |
+| Everything a palette is solved from, with EK Colors' defaults: bases, the two viewing rooms, the |
+| colorfulness target and per-color exceptions, the yellow anchor per mode, how many hues, the     |
+| APCA tiers and the muted share.                                                                  |
 \*------------------------------------------------------------------------------------------------*/
 
 /* >-----------------------------------------< Types >------------------------------------------< */
@@ -12,12 +12,12 @@ export type Mode = "light" | "dark";
 
 export const MODES = ["light", "dark"] as const satisfies readonly Mode[];
 
-/** How much colour a screen can show: every screen, most new ones, and the widest. */
+/** How much color a screen can show: every screen, most new ones, and the widest. */
 export type Gamut = "standard" | "wide" | "ultra";
 
 export const GAMUTS = ["standard", "wide", "ultra"] as const satisfies readonly Gamut[];
 
-/** Where a mode's colours are seen: how bright the room is, and how bright its surround is. */
+/** Where a mode's colors are seen: how bright the room is, and how bright its surround is. */
 export interface Room {
   /** Ambient light in lux. */
   readonly lux: number;
@@ -27,37 +27,37 @@ export interface Room {
 }
 
 export interface Settings {
-  /** The backgrounds colours are read on. */
+  /** The backgrounds colors are read on. */
   readonly bases: Readonly<Record<Mode, string>>;
 
   /** The room each mode is seen in. */
   readonly rooms: Readonly<Record<Mode, Room>>;
 
-  /** CAM16 colourfulness (M) every colour aims at, in both modes. */
-  readonly colourfulness: number;
+  /** CAM16 colorfulness (M) every color aims at, in both modes. */
+  readonly colorfulness: number;
 
-  /** Whether a tier lowers its target to what its least colourful hue can reach. */
+  /** Whether a tier lowers its target to what its least colorful hue can reach. */
   readonly equalTiers: boolean;
 
-  /** Per mode, a colour's change to the colourfulness target (e.g. red: +8). */
+  /** Per mode, a color's change to the colorfulness target (e.g. red: +8). */
   readonly offsets: Readonly<Record<Mode, Readonly<Record<string, number>>>>;
 
   /** Yellow's CAM16 hue, the anchor the others are spaced from. */
   readonly yellowHue: Readonly<Record<Mode, number>>;
 
-  /** How many hues share the circle; 8 uses Codemos's names and colours as a start. */
+  /** How many hues share the circle; 8 uses Codemos's names and colors as a start. */
   readonly hues: number;
 
-  /** The APCA contrasts every hue gets a colour for. */
+  /** The APCA contrasts every hue gets a color for. */
   readonly tiers: readonly number[];
 
-  /** The tier whose colour stands for the hue and sets every tier's hues. */
+  /** The tier whose color stands for the hue and sets every tier's hues. */
   readonly identityTier: number;
 
-  /** Muted colourfulness, as a share of the default's. */
+  /** Muted colorfulness, as a share of the default's. */
   readonly muted: number;
 
-  /** Brown's colourfulness, as a share of the target; null leaves brown out. */
+  /** Brown's colorfulness, as a share of the target; null leaves brown out. */
   readonly brown: number | null;
 
   /** How far a hue may move to even out the spacing: on the identity tier, then per tier. */
@@ -74,7 +74,7 @@ export interface Settings {
 export const DEFAULTS: Settings = {
   bases: { light: "#EBEBEB", dark: "#181818" },
   rooms: { light: { lux: 200, surround: 2 }, dark: { lux: 64, surround: 1 } },
-  colourfulness: 40,
+  colorfulness: 40,
   equalTiers: true,
   offsets: { light: {}, dark: {} },
   yellowHue: { light: 100, dark: 100 },
@@ -98,9 +98,9 @@ export const NAMES = [
   "pink",
 ] as const;
 
-/* >---------------------------------------< Codemos >---------------------------------------< */
+/* >----------------------------------------< Codemos >-----------------------------------------< */
 
-/** Codemos's colours, the palette this one replaces: where eight hues start, and the comparison. */
+/** Codemos's colors, the palette this one replaces: where eight hues start, and the comparison. */
 export const CODEMOS: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#B70004",
@@ -126,7 +126,7 @@ export const CODEMOS: Readonly<Record<Mode, Readonly<Record<string, string>>>> =
   },
 };
 
-/** Codemos's alternative (now: muted) colours, for the comparison. */
+/** Codemos's alternative (now: muted) colors, for the comparison. */
 export const CODEMOS_MUTED: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#C35354",

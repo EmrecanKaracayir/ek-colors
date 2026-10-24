@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>EK Palette</title>
-<meta name="description" content="An accessible colour palette solved in CAM16: every colour exactly on its APCA contrast, equally colourful and evenly spaced, for light and dark and three kinds of screen.">
+<title>EK Colors</title>
+<meta name="description" content="An accessible color palette solved in CAM16: every color exactly on its APCA contrast, equally colorful and evenly spaced, for light and dark and three kinds of screen.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
-  /* One view at a time on the mode's own base: the page is the background the colours are solved for. */
+  /* One view at a time on the mode's own base: the page is the background the colors are solved for. */
   :root {
     --base-light: #EBEBEB;
     --base-dark: #181818;
@@ -89,7 +89,7 @@
   .intro p { font-size: 1.0625rem; color: var(--soft); }
   .hero h1 { color: var(--c); }
 
-  /* Cards: the colour as a fill, as text, and its numbers */
+  /* Cards: the color as a fill, as text, and its numbers */
   .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 1rem; }
   .cards.small { grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); }
   .card { display: grid; gap: 0.25rem; align-content: start; text-decoration: none; padding: 0.75rem; border-radius: 0.875rem; box-shadow: inset 0 0 0 1px var(--line); }
@@ -126,7 +126,7 @@
   .key { display: inline-block; width: 0.875rem; height: 0.875rem; border-radius: 50%; background: var(--fg); vertical-align: -0.125rem; margin-left: 0.75rem; }
   .key.hollow { background: none; box-shadow: inset 0 0 0 2.5px var(--fg); margin-left: 0; }
 
-  /* Colour pages */
+  /* Color pages */
   .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .chips a { display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.375rem 0.75rem; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
   .chips a[aria-current] { background: var(--raised); box-shadow: inset 0 0 0 1.5px var(--c); }
@@ -226,11 +226,11 @@
 </head>
 <body>
 <header>
-  <a class="brand" id="brand" href="#overview">EK Palette</a>
+  <a class="brand" id="brand" href="#overview">EK Colors</a>
   <nav class="nav" aria-label="Views">
     <a href="#overview">Overview</a>
     <a href="#tiers">Tiers</a>
-    <a href="#colours">Colours</a>
+    <a href="#colors">Colors</a>
     <a href="#compare" id="nav-compare" hidden>Compare with Codemos</a>
     <a href="#how">How it works</a>
     <a href="#tune">Settings</a>
@@ -249,7 +249,7 @@
     <span id="status" role="status">Solving…</span>
   </div>
 </header>
-<p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colours exactly; it shows the closest it can.</p>
+<p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
 <script type="module" src="app.js"></script>
 </body>

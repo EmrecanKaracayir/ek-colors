@@ -2,7 +2,7 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SOLVE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | Solves a palette from settings: every hue on every APCA tier, default and muted, for light and   |
-| dark and every gamut tier, each exactly on its tier, equally colourful and evenly spaced around  |
+| dark and every gamut tier, each exactly on its tier, equally colorful and evenly spaced around   |
 | the yellow anchor.                                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
@@ -10,22 +10,22 @@ import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./mod
 import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings, CODEMOS } from "./settings";
 
 export interface Swatch {
-  /** The colour as CSS: #RRGGBB on the standard tier, color() on wider ones. */
+  /** The color as CSS: #RRGGBB on the standard tier, color() on wider ones. */
   readonly color: string;
   readonly hue: number;
   readonly chroma: number;
-  readonly colourfulness: number;
+  readonly colorfulness: number;
   readonly lightness: number;
   readonly name: string;
   readonly apca: number;
   readonly wcag: number;
   readonly wcagLevel: ReturnType<typeof wcagLevel>;
 
-  /** Whether the screen held it below its colourfulness target. */
+  /** Whether the screen held it below its colorfulness target. */
   readonly short: boolean;
 }
 
-export interface Colour {
+export interface Color {
   readonly key: string;
   readonly target: number;
   readonly tiers: Readonly<
@@ -35,12 +35,12 @@ export interface Colour {
 
 export interface ModePalette {
   readonly base: string;
-  readonly colours: readonly Colour[];
+  readonly colors: readonly Color[];
 
-  /** Per tier, the colourfulness its colours aim at (before exceptions). */
+  /** Per tier, the colorfulness its colors aim at (before exceptions). */
   readonly targets: Readonly<Record<number, number>>;
 
-  /** Per tier, the colour whose reach lowered the target, or null when every colour reaches it. */
+  /** Per tier, the color whose reach lowered the target, or null when every color reaches it. */
   readonly limits: Readonly<Record<number, string | null>>;
 
   /** Per tier, each hue's distance to the next around the circle (CAM16-UCS). */
@@ -53,29 +53,29 @@ export type GamutPalette = Readonly<Record<Mode, ModePalette>>;
 /** Every gamut tier, each solved on its own. */
 export type Palette = Readonly<Record<Gamut, GamutPalette>>;
 
-/* >------------------------------------< Placing a colour >------------------------------------< */
+/* >------------------------------------< Placing a color >-------------------------------------< */
 
 /**
- * The colour at a hue and colourfulness that sits exactly on a tier.
+ * The color at a hue and colorfulness that sits exactly on a tier.
  *
  * Its CAM16 lightness is searched until APCA against the base just reaches the tier: the lowest
  * that does in dark mode, the highest in light mode, so it is never below the tier and only as far
  * above as rounding forces.
  *
- * @param model          The colour model.
+ * @param model          The color model.
  * @param base           The background.
  * @param mode           The mode.
  * @param hue            CAM16 hue.
- * @param colourfulness  CAM16 colourfulness.
+ * @param colorfulness  CAM16 colorfulness.
  * @param tier           The APCA contrast to sit on.
- * @returns              The colour, or null when no colour that colourful reaches the tier.
+ * @returns              The color, or null when no color that colorful reaches the tier.
  */
 function place(
   model: Model,
   base: string,
   mode: Mode,
   hue: number,
-  colourfulness: number,
+  colorfulness: number,
   tier: number,
 ) {
   const dark = mode === "dark";
@@ -83,28 +83,28 @@ function place(
   let hi = 100;
   for (let i = 0; i < 34; i++) {
     const m = (lo + hi) / 2;
-    const color = model.colorAt(mode, hue, colourfulness, m);
+    const color = model.colorAt(mode, hue, colorfulness, m);
     const passes = color !== null && apca(color, base) >= tier;
     // Off-screen counts as too far from the base, so the search moves back towards it.
     if (dark) passes || color === null ? (hi = m) : (lo = m);
     else passes || color === null ? (lo = m) : (hi = m);
   }
-  const color = model.colorAt(mode, hue, colourfulness, dark ? hi : lo);
+  const color = model.colorAt(mode, hue, colorfulness, dark ? hi : lo);
   return color !== null && apca(color, base) >= tier ? color : null;
 }
 
 /**
- * The most colourfulness, up to a target, a hue can hold on a tier.
+ * The most colorfulness, up to a target, a hue can hold on a tier.
  *
- * @param model   The colour model.
+ * @param model   The color model.
  * @param base    The background.
  * @param mode    The mode.
  * @param hue     CAM16 hue.
- * @param target  The colourfulness wanted.
+ * @param target  The colorfulness wanted.
  * @param tier    The tier.
- * @returns       The colour.
+ * @returns       The color.
  *
- * @throws        When not even a grey reaches the tier.
+ * @throws        When not even a gray reaches the tier.
  */
 export function strongest(
   model: Model,
@@ -123,8 +123,7 @@ export function strongest(
     place(model, base, mode, hue, m, tier) ? (lo = m) : (hi = m);
   }
   const color = place(model, base, mode, hue, lo, tier);
-  if (!color)
-    throw new Error(`No ${mode} colour at hue ${String(hue)} reaches Lc ${String(tier)}.`);
+  if (!color) throw new Error(`No ${mode} color at hue ${String(hue)} reaches Lc ${String(tier)}.`);
   return color;
 }
 
@@ -133,7 +132,7 @@ export function strongest(
 /**
  * How unevenly spaced a ring of distances is.
  *
- * @param distances  Neighbour distances.
+ * @param distances  Neighbor distances.
  * @returns          Their standard deviation.
  */
 function spread(distances: readonly number[]): number {
@@ -153,12 +152,12 @@ interface Spacing {
 }
 
 /**
- * Hues moved, each within a window of its start, until neighbours are equally different.
+ * Hues moved, each within a window of its start, until neighbors are equally different.
  *
  * The anchor (yellow) stays where it is.
  *
  * @param spacing  What to space, where, and how far hues may move.
- * @returns        The hues, their colours and the neighbour distances.
+ * @returns        The hues, their colors and the neighbor distances.
  */
 function space({ model, base, mode, tier, start, anchor, window, targets }: Spacing) {
   const ring = (cs: readonly string[]) =>
@@ -194,7 +193,7 @@ function space({ model, base, mode, tier, start, anchor, window, targets }: Spac
  * circle from yellow and named later by CAM16.
  *
  * @param settings  The settings.
- * @param model     The colour model.
+ * @param model     The color model.
  * @param mode      The mode.
  * @returns         The keys, starting hues and the anchor's index.
  */
@@ -219,13 +218,13 @@ function seeds(settings: Settings, model: Model, mode: Mode) {
 }
 
 /**
- * A colour described for output and display.
+ * A color described for output and display.
  *
- * @param model   The colour model.
+ * @param model   The color model.
  * @param base    The background.
  * @param mode    The mode.
- * @param color   The colour.
- * @param target  The colourfulness it aimed at.
+ * @param color   The color.
+ * @param target  The colorfulness it aimed at.
  * @returns       Its CAM16 description, name and contrasts.
  */
 function swatch(model: Model, base: string, mode: Mode, color: string, target: number): Swatch {
@@ -236,7 +235,7 @@ function swatch(model: Model, base: string, mode: Mode, color: string, target: n
     color,
     hue: round(c.hue),
     chroma: round(c.chroma),
-    colourfulness: round(c.m),
+    colorfulness: round(c.m),
     lightness: round(c.j),
     name: composition(c.hue),
     apca: round(apca(color, base)),
@@ -250,13 +249,13 @@ function swatch(model: Model, base: string, mode: Mode, color: string, target: n
  * Every tier of one mode.
  *
  * The identity tier is spaced first; every other tier starts from its hues and may move them a
- * little, so each tier is evenly spaced in its own right. With equal tiers, every colour on a tier
- * is equally colourful.
+ * little, so each tier is evenly spaced in its own right. With equal tiers, every color on a tier
+ * is equally colorful.
  *
  * @param settings  The settings.
- * @param model     The colour model.
+ * @param model     The color model.
  * @param mode      The mode.
- * @returns         The mode's colours on every tier.
+ * @returns         The mode's colors on every tier.
  */
 function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const base = settings.bases[mode];
@@ -267,14 +266,14 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
       ? settings.hueWindow.identity
       : Math.min(settings.hueWindow.identity, 180 / settings.hues);
 
-  // On an equal tier, the target drops to what its least colourful hue can reach.
+  // On an equal tier, the target drops to what its least colorful hue can reach.
   const ceiling = (tier: number, hues: readonly number[]) => {
-    if (!settings.equalTiers) return { target: settings.colourfulness, limit: null };
+    if (!settings.equalTiers) return { target: settings.colorfulness, limit: null };
     const reach = hues.map((h) => model.cam(mode, strongest(model, base, mode, h, 200, tier)).m);
     const least = reach.indexOf(Math.min(...reach));
-    return reach[least]! < settings.colourfulness
+    return reach[least]! < settings.colorfulness
       ? { target: reach[least]!, limit: keys[least]! }
-      : { target: settings.colourfulness, limit: null };
+      : { target: settings.colorfulness, limit: null };
   };
   const solveTier = (tier: number, hues: readonly number[], window: number) => {
     const { target, limit } = ceiling(tier, hues);
@@ -303,7 +302,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     ring[tier] = solved.ring.map((d) => Math.round(d * 10) / 10);
     keys.forEach((key, i) => {
       const def = swatch(model, base, mode, solved.colors[i]!, solved.targets[i]!);
-      const quiet = def.colourfulness * settings.muted;
+      const quiet = def.colorfulness * settings.muted;
       const muted = swatch(
         model,
         base,
@@ -323,22 +322,22 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     }
   }
   const allKeys = settings.brown === null ? keys : [...keys, "brown"];
-  const colours = allKeys.map((key) => ({
+  const colors = allKeys.map((key) => ({
     key,
     target:
       key === "brown"
-        ? settings.colourfulness * (settings.brown ?? 0)
-        : settings.colourfulness + offsets[keys.indexOf(key)]!,
+        ? settings.colorfulness * (settings.brown ?? 0)
+        : settings.colorfulness + offsets[keys.indexOf(key)]!,
     tiers: Object.fromEntries(settings.tiers.map((t) => [t, tiers[t]![key]!])),
   }));
-  return { base, colours, targets, limits, ring };
+  return { base, colors, targets, limits, ring };
 }
 
 /**
  * Both modes on one gamut tier.
  *
  * @param settings  What to solve from.
- * @param gamut     The gamut tier colours must fit.
+ * @param gamut     The gamut tier colors must fit.
  * @returns         The palette for that tier.
  */
 export function solveGamut(settings: Settings, gamut: Gamut): GamutPalette {
