@@ -9,7 +9,7 @@
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, type Model, REFERENCES, wcag, wcagLevel } from "../palette/model";
-import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, CODEMOS, CODEMOS_MUTED } from "../palette/settings";
+import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
 import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
@@ -21,7 +21,7 @@ import type { Request, Response } from "./worker";
 type Variant = "default" | "muted";
 type Format = "json" | "csv" | "md";
 
-const VIEWS = ["overview", "tiers", "compare", "how", "test", "tune", "export"] as const;
+const VIEWS = ["overview", "tiers", "compare", "how", "curve-test", "tune", "export"] as const;
 
 const STORE = "ek-colors:settings";
 
@@ -75,10 +75,17 @@ function load(): Settings {
     if (saved) {
       // Settings saved before exceptions became the curve still hold them; they're left out.
       const { offsets: _, ...stored } = JSON.parse(saved) as Partial<Settings> & { offsets?: unknown };
-      const settings = { ...CONFIG, ...stored };
+      const settings = { ...CONFIG, ...stored } as { -readonly [K in keyof Settings]: Settings[K] };
       // Settings saved before the identity tier was per mode hold one number.
       const identity = settings.identityTier as Settings["identityTier"] | number;
-      return typeof identity === "number" ? { ...settings, identityTier: { light: identity, dark: identity } } : settings;
+      if (typeof identity === "number") settings.identityTier = { light: identity, dark: identity };
+      // Settings saved before the curve had several points hold one point, flat or not.
+      const curve = settings.curve as Record<Mode, unknown>;
+      for (const m of ["light", "dark"] as const) {
+        const one = curve[m] as CurvePoint | CurvePoint[] | undefined;
+        if (!Array.isArray(one)) curve[m] = one && one.amount !== 0 ? [one] : [];
+      }
+      return settings;
     }
   } catch {
     // Storage can be blocked; the defaults do.
@@ -175,8 +182,7 @@ const asked = new Map<string, number>();
  * @returns  Settings.
  */
 function flat(): Settings {
-  const off = (mode: Mode) => ({ ...state.settings.curve[mode], amount: 0 });
-  return { ...state.settings, curve: { light: off("light"), dark: off("dark") } };
+  return { ...state.settings, curve: { light: [], dark: [] } };
 }
 
 /**
@@ -185,7 +191,7 @@ function flat(): Settings {
  * @returns  True when either mode's curve has an amount.
  */
 function curved(): boolean {
-  return Object.values(state.settings.curve).some((c) => c.amount !== 0);
+  return Object.values(state.settings.curve).some((points) => points.some((p) => p.amount !== 0));
 }
 
 /**
@@ -244,11 +250,11 @@ function curveView(mode: Mode): CurveView {
   const dots = (palette?.colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
-  return { mode, curve: s.curve[mode], dots, band };
+  return { mode, points: s.curve[mode], dots, band };
 }
 
-bindCurves(curveView, (mode, curve) => {
-  write(`curve.${mode}`, curve);
+bindCurves(curveView, (mode, points) => {
+  write(`curve.${mode}`, points);
   updateStrip();
   solve(150);
 });
@@ -271,8 +277,8 @@ function context(): Context {
 function testContext(): TestContext {
   return {
     ...context(),
-    applyCurve: (mode, curve) => {
-      write(`curve.${mode}`, curve);
+    applyCurve: (mode, points) => {
+      write(`curve.${mode}`, points);
       solve();
     },
     redraw: render,
@@ -712,7 +718,8 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Curve</h2>
-      <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for a part of the circle that looks weaker or stronger than the model says. Drag the point to set its hue and amount, drag an edge to set its width, or hold Option (Alt) and scroll over the graph for fine steps. Double-click the point to flatten it.</p>
+      <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Points add up. Double-click the graph to add a point, drag a point to move it, drag the selected point's edges (or hold Option and scroll) to set its width, and double-click a point to remove it.</p>
+      <p><a href="#curve-test" class="button">Measure it with the blind curve test</a></p>
       ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
     </section>
     <section class="group">
@@ -839,7 +846,7 @@ function render(): void {
   const isColor = !(VIEWS as readonly string[]).includes(view);
   for (const a of document.querySelectorAll<HTMLAnchorElement>(".nav a")) {
     const target = a.getAttribute("href")!.slice(1);
-    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor));
+    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && view === "curve-test"));
   }
   // On phones the views scroll sideways; keep the current one in sight.
   document.querySelector(".nav a[aria-current]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -861,7 +868,7 @@ function render(): void {
     : view === "tune" ? tune()
     : view === "export" ? exporting()
     : view === "how" ? explain(context())
-    : view === "test" ? testPage(testContext())
+    : view === "curve-test" ? testPage(testContext())
     : color(view === "colors" ? first : view);
   if (view === "tune") updateTune();
 }

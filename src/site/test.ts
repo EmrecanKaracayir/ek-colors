@@ -1,14 +1,14 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| The blind test: pairs of colors on the same tier, one of them a little more or less colorful     |
-| than the palette, shown without names in random order. Picking the one that looks more colorful, |
-| over every hue, measures how much each hue needs to look as colorful as the rest; those amounts  |
+| The blind curve test: pairs of colors on the same tier, one a little more or less colorful than  |
+| the palette, shown without names in random order. Each hue has its own staircase that closes in  |
+| on the point where it looks as colorful as the others; those points, with how sure each one is,  |
 | fit the curve.                                                                                   |
 \*------------------------------------------------------------------------------------------------*/
 
-import { makeModel } from "../palette/model";
-import type { Curve, Gamut, Mode, Settings } from "../palette/settings";
+import { makeModel, type Model } from "../palette/model";
+import type { CurvePoint, Gamut, Mode, Settings } from "../palette/settings";
 import { boost, type GamutPalette, strongest } from "../palette/solve";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
@@ -22,14 +22,17 @@ export interface TestContext {
   readonly label: (key: string) => string;
 
   /** Sets a mode's curve. */
-  readonly applyCurve: (mode: Mode, curve: Curve) => void;
+  readonly applyCurve: (mode: Mode, points: CurvePoint[]) => void;
 
   /** Draws the page again. */
   readonly redraw: () => void;
 }
 
-/** How much more or less colorful the test color is than the palette, in CAM16 M. */
-const STEPS = [-8, -4, 0, 4, 8, 12] as const;
+/** Pairs per hue in one run. */
+const PER_HUE = 12;
+
+/** How far the test color may move from the palette, in CAM16 M. */
+const REACH = 16;
 
 /** One answered pair: how much more colorful the test color was, and whether it was picked. */
 interface Point {
@@ -52,9 +55,20 @@ interface Run {
   readonly points: readonly Point[];
 }
 
-interface Trial {
+/** One hue's staircase: where it is, how big a step it takes, and how often it has turned. */
+interface Stair {
   readonly key: string;
   readonly hue: number;
+  delta: number;
+  step: number;
+  turns: number;
+  last: number;
+  count: number;
+}
+
+/** The pair on screen. */
+interface Pair {
+  readonly stair: Stair;
   readonly test: string;
   readonly other: string;
   readonly x: number;
@@ -63,83 +77,130 @@ interface Trial {
   readonly left: boolean;
 }
 
-let session: { mode: Mode; gamut: Gamut; tier: number; trials: Trial[]; points: Point[]; resting: boolean } | null = null;
+interface Session {
+  readonly mode: Mode;
+  readonly gamut: Gamut;
+  readonly tier: number;
+  readonly target: number;
+  readonly base: string;
+  readonly model: Model;
+  readonly stairs: Stair[];
+  pair: Pair;
+  readonly points: Point[];
+  resting: boolean;
+}
+
+let session: Session | null = null;
 
 /* >-----------------------------------------< Trials >-----------------------------------------< */
 
 /**
- * Shuffles in place.
+ * The next pair: a hue whose staircase isn't done, never the same hue twice in a row, against
+ * another hue at the palette's colorfulness, on a random side.
  *
- * @param list  The list.
- * @returns     The same list.
+ * @param s     The test so far.
+ * @param last  The hue of the pair before, if any.
+ * @returns     The pair, or null when every staircase is done.
  */
-function shuffle<T>(list: T[]): T[] {
-  for (let i = list.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [list[i], list[j]] = [list[j]!, list[i]!];
-  }
-  return list;
+function nextPair(s: Omit<Session, "pair">, last?: string): Pair | null {
+  const open = s.stairs.filter((t) => t.count < PER_HUE);
+  if (!open.length) return null;
+  const choices = open.length > 1 ? open.filter((t) => t.key !== last) : open;
+  const stair = choices[Math.floor(Math.random() * choices.length)]!;
+  const others = s.stairs.filter((t) => t.key !== stair.key);
+  const other = others[Math.floor(Math.random() * others.length)]!;
+  const color = (hue: number, m: number) => strongest(s.model, s.base, s.mode, hue, Math.max(0, m), s.tier);
+  const test = color(stair.hue, s.target + stair.delta);
+  const ref = color(other.hue, s.target);
+  const x = s.model.cam(s.mode, test).m - s.model.cam(s.mode, ref).m;
+  return { stair, test, other: ref, x, left: Math.random() < 0.5 };
 }
 
 /**
- * Every pair of a test: each hue at every step, against another hue at the palette's colorfulness,
- * in random order and on random sides.
+ * Starts a test of the mode on screen. Every staircase starts away from the palette, half of them
+ * above and half below, and moves toward where the answers turn.
  *
  * @param ctx  What the page shows.
- * @returns    The trials, or null before the palette is solved.
+ * @returns    Whether it started (the palette has to be solved first).
  */
-function makeTrials(ctx: TestContext): Trial[] | null {
+function start(ctx: TestContext): boolean {
   const palette = ctx.palette?.[ctx.mode];
-  if (!palette) return null;
+  if (!palette) return false;
   const tier = ctx.settings.identityTier[ctx.mode];
-  const target = palette.targets[tier]!;
-  const base = ctx.settings.bases[ctx.mode];
-  const model = makeModel(ctx.settings, ctx.gamut);
   const hues = palette.colors.filter((c) => c.key !== "brown").map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
-  const color = (hue: number, m: number) => strongest(model, base, ctx.mode, hue, Math.max(0, m), tier);
-  const trials = hues.flatMap((h) =>
-    STEPS.map((step) => {
-      const others = hues.filter((o) => o.key !== h.key);
-      const other = others[Math.floor(Math.random() * others.length)]!;
-      const test = color(h.hue, target + step);
-      const ref = color(other.hue, target);
-      const x = model.cam(ctx.mode, test).m - model.cam(ctx.mode, ref).m;
-      return { key: h.key, hue: h.hue, test, other: ref, x, left: Math.random() < 0.5 };
-    }),
-  );
-  return shuffle(trials);
+  const signs = hues.map((_, i) => (i % 2 ? 1 : -1)).toSorted(() => Math.random() - 0.5);
+  const base = {
+    mode: ctx.mode,
+    gamut: ctx.gamut,
+    tier,
+    target: palette.targets[tier]!,
+    base: ctx.settings.bases[ctx.mode],
+    model: makeModel(ctx.settings, ctx.gamut),
+    stairs: hues.map((h, i) => ({ ...h, delta: 8 * signs[i]!, step: 4, turns: 0, last: 0, count: 0 })),
+    points: [],
+    resting: false,
+  };
+  session = { ...base, pair: nextPair(base)! };
+  return true;
+}
+
+/**
+ * Moves a staircase after an answer: down when the test color looked more colorful, up when it
+ * looked less, smaller steps after it has turned.
+ *
+ * @param stair   The staircase.
+ * @param picked  1, 0 or ½.
+ */
+function climb(stair: Stair, picked: number): void {
+  stair.count++;
+  if (picked === 0.5) return;
+  const direction = picked === 1 ? -1 : 1;
+  if (stair.last && direction !== stair.last) {
+    stair.turns++;
+    stair.step = stair.turns >= 4 ? 1 : stair.turns >= 2 ? 2 : 4;
+  }
+  stair.last = direction;
+  stair.delta = Math.max(-REACH, Math.min(REACH, stair.delta + direction * stair.step));
 }
 
 /* >----------------------------------------< Results >-----------------------------------------< */
 
 /**
- * The point where a hue looks as colorful as the others: a logistic curve fitted to its answers,
- * read where either color is equally likely to be picked.
+ * Where a hue looks as colorful as the others, and how sure that is: a logistic curve fitted to
+ * its answers, read where either color is equally likely to be picked, with the range the answers
+ * can't tell apart from it (a likelihood drop of 1.92, about 95%).
  *
  * @param points  One hue's answers.
- * @returns       How much more colorful it must be to look equal, or null with too few answers.
+ * @returns       How much more colorful it must be to look equal, with a low and high bound.
  */
-function equalPoint(points: readonly Point[]): number | null {
+function equalPoint(points: readonly Point[]) {
   if (points.length < 4) return null;
-  let best = { likelihood: -Infinity, at: 0 };
-  for (let at = -20; at <= 20; at += 0.5) {
-    for (const spread of [2, 3, 4, 6]) {
+  const profile: { at: number; likelihood: number }[] = [];
+  for (let at = -24; at <= 24; at += 0.5) {
+    let best = -Infinity;
+    // Wide spreads let answers that barely depend on the difference (guessing) come out unsure.
+    for (const spread of [1.5, 2.5, 4, 6, 10, 20, 40]) {
       let likelihood = 0;
       for (const p of points) {
         const chance = Math.min(0.99, Math.max(0.01, 1 / (1 + Math.exp(-(p.x - at) / spread))));
         likelihood += p.y * Math.log(chance) + (1 - p.y) * Math.log(1 - chance);
       }
-      if (likelihood > best.likelihood) best = { likelihood, at };
+      best = Math.max(best, likelihood);
     }
+    profile.push({ at, likelihood: best });
   }
-  return best.at;
+  const peak = profile.reduce((a, b) => (b.likelihood > a.likelihood ? b : a));
+  const inside = profile.filter((p) => p.likelihood >= peak.likelihood - 1.92).map((p) => p.at);
+  const [low, high] = [Math.min(...inside), Math.max(...inside)];
+  // A range that runs off the end can't be pinned down, so it counts as unsure.
+  return { equal: peak.at, low, high, sure: low > -24 && high < 24 };
 }
 
 /**
  * Every saved answer for a mode, pooled by hue.
  *
  * @param mode  The mode.
- * @returns     Per hue: its average hue angle, how many answers, and its equal point.
+ * @returns     Per hue: its average hue angle, how many answers, and where it looks equal.
  */
 function pooled(mode: Mode) {
   const byKey = new Map<string, Point[]>();
@@ -149,37 +210,71 @@ function pooled(mode: Mode) {
     key,
     hue: points.reduce((s, p) => s + p.hue, 0) / points.length,
     count: points.length,
-    equal: equalPoint(points),
+    result: equalPoint(points),
   }));
 }
 
 /* >---------------------------------------< Curve fit >----------------------------------------< */
 
+interface Measured {
+  readonly hue: number;
+  readonly equal: number;
+
+  /** How much a hue counts: the surer its result, the more. */
+  readonly weight: number;
+}
+
 /**
- * The curve closest to the measured amounts, in steps the editor uses.
+ * The one point that best explains what's left, in steps the editor uses.
  *
- * @param measured  Per hue, how much it needs.
- * @param mode      The mode.
- * @returns         The curve.
+ * @param left  Per hue, what the curve still has to add.
+ * @param mode  The mode.
+ * @returns     The point and the weighted error left after it.
  */
-function fitCurve(measured: readonly { hue: number; equal: number }[], mode: Mode): Curve {
-  let best = { error: Infinity, curve: { amount: 0, center: 0, width: 90 } as Curve };
+function bestPoint(left: readonly Measured[], mode: Mode) {
+  let best = { error: Infinity, point: { amount: 0, center: 0, width: 90 } as CurvePoint };
   for (let center = 0; center < 360; center += 5) {
-    for (let width = 20; width <= 180; width += 10) {
+    for (let width = 30; width <= 180; width += 10) {
       for (let amount = -20; amount <= 20; amount++) {
-        const curve = { amount, center, width };
-        const settings = { curve: { light: curve, dark: curve } };
-        const error = measured.reduce((s, m) => s + (boost(settings, mode, m.hue) - m.equal) ** 2, 0);
-        if (error < best.error - 1e-9) best = { error, curve };
+        const point = { amount, center, width };
+        const settings = { curve: { light: [point], dark: [point] } };
+        const error = left.reduce((s, m) => s + m.weight * (boost(settings, mode, m.hue) - m.equal) ** 2, 0);
+        if (error < best.error - 1e-9) best = { error, point };
       }
     }
   }
-  return best.curve;
+  return best;
+}
+
+/**
+ * The curve that fits the measurements: points added one at a time, each where it explains the
+ * most of what's left, until another point would mostly fit noise.
+ *
+ * @param measured  Per hue, how much it needs and how sure that is.
+ * @param mode      The mode.
+ * @returns         The curve's points.
+ */
+function fitCurve(measured: readonly Measured[], mode: Mode): CurvePoint[] {
+  const points: CurvePoint[] = [];
+  let left = [...measured];
+  let error = left.reduce((s, m) => s + m.weight * m.equal ** 2, 0);
+  for (let i = 0; i < 3; i++) {
+    const next = bestPoint(left, mode);
+    // A point has three numbers; it has to explain clearly more than chance would.
+    if (next.point.amount === 0 || error - next.error < 6) break;
+    points.push(next.point);
+    const settings = { curve: { light: [next.point], dark: [next.point] } };
+    left = left.map((m) => ({ ...m, equal: m.equal - boost(settings, mode, m.hue) }));
+    error = next.error;
+  }
+  return points;
 }
 
 /* >---------------------------------------< Saved runs >---------------------------------------< */
 
 const STORE = "ek-colors:tests";
+
+let memory: Run[] = [];
 
 /**
  * Every finished test in this browser, including ones added from codes.
@@ -193,8 +288,6 @@ function runs(): Run[] {
     return memory;
   }
 }
-
-let memory: Run[] = [];
 
 /**
  * Saves the runs.
@@ -250,14 +343,14 @@ export function testPage(ctx: TestContext): string {
   const done = runs().filter((r) => r.mode === ctx.mode);
   const hues = ctx.palette?.[ctx.mode].colors.filter((c) => c.key !== "brown").length ?? 8;
   return `<section class="intro">
-      <h1>Blind test</h1>
-      <p>Pairs of ${mode}-mode colors, one at a time, without names. Pick the one that looks more colorful. ${String(STEPS.length * hues)} pairs, about three minutes. Your answers show how much each hue needs to look as colorful as the rest.</p>
+      <h1>Blind curve test</h1>
+      <p>Measures how colorful each ${mode}-mode hue looks to you, to set the curve. Pairs of colors, one at a time, without names: pick the one that looks more colorful. ${String(PER_HUE * hues)} pairs, about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest.</p>
       <ul class="soft checklist">
         <li>Turn off True Tone and Night Shift, and use your usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
         <li>Go with your first impression. If you truly can't tell, pick "Can't tell".</li>
       </ul>
-      <p><button type="button" data-test="start" ${ctx.palette ? "" : "disabled"}>${ctx.palette ? (done.length ? "Take the test again" : "Start the test") : "Solving the palette…"}</button> <span class="soft">Uses the ${mode} mode; switch Light and Dark above for the other.</span></p>
+      <p class="row"><button type="button" data-test="start" ${ctx.palette ? "" : "disabled"}>${ctx.palette ? (done.length ? "Take it again" : "Start") : "Solving the palette…"}</button><a href="#tune">Back to the curve</a><span class="soft">Tests ${mode} mode; switch Light and Dark above for the other.</span></p>
     </section>
     ${done.length ? results(ctx) : ""}`;
 }
@@ -269,11 +362,10 @@ export function testPage(ctx: TestContext): string {
  */
 function stage(): string {
   const s = session!;
-  const at = s.points.length;
-  const trial = s.trials[at]!;
-  const [a, b] = trial.left ? [trial.test, trial.other] : [trial.other, trial.test];
+  const pair = s.pair;
+  const [a, b] = pair.left ? [pair.test, pair.other] : [pair.other, pair.test];
   return `<section class="test-stage" id="test-stage">
-      <p class="soft">Pair ${String(at + 1)} of ${String(s.trials.length)}. Which looks more colorful?</p>
+      <p class="soft">Pair ${String(s.points.length + 1)} of ${String(s.stairs.length * PER_HUE)}. Which looks more colorful?</p>
       <div class="test-pair${s.resting ? " resting" : ""}">
         <button type="button" class="test-swatch" data-test="left" style="--c:${a}" aria-label="Left"></button>
         <button type="button" class="test-swatch" data-test="right" style="--c:${b}" aria-label="Right"></button>
@@ -288,8 +380,8 @@ function stage(): string {
 }
 
 /**
- * The results so far for the mode on screen: per hue how much it needs, the curve that fits, and
- * the runs they come from.
+ * The results so far for the mode on screen: per hue how much it needs and how sure that is, the
+ * curve that fits, and the runs they come from.
  *
  * @param ctx  What the page shows.
  * @returns    HTML.
@@ -298,22 +390,28 @@ function results(ctx: TestContext): string {
   const tier = ctx.settings.identityTier[ctx.mode];
   const colorOf = (key: string) => ctx.palette?.[ctx.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
   const measured = pooled(ctx.mode).toSorted((a, b) => a.hue - b.hue);
-  const usable = measured.filter((m): m is typeof m & { equal: number } => m.equal !== null);
+  const usable = measured.flatMap((m) =>
+    m.result?.sure ? [{ hue: m.hue, equal: m.result.equal, weight: 1 / Math.max(1, ((m.result.high - m.result.low) / 3.92) ** 2) }] : [],
+  );
   const curve = usable.length >= 3 ? fitCurve(usable, ctx.mode) : null;
-  const list = runs();
+  const settings = { curve: { light: curve ?? [], dark: curve ?? [] } };
+  const sign = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
   const rows = measured
     .map((m) => {
-      const fitted = curve ? boost({ curve: { light: curve, dark: curve } }, ctx.mode, m.hue) : null;
-      const sign = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
-      return `<tr>
+      const r = m.result;
+      const clear = r?.sure && (r.low > 0 || r.high < 0);
+      return `<tr${clear ? ' class="clear"' : ""}>
         <th scope="row"><span class="dot" style="--c:${colorOf(m.key)}"></span> ${ctx.label(m.key)}</th>
         <td class="mono">${String(m.count)}</td>
-        <td class="mono">${m.equal === null ? "—" : sign(m.equal)}</td>
-        <td class="mono">${fitted === null ? "—" : sign(fitted)}</td>
+        <td class="mono">${r ? sign(r.equal) : "—"}</td>
+        <td class="mono soft">${r ? (r.sure ? `${sign(r.low)} to ${sign(r.high)}` : "unsure") : "—"}</td>
+        <td class="mono">${curve ? sign(boost(settings, ctx.mode, m.hue)) : "—"}</td>
       </tr>`;
     })
     .join("");
-  const mine = list
+  const describe = (points: readonly CurvePoint[]) =>
+    points.map((p) => `${p.amount > 0 ? "+" : ""}${String(p.amount)} at ${String(p.center)}°, width ${String(p.width)}°`).join("; ");
+  const mine = runs()
     .map((r, i) => ({ r, i }))
     .filter(({ r }) => r.mode === ctx.mode)
     .map(
@@ -322,17 +420,19 @@ function results(ctx: TestContext): string {
         <button type="button" data-test="remove" data-run="${String(i)}">Remove</button></li>`,
     )
     .join("");
+  const name = ctx.label(ctx.mode).toLowerCase();
   return `<section>
-      <h2>Results, ${ctx.label(ctx.mode).toLowerCase()} mode</h2>
-      <p class="soft">How much colorfulness (M) each hue needs to look as colorful as the others, from every run below together. A positive number means it looked weaker than the model says.</p>
-      <div class="scroll"><table class="test-results"><thead><tr><th>Color</th><th>Answers</th><th>Measured</th><th>Curve</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <h2>Results, ${name} mode</h2>
+      <p class="soft">How much colorfulness (M) each hue needs to look as colorful as the others, from every run below together. "Could be" is the range the answers can't rule out; a hue in bold is clearly off, since its whole range is on one side of zero.</p>
+      <div class="scroll"><table class="test-results"><thead><tr><th>Color</th><th>Answers</th><th>Measured</th><th>Could be</th><th>Curve</th></tr></thead><tbody>${rows}</tbody></table></div>
       ${
-        curve
-          ? `<p>The curve that fits: <strong class="mono">amount ${curve.amount > 0 ? "+" : ""}${String(curve.amount)}, hue ${String(curve.center)}°, width ${String(curve.width)}°</strong>.
-             <button type="button" data-test="apply" data-amount="${String(curve.amount)}" data-center="${String(curve.center)}" data-width="${String(curve.width)}">Use it for the ${ctx.label(ctx.mode).toLowerCase()} curve</button></p>
-             <p class="soft">One run is a rough answer. Two or three runs, or a few people's, make it steadier.</p>`
-          : `<p class="soft">Not enough answers to fit a curve yet.</p>`
+        curve === null
+          ? `<p class="soft">Not enough answers to fit a curve yet.</p>`
+          : curve.length === 0
+            ? `<p>The answers don't show any hue clearly needing a change, so the curve that fits is flat. <button type="button" data-test="apply" data-points="[]">Flatten the ${name} curve</button></p>`
+            : `<p>The curve that fits: <strong class="mono">${describe(curve)}</strong>. <button type="button" data-test="apply" data-points='${JSON.stringify(curve)}'>Use it for the ${name} curve</button></p>`
       }
+      <p class="soft">It only adds a point where the answers clearly need one. One run is a rough answer; two or three, or a few people's, make it steadier.</p>
     </section>
     <section>
       <h2>Runs</h2>
@@ -345,8 +445,8 @@ function results(ctx: TestContext): string {
 /* >-----------------------------------------< Events >-----------------------------------------< */
 
 /**
- * Records an answer and moves to the next pair, with a short blank between so one pair's
- * afterimage doesn't color the next.
+ * Records an answer, moves that hue's staircase, and shows the next pair after a short blank, so
+ * one pair's afterimage doesn't color the next.
  *
  * @param ctx     What the page shows.
  * @param answer  Which side was picked.
@@ -354,15 +454,18 @@ function results(ctx: TestContext): string {
 function answer(ctx: TestContext, answer: "left" | "right" | "same"): void {
   const s = session;
   if (!s || s.resting) return;
-  const trial = s.trials[s.points.length]!;
-  const picked = answer === "same" ? 0.5 : (answer === "left") === trial.left ? 1 : 0;
-  s.points.push({ key: trial.key, hue: trial.hue, x: trial.x, y: picked });
-  if (s.points.length === s.trials.length) {
+  const pair = s.pair;
+  const picked = answer === "same" ? 0.5 : (answer === "left") === pair.left ? 1 : 0;
+  s.points.push({ key: pair.stair.key, hue: pair.stair.hue, x: pair.x, y: picked });
+  climb(pair.stair, picked);
+  const next = nextPair(s, pair.stair.key);
+  if (!next) {
     keep([...runs(), { mode: s.mode, gamut: s.gamut, tier: s.tier, when: new Date().toISOString(), points: s.points }]);
     session = null;
     ctx.redraw();
     return;
   }
+  s.pair = next;
   s.resting = true;
   ctx.redraw();
   window.setTimeout(() => {
@@ -383,14 +486,9 @@ export function bindTest(get: () => TestContext): void {
     const ctx = get();
     const action = el.dataset.test!;
     if (action === "left" || action === "right" || action === "same") return answer(ctx, action);
-    if (action === "start") {
-      const trials = makeTrials(ctx);
-      if (!trials) return;
-      session = { mode: ctx.mode, gamut: ctx.gamut, tier: ctx.settings.identityTier[ctx.mode], trials, points: [], resting: false };
-    }
+    if (action === "start" && !start(ctx)) return;
     if (action === "stop") session = null;
-    if (action === "apply")
-      ctx.applyCurve(ctx.mode, { amount: Number(el.dataset.amount), center: Number(el.dataset.center), width: Number(el.dataset.width) });
+    if (action === "apply") ctx.applyCurve(ctx.mode, JSON.parse(el.dataset.points ?? "[]") as CurvePoint[]);
     if (action === "remove") keep(runs().filter((_, i) => i !== Number(el.dataset.run)));
     if (action === "copy") {
       const run = runs()[Number(el.dataset.run)];
@@ -402,8 +500,7 @@ export function bindTest(get: () => TestContext): void {
       return;
     }
     if (action === "add") {
-      const input = document.querySelector<HTMLInputElement>("#test-code");
-      const run = decode(input?.value ?? "");
+      const run = decode(document.querySelector<HTMLInputElement>("#test-code")?.value ?? "");
       if (!run) {
         const message = document.querySelector("#test-message");
         if (message) message.textContent = "That isn't a test code. Copy it again and paste the whole code.";
@@ -423,4 +520,3 @@ export function bindTest(get: () => TestContext): void {
     answer(get(), picked);
   });
 }
-

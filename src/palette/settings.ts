@@ -26,8 +26,8 @@ export interface Room {
   readonly surround: number;
 }
 
-/** Colorfulness added around a hue, for colors that look weaker than the model says. */
-export interface Curve {
+/** One point of the curve: colorfulness added around a hue, easing to none on either side. */
+export interface CurvePoint {
   /** Colorfulness added at the center; below zero takes some away. */
   readonly amount: number;
 
@@ -52,10 +52,10 @@ export interface Settings {
   readonly equalTiers: boolean;
 
   /**
-   * Per mode, colorfulness added smoothly over hue: the full amount at the center, fading to none
-   * at the width's edge on either side.
+   * Per mode, colorfulness added or taken away smoothly over hue, for colors that look weaker or
+   * stronger than the model says: the sum of its points.
    */
-  readonly curve: Readonly<Record<Mode, Curve>>;
+  readonly curve: Readonly<Record<Mode, readonly CurvePoint[]>>;
 
   /** Yellow's CAM16 hue, the anchor the others are spaced from. */
   readonly yellowHue: Readonly<Record<Mode, number>>;
@@ -91,7 +91,7 @@ export const DEFAULTS: Settings = {
   rooms: { light: { lux: 200, surround: 2 }, dark: { lux: 64, surround: 1 } },
   colorfulness: 40,
   equalTiers: true,
-  curve: { light: { amount: 0, center: 0, width: 90 }, dark: { amount: 0, center: 0, width: 90 } },
+  curve: { light: [], dark: [] },
   yellowHue: { light: 100, dark: 100 },
   hues: 8,
   tiers: [15, 30, 45, 60, 75, 90],

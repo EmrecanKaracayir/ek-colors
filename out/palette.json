@@ -17,16 +17,8 @@
     "colorfulness": 40,
     "equalTiers": true,
     "curve": {
-      "light": {
-        "amount": 0,
-        "center": 0,
-        "width": 90
-      },
-      "dark": {
-        "amount": 0,
-        "center": 0,
-        "width": 90
-      }
+      "light": [],
+      "dark": []
     },
     "yellowHue": {
       "light": 100,

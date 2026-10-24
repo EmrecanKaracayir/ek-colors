@@ -133,12 +133,13 @@ export function strongest(
  * @param settings  The settings.
  * @param mode      The mode.
  * @param hue       CAM16 hue.
- * @returns         The amount at the center, easing to none at the width's edge.
+ * @returns         Every point's addition there, added up.
  */
 export function boost(settings: Pick<Settings, "curve">, mode: Mode, hue: number): number {
-  const { amount, center, width } = settings.curve[mode];
-  const away = Math.abs(((((hue - center) % 360) + 540) % 360) - 180);
-  return away >= width ? 0 : (amount * (1 + Math.cos((Math.PI * away) / width))) / 2;
+  return settings.curve[mode].reduce((sum, { amount, center, width }) => {
+    const away = Math.abs(((((hue - center) % 360) + 540) % 360) - 180);
+    return away >= width ? sum : sum + (amount * (1 + Math.cos((Math.PI * away) / width))) / 2;
+  }, 0);
 }
 
 /* >----------------------------------------< Spacing >-----------------------------------------< */
