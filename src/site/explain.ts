@@ -59,7 +59,7 @@ function model(settings: Pick<Settings, "bases" | "rooms">, gamut: Gamut): Model
  * @returns    One entry per hue (brown left out).
  */
 function hues(ctx: Context) {
-  const tier = ctx.settings.identityTier;
+  const tier = ctx.settings.identityTier[ctx.mode];
   return (ctx.palette?.[ctx.mode].colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
@@ -131,7 +131,7 @@ function modes(ctx: Context): string {
   // A tier where neither mode was lowered, so both sit exactly on the target.
   const tier =
     ctx.settings.tiers.find((t) => !ctx.palette?.light.limits[t] && !ctx.palette?.dark.limits[t]) ??
-    ctx.settings.identityTier;
+    ctx.settings.identityTier[ctx.mode];
   const ink = { light: "#1C1D20", dark: "#E7E8EA" } as const;
   const pair = (["light", "dark"] as const).map((mode) => {
     const c = ctx.palette?.[mode].colors[0];
@@ -261,7 +261,7 @@ function reach(ctx: Context): string {
 function difference(ctx: Context): string {
   const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => c.key !== "brown");
   if (colors.length < 2) return "Solving…";
-  const lc = Number(value("demo-dtier") || ctx.settings.identityTier);
+  const lc = Number(value("demo-dtier") || ctx.settings.identityTier[ctx.mode]);
   const pick = (id: string, fallback: number) =>
     colors.find((c) => c.key === value(id)) ?? colors[fallback]!;
   const [a, b] = [pick("demo-a", 0), pick("demo-b", 1)];
@@ -300,7 +300,7 @@ function difference(ctx: Context): string {
  */
 function spacing(ctx: Context): string {
   const list = hues(ctx);
-  const ring = ctx.palette?.[ctx.mode].ring[ctx.settings.identityTier] ?? [];
+  const ring = ctx.palette?.[ctx.mode].ring[ctx.settings.identityTier[ctx.mode]] ?? [];
   if (!ring.length) return "Solving…";
   const most = Math.max(...ring);
   return ring
@@ -394,7 +394,7 @@ export function explain(ctx: Context): string {
         <div class="demo-controls">
           <label for="demo-a">First color <select id="demo-a" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 0 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>
           <label for="demo-b">Second color <select id="demo-b" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 1 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>
-          <label for="demo-dtier">Tier <select id="demo-dtier" data-demo="difference">${s.tiers.map((t) => `<option value="${String(t)}" ${t === s.identityTier ? "selected" : ""}>Lc ${String(t)}</option>`).join("")}</select></label>
+          <label for="demo-dtier">Tier <select id="demo-dtier" data-demo="difference">${s.tiers.map((t) => `<option value="${String(t)}" ${t === s.identityTier[ctx.mode] ? "selected" : ""}>Lc ${String(t)}</option>`).join("")}</select></label>
         </div>
         <div id="demo-difference-out" class="demo-out wide">${difference(ctx)}</div>
       </div>

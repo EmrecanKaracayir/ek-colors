@@ -286,14 +286,14 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     };
   };
 
-  const identity = solveTier(settings.identityTier, start, window);
+  const identity = solveTier(settings.identityTier[mode], start, window);
   const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch | null }>> = {};
   const targets: Record<number, number> = {};
   const limits: Record<number, string | null> = {};
   const ring: Record<number, number[]> = {};
   for (const tier of settings.tiers) {
     const solved =
-      tier === settings.identityTier
+      tier === settings.identityTier[mode]
         ? identity
         : solveTier(tier, identity.hues, settings.hueWindow.tier);
     tiers[tier] = {};

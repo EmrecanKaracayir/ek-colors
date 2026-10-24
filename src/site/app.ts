@@ -64,7 +64,12 @@ const state = {
 function load(): Settings {
   try {
     const saved = localStorage.getItem(STORE);
-    if (saved) return { ...CONFIG, ...(JSON.parse(saved) as Partial<Settings>) };
+    if (saved) {
+      const settings = { ...CONFIG, ...(JSON.parse(saved) as Partial<Settings>) };
+      // Settings saved before the identity tier was per mode hold one number.
+      const identity = settings.identityTier as Settings["identityTier"] | number;
+      return typeof identity === "number" ? { ...settings, identityTier: { light: identity, dark: identity } } : settings;
+    }
   } catch {
     // Storage can be blocked; the defaults do.
   }
@@ -318,7 +323,7 @@ function circle(dots: readonly Dot[]): string {
  */
 function overview(): string {
   const { settings, mode } = state;
-  const tier = settings.identityTier;
+  const tier = settings.identityTier[mode];
   const room = settings.rooms[mode];
   const list = colors();
   const ring = current()?.[mode].ring[tier] ?? [];
@@ -386,7 +391,7 @@ function color(key: string): string {
   const list = colors();
   const c = list.find((x) => x.key === key);
   if (!c) return `<section class="intro"><h1>${label(key)}</h1><p>Solving…</p></section>`;
-  const id = c.tiers[state.settings.identityTier]!.default;
+  const id = c.tiers[state.settings.identityTier[state.mode]]!.default;
   const table = (variant: Variant) => {
     const rows = state.settings.tiers.filter((t) => c.tiers[t]![variant]);
     if (!rows.length) return "";
@@ -414,7 +419,7 @@ function color(key: string): string {
     </section>`;
   };
   return `<nav class="chips" aria-label="Colors">${list
-    .map((x) => `<a href="#${x.key}" style="--c:${x.tiers[state.settings.identityTier]!.default.color}"${x.key === key ? ' aria-current="page"' : ""}><span class="dot"></span>${label(x.key)}</a>`)
+    .map((x) => `<a href="#${x.key}" style="--c:${x.tiers[state.settings.identityTier[state.mode]]!.default.color}"${x.key === key ? ' aria-current="page"' : ""}><span class="dot"></span>${label(x.key)}</a>`)
     .join("")}</nav>
     <section class="intro hero" style="--c:${id.color}">
       <h1>${label(key)}</h1>
@@ -437,7 +442,7 @@ function compare(): string {
     return `<section class="intro"><h1>Compare with Codemos</h1><p>Codemos has eight hues. Set Hues to 8 in Settings to compare.</p></section>`;
   const model = makeModel(settings);
   const base = settings.bases[mode];
-  const tier = settings.identityTier;
+  const tier = settings.identityTier[mode];
   const source = variant === "default" ? CODEMOS[mode] : CODEMOS_MUTED[mode];
   const rows = colors()
     .filter((c) => source[c.key] && c.tiers[tier]![variant])
@@ -564,7 +569,7 @@ function tune(): string {
   return `<section class="intro">
       <h1>Settings</h1>
       <p>Change a setting and the palette solves again. Changes stay in this browser.</p>
-      <p><button type="button" data-action="reset">Reset to EK Colors</button></p>
+      <p class="row"><button type="button" data-action="reset">Reset to EK Colors</button><button type="button" data-action="copy-settings">Copy settings</button><span id="copied" class="soft" role="status"></span></p>
     </section>
     <div id="tune-preview" class="strip"></div>
     <section class="group">
@@ -595,9 +600,13 @@ function tune(): string {
       <div class="checks">${[15, 30, 45, 60, 75, 90]
         .map((t) => `<label for="tier-${String(t)}"><input id="tier-${String(t)}" type="checkbox" data-tier="${String(t)}" ${s.tiers.includes(t) ? "checked" : ""}> Lc ${String(t)}</label>`)
         .join("")}</div>
-      <label class="field" for="set-identity"><span>Identity tier</span><select id="set-identity" data-set="identityTier">${s.tiers
-        .map((t) => `<option value="${String(t)}" ${t === s.identityTier ? "selected" : ""}>Lc ${String(t)}</option>`)
-        .join("")}</select></label>
+      ${(["light", "dark"] as const)
+        .map(
+          (m) => `<label class="field" for="set-identity-${m}"><span>Identity, ${m}</span><select id="set-identity-${m}" data-set="identityTier.${m}">${s.tiers
+            .map((t) => `<option value="${String(t)}" ${t === s.identityTier[m] ? "selected" : ""}>Lc ${String(t)}</option>`)
+            .join("")}</select></label>`,
+        )
+        .join("")}
     </section>
     <section class="group">
       <h2>Viewing</h2>
@@ -621,7 +630,7 @@ function tune(): string {
 function updateTune(): void {
   const strip = document.querySelector("#tune-preview");
   if (!strip) return;
-  const tier = state.settings.identityTier;
+  const tier = state.settings.identityTier[state.mode];
   strip.innerHTML = colors()
     .map((c) => {
       const s = c.tiers[tier]?.default;
@@ -800,6 +809,13 @@ document.addEventListener("click", (event) => {
     );
     return;
   }
+  if (action === "copy-settings") {
+    navigator.clipboard.writeText(JSON.stringify(state.settings, null, 2)).then(
+      () => ($("#copied").textContent = "Settings copied"),
+      () => ($("#copied").textContent = "Copying isn't allowed here; use Export → JSON"),
+    );
+    return;
+  }
   if (action === "equal") {
     write("equalTiers", (el as HTMLInputElement).checked);
     solve();
@@ -818,7 +834,9 @@ document.addEventListener("input", (event) => {
     const checked = [...document.querySelectorAll<HTMLInputElement>("[data-tier]")].filter((c) => c.checked).map((c) => Number(c.dataset.tier));
     if (!checked.length) return void (el.checked = true);
     write("tiers", checked);
-    if (!checked.includes(state.settings.identityTier)) write("identityTier", checked.includes(45) ? 45 : checked[0]);
+    for (const m of ["light", "dark"] as const)
+      if (!checked.includes(state.settings.identityTier[m]))
+        write(`identityTier.${m}`, checked.includes(CONFIG.identityTier[m]) ? CONFIG.identityTier[m] : checked[0]);
     solve(150);
     return;
   }

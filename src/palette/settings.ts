@@ -51,8 +51,8 @@ export interface Settings {
   /** The APCA contrasts every hue gets a color for. */
   readonly tiers: readonly number[];
 
-  /** The tier whose color stands for the hue and sets every tier's hues. */
-  readonly identityTier: number;
+  /** Per mode, the tier whose color stands for the hue and sets every tier's hues. */
+  readonly identityTier: Readonly<Record<Mode, number>>;
 
   /** Muted colorfulness, as a share of the default's. */
   readonly muted: number;
@@ -80,7 +80,7 @@ export const DEFAULTS: Settings = {
   yellowHue: { light: 100, dark: 100 },
   hues: 8,
   tiers: [15, 30, 45, 60, 75, 90],
-  identityTier: 45,
+  identityTier: { light: 60, dark: 45 },
   muted: 0.5,
   brown: 0.6,
   hueWindow: { identity: 20, tier: 6 },

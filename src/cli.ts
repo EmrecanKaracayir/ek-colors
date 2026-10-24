@@ -25,7 +25,7 @@ for (const gamut of GAMUTS) {
   );
 }
 for (const mode of MODES) {
-  const tier = CONFIG.identityTier;
+  const tier = CONFIG.identityTier[mode];
   const colors = palette.standard[mode].colors.map((c) => {
     const s = c.tiers[tier]!.default;
     return `${c.key} ${s.color}${s.short ? "*" : ""}`;
