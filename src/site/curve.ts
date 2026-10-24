@@ -38,7 +38,10 @@ export interface CurveView {
 type Field = (path: string, title: string, range: readonly [number, number, number]) => string;
 
 /** The amount runs from −LIMIT to +LIMIT; the width from MIN_WIDTH to 180°. */
-const LIMIT = 20;
+const LIMIT = 24;
+
+/** The amount scale's step. */
+const STEP = 8;
 const MIN_WIDTH = 10;
 
 
@@ -153,9 +156,9 @@ export function curveEditor(view: CurveView, drawField: Field): string {
   field = drawField;
   const { mode } = view;
   selected[mode] = clamp(selected[mode], 0, Math.max(0, view.points.length - 1));
-  const levels = [-LIMIT, -LIMIT / 2, LIMIT / 2, LIMIT].map(
-    (m) => `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>
-      <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${m > 0 ? "+" : ""}${String(m)}</text>`,
+  const levels = Array.from({ length: (2 * LIMIT) / STEP + 1 }, (_, k) => k * STEP - LIMIT).map(
+    (m) => `${m ? `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>` : ""}
+      <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${String(m)}</text>`,
   );
   return `<div class="graph-editor curve-editor" data-curve="${mode}" style="${INSETS}">
     ${guidePicker(view.guide)}
