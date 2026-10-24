@@ -68,30 +68,81 @@ function hues(ctx: Context) {
 /* >-----------------------------------------< Demos >------------------------------------------< */
 
 /**
- * The room demo: the palette's colour, and the colour that would look the same, in another room.
+ * The room chart: how colourful one screen colour looks as the room gets brighter, with the rooms
+ * the two modes are solved for marked.
  *
  * @param ctx  What the page shows.
- * @returns    HTML.
+ * @returns    SVG.
  */
 function room(ctx: Context): string {
   const first = hues(ctx)[0];
   if (!first) return "Solving…";
-  const solvedIn = ctx.settings.rooms[ctx.mode];
-  const here = {
-    lux: Number(value("demo-lux") || solvedIn.lux),
-    surround: Number(value("demo-surround") || solvedIn.surround),
+  const surround = ctx.settings.rooms[ctx.mode].surround;
+  const looks = (lux: number) => {
+    const here = { lux, surround };
+    return model({ bases: ctx.settings.bases, rooms: { light: here, dark: here } }, ctx.gamut).cam(
+      ctx.mode,
+      first.color,
+    ).m;
   };
-  const there = model({ bases: ctx.settings.bases, rooms: { light: here, dark: here } }, ctx.gamut);
-  const look = model(ctx.settings, ctx.gamut).cam(ctx.mode, first.color);
-  const seen = there.cam(ctx.mode, first.color);
-  const same = there.colorAt(ctx.mode, look.hue, look.m, look.j);
-  return `<div class="demo-pair">
-      <figure><span class="demo-swatch" style="--c:${first.color}"></span>
-        <figcaption><strong>The palette's ${ctx.label(first.key).toLowerCase()}</strong><span class="soft">Looks M ${seen.m.toFixed(1)} here, M ${look.m.toFixed(1)} in its own room</span></figcaption></figure>
-      <figure>${same ? `<span class="demo-swatch" style="--c:${same}"></span>` : `<span class="demo-swatch empty"></span>`}
-        <figcaption><strong>Looks the same here</strong><span class="soft">${same ? `M ${look.m.toFixed(1)}, as in its own room` : "The screen can't show it"}</span></figcaption></figure>
-    </div>
-    <p class="soft">${String(here.lux)} lux, ${["dark", "dim", "average"][here.surround] ?? ""} surround. The palette was solved for ${String(solvedIn.lux)} lux. In a brighter room the same screen colour looks stronger, so a colour that looks the same is a quieter one; in a darker room it's the other way round.</p>`;
+  const [left, width, top, height] = [44, 540, 12, 180];
+  const [lo, hi] = [0, 4];
+  const x = (lux: number) => left + ((Math.log10(lux) - lo) / (hi - lo)) * width;
+  const points = Array.from({ length: 41 }, (_, i) => 10 ** (lo + (i / 40) * (hi - lo)));
+  const values = points.map(looks);
+  const [min, max] = [Math.floor(Math.min(...values) / 10) * 10, Math.ceil(Math.max(...values) / 10) * 10];
+  const y = (m: number) => top + height - ((m - min) / (max - min)) * height;
+  const line = points.map((p, i) => `${i ? "L" : "M"}${x(p).toFixed(1)} ${y(values[i]!).toFixed(1)}`).join(" ");
+  const yTicks = Array.from({ length: (max - min) / 10 + 1 }, (_, i) => min + i * 10).map(
+    (m) => `<line x1="${String(left)}" x2="${String(left + width)}" y1="${y(m).toFixed(1)}" y2="${y(m).toFixed(1)}" class="grid"></line>
+      <text x="${String(left - 8)}" y="${(y(m) + 4).toFixed(1)}" class="axis" text-anchor="end">${String(m)}</text>`,
+  );
+  const xTicks = [
+    [1, "Dark room"],
+    [10, "10 lux"],
+    [100, "100"],
+    [1000, "Office 1 000"],
+    [10_000, "Daylight"],
+  ] as const;
+  const marks = (["dark", "light"] as const).map((mode) => {
+    const lux = ctx.settings.rooms[mode].lux;
+    const m = looks(lux);
+    return `<line x1="${x(lux).toFixed(1)}" x2="${x(lux).toFixed(1)}" y1="${String(top)}" y2="${String(top + height)}" class="target"></line>
+      <circle cx="${x(lux).toFixed(1)}" cy="${y(m).toFixed(1)}" r="6" style="fill:${first.color}" class="${mode === ctx.mode ? "" : "other"}"></circle>
+      <text x="${(x(lux) + 8).toFixed(1)}" y="${String(top + (mode === "dark" ? 12 : 30))}" class="axis label">${mode === "dark" ? "Dark mode" : "Light mode"} · ${String(lux)} lux</text>`;
+  });
+  return `<svg class="chart" viewBox="0 0 ${String(left + width + 20)} ${String(top + height + 30)}" role="img" aria-label="How colourful ${ctx.label(first.key)} looks as the room gets brighter">
+      ${yTicks.join("")}
+      ${xTicks.map(([lux, text]) => `<text x="${x(lux).toFixed(1)}" y="${String(top + height + 20)}" class="axis" text-anchor="${lux === 1 ? "start" : lux === 10_000 ? "end" : "middle"}">${text}</text>`).join("")}
+      <path d="${line}" fill="none" style="stroke:${first.color}" stroke-width="3" stroke-linecap="round"></path>
+      ${marks.join("")}
+    </svg>
+    <p class="soft">How colourful the palette's ${ctx.label(first.key).toLowerCase()} looks (M), from a dark room to daylight. The screen colour never changes.</p>`;
+}
+
+/**
+ * The same hue solved for each mode, each on its own base, with how much colour the screen gives
+ * it.
+ *
+ * @param ctx  What the page shows.
+ * @returns    HTML.
+ */
+function modes(ctx: Context): string {
+  // A tier where neither mode was lowered, so both sit exactly on the target.
+  const tier =
+    ctx.settings.tiers.find((t) => !ctx.palette?.light.limits[t] && !ctx.palette?.dark.limits[t]) ??
+    ctx.settings.identityTier;
+  const ink = { light: "#1C1D20", dark: "#E7E8EA" } as const;
+  const pair = (["light", "dark"] as const).map((mode) => {
+    const c = ctx.palette?.[mode].colours[0];
+    if (!c) return "";
+    const s = c.tiers[tier]!.default;
+    return `<figure class="on-base" style="--base:${ctx.settings.bases[mode]};--c:${s.color};--ink:${ink[mode]}">
+      <span class="demo-swatch"></span><span class="on-base-sample">Aa</span>
+      <figcaption><strong>${mode === "light" ? "Light mode" : "Dark mode"}</strong><span>Looks M ${s.colourfulness.toFixed(0)} · screen chroma ${s.chroma.toFixed(0)}</span></figcaption>
+    </figure>`;
+  });
+  return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(ctx.palette?.light.colours[0]?.key ?? "")} on Lc ${String(tier)}.</p>`;
 }
 
 /**
@@ -260,7 +311,7 @@ function spacing(ctx: Context): string {
     .join("");
 }
 
-const DEMOS = { room, tier, reach, difference } as const;
+const DEMOS = { tier, reach, difference } as const;
 
 /**
  * Redraws one demo after its controls change.
@@ -300,15 +351,9 @@ export function explain(ctx: Context): string {
       <h2>Colour depends on the room</h2>
       <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colours fairly, the solver uses <strong>CAM16</strong>, a model of human colour vision. You tell it what the eye is looking at and where: the page's base colour as the background, and the room's light.</p>
       <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. Both come from the sRGB standard: its typical room and its reference room. CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colourfulness</em> (M) and <em>hue</em>.</p>
-      <div class="demo">
-        <div class="demo-controls">
-          <label for="demo-lux">Room light <input id="demo-lux" type="range" min="1" max="1000" step="1" value="${String(seen.lux)}" data-demo="room"></label>
-          <label for="demo-surround">Surround <select id="demo-surround" data-demo="room">
-            ${["Dark", "Dim", "Average"].map((n, i) => `<option value="${String(i)}" ${i === seen.surround ? "selected" : ""}>${n}</option>`).join("")}
-          </select></label>
-        </div>
-        <div id="demo-room-out" class="demo-out">${room(ctx)}</div>
-      </div>
+      <div class="demo"><div class="demo-out wide">${room(ctx)}</div></div>
+      <p>So the same target needs different screen colours in each mode. Both of these are meant to look equally colourful. The dark-mode one gets more colour on the screen, because a dim room makes colours look quieter.</p>
+      <div class="demo"><div class="demo-out wide">${modes(ctx)}</div></div>
     </section>
 
     <section class="step">
