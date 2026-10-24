@@ -180,6 +180,8 @@
   .curve-point { cursor: grab; outline: none; }
   .curve-point circle:last-child { fill: var(--fg); stroke: var(--bg); stroke-width: 2; }
   .curve-point:focus-visible circle:last-child { stroke: var(--focus); stroke-width: 3; }
+  .curve-point.off circle:last-child { fill: var(--bg); stroke: var(--soft); stroke-width: 1.5; stroke-dasharray: 2 2; }
+  .curve-values .curve-on { grid-template-columns: 3.5rem auto; }
   .curve-edge { cursor: ew-resize; }
   .curve-edge rect:last-child { fill: var(--fg); }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr)); gap: 0.5rem; }
@@ -328,6 +330,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=f087f62520"></script>
+<script type="module" src="app.js?v=4e87e89452"></script>
 </body>
 </html>

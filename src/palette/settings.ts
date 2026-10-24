@@ -36,6 +36,9 @@ export interface CurvePoint {
 
   /** How far from the center, in degrees, the addition reaches none. */
   readonly width: number;
+
+  /** Whether it's switched off for now: kept, but adding nothing. */
+  readonly off?: boolean;
 }
 
 export interface Settings {

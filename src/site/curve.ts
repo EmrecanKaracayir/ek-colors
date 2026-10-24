@@ -2,9 +2,10 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CURVE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | The colorfulness curve editor: the curve over the hue circle, drawn on the colors it changes,    |
-| made of points that add up. Double-click the graph to add a point and a point to remove it; drag |
-| a point to move its hue and amount; drag the selected point's edges, or hold Option and scroll,  |
-| to set its width. The selected point's values can be typed in too.                               |
+| made of points that add up. Double-click the graph to add a point and a point to remove it;      |
+| Option-click a point to switch it off and on; drag a point to move its hue and amount; drag the  |
+| selected point's edges, or hold Option and scroll, to set its width. The selected point's values |
+| can be typed in too.                                                                             |
 \*------------------------------------------------------------------------------------------------*/
 
 import { REFERENCES } from "../palette/model";
@@ -78,7 +79,7 @@ export function curveLayers(view: CurveView): string {
   );
   const nodes = points.map((p, i) => {
     const y = (MIDDLE - p.amount * SCALE).toFixed(1);
-    return `<g data-drag="point" data-index="${String(i)}" class="curve-point${i === selected[mode] ? " selected" : ""}" tabindex="0" role="slider" aria-label="Point ${String(i + 1)}: hue ${String(p.center)}°, amount ${String(p.amount)}, width ${String(p.width)}°" aria-valuenow="${String(p.amount)}">
+    return `<g data-drag="point" data-index="${String(i)}" class="curve-point${i === selected[mode] ? " selected" : ""}${p.off ? " off" : ""}" tabindex="0" role="slider" aria-label="Point ${String(i + 1)}${p.off ? ", switched off" : ""}: hue ${String(p.center)}°, amount ${String(p.amount)}, width ${String(p.width)}°" aria-valuenow="${String(p.amount)}">
       <circle cx="${String(p.center)}" cy="${y}" r="16" class="hit"></circle>
       <circle cx="${String(p.center)}" cy="${y}" r="${i === selected[mode] ? "7" : "5.5"}"></circle>
     </g>`;
@@ -97,6 +98,7 @@ function valuesPanel(view: CurveView): string {
   const i = selected[mode];
   if (!points[i]) return `<p class="soft">No points: the curve is flat.</p>`;
   return `<p class="soft">Point ${String(i + 1)} of ${String(points.length)}</p>
+    <label class="field curve-on" for="curve-on-${mode}"><span>On</span><input id="curve-on-${mode}" type="checkbox" data-curve-on ${points[i].off ? "" : "checked"}></label>
     ${field(`curve.${mode}.${String(i)}.amount`, "Amount", [-LIMIT, LIMIT, 1])}
     ${field(`curve.${mode}.${String(i)}.center`, "Hue", [0, 359, 1])}
     ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, 180, 5])}`;
@@ -145,7 +147,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       ${hues.join("")}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
-    <p class="curve-caption soft">Double-click the graph to add a point; double-click a point to remove it. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
+    <p class="curve-caption soft">Double-click the graph to add a point; double-click a point to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
   </div>`;
 }
 
@@ -216,6 +218,15 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     const on = part?.dataset.drag === "point" ? `point ${part.dataset.index!}` : part ? "edge" : "graph";
     const twice = event.timeStamp - lastPress.time < 400 && on === lastPress.on;
     lastPress = twice ? { time: 0, on: "" } : { time: event.timeStamp, on };
+    // Option-click (Alt-click) switches a point off and on, keeping it where it is.
+    if (event.altKey && part?.dataset.drag === "point") {
+      lastPress = { time: 0, on: "" };
+      const index = Number(part.dataset.index);
+      const points = [...get(mode).points];
+      points[index] = { ...points[index]!, off: !points[index]!.off };
+      selected[mode] = index;
+      return apply(mode, points, true);
+    }
     if (twice && part?.dataset.drag === "point") {
       drag = null;
       return remove(mode, Number(part.dataset.index));
@@ -237,6 +248,17 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     drag = { mode, part: part.dataset.drag!, svg };
     svg.setPointerCapture(event.pointerId);
     event.preventDefault();
+  });
+  document.addEventListener("change", (event) => {
+    const box = event.target as HTMLInputElement;
+    const editor = editorOf(box);
+    if (!editor || !box.matches("[data-curve-on]")) return;
+    const mode = editor.dataset.curve as Mode;
+    const points = [...get(mode).points];
+    const i = selected[mode];
+    if (!points[i]) return;
+    points[i] = { ...points[i], off: !box.checked };
+    apply(mode, points, true);
   });
   document.addEventListener("pointermove", (event) => {
     if (!drag) return;

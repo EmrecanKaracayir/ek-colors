@@ -136,7 +136,8 @@ export function strongest(
  * @returns         Every point's addition there, added up.
  */
 export function boost(settings: Pick<Settings, "curve">, mode: Mode, hue: number): number {
-  return settings.curve[mode].reduce((sum, { amount, center, width }) => {
+  return settings.curve[mode].reduce((sum, { amount, center, width, off }) => {
+    if (off) return sum;
     const away = Math.abs(((((hue - center) % 360) + 540) % 360) - 180);
     return away >= width ? sum : sum + (amount * (1 + Math.cos((Math.PI * away) / width))) / 2;
   }, 0);
