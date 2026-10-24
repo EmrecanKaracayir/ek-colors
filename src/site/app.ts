@@ -692,7 +692,7 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Curve</h2>
-      <p class="soft">Colorfulness added or taken away smoothly over hue, for a part of the circle that looks weaker or stronger than the model says. Drag the point to set its hue and amount, drag an edge to set its width, or scroll over the graph. Double-click the point to flatten it.</p>
+      <p class="soft">Colorfulness added or taken away smoothly over hue, for a part of the circle that looks weaker or stronger than the model says. Drag the point to set its hue and amount, drag an edge to set its width, or hold Option (Alt) and scroll over the graph for fine steps. Double-click the point to flatten it.</p>
       ${(["light", "dark"] as const).map((m) => `<h3>${label(m)}</h3>${curveEditor(curveView(m), (path, title, range) => number(path, title, range))}`).join("")}
     </section>
     <section class="group">

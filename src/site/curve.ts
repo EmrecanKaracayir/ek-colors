@@ -2,8 +2,8 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CURVE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | The colorfulness curve editor: the curve over the hue circle, drawn on the colors it changes.    |
-| Drag the point to move its hue and amount, drag either edge to set its width, or scroll over it  |
-| to widen and narrow it. The values beside it can be typed in too.                                |
+| Drag the point to move its hue and amount, drag either edge to set its width, or hold Option and |
+| scroll over it to widen and narrow it. The values beside it can be typed in too.                 |
 \*------------------------------------------------------------------------------------------------*/
 
 import type { Curve, Mode } from "../palette/settings";
@@ -119,6 +119,7 @@ export function curveEditor(view: CurveView, field: (path: string, title: string
  */
 export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, curve: Curve) => void): void {
   let drag: { mode: Mode; part: string; svg: SVGSVGElement } | null = null;
+  let wheel = 0;
 
   const point = (svg: SVGSVGElement, event: PointerEvent) => {
     const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.getScreenCTM()!.inverse());
@@ -160,12 +161,18 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, cur
   document.addEventListener(
     "wheel",
     (event) => {
+      // Only with Option (Alt) held, so scrolling the page over the graph still scrolls the page.
       const editor = (event.target as Element).closest<HTMLElement>("[data-curve]");
-      if (!editor || !(event.target as Element).closest("svg")) return;
+      if (!event.altKey || !editor || !(event.target as Element).closest("svg")) return;
       event.preventDefault();
       const mode = editor.dataset.curve as Mode;
       const curve = get(mode).curve;
-      apply(mode, { ...curve, width: clamp(curve.width + (event.deltaY > 0 ? -5 : 5), MIN_WIDTH, 180) });
+      // About a degree per notch of a mouse wheel; a trackpad's many small steps add up as finely.
+      wheel -= (event.deltaMode === 0 ? event.deltaY : event.deltaY * 40) / 40;
+      const steps = Math.trunc(wheel);
+      if (!steps) return;
+      wheel -= steps;
+      apply(mode, { ...curve, width: clamp(curve.width + steps, MIN_WIDTH, 180) });
     },
     { passive: false },
   );
