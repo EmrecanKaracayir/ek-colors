@@ -39,13 +39,13 @@ WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
 3. **Equally colorful.** Every color aims at one colorfulness. Where the screen can't reach it,
    the whole tier drops to what its least colorful hue can reach, so nothing stands out by
    accident.
-4. **Evenly different.** Each hue starts where its name puts it on CAM16's hue circle (red at pure
-   red, orange halfway to yellow…), its home, the same in both modes. Yellow stays fixed at NCS yellow,
-   a few degrees toward green from CAM16's pure yellow; every other hue moves within its name until
-   neighbors are equally different in CAM16-UCS, then is pulled back toward its home by at most 2,
-   about the smallest difference people see side by side. Homes can come from CAM16 (default),
-   Munsell, NCS, unique-hue experiments or the World Color Survey's focal colors, or the nearest of
-   them for each color.
+4. **Evenly different.** The hues start evenly apart in angle from the anchor, yellow, the same in
+   both modes, then move a few degrees each until neighbors are equally different in CAM16-UCS:
+   the uniform lineup. Any color can then be placed by hand where its name fits best, and the rest
+   re-space around it. The anchor fixes where the lineup sits, since turning the whole lineup
+   leaves its differences almost unchanged; it's NCS yellow by default, or the yellow of CAM16,
+   Munsell, unique-hue experiments or the World Color Survey's focal colors, or any hue. Those
+   systems' hues can also be shown as guides.
 
 ## Use
 

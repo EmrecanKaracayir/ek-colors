@@ -9,12 +9,12 @@
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
-import { guides, NEAREST, SYSTEMS, system } from "../palette/references";
+import { anchorHue, guides, SYSTEMS } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
-import { boost, type Color, type GamutPalette, home, type Palette, strongest, type Swatch } from "../palette/solve";
+import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
-import { bindHomes, homesEditor, homesLayers, homesReadout, homesRows, type HomesView } from "./homes";
+import { bindHues, huesEditor, huesLayers, huesReadout, huesTable, type HuesView } from "./hues";
 import { technical } from "./technical";
 import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
@@ -60,7 +60,7 @@ const state = {
   /** The gamut tiers solved from the current settings; the others still show their last solve. */
   fresh: new Set<Gamut>(),
 
-  /** The same settings without the curve, per settings and gamut tier, for comparing in Settings. */
+  /** Variants of the settings (without the curve, nothing placed), per settings and gamut tier, for comparing in Settings. */
   baselines: new Map<string, GamutPalette>(),
   solving: false,
   took: 0,
@@ -79,10 +79,11 @@ function load(): Settings {
       // Settings saved before exceptions became the curve still hold them; they're left out.
       const { offsets: _, ...stored } = JSON.parse(saved) as Partial<Settings> & { offsets?: unknown };
       const settings = { ...CONFIG, ...stored } as { -readonly [K in keyof Settings]: Settings[K] };
-      // Settings saved before homes held yellow's hue per mode; it becomes yellow's home.
-      const old = (stored as { yellowHue?: Record<Mode, number> }).yellowHue;
-      if (old && settings.homes.yellow === undefined) settings.homes = { ...settings.homes, yellow: old.light };
-      delete (settings as { yellowHue?: unknown }).yellowHue;
+      // Settings saved before the anchor held yellow's hue, per mode or as its home; it becomes the anchor.
+      const old = stored as { yellowHue?: Record<Mode, number>; homes?: Record<string, number>; start?: number };
+      const yellow = old.homes?.yellow ?? old.yellowHue?.light ?? old.start;
+      if (yellow !== undefined && stored.anchor === undefined) settings.anchor = yellow;
+      for (const gone of ["yellowHue", "homes", "pull", "reference", "start"]) delete (settings as Record<string, unknown>)[gone];
       // Settings saved before the identity tier was per mode hold one number.
       const identity = settings.identityTier as Settings["identityTier"] | number;
       if (typeof identity === "number") settings.identityTier = { light: identity, dark: identity };
@@ -164,13 +165,14 @@ function solve(wait = 0): void {
     latest++;
     state.fresh = new Set();
     post(state.gamut);
-    compareCurve();
+    askVariants();
   }, wait);
 }
 
 /* >-----------------------------------------< Curve >------------------------------------------< */
 
-// A second worker solves the settings without the curve, so both can be shown side by side.
+// A second worker solves variants of the settings, without the curve or with nothing placed, so
+// they can be shown beside the palette.
 const baseline = new Worker(WORKER, { type: "module" });
 
 baseline.addEventListener("message", (event: MessageEvent<Response>) => {
@@ -202,26 +204,46 @@ function curved(): boolean {
 }
 
 /**
- * The palette on screen without the curve, if it's been solved. It only depends on settings other
- * than the curve, so moving the curve never has to wait for it.
+ * A variant of the settings on the gamut tier on screen, asked for once and kept.
+ *
+ * @param settings  The variant.
+ * @returns         The palette, or null while it solves.
+ */
+function variant(settings: Settings): GamutPalette | null {
+  const key = `${JSON.stringify(settings)}|${state.gamut}`;
+  const id = asked.get(key);
+  if (id !== undefined) return state.baselines.get(String(id)) ?? null;
+  asks++;
+  asked.set(key, asks);
+  baseline.postMessage({ id: asks, settings, gamut: state.gamut } satisfies Request);
+  return null;
+}
+
+/**
+ * The palette on screen without the curve. It only depends on settings other than the curve, so
+ * moving the curve never has to wait for it.
  *
  * @returns  The palette, or null while it solves.
  */
 function uncurved(): GamutPalette | null {
-  if (!curved()) return current();
-  const id = asked.get(`${JSON.stringify(flat())}|${state.gamut}`);
-  return id === undefined ? null : (state.baselines.get(String(id)) ?? null);
+  return curved() ? variant(flat()) : current();
 }
 
 /**
- * Asks for the palette on screen without the curve, once per settings and gamut tier.
+ * The uniform lineup: the palette on screen with nothing placed.
+ *
+ * @returns  The palette, or null while it solves.
  */
-function compareCurve(): void {
-  const key = `${JSON.stringify(flat())}|${state.gamut}`;
-  if (!curved() || asked.has(key)) return;
-  asks++;
-  asked.set(key, asks);
-  baseline.postMessage({ id: asks, settings: flat(), gamut: state.gamut } satisfies Request);
+function uniform(): GamutPalette | null {
+  return Object.keys(state.settings.placed).length ? variant({ ...state.settings, placed: {} }) : current();
+}
+
+/**
+ * Asks for the variants Settings compares with.
+ */
+function askVariants(): void {
+  uncurved();
+  uniform();
 }
 
 const bands = new Map<string, CurveView["band"]>();
@@ -261,34 +283,72 @@ function curveView(mode: Mode): CurveView {
 }
 
 /**
- * The homes editor's contents: every color's home and where it lands on the identity tier of the
- * mode on screen.
+ * The color that stays on the anchor.
+ *
+ * @returns  Its key.
+ */
+function anchored(): string {
+  return state.settings.hues === NAMES.length ? "yellow" : "hue-1";
+}
+
+/**
+ * The hue graph's contents: every color in the uniform lineup and the current one, on the identity
+ * tier of the mode on screen. Placed colors and the anchor are drawn where they're set, so a drag
+ * follows the pointer before the palette solves again.
  *
  * @returns  The view.
  */
-function homesView(): HomesView {
+function huesView(): HuesView {
+  const s = state.settings;
   const mode = state.mode;
-  const tier = state.settings.identityTier[mode];
+  const tier = s.identityTier[mode];
   const palette = current()?.[mode];
-  const items = (palette?.colors ?? [])
+  const even = uniform()?.[mode];
+  const rows = (palette?.colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => {
-      const s = c.tiers[tier]!.default;
-      const homeHue = state.settings.homes[c.key] ?? (state.settings.hues === NAMES.length ? home(state.settings, c.key) : s.hue);
-      return { key: c.key, label: label(c.key), home: homeHue, hue: s.hue, color: s.color, anchor: c.key === "yellow" };
+      const now = c.tiers[tier]!.default;
+      const set = c.key === anchored() ? anchorHue(s) : s.placed[c.key];
+      return {
+        key: c.key,
+        label: label(c.key),
+        uniform: even?.colors.find((e) => e.key === c.key)?.tiers[tier]?.default ?? null,
+        current: { hue: set ?? now.hue, color: now.color },
+        placed: s.placed[c.key] !== undefined,
+        anchor: c.key === anchored(),
+      };
     });
-  return { items, band: curveView(mode).band, ring: palette?.ring[tier] ?? [], pull: state.settings.pull, guides: guides(state.settings) };
+  const systems = SYSTEMS.map((sys) => ({ id: sys.id, name: sys.name, shown: s.guides.includes(sys.id), source: sys.source }));
+  return { rows, band: curveView(mode).band, guides: guides(s), systems, ring: palette?.ring[tier] ?? [] };
 }
 
-bindHomes(
-  homesView,
+/**
+ * Shows the anchor's hue in its fields, and that it's set by hand once it's been moved.
+ */
+function syncAnchor(): void {
+  const from = document.querySelector<HTMLSelectElement>("#set-anchor");
+  if (from) from.value = typeof state.settings.anchor === "number" ? "hand" : state.settings.anchor;
+  const hue = String(Math.round(anchorHue(state.settings)));
+  for (const el of document.querySelectorAll<HTMLInputElement>("[data-anchor-hue]")) el.value = hue;
+}
+
+bindHues(
+  huesView,
   (key, hue) => {
-    write(`homes.${key}`, hue);
+    if (key === anchored()) {
+      write("anchor", hue);
+      syncAnchor();
+    } else write(`placed.${key}`, hue);
     solve(150);
   },
   (key) => {
-    const { [key]: _, ...rest } = state.settings.homes;
-    write("homes", rest);
+    if (key === anchored()) {
+      write("anchor", CONFIG.anchor);
+      syncAnchor();
+    } else {
+      const { [key]: _, ...rest } = state.settings.placed;
+      write("placed", rest);
+    }
     solve(150);
   },
 );
@@ -525,7 +585,7 @@ function overview(): string {
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${["dark", "dim", "average"][room.surround] ?? ""} surround</dd></div>
         <div><dt>Colorfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
-        <div><dt>Yellow</dt><dd>hue ${home(settings, "yellow").toFixed(0)}°, the anchor</dd></div>
+        <div><dt>Anchor</dt><dd>${label(anchored())} at hue ${anchorHue(settings).toFixed(0)}°, ${typeof settings.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === settings.anchor)?.name ?? ""} yellow`}</dd></div>
         <div><dt>Neighbor differences</dt><dd>${ring.length ? range(ring) : "…"} (CAM16-UCS)</dd></div>
         <div><dt>▾</dt><dd>The screen held this color below its colorfulness.</dd></div>
       </dl>
@@ -764,20 +824,19 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Hues</h2>
-      <p class="soft">Every color has a home, where it belongs; by default, where its name puts it on CAM16's hue circle. The spacing evens out the differences between neighbors, then each color is pulled back toward its home, by at most the pull below. Yellow is the anchor and lands exactly on its home.</p>
-      <label class="field" for="set-reference"><span>Homes from</span><select id="set-reference" data-set="reference">${[
-        ...SYSTEMS.map((r) => [r.id, r.name] as const),
-        [NEAREST, "Nearest of all"] as const,
+      <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
+      <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
+      <label class="field" for="set-anchor"><span>Anchor</span><select id="set-anchor" data-anchor="from">${[
+        ...SYSTEMS.map((r) => [r.id, `${r.name} yellow`] as const),
+        ["hand", "Set by hand"] as const,
       ]
-        .map(([id, name]) => `<option value="${id}" ${s.reference === id ? "selected" : ""}>${name}</option>`)
+        .map(([id, name]) => `<option value="${id}" ${(typeof s.anchor === "number" ? "hand" : s.anchor) === id ? "selected" : ""}>${name}</option>`)
         .join("")}</select></label>
-      <p class="soft reference-note">${
-        s.reference === NEAREST
-          ? "Each color is pulled toward whichever system's home is closest to where the spacing put it, so it moves as little as possible to sit on a recognized reference. Guides show CAM16."
-          : `${system(s).summary} <span class="source">Source: ${system(s).source}</span>`
-      }</p>
-      ${homesEditor(homesView())}
-      ${number("pull", "Pull toward homes", [0, 6, 0.5], true)}
+      <label class="field" for="set-anchor-hue"><span>Anchor hue</span>
+        <input type="range" data-anchor-hue min="0" max="359" step="1" value="${String(Math.round(anchorHue(s)))}" aria-label="Anchor hue">
+        <input id="set-anchor-hue" type="number" data-anchor-hue min="0" max="359" step="1" value="${String(Math.round(anchorHue(s)))}">
+      </label>
+      ${huesEditor(huesView())}
       ${number("hues", "How many hues", [4, 16, 1])}
     </section>
     <section class="group">
@@ -843,7 +902,7 @@ function drawComparison(el: Element, mode: Mode): void {
  * Draws the strip at the top of Settings.
  */
 function updateStrip(): void {
-  compareCurve();
+  askVariants();
   const strip = document.querySelector("#tune-preview");
   if (strip) drawComparison(strip, state.mode);
 }
@@ -853,12 +912,12 @@ function updateStrip(): void {
  */
 function updateTune(): void {
   updateStrip();
-  const layers = document.querySelector(".homes-layers");
+  const layers = document.querySelector(".hues-layers");
   if (layers) {
-    const view = homesView();
-    layers.innerHTML = homesLayers(view);
-    document.querySelector(".homes-readout")!.textContent = homesReadout(view);
-    document.querySelector(".homes-table tbody")!.innerHTML = homesRows(view);
+    const view = huesView();
+    layers.innerHTML = huesLayers(view);
+    document.querySelector(".hues-readout")!.textContent = huesReadout(view);
+    document.querySelector(".hues-table tbody")!.innerHTML = huesTable(view);
   }
   for (const m of ["light", "dark"] as const) {
     const editor = document.querySelector(`[data-curve="${m}"]`);
@@ -1068,14 +1127,29 @@ document.addEventListener("input", (event) => {
     solve(150);
     return;
   }
-  const path = el.dataset.set;
-  if (!path) return;
-  if (path === "reference") {
-    write(path, el.value);
-    solve();
+  if (el.dataset.guide) {
+    const shown = [...document.querySelectorAll<HTMLInputElement>("[data-guide]")].filter((c) => c.checked).map((c) => c.dataset.guide!);
+    write("guides", shown);
     render();
     return;
   }
+  if (el.dataset.anchor === "from") {
+    write("anchor", el.value === "hand" ? Math.round(anchorHue(state.settings)) : el.value);
+    syncAnchor();
+    updateTune();
+    solve();
+    return;
+  }
+  if (el.hasAttribute("data-anchor-hue")) {
+    if (el.value === "" || Number.isNaN(Number(el.value))) return;
+    write("anchor", ((Number(el.value) % 360) + 360) % 360);
+    syncAnchor();
+    updateTune();
+    solve(150);
+    return;
+  }
+  const path = el.dataset.set;
+  if (!path) return;
   if (path.startsWith("bases.")) {
     if (!/^#[0-9a-f]{6}$/i.test(el.value)) return;
     write(path, el.value.toUpperCase());

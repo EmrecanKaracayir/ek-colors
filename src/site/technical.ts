@@ -9,7 +9,8 @@
 import { argbFromHex, lstarFromArgb, ViewingConditions } from "@material/material-color-utilities";
 
 import { hueOf } from "../palette/model";
-import { MODES, NAMES, STARTS } from "../palette/settings";
+import { anchorHue, SYSTEMS } from "../palette/references";
+import { BROWN, MODES, NAMES } from "../palette/settings";
 import type { Context } from "./explain";
 
 /* >-----------------------------------------< Values >-----------------------------------------< */
@@ -49,10 +50,14 @@ function conditions(ctx: Context): string {
  */
 export function technical(ctx: Context): string {
   const s = ctx.settings;
-  const starts = NAMES.map(
-    (n) =>
-      `<tr><th scope="row">${ctx.label(n)}${n === "yellow" ? " (anchor)" : ""}</th><td class="mono">${STARTS[n]!}</td><td class="mono">${fixed(hueOf(STARTS[n]!), 2)}°</td><td class="mono">${s.homes[n] === undefined ? "—" : `${fixed(s.homes[n], 0)}°`}</td></tr>`,
-  ).join("");
+  const anchor = anchorHue(s);
+  const first = NAMES.indexOf("yellow");
+  const starts = Array.from({ length: s.hues }, (_, k) => {
+    const key = s.hues === NAMES.length ? NAMES[(first + k) % s.hues]! : `hue-${String(k + 1)}`;
+    const placed = k === 0 ? undefined : s.placed[key];
+    return `<tr><th scope="row">${ctx.label(key)}${k === 0 ? " (anchor)" : ""}</th><td class="mono">${fixed((anchor + (k * 360) / s.hues) % 360, 1)}°</td><td class="mono">${placed === undefined ? "—" : `${fixed(placed, 0)}°`}</td></tr>`;
+  }).join("");
+  const from = typeof s.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === s.anchor)?.name ?? ""} yellow`;
   return `<section class="intro">
       <h1>The algorithm</h1>
       <p>Every step the solver takes, with its formulas, constants and search rules, in the order it runs. For the same thing in plain words, see <a href="#how">How it works</a>. Numbers in tables use your current settings.</p>
@@ -63,9 +68,9 @@ export function technical(ctx: Context): string {
 <pre class="formula">for each gamut tier g in (standard, wide, ultra):            // solved independently
   for each mode m in (light, dark):
     VC[m]   ← viewing conditions from room[m] and base[m]
-    homes   ← each color's home (its name → CAM16 hue, or one you set); yellow is the anchor
-    identity tier: T ← target ceiling; hues ← pull(space(homes, ±20°), homes)
-    other tiers:   T ← target ceiling; hues ← pull(space(identity hues, ±6°), homes)
+    starts  ← the circle divided evenly from the anchor (yellow), or where a color is placed
+    identity tier: T ← target ceiling; hues ← space(starts, ±20°)
+    other tiers:   T ← target ceiling; hues ← space(identity hues, ±6°)
     per tier, per hue: default ← strongest(h, T + curve(h))
                        muted   ← strongest(h, M(default) × muted share)
     brown per tier:    strongest(hue of "R 25 Y", T × brown share)</pre>
@@ -140,12 +145,15 @@ curve(h) = Σ_i  [ d_i(h) &lt; w_i ]  ·  a_i · (1 + cos(π · d_i(h) / w_i)) /
     </section>
 
     <section class="step">
-      <h2>6. Homes: names to angles</h2>
+      <h2>6. Names and starting hues</h2>
       <p>CAM16's unique hues and their eccentricity weights (the hue-quadrature table): R 20.14° (e 0.8), Y 90° (0.7), G 164.25° (1.0), B 237.53° (1.2), and R again at 380.14° (0.8). Between two unique hues, a hue's share of the next one is:</p>
 <pre class="formula">p(h) = ((h − h_i)/e_i) / ((h − h_i)/e_i + (h_(i+1) − h)/e_(i+1))</pre>
       <p>A name like "R 33 B" (33% toward the other hue, from B's side) is turned back into an angle by bisecting p(h) on that segment. The same formula names every swatch ("Y 11 G").</p>
-      <p>Under another reference system (Munsell, NCS, unique hues, focal colors), a home is a measured color instead of a name: its D65 XYZ (Munsell and WCS chips adapted from illuminant C by Bradford, NCS from its sRGB approximations) is taken into CAM16 in each mode's viewing conditions, and the home is the circular mean of the light and dark hues. A color the system doesn't define keeps its CAM16 home. Under <em>Nearest</em>, every system's home is a candidate and the pull (step 7) goes toward the one closest to the spaced hue.</p>
-      <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Name</th><th>Home by name</th><th>Your home</th></tr></thead><tbody>${starts}</tbody></table></div>
+      <p>The other reference systems (Munsell, NCS, unique hues, focal colors) give measured colors instead of names: each one's D65 XYZ (Munsell and WCS chips adapted from illuminant C by Bradford, NCS from its sRGB approximations) is taken into CAM16 in each mode's viewing conditions, and its hue is the circular mean of the light and dark hues. They're drawn as guides, and each one's yellow can be the anchor.</p>
+<pre class="formula">start_k = anchor + k · 360° / n     // k = 0 … n − 1, yellow first with eight hues
+start_k = placed_k                  // a color placed by hand starts there instead</pre>
+      <p>The anchor is ${fixed(anchor, 1)}° (${from}). It's needed because the spacing (step 7) only evens out differences between neighbors, and turning the whole lineup around the circle leaves those almost unchanged; the anchor fixes where it sits. The anchor and placed colors don't move while the others are spaced. With nothing placed, the result is the uniform lineup.</p>
+      <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Even start</th><th>Placed at</th></tr></thead><tbody>${starts}</tbody></table></div>
     </section>
 
     <section class="step">
@@ -160,25 +168,18 @@ a*, b* = M*·cos h, M*·sin h
   colors ← strongest(start_i, target(start_i)) for each hue
   score  ← standard deviation of ΔE(color_i, color_(i+1)) around the circle
   repeat up to 8 passes, stop early if a pass changes nothing:
-    for each hue i except the anchor (yellow):
+    for each hue i except the anchor and placed colors:
       for step in (−3°, +3°, −1°, +1°):
         h ← hue_i + step;  skip if |h − start_i| &gt; window
         try color_i ← strongest(h, target(h));  rescore
         keep it if the score drops by more than 10⁻⁴</pre>
-<pre class="formula">pull(colors, homes, most = ${String(s.pull)}):            // after spacing, per tier
-  for each color i except the anchor:
-    Δh ← signed hue distance from its spaced hue to its home
-    find the largest t in [0, 1] (12 bisection steps) with
-      ΔE(strongest(h_i + t·Δh, target), spaced color_i) ≤ most
-    color_i ← that color</pre>
-      <p>So every color stays within <code>most</code> (CAM16-UCS ΔE) of perfectly even spacing, and uses that room to sit as close to its home as it can. With the default of 2, about the smallest difference people see side by side, the departure from even spacing is meant to stay below notice.</p>
-      <p>The identity tier (light Lc ${String(s.identityTier.light)}, dark Lc ${String(s.identityTier.dark)}) is spaced first from the starting hues with a window of ±${String(s.hueWindow.identity)}°. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other.</p>
+      <p>The identity tier (light Lc ${String(s.identityTier.light)}, dark Lc ${String(s.identityTier.dark)}) is spaced first from the starting hues with a window of ±${String(s.hueWindow.identity)}°. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
     </section>
 
     <section class="step">
       <h2>8. Muted and brown</h2>
 <pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) × ${String(s.muted)}, Lc)     // same hue, same tier
-brown(Lc)    = strongest(hue of "${STARTS.brown!}", T(Lc) × ${String(s.brown ?? 0)}, Lc)   // not spaced, no muted</pre>
+brown(Lc)    = strongest(hue of "${BROWN}", T(Lc) × ${String(s.brown ?? 0)}, Lc)   // not spaced, no muted</pre>
     </section>
 
     <section class="step">

@@ -22,7 +22,7 @@ export interface CurveView {
   /** Colors around the circle, painted behind the curve. */
   readonly band: readonly { readonly hue: number; readonly color: string }[];
 
-  /** The reference system's hues, drawn as guides: pure hues solid, mixes dashed. */
+  /** The shown reference systems' hues, drawn as guides: pure hues solid, the rest dashed. */
   readonly guides: readonly { readonly label: string; readonly hue: number; readonly unique: boolean }[];
 }
 
@@ -131,7 +131,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
     (m) => `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>
       <text x="-4" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${m > 0 ? "+" : ""}${String(m)}</text>`,
   );
-  // The reference system's pure hues (solid) and mixes (dashed), as on the hue circle.
+  // The guides: pure hues solid, the rest dashed, as on the hue circle.
   const references = view.guides.map(
     (r) => `<line x1="${r.hue.toFixed(1)}" x2="${r.hue.toFixed(1)}" y1="0" y2="${String(HEIGHT)}" class="reference${r.unique ? "" : " half"}"></line>
       <text x="${r.hue.toFixed(1)}" y="-5" class="axis" text-anchor="middle">${r.label}</text>`,

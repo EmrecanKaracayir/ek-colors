@@ -1,613 +1,613 @@
 gamut,mode,tier,variant,name,value,cam16_hue,cam16_chroma,cam16_colorfulness,cam16_lightness,cam16_name,apca,wcag2,wcag2_level
-standard,light,15,default,red,"#FBBDBC",18.4,24,19,72.6,R 2 B,15.2,1.34,below
-standard,light,15,muted,red,"#E6C5C4",18.3,12.4,9.8,72.1,R 2 B,15.1,1.34,below
-standard,light,30,default,red,"#DEA2A3",16.5,24.1,19,58.6,R 4 B,30.1,1.8,below
-standard,light,30,muted,red,"#CAAAAA",16.4,12.4,9.8,58.1,R 4 B,30,1.79,below
-standard,light,45,default,red,"#DA767D",15.1,43.1,34.1,45.4,R 5 B,45.2,2.56,below
-standard,light,45,muted,red,"#BB8789",15.1,21.6,17.1,44.8,R 5 B,45.1,2.54,below
-standard,light,60,default,red,"#AD5D60",16.9,35.7,28.2,32,R 3 B,60.2,3.9,AA large
-standard,light,60,muted,red,"#946B6A",19,17.5,13.8,31.6,R 1 B,60,3.85,AA large
-standard,light,75,default,red,"#7B4144",16,27.2,21.5,19.3,R 4 B,75.1,6.57,AA
-standard,light,75,muted,red,"#694B4B",17.5,13.5,10.7,19.1,R 3 B,75,6.5,AA
-standard,light,90,default,red,"#3C1D1D",18.9,15.8,12.5,7,R 1 B,90,12.71,AAA
-standard,light,90,muted,red,"#332222",17.6,8.4,6.6,6.9,R 3 B,90.1,12.65,AAA
-standard,light,15,default,orange,"#F7C29B",56.9,24.2,19.1,72.2,R 49 Y,15.1,1.34,below
-standard,light,15,muted,orange,"#E4C7B4",56,12.3,9.7,71.7,R 48 Y,15.2,1.34,below
-standard,light,30,default,orange,"#DAA781",56.9,24,19,58.2,R 49 Y,30,1.79,below
-standard,light,30,muted,orange,"#C7AC9A",56.3,11.9,9.4,57.7,R 48 Y,30.2,1.8,below
-standard,light,45,default,orange,"#D1803C",56.3,42.6,33.6,44.6,R 48 Y,45.3,2.57,below
-standard,light,45,muted,orange,"#B78B6B",56.1,21.2,16.7,44.3,R 48 Y,45.2,2.55,below
-standard,light,60,default,orange,"#A6652D",56.9,35.7,28.2,31.5,R 49 Y,60.1,3.9,AA large
-standard,light,60,muted,orange,"#916E54",56.7,17.6,13.9,31.3,R 49 Y,60.1,3.86,AA large
-standard,light,75,default,orange,"#76471D",57.9,27.5,21.7,19,Y 49 R,75,6.55,AA
-standard,light,75,muted,orange,"#674D3A",56.2,13.7,10.8,18.9,R 48 Y,75.1,6.53,AA
-standard,light,90,default,orange,"#392009",58.7,16.1,12.7,6.9,Y 48 R,90.1,12.72,AAA
-standard,light,90,muted,orange,"#312419",60.7,7.9,6.2,6.9,Y 45 R,90,12.61,AAA
-standard,light,15,default,yellow,"#DECC93",95.6,23.9,18.9,71.3,Y 10 G,15,1.34,below
-standard,light,15,muted,yellow,"#D7CCB1",94.5,11.8,9.3,71.4,Y 8 G,15.1,1.34,below
-standard,light,30,default,yellow,"#C1B178",97,24.3,19.2,57.3,Y 13 G,30.1,1.79,below
+standard,light,15,default,red,"#F9BDC9",4.7,24.7,19.5,72.8,R 15 B,15,1.34,below
+standard,light,15,muted,red,"#E4C5CA",4.9,12.4,9.8,72,R 15 B,15.2,1.34,below
+standard,light,30,default,red,"#DCA2AE",4.6,24.6,19.4,58.7,R 15 B,30,1.79,below
+standard,light,30,muted,red,"#C8AAAF",4.9,12.4,9.8,58,R 15 B,30.1,1.79,below
+standard,light,45,default,red,"#D8768D",5.7,43.4,34.3,45.6,R 14 B,45.1,2.55,below
+standard,light,45,muted,red,"#B98791",5.1,21.8,17.2,44.8,R 15 B,45.1,2.54,below
+standard,light,60,default,red,"#AC5C70",4.9,37,29.2,32.1,R 15 B,60.1,3.9,AA large
+standard,light,60,muted,red,"#936A73",4,18.7,14.7,31.5,R 16 B,60.2,3.87,AA large
+standard,light,75,default,red,"#7B404E",5.6,28.6,22.6,19.4,R 15 B,75,6.56,AA
+standard,light,75,muted,red,"#694A50",5.6,14.7,11.6,19,R 15 B,75.1,6.53,AA
+standard,light,90,default,red,"#3C1C24",4.9,17,13.4,7,R 15 B,90,12.73,AAA
+standard,light,90,muted,red,"#332226",3.1,9,7.1,7,R 17 B,90,12.6,AAA
+standard,light,15,default,orange,"#FAC09E",50.4,24.8,19.5,72.2,R 40 Y,15.3,1.34,below
+standard,light,15,muted,orange,"#E5C6B6",49.1,12.4,9.8,71.6,R 38 Y,15.4,1.35,below
+standard,light,30,default,orange,"#DDA585",49.4,24.5,19.3,58.2,R 39 Y,30.2,1.8,below
+standard,light,30,muted,orange,"#C9AB9B",49.6,12.5,9.8,57.7,R 39 Y,30.3,1.8,below
+standard,light,45,default,orange,"#D67D42",50.1,43.9,34.7,44.9,R 40 Y,45.2,2.56,below
+standard,light,45,muted,orange,"#BA8A6E",49.9,21.8,17.2,44.6,R 39 Y,45,2.54,below
+standard,light,60,default,orange,"#AA6233",49.7,36.7,29,31.5,R 39 Y,60.2,3.91,AA large
+standard,light,60,muted,orange,"#936D56",50.9,18,14.2,31.4,R 41 Y,60.1,3.86,AA large
+standard,light,75,default,orange,"#794521",51.1,28.2,22.3,19.1,R 41 Y,75,6.56,AA
+standard,light,75,muted,orange,"#694C3C",48.4,14.2,11.2,18.9,R 37 Y,75.1,6.52,AA
+standard,light,90,default,orange,"#3B1F0C",50.6,16.5,13,6.9,R 40 Y,90,12.7,AAA
+standard,light,90,muted,orange,"#33231A",48.8,8.6,6.8,6.9,R 38 Y,90,12.62,AAA
+standard,light,15,default,yellow,"#DECC91",96,24.7,19.5,71.3,Y 11 G,15.1,1.34,below
+standard,light,15,muted,yellow,"#D7CCB0",95,12.2,9.7,71.3,Y 9 G,15.1,1.34,below
+standard,light,30,default,yellow,"#C2B077",95.1,24.4,19.2,57.1,Y 9 G,30.3,1.8,below
 standard,light,30,muted,yellow,"#BBB196",95.5,12,9.5,57.5,Y 10 G,30,1.79,below
-standard,light,45,default,yellow,"#AD9225",95.5,42.6,33.7,43.6,Y 10 G,45.2,2.55,below
-standard,light,45,muted,yellow,"#A29463",96.6,21.5,17,43.8,Y 12 G,45.1,2.53,below
-standard,light,60,default,yellow,"#89731C",95.2,35.4,28,30.6,Y 10 G,60.2,3.89,AA large
-standard,light,60,muted,yellow,"#80754E",96.9,17.8,14,30.9,Y 13 G,60,3.85,AA large
-standard,light,75,default,yellow,"#615111",95.4,27.3,21.6,18.5,Y 10 G,75.1,6.54,AA
-standard,light,75,muted,yellow,"#5B5236",94.8,13.4,10.6,18.6,Y 9 G,75.1,6.51,AA
-standard,light,90,default,yellow,"#2E2604",96.9,16.4,13,6.8,Y 13 G,90,12.63,AAA
-standard,light,90,muted,yellow,"#2B2617",94.2,7.9,6.2,6.8,Y 8 G,90.1,12.65,AAA
-standard,light,15,default,green,"#B3D5B4",151.9,23.5,18.6,70.1,G 12 Y,15.3,1.35,below
-standard,light,15,muted,green,"#C3D0C1",152.6,11.3,9,70.8,G 12 Y,15.3,1.34,below
-standard,light,30,default,green,"#98BA99",151.3,23.7,18.7,56.4,G 13 Y,30.1,1.79,below
-standard,light,30,muted,green,"#A8B5A6",151.6,11.3,8.9,57,G 13 Y,30.1,1.79,below
-standard,light,45,default,green,"#61A361",146.9,42.7,33.7,42.2,G 18 Y,45.1,2.55,below
-standard,light,45,muted,green,"#809C7C",147,21.7,17.1,43.2,G 17 Y,45,2.53,below
-standard,light,60,default,green,"#4A814E",148.6,35.4,28,29.7,G 16 Y,60.1,3.88,AA large
-standard,light,60,muted,green,"#657B63",148.4,17.4,13.7,30.4,G 16 Y,60.1,3.86,AA large
-standard,light,75,default,green,"#335B36",148.7,27.1,21.4,17.9,G 16 Y,75.1,6.55,AA
-standard,light,75,muted,green,"#465745",149,13.8,10.9,18.4,G 15 Y,75.1,6.5,AA
-standard,light,90,default,green,"#132B18",152,16.2,12.8,6.5,G 12 Y,90.1,12.71,AAA
-standard,light,90,muted,green,"#202921",153.9,7.5,5.9,6.8,G 10 Y,90,12.58,AAA
-standard,light,15,default,mint,"#A6D5D5",197.8,23.8,18.8,70.2,G 50 B,15.3,1.34,below
-standard,light,15,muted,mint,"#BED0D0",199.3,11.8,9.3,70.8,B 48 G,15.2,1.34,below
-standard,light,30,default,mint,"#8ABABA",197.7,23.9,18.9,56.5,G 50 B,30.1,1.8,below
-standard,light,30,muted,mint,"#A3B5B5",199,11.7,9.2,57.1,B 48 G,30.1,1.79,below
-standard,light,45,default,mint,"#05A4A0",193.6,42.7,33.7,41.6,G 44 B,45.2,2.58,below
-standard,light,45,muted,mint,"#729C9A",194.3,21.3,16.8,43.1,G 45 B,45.1,2.54,below
-standard,light,60,default,mint,"#038180",195.6,35.5,28.1,29.1,G 47 B,60.3,3.95,AA large
-standard,light,60,muted,mint,"#5A7B7B",197.7,17.6,13.9,30.4,G 50 B,60.2,3.87,AA large
-standard,light,75,default,mint,"#025B5A",195.3,27.4,21.6,17.5,G 47 B,75.2,6.66,AA
-standard,light,75,muted,mint,"#3F5757",197.7,13.5,10.6,18.4,G 50 B,75,6.49,AA
-standard,light,90,default,mint,"#002A2B",199,16.1,12.7,6.2,B 48 G,90.2,12.9,AAA
-standard,light,90,muted,mint,"#1C2929",197.7,8,6.3,6.7,G 50 B,90,12.6,AAA
-standard,light,15,default,blue,"#B0D1EA",238.7,24.1,19,70.9,B 1 R,15.1,1.34,below
-standard,light,15,muted,blue,"#C2CED9",239.4,12,9.5,71.1,B 1 R,15.2,1.34,below
-standard,light,30,default,blue,"#93B6CE",236.7,24.2,19.1,56.9,B 1 G,30.1,1.79,below
-standard,light,30,muted,blue,"#A7B3BE",240.1,11.9,9.4,57.3,B 1 R,30.1,1.79,below
-standard,light,45,default,blue,"#419CCE",238.2,42.9,33.8,42.6,B,45.3,2.56,below
-standard,light,45,muted,blue,"#7B98AE",239.5,21.5,17,43.5,B 1 R,45.1,2.54,below
-standard,light,60,default,blue,"#327BA3",238.1,35.8,28.2,29.9,B,60.3,3.92,AA large
-standard,light,60,muted,blue,"#617889",238.7,17.6,13.9,30.6,B 1 R,60.2,3.87,AA large
-standard,light,75,default,blue,"#225774",237.9,27.5,21.7,18.1,B,75.1,6.56,AA
-standard,light,75,muted,blue,"#435561",236,13.8,10.9,18.5,B 2 G,75,6.5,AA
-standard,light,90,default,blue,"#0C2938",236.3,16.1,12.7,6.6,B 1 G,90,12.67,AAA
-standard,light,90,muted,blue,"#1F282E",235.7,7.7,6.1,6.8,B 2 G,90,12.57,AAA
-standard,light,15,default,purple,"#CFC8F0",292.3,23.8,18.8,71.9,B 29 R,15,1.34,below
-standard,light,15,muted,purple,"#D0CADC",294.8,12,9.5,71.7,B 31 R,15.1,1.34,below
-standard,light,30,default,purple,"#B2ADD5",290.3,23.9,18.9,57.8,B 28 R,30.1,1.79,below
-standard,light,30,muted,purple,"#B4AFC1",293.3,12.1,9.5,57.7,B 30 R,30,1.79,below
-standard,light,45,default,purple,"#8C8CDD",285.9,43,33.9,44.3,B 26 R,45.3,2.55,below
-standard,light,45,muted,purple,"#9391B4",287.2,21.6,17.1,44.2,B 26 R,45.1,2.53,below
-standard,light,60,default,purple,"#716EAF",288.1,35.7,28.2,31.3,B 27 R,60.1,3.87,AA large
-standard,light,60,muted,purple,"#75728E",289.6,17.9,14.1,31.1,B 28 R,60.2,3.87,AA large
-standard,light,75,default,purple,"#4F4D7D",287.9,27.8,21.9,18.8,B 27 R,75.2,6.55,AA
-standard,light,75,muted,purple,"#525065",289,14.1,11.1,18.7,B 27 R,75.2,6.54,AA
-standard,light,90,default,purple,"#27233D",293.2,16.4,13,6.9,B 30 R,90.1,12.64,AAA
-standard,light,90,muted,purple,"#282531",296.7,8.7,6.9,6.9,B 32 R,90,12.59,AAA
-standard,light,15,default,pink,"#EAC0E0",335.1,24.2,19.1,72.4,R 41 B,15.2,1.34,below
-standard,light,15,muted,pink,"#DCC7D5",334.6,11.9,9.4,72,R 41 B,15,1.34,below
-standard,light,30,default,pink,"#CDA5C5",334.1,24.1,19,58.3,R 42 B,30.3,1.8,below
-standard,light,30,muted,pink,"#C0ABBA",333.7,12.5,9.9,57.7,R 42 B,30.3,1.8,below
-standard,light,45,default,pink,"#C07DC0",330.2,42.9,33.9,45.5,R 45 B,45,2.54,below
-standard,light,45,muted,pink,"#AB8AA8",330.3,21.9,17.3,44.6,R 45 B,45.2,2.54,below
-standard,light,60,default,pink,"#996296",331.9,35.5,28,32,R 43 B,60.1,3.88,AA large
-standard,light,60,muted,pink,"#886D84",332.2,18,14.2,31.5,R 43 B,60.1,3.86,AA large
-standard,light,75,default,pink,"#6D446B",331.8,27.9,22,19.3,R 43 B,75.1,6.55,AA
-standard,light,75,muted,pink,"#614C5D",333.9,14.3,11.3,19,R 42 B,75.1,6.52,AA
-standard,light,90,default,pink,"#361E32",336.1,16.7,13.1,7,R 40 B,90.1,12.69,AAA
-standard,light,90,muted,pink,"#2F232C",336.3,8.5,6.7,7,R 40 B,90,12.6,AAA
-standard,light,15,default,brown,"#EAC5B7",41,14.2,11.2,72.1,R 27 Y,15,1.34,below
-standard,light,30,default,brown,"#CEA99D",37.6,14.5,11.5,57.9,R 23 Y,30.3,1.8,below
-standard,light,45,default,brown,"#C28670",38.9,25.6,20.2,44.8,R 24 Y,45.1,2.54,below
-standard,light,60,default,brown,"#9A6957",38.9,21.8,17.2,31.4,R 24 Y,60.2,3.89,AA large
-standard,light,75,default,brown,"#6D4A3D",39.1,16.3,12.9,19,R 25 Y,75.1,6.53,AA
-standard,light,90,default,brown,"#35221B",38.9,9.7,7.6,7,R 24 Y,90,12.62,AAA
-standard,dark,15,default,red,"#7A464A",13.9,42,30.2,40.4,R 6 B,15.1,2.37,below
-standard,dark,15,muted,red,"#6A4E4F",14.6,21.6,15.5,40.1,R 6 B,15,2.38,below
-standard,dark,30,default,red,"#B16067",13.9,56.4,40.5,53.8,R 6 B,30.1,4.01,AA large
-standard,dark,30,muted,red,"#986E6F",15.6,27.7,19.9,53.4,R 5 B,30.3,4.05,AA large
-standard,dark,45,default,red,"#D77D83",14.6,55.7,40,65,R 6 B,45.1,6.05,AA
-standard,dark,45,muted,red,"#BB8B8D",14.3,28.4,20.4,64.5,R 6 B,45.1,6.08,AA
-standard,dark,60,default,red,"#F997A2",11.7,56,40.2,75.1,R 9 B,60.2,8.44,AAA
-standard,dark,60,muted,red,"#D9A6AA",11.6,27.9,20,74.4,R 9 B,60,8.44,AAA
-standard,dark,75,default,red,"#FFBCBD",16.2,34,24.4,83.7,R 4 B,75.1,11.14,AAA
-standard,dark,75,muted,red,"#E8C5C4",17.6,16.6,11.9,83.3,R 3 B,75.2,11.17,AAA
-standard,dark,90,default,red,"#FFDEDB",21.9,14.2,10.2,91.7,R 2 Y,90.1,14.14,AAA
-standard,dark,90,muted,red,"#F4E1E0",16.5,7.2,5.2,91.4,R 4 B,90,14.11,AAA
-standard,dark,15,default,orange,"#764B28",57.2,42,30.2,40.1,R 50 Y,15.1,2.37,below
-standard,dark,15,muted,orange,"#685140",58.3,20.7,14.8,40.1,Y 49 R,15.3,2.4,below
-standard,dark,30,default,orange,"#AA6832",56.3,55.7,40,53.3,R 48 Y,30.1,4,AA large
-standard,dark,30,muted,orange,"#957157",56.9,27.7,19.9,53.1,R 49 Y,30.1,4.04,AA large
-standard,dark,45,default,orange,"#D0854A",56,55.8,40,64.4,R 48 Y,45,6.03,AA
-standard,dark,45,muted,orange,"#B78F72",57.5,27.5,19.7,64.2,R 50 Y,45.1,6.08,AA
-standard,dark,60,default,orange,"#F39F61",54.8,56,40.2,74.4,R 46 Y,60,8.41,AAA
-standard,dark,60,muted,orange,"#D7AA8B",56.3,27.8,20,74.2,R 48 Y,60.2,8.47,AAA
-standard,dark,75,default,orange,"#FBC197",57.1,34.5,24.8,83.3,R 50 Y,75.1,11.14,AAA
-standard,dark,75,muted,orange,"#E6C7B2",58.6,17.1,12.3,83,Y 48 R,75,11.14,AAA
-standard,dark,90,default,orange,"#FDE0CD",58.8,14.6,10.5,91.5,Y 48 R,90.1,14.14,AAA
-standard,dark,90,muted,orange,"#F3E2D9",57.5,7,5.1,91.3,R 50 Y,90,14.11,AAA
-standard,dark,15,default,yellow,"#625420",96.6,41.7,29.9,39.6,Y 12 G,15,2.37,below
-standard,dark,15,muted,yellow,"#5D553C",97.4,21.3,15.3,39.8,Y 14 G,15.1,2.39,below
+standard,light,45,default,yellow,"#AE9220",95.3,43.8,34.6,43.7,Y 10 G,45.1,2.54,below
+standard,light,45,muted,yellow,"#A39362",94.4,21.6,17,43.6,Y 8 G,45.3,2.55,below
+standard,light,60,default,yellow,"#8A7318",94.9,36.4,28.8,30.7,Y 9 G,60.1,3.87,AA large
+standard,light,60,muted,yellow,"#81744C",94.5,18.2,14.4,30.7,Y 8 G,60.3,3.88,AA large
+standard,light,75,default,yellow,"#62510D",94.9,28.4,22.4,18.6,Y 9 G,75,6.52,AA
+standard,light,75,muted,yellow,"#5C5235",93.5,13.9,11,18.7,Y 7 G,75,6.49,AA
+standard,light,90,default,yellow,"#2E2603",97.3,16.9,13.4,6.8,Y 13 G,90,12.63,AAA
+standard,light,90,muted,yellow,"#2C2616",91.8,8.4,6.6,6.8,Y 3 G,90.1,12.62,AAA
+standard,light,15,default,green,"#B9D5AA",140.6,24.9,19.7,70.4,G 25 Y,15.1,1.34,below
+standard,light,15,muted,green,"#C6D0BC",139.5,11.9,9.4,70.9,G 26 Y,15.1,1.34,below
+standard,light,30,default,green,"#9EB990",140.5,24.2,19.1,56.4,G 25 Y,30.2,1.8,below
+standard,light,30,muted,green,"#AAB5A2",141.7,11.9,9.4,57.1,G 23 Y,30,1.79,below
+standard,light,45,default,green,"#6BA256",140.2,43.7,34.5,42.3,G 25 Y,45.1,2.54,below
+standard,light,45,muted,green,"#849B77",139.8,21.6,17.1,43.1,G 26 Y,45.2,2.54,below
+standard,light,60,default,green,"#548043",140.2,36.4,28.7,29.8,G 25 Y,60.1,3.88,AA large
+standard,light,60,muted,green,"#687A5E",140,17.6,13.9,30.3,G 25 Y,60.3,3.89,AA large
+standard,light,75,default,green,"#3B5A2C",138.9,28.2,22.3,17.9,G 27 Y,75.2,6.56,AA
+standard,light,75,muted,green,"#495641",139.2,13.7,10.8,18.2,G 26 Y,75.2,6.55,AA
+standard,light,90,default,green,"#192B12",140.1,17,13.4,6.6,G 25 Y,90,12.62,AAA
+standard,light,90,muted,green,"#21291D",140.6,8.7,6.8,6.8,G 25 Y,90,12.59,AAA
+standard,light,15,default,mint,"#A6D6CD",185.4,24.2,19.1,70.2,G 33 B,15.2,1.34,below
+standard,light,15,muted,mint,"#BED0CC",186.8,11.7,9.2,70.6,G 35 B,15.4,1.35,below
+standard,light,30,default,mint,"#8ABBB2",185.2,24.4,19.2,56.4,G 32 B,30,1.79,below
+standard,light,30,muted,mint,"#A2B5B1",186.7,12,9.5,56.8,G 35 B,30.3,1.8,below
+standard,light,45,default,mint,"#01A596",185.7,43.8,34.6,41.4,G 33 B,45.2,2.58,below
+standard,light,45,muted,mint,"#719D95",185.1,22.2,17.5,43.1,G 32 B,45,2.53,below
+standard,light,60,default,mint,"#068275",184.8,36.4,28.7,29,G 32 B,60.3,3.95,AA large
+standard,light,60,muted,mint,"#5A7C75",183.7,18.1,14.3,30.4,G 30 B,60,3.85,AA large
+standard,light,75,default,mint,"#035C52",184.3,28.2,22.3,17.5,G 31 B,75.1,6.63,AA
+standard,light,75,muted,mint,"#3E5752",184.1,14,11,18.2,G 31 B,75.2,6.55,AA
+standard,light,90,default,mint,"#012B26",185.1,16.5,13,6.3,G 32 B,90.1,12.81,AAA
+standard,light,90,muted,mint,"#1C2927",187.2,8,6.3,6.7,G 35 B,90.1,12.62,AAA
+standard,light,15,default,blue,"#ABD2E7",230,24.6,19.5,70.5,B 9 G,15.3,1.34,below
+standard,light,15,muted,blue,"#C0CFD8",229.3,12.4,9.8,71.1,B 9 G,15.1,1.34,below
+standard,light,30,default,blue,"#90B7CC",230.5,24.4,19.3,56.9,B 8 G,30,1.79,below
+standard,light,30,muted,blue,"#A4B4BC",225.7,12.3,9.7,57.2,B 14 G,30.1,1.79,below
+standard,light,45,default,blue,"#2C9ECA",231.1,44,34.7,42.3,B 7 G,45.3,2.57,below
+standard,light,45,muted,blue,"#7799AC",231.6,22,17.4,43.4,B 7 G,45.2,2.54,below
+standard,light,60,default,blue,"#207D9F",229.8,36.6,28.9,29.7,B 9 G,60.2,3.92,AA large
+standard,light,60,muted,blue,"#5E7988",231.4,18.2,14.4,30.6,B 7 G,60.1,3.86,AA large
+standard,light,75,default,blue,"#135871",229.7,28.4,22.4,17.8,B 9 G,75.2,6.62,AA
+standard,light,75,muted,blue,"#415560",231.2,14.1,11.1,18.4,B 7 G,75.2,6.54,AA
+standard,light,90,default,blue,"#062937",231.3,16.7,13.2,6.5,B 7 G,90.1,12.76,AAA
+standard,light,90,muted,blue,"#1D282E",231,8.4,6.7,6.7,B 7 G,90.1,12.63,AAA
+standard,light,15,default,purple,"#C3CBF3",274.7,25,19.7,71.6,B 19 R,15.1,1.34,below
+standard,light,15,muted,purple,"#CACBDD",276.5,12.6,9.9,71.3,B 20 R,15.3,1.34,below
+standard,light,30,default,purple,"#A8AFD6",276,24.4,19.3,57.3,B 20 R,30.4,1.8,below
+standard,light,30,muted,purple,"#AFB0C2",277.5,12.6,10,57.5,B 21 R,30.2,1.8,below
+standard,light,45,default,purple,"#7D90E0",275.7,43.9,34.7,44.1,B 20 R,45.1,2.54,below
+standard,light,45,muted,purple,"#8C93B5",275,22,17.4,44,B 19 R,45.1,2.53,below
+standard,light,60,default,purple,"#6272B1",275,36.2,28.6,31.1,B 19 R,60,3.86,AA large
+standard,light,60,muted,purple,"#6F748F",275.8,18.1,14.3,31,B 20 R,60.1,3.85,AA large
+standard,light,75,default,purple,"#44507F",275,28.4,22.4,18.7,B 19 R,75.1,6.53,AA
+standard,light,75,muted,purple,"#4D5266",273,14.3,11.3,18.7,B 18 R,75,6.49,AA
+standard,light,90,default,purple,"#1F253F",276,17.1,13.5,6.9,B 20 R,90,12.63,AAA
+standard,light,90,muted,purple,"#242632",277,9.1,7.2,6.9,B 20 R,90.1,12.6,AAA
+standard,light,15,default,pink,"#E1C2E9",319.8,24.9,19.6,72.1,B 48 R,15.3,1.35,below
+standard,light,15,muted,pink,"#D7C8D9",317.8,12.1,9.5,71.8,B 46 R,15.1,1.34,below
+standard,light,30,default,pink,"#C6A7CD",321,24.6,19.5,58.3,B 48 R,30.1,1.8,below
+standard,light,30,muted,pink,"#BCACBE",319.6,12.9,10.2,57.7,B 47 R,30.3,1.8,below
+standard,light,45,default,pink,"#B77FCC",320.2,44.1,34.9,45.3,B 48 R,45.1,2.55,below
+standard,light,45,muted,pink,"#A68BAD",320.4,22.5,17.7,44.4,B 48 R,45.3,2.55,below
+standard,light,60,default,pink,"#9164A2",320.1,36.9,29.2,31.9,B 48 R,60.1,3.87,AA large
+standard,light,60,muted,pink,"#846E89",321.1,18.6,14.7,31.5,B 49 R,60,3.85,AA large
+standard,light,75,default,pink,"#674673",320.4,28.3,22.4,19.3,B 48 R,75,6.52,AA
+standard,light,75,muted,pink,"#5D4D61",320.6,14.5,11.4,18.9,B 48 R,75.2,6.53,AA
+standard,light,90,default,pink,"#312038",319.3,16.5,13,7,B 47 R,90,12.63,AAA
+standard,light,90,muted,pink,"#2C242F",317.7,8.5,6.7,7,B 46 R,90,12.58,AAA
+standard,light,15,default,brown,"#EBC4B7",38.3,14.9,11.7,72,R 23 Y,15.2,1.34,below
+standard,light,30,default,brown,"#CFA99C",38.6,15,11.8,58,R 24 Y,30.1,1.8,below
+standard,light,45,default,brown,"#C3856E",39,26.6,21,44.7,R 24 Y,45.3,2.55,below
+standard,light,60,default,brown,"#9B6957",38.5,22.2,17.5,31.6,R 24 Y,60.1,3.87,AA large
+standard,light,75,default,brown,"#6E493C",38,17.3,13.6,18.9,R 23 Y,75.2,6.57,AA
+standard,light,90,default,brown,"#35221A",41.6,9.8,7.7,7,R 28 Y,90,12.63,AAA
+standard,dark,15,default,red,"#794651",5.6,42.4,30.5,40.5,R 15 B,15.1,2.37,below
+standard,dark,15,muted,red,"#694E53",4.7,21.8,15.7,40.1,R 15 B,15,2.38,below
+standard,dark,30,default,red,"#AE6172",5.9,54.9,39.4,53.9,R 14 B,30.2,4.02,AA large
+standard,dark,30,muted,red,"#956E75",5.4,26.9,19.3,53.3,R 15 B,30,4.03,AA large
+standard,dark,45,default,red,"#D47D90",5.6,55.6,39.9,65,R 15 B,45,6.03,AA
+standard,dark,45,muted,red,"#B98B93",5.5,28.4,20.4,64.4,R 15 B,45,6.07,AA
+standard,dark,60,default,red,"#F797AC",5.3,56.3,40.4,75.1,R 15 B,60.2,8.44,AAA
+standard,dark,60,muted,red,"#D8A6AE",6.1,28.1,20.2,74.4,R 14 B,60,8.44,AAA
+standard,dark,75,default,red,"#FFBBC7",5.8,36.2,26,83.8,R 14 B,75.1,11.15,AAA
+standard,dark,75,muted,red,"#E8C4C9",5.4,18.3,13.1,83.2,R 15 B,75,11.14,AAA
+standard,dark,90,default,red,"#FEDEE2",5.1,14.9,10.7,91.8,R 15 B,90.3,14.17,AAA
+standard,dark,90,muted,red,"#F4E1E2",6.4,7.6,5.5,91.5,R 14 B,90.1,14.13,AAA
+standard,dark,15,default,orange,"#784A2C",51.2,42.1,30.2,40.3,R 41 Y,15.2,2.38,below
+standard,dark,15,muted,orange,"#695041",52,21.1,15.2,40.1,R 42 Y,15.1,2.39,below
+standard,dark,30,default,orange,"#AD6638",50.2,56.2,40.4,53.4,R 40 Y,30.1,4,AA large
+standard,dark,30,muted,orange,"#967059",51.7,27.8,20,53,R 42 Y,30,4.02,AA large
+standard,dark,45,default,orange,"#D38350",50.4,56.1,40.3,64.5,R 40 Y,45,6.03,AA
+standard,dark,45,muted,orange,"#B98E75",51.1,27.7,19.9,64.3,R 41 Y,45.1,6.08,AA
+standard,dark,60,default,orange,"#F59E67",50.7,55.5,39.9,74.6,R 40 Y,60.1,8.43,AAA
+standard,dark,60,muted,orange,"#D8A98E",51,27.6,19.8,74.1,R 41 Y,60,8.44,AAA
+standard,dark,75,default,orange,"#FFBF99",51.1,36,25.9,83.4,R 41 Y,75.1,11.13,AAA
+standard,dark,75,muted,orange,"#E9C6B3",51.4,18.1,13,83.1,R 42 Y,75.1,11.16,AAA
+standard,dark,90,default,orange,"#FFDFCF",50.2,15,10.7,91.5,R 40 Y,90.1,14.13,AAA
+standard,dark,90,muted,orange,"#F4E2DA",51.1,7.2,5.1,91.4,R 41 Y,90.2,14.15,AAA
+standard,dark,15,default,yellow,"#63541E",95.9,42.9,30.8,39.7,Y 11 G,15.1,2.38,below
+standard,dark,15,muted,yellow,"#5D553B",97.9,22.1,15.9,39.8,Y 14 G,15.1,2.39,below
 standard,dark,30,default,yellow,"#8D7722",96.1,55.8,40.1,52.7,Y 11 G,30.3,4.05,AA large
-standard,dark,30,muted,yellow,"#847851",97.3,28.2,20.2,52.7,Y 14 G,30.1,4.05,AA large
-standard,dark,45,default,yellow,"#AE953A",96,55.5,39.9,63.6,Y 11 G,45,6.05,AA
-standard,dark,45,muted,yellow,"#A5966C",95.4,27.5,19.7,63.7,Y 10 G,45,6.07,AA
+standard,dark,30,muted,yellow,"#857851",96,28.2,20.2,52.8,Y 11 G,30.3,4.06,AA large
+standard,dark,45,default,yellow,"#AF9539",95.5,56,40.2,63.7,Y 10 G,45.1,6.07,AA
+standard,dark,45,muted,yellow,"#A6966B",94.5,28.1,20.2,63.8,Y 8 G,45.1,6.08,AA
 standard,dark,60,default,yellow,"#CDB14F",95.8,55.8,40.1,73.6,Y 11 G,60.1,8.45,AAA
 standard,dark,60,muted,yellow,"#C2B283",96.5,28.4,20.4,73.6,Y 12 G,60,8.45,AAA
-standard,dark,75,default,yellow,"#E0CC8F",96.5,34.1,24.5,82.7,Y 12 G,75.2,11.16,AAA
-standard,dark,75,muted,yellow,"#D9CCAE",96,17.4,12.5,82.8,Y 11 G,75.1,11.16,AAA
-standard,dark,90,default,yellow,"#F1E5CA",97.8,14.9,10.7,91.4,Y 14 G,90.4,14.21,AAA
+standard,dark,75,default,yellow,"#E2CC8B",95.6,36.3,26,82.8,Y 10 G,75.4,11.2,AAA
+standard,dark,75,muted,yellow,"#D9CCAC",96.8,18.5,13.3,82.7,Y 13 G,75.1,11.15,AAA
+standard,dark,90,default,yellow,"#F2E4C9",93.9,14.9,10.7,91.2,Y 7 G,90.1,14.13,AAA
 standard,dark,90,muted,yellow,"#EEE4D7",93.6,7.3,5.2,91.3,Y 7 G,90.1,14.13,AAA
-standard,dark,15,default,green,"#3E5D3C",147.6,42.3,30.3,39.2,G 17 Y,15.3,2.4,below
-standard,dark,15,muted,green,"#4C5949",148.4,21.5,15.5,39.5,G 16 Y,15.2,2.39,below
-standard,dark,30,default,green,"#538450",146.9,55.8,40.1,51.8,G 18 Y,30.2,4.05,AA large
-standard,dark,30,muted,green,"#6A7E65",147.2,28,20.1,52.3,G 17 Y,30.1,4.05,AA large
-standard,dark,45,default,green,"#6CA46D",149.2,55.7,40,62.6,G 15 Y,45,6.06,AA
-standard,dark,45,muted,green,"#879D83",149.3,27.4,19.7,63.2,G 15 Y,45,6.07,AA
-standard,dark,60,default,green,"#88C183",147.3,55.9,40.2,72.5,G 17 Y,60.1,8.46,AAA
-standard,dark,60,muted,green,"#A2BA9C",148.2,28.5,20.4,73.2,G 16 Y,60.2,8.49,AAA
-standard,dark,75,default,green,"#B5D6B0",149.3,34.2,24.6,82.1,G 15 Y,75.2,11.17,AAA
-standard,dark,75,muted,green,"#C4D1BE",150,17.8,12.8,82.5,G 14 Y,75.2,11.17,AAA
-standard,dark,90,default,green,"#DEE9DA",155.3,14.9,10.7,91.1,G 9 Y,90.3,14.18,AAA
-standard,dark,90,muted,green,"#E5E6DF",156.1,6.9,4.9,91.1,G 8 Y,90.1,14.13,AAA
-standard,dark,15,default,mint,"#285D5B",194.2,41.6,29.9,38.9,G 45 B,15.1,2.37,below
-standard,dark,15,muted,mint,"#465958",195.3,21.2,15.2,39.5,G 47 B,15.1,2.39,below
-standard,dark,30,default,mint,"#228582",194.1,55.9,40.2,51.5,G 45 B,30.2,4.01,AA large
-standard,dark,30,muted,mint,"#5F7E7D",196.2,28,20.1,52.2,G 48 B,30,4.03,AA large
-standard,dark,45,default,mint,"#44A5A3",195.4,55.8,40,62.5,G 47 B,45.1,6.05,AA
-standard,dark,45,muted,mint,"#7D9E9C",194.7,27.8,20,63.5,G 46 B,45.4,6.12,AA
-standard,dark,60,default,mint,"#60C3BD",192.4,55.9,40.1,72.5,G 43 B,60.4,8.49,AAA
-standard,dark,60,muted,mint,"#97BAB6",191.6,27.9,20.1,73.2,G 42 B,60.1,8.47,AAA
-standard,dark,75,default,mint,"#A5D6D5",197,34.5,24.7,82,G 49 B,75.1,11.14,AAA
-standard,dark,75,muted,mint,"#BFD1D0",197.4,17.3,12.4,82.6,G 50 B,75.3,11.2,AAA
-standard,dark,90,default,mint,"#DBE8E7",198,14,10,91,B 49 G,90.1,14.13,AAA
+standard,dark,15,default,green,"#425C36",140.7,43.2,31,39.1,G 25 Y,15.1,2.38,below
+standard,dark,15,muted,green,"#4E5946",140.5,22.3,16,39.6,G 25 Y,15.2,2.4,below
+standard,dark,30,default,green,"#5B8349",140.4,55.7,40,51.9,G 25 Y,30.2,4.05,AA large
+standard,dark,30,muted,green,"#6D7E62",140.9,28.2,20.2,52.4,G 24 Y,30.3,4.07,AA large
+standard,dark,45,default,green,"#77A362",140.4,56.3,40.4,62.8,G 25 Y,45.2,6.09,AA
+standard,dark,45,muted,green,"#8B9D7D",139.9,28.5,20.5,63.4,G 26 Y,45.2,6.1,AA
+standard,dark,60,default,green,"#90C07B",141.2,56.1,40.2,72.6,G 24 Y,60.2,8.47,AAA
+standard,dark,60,muted,green,"#A5B998",142,28.2,20.2,73.1,G 23 Y,60,8.45,AAA
+standard,dark,75,default,green,"#BAD6A7",140.4,36.1,25.9,82.3,G 25 Y,75.4,11.22,AAA
+standard,dark,75,muted,green,"#C7D1BA",140.2,18.2,13.1,82.6,G 25 Y,75.4,11.21,AAA
+standard,dark,90,default,green,"#E1E8D4",140.1,15.1,10.8,90.9,G 25 Y,90,14.12,AAA
+standard,dark,90,muted,green,"#E6E6DC",140.8,7.6,5.5,91.1,G 24 Y,90.1,14.13,AAA
+standard,dark,15,default,mint,"#285E56",185.3,42.7,30.7,39,G 33 B,15.3,2.39,below
+standard,dark,15,muted,mint,"#465955",185.6,21.3,15.3,39.4,G 33 B,15.1,2.38,below
+standard,dark,30,default,mint,"#288579",185.4,55.6,39.9,51.3,G 33 B,30,3.99,AA large
+standard,dark,30,muted,mint,"#607F78",183.9,28.2,20.2,52.3,G 31 B,30.3,4.06,AA large
+standard,dark,45,default,mint,"#48A698",185,55.9,40.1,62.5,G 32 B,45.3,6.07,AA
+standard,dark,45,muted,mint,"#7D9E97",185.3,28,20.1,63.3,G 33 B,45.2,6.1,AA
+standard,dark,60,default,mint,"#62C3B5",186,55.9,40.1,72.4,G 34 B,60.2,8.45,AAA
+standard,dark,60,muted,mint,"#97BAB3",186.5,28,20.1,73.1,G 34 B,60,8.45,AAA
+standard,dark,75,default,mint,"#A4D7CD",185.7,35.5,25.5,82,G 33 B,75.1,11.14,AAA
+standard,dark,75,muted,mint,"#BED1CC",186.6,17.9,12.8,82.4,G 34 B,75,11.15,AAA
+standard,dark,90,default,mint,"#D9E9E4",186,15.7,11.3,91,G 34 B,90.1,14.14,AAA
 standard,dark,90,muted,mint,"#E3E6E4",191.8,7.3,5.3,91.1,G 42 B,90,14.12,AAA
-standard,dark,15,default,blue,"#345970",237.4,41.6,29.9,39.3,B,15.1,2.38,below
-standard,dark,15,muted,blue,"#4A5760",234.4,20.4,14.6,39.6,B 4 G,15.1,2.39,below
-standard,dark,30,default,blue,"#3D7FA4",236.8,55.6,39.9,52.1,B 1 G,30.2,4.03,AA large
-standard,dark,30,muted,blue,"#667B8B",237.9,27.6,19.8,52.4,B,30,4.03,AA large
-standard,dark,45,default,blue,"#5B9EC7",237.6,55.8,40,63.1,B,45.1,6.05,AA
-standard,dark,45,muted,blue,"#839AAC",238,28.2,20.3,63.5,B,45,6.07,AA
-standard,dark,60,default,blue,"#76BBE6",237,55.4,39.8,73.1,B 1 G,60.3,8.47,AAA
-standard,dark,60,muted,blue,"#9FB6C9",238.7,27.6,19.8,73.4,B 1 R,60.1,8.46,AAA
-standard,dark,75,default,blue,"#B0D2EB",236.8,34.1,24.5,82.6,B 1 G,75.4,11.22,AAA
-standard,dark,75,muted,blue,"#C3CFD9",234.1,17,12.2,82.8,B 4 G,75.3,11.2,AAA
-standard,dark,90,default,blue,"#DEE7F0",235.5,14.7,10.5,91.3,B 2 G,90.4,14.2,AAA
-standard,dark,90,muted,blue,"#E5E5E8",234.8,6.8,4.9,91.2,B 3 G,90,14.12,AAA
-standard,dark,15,default,purple,"#525278",284.4,41.5,29.8,40.1,B 25 R,15.2,2.4,below
-standard,dark,15,muted,purple,"#555464",283.3,20.4,14.6,40,B 24 R,15.2,2.4,below
-standard,dark,30,default,purple,"#7572B0",287.1,55.3,39.7,53.2,B 26 R,30.2,4.05,AA large
-standard,dark,30,muted,purple,"#797690",287,27.2,19.5,53,B 26 R,30.3,4.06,AA large
-standard,dark,45,default,purple,"#9390D4",286.7,55.8,40,64.2,B 26 R,45.1,6.07,AA
-standard,dark,45,muted,purple,"#9794B1",285.9,27.7,19.9,63.9,B 25 R,45,6.08,AA
-standard,dark,60,default,purple,"#ACADF5",283.7,55.7,40,74.2,B 24 R,60.3,8.5,AAA
-standard,dark,60,muted,purple,"#B2B0CF",283.4,27.9,20,73.8,B 24 R,60.1,8.46,AAA
-standard,dark,75,default,purple,"#CEC8F3",288.3,34.5,24.8,83,B 27 R,75,11.14,AAA
-standard,dark,75,muted,purple,"#D1CADD",291.3,17.3,12.4,83,B 29 R,75.1,11.16,AAA
-standard,dark,90,default,purple,"#EBE2F2",295.7,14.4,10.3,91.4,B 31 R,90,14.11,AAA
-standard,dark,90,muted,purple,"#EBE3E9",299.1,6.6,4.8,91.3,B 34 R,90,14.12,AAA
-standard,dark,15,default,pink,"#6C4A6A",330.2,41.4,29.7,40.5,R 45 B,15.2,2.39,below
-standard,dark,15,muted,pink,"#61505E",330,20.7,14.9,40,R 45 B,15,2.38,below
-standard,dark,30,default,pink,"#9C6699",330.9,55,39.5,53.8,R 44 B,30.2,4.04,AA large
-standard,dark,30,muted,pink,"#8B7087",330.2,28.3,20.3,53.2,R 45 B,30,4.03,AA large
-standard,dark,45,default,pink,"#BE83BC",329.7,55.5,39.8,64.9,R 45 B,45,6.06,AA
-standard,dark,45,muted,pink,"#AC8EA7",330.1,28.1,20.2,64.3,R 45 B,45,6.07,AA
-standard,dark,60,default,pink,"#DC9EDD",327.7,55.9,40.1,74.8,R 47 B,60,8.44,AAA
-standard,dark,60,muted,pink,"#C9AAC5",328,27.6,19.8,74.4,R 46 B,60.2,8.49,AAA
-standard,dark,75,default,pink,"#EBC0E2",332.1,33.4,24,83.5,R 43 B,75,11.14,AAA
-standard,dark,75,muted,pink,"#DEC7D5",333.5,16.2,11.6,83.3,R 42 B,75.3,11.19,AAA
-standard,dark,90,default,pink,"#F7DFEA",340.1,14,10.1,91.6,R 37 B,90,14.12,AAA
-standard,dark,90,muted,pink,"#F0E2E6",339.9,6.5,4.7,91.4,R 37 B,90.1,14.14,AAA
-standard,dark,15,default,brown,"#6D4E42",40.7,24.6,17.7,40.1,R 27 Y,15.1,2.38,below
+standard,dark,15,default,blue,"#2F5A6E",230.4,42.4,30.5,39.2,B 8 G,15.1,2.37,below
+standard,dark,15,muted,blue,"#495760",232.7,21,15.1,39.5,B 5 G,15,2.38,below
+standard,dark,30,default,blue,"#3680A0",230.7,55.7,40,51.9,B 8 G,30.1,4.02,AA large
+standard,dark,30,muted,blue,"#647C89",229.4,27.6,19.8,52.5,B 9 G,30.1,4.05,AA large
+standard,dark,45,default,blue,"#54A0C2",229.8,55.6,39.9,63,B 9 G,45.2,6.07,AA
+standard,dark,45,muted,blue,"#819BA9",228.7,27.8,19.9,63.5,B 10 G,45.1,6.08,AA
+standard,dark,60,default,blue,"#6FBCE2",231.3,55.9,40.1,72.8,B 7 G,60,8.43,AAA
+standard,dark,60,muted,blue,"#9CB7C7",230.6,28,20.1,73.4,B 8 G,60.1,8.47,AAA
+standard,dark,75,default,blue,"#AAD3EA",230.4,36.2,26,82.4,B 8 G,75.2,11.17,AAA
+standard,dark,75,muted,blue,"#C1CFD9",231.2,18.1,13,82.6,B 7 G,75.1,11.16,AAA
+standard,dark,90,default,blue,"#DCE7EF",229.5,15.3,11,91.1,B 9 G,90.1,14.14,AAA
+standard,dark,90,muted,blue,"#E4E6E9",227.6,8,5.7,91.3,B 12 G,90.4,14.2,AAA
+standard,dark,15,default,purple,"#4B5379",275.2,43,30.9,39.8,B 19 R,15,2.38,below
+standard,dark,15,muted,purple,"#535465",278.2,21.9,15.7,39.8,B 21 R,15.1,2.39,below
+standard,dark,30,default,purple,"#6975B0",275.9,55.1,39.6,52.9,B 20 R,30.1,4.03,AA large
+standard,dark,30,muted,purple,"#747790",276,27.4,19.6,52.8,B 20 R,30.1,4.05,AA large
+standard,dark,45,default,purple,"#8694D4",274.9,55.2,39.7,64,B 19 R,45.2,6.09,AA
+standard,dark,45,muted,purple,"#9296B1",273.9,27.3,19.6,64,B 19 R,45.2,6.1,AA
+standard,dark,60,default,purple,"#A2AFF5",276,56,40.2,73.8,B 20 R,60,8.44,AAA
+standard,dark,60,muted,purple,"#AEB1D0",276,28.7,20.6,73.8,B 20 R,60,8.45,AAA
+standard,dark,75,default,purple,"#C5CBF6",275.4,36,25.8,83,B 19 R,75.3,11.2,AAA
+standard,dark,75,muted,purple,"#CCCCDE",273.6,17.5,12.6,83,B 18 R,75.4,11.21,AAA
+standard,dark,90,default,purple,"#E5E4F4",273,15.4,11,91.3,B 18 R,90.2,14.15,AAA
+standard,dark,90,muted,purple,"#E8E4EA",271.9,7.1,5.1,91.3,B 17 R,90.1,14.13,AAA
+standard,dark,15,default,pink,"#674B6F",320.4,42.1,30.2,40.3,B 48 R,15,2.38,below
+standard,dark,15,muted,pink,"#5F5160",321.4,20.4,14.7,40.1,B 49 R,15.2,2.39,below
+standard,dark,30,default,pink,"#9468A1",320.8,55.3,39.7,53.6,B 48 R,30,4.02,AA large
+standard,dark,30,muted,pink,"#87728A",320.4,27,19.4,53.3,B 48 R,30.3,4.06,AA large
+standard,dark,45,default,pink,"#B686C4",320.4,55,39.5,64.9,B 48 R,45.2,6.08,AA
+standard,dark,45,muted,pink,"#A790AA",319.9,26.7,19.1,64.3,B 48 R,45.2,6.1,AA
+standard,dark,60,default,pink,"#D5A0E4",320.4,56.2,40.4,74.7,B 48 R,60,8.44,AAA
+standard,dark,60,muted,pink,"#C5ABC8",320,27.6,19.8,74.3,B 48 R,60.2,8.48,AAA
+standard,dark,75,default,pink,"#E6C1EB",321.2,36.2,26,83.5,B 49 R,75.1,11.15,AAA
+standard,dark,75,muted,pink,"#DBC7D9",321.6,17.8,12.8,83.1,B 49 R,75,11.15,AAA
+standard,dark,90,default,pink,"#F2E0F0",318.9,15.3,11,91.5,B 47 R,90,14.12,AAA
+standard,dark,90,muted,pink,"#EFE2E9",323.3,8.1,5.8,91.4,B 50 R,90.1,14.14,AAA
+standard,dark,15,default,brown,"#6E4E42",40,25.3,18.2,40.3,R 26 Y,15.2,2.39,below
 standard,dark,30,default,brown,"#9D6D5A",40.8,33.1,23.8,53.3,R 27 Y,30.1,4.03,AA large
 standard,dark,45,default,brown,"#C18A76",39.3,33.5,24,64.4,R 25 Y,45,6.06,AA
 standard,dark,60,default,brown,"#E1A58F",39.6,33.4,24,74.4,R 25 Y,60,8.44,AAA
-standard,dark,75,default,brown,"#EEC4B5",40.2,20.6,14.8,83.3,R 26 Y,75.2,11.16,AAA
-standard,dark,90,default,brown,"#F6E1DA",41.6,8.3,6,91.4,R 28 Y,90,14.12,AAA
-wide,light,15,default,red,"color(display-p3 0.9823 0.7361 0.7458)",14.2,30.7,24.3,73.2,R 6 B,15,1.34,below
-wide,light,15,muted,red,"color(display-p3 0.8974 0.7715 0.7737)",14.2,15.4,12.2,72.3,R 6 B,15,1.34,below
-wide,light,30,default,red,"color(display-p3 0.8698 0.6298 0.6357)",15.2,30.7,24.3,59,R 5 B,30,1.79,below
-wide,light,30,muted,red,"color(display-p3 0.7879 0.6651 0.6656)",15.2,15.4,12.2,58.3,R 5 B,30,1.79,below
-wide,light,45,default,red,"color(display-p3 0.8353 0.4627 0.4948)",13.5,50.7,40,45.9,R 7 B,45,2.56,below
-wide,light,45,muted,red,"color(display-p3 0.7211 0.5298 0.5398)",13.5,25.3,20,45,R 7 B,45,2.53,below
-wide,light,60,default,red,"color(display-p3 0.6705 0.3584 0.3769)",15,44.1,34.8,32.3,R 5 B,60,3.91,AA large
-wide,light,60,muted,red,"color(display-p3 0.5766 0.4157 0.4199)",15.1,22,17.4,31.8,R 5 B,60,3.86,AA large
-wide,light,75,default,red,"color(display-p3 0.4778 0.2478 0.2627)",14.7,34.2,27,19.4,R 6 B,75,6.6,AA
-wide,light,75,muted,red,"color(display-p3 0.4098 0.2911 0.2949)",14.7,17.1,13.5,19.2,R 6 B,75,6.51,AA
-wide,light,90,default,red,"color(display-p3 0.2325 0.1088 0.1103)",17.4,20.1,15.8,7,R 3 B,90,12.77,AAA
-wide,light,90,muted,red,"color(display-p3 0.198 0.1339 0.1328)",17.4,10,7.9,7,R 3 B,90,12.61,AAA
-wide,light,15,default,orange,"color(display-p3 0.967 0.7596 0.5797)",57.4,30.7,24.3,72.4,R 50 Y,15,1.34,below
-wide,light,15,muted,orange,"color(display-p3 0.8918 0.7823 0.6931)",57.4,15.4,12.1,72,R 50 Y,15,1.34,below
-wide,light,30,default,orange,"color(display-p3 0.8534 0.653 0.4776)",57.4,30.7,24.3,58.4,R 50 Y,30,1.79,below
-wide,light,30,muted,orange,"color(display-p3 0.7818 0.6757 0.5885)",57.3,15.4,12.2,58,R 50 Y,30,1.79,below
-wide,light,45,default,orange,"color(display-p3 0.8036 0.5054 0.2315)",56.8,50.7,40,45,R 49 Y,45,2.56,below
-wide,light,45,muted,orange,"color(display-p3 0.7101 0.5479 0.409)",56.8,25.3,20,44.6,R 49 Y,45,2.53,below
-wide,light,60,default,orange,"color(display-p3 0.6418 0.395 0.1623)",57.3,44.1,34.8,31.6,R 50 Y,60,3.9,AA large
-wide,light,60,muted,orange,"color(display-p3 0.5659 0.4311 0.3135)",57.3,22,17.4,31.4,R 50 Y,60,3.86,AA large
-wide,light,75,default,orange,"color(display-p3 0.4568 0.2752 0.1027)",57.4,34.2,27,19,R 50 Y,75,6.58,AA
-wide,light,75,muted,orange,"color(display-p3 0.4019 0.3027 0.2156)",57.4,17.1,13.5,19,R 50 Y,75,6.51,AA
-wide,light,90,default,orange,"color(display-p3 0.2213 0.1235 0.0309)",57.4,20.1,15.8,6.9,R 50 Y,90,12.74,AAA
-wide,light,90,muted,orange,"color(display-p3 0.1934 0.1401 0.0933)",57.4,10,7.9,7,R 50 Y,90,12.6,AAA
-wide,light,15,default,yellow,"color(display-p3 0.8705 0.8025 0.5448)",95.9,30.7,24.3,71.3,Y 11 G,15,1.34,below
-wide,light,15,muted,yellow,"color(display-p3 0.8415 0.8028 0.6764)",95.9,15.4,12.1,71.4,Y 11 G,15,1.34,below
-wide,light,30,default,yellow,"color(display-p3 0.7605 0.6952 0.4433)",95.9,30.7,24.3,57.3,Y 11 G,30,1.79,below
-wide,light,30,muted,yellow,"color(display-p3 0.7327 0.6959 0.572)",95.9,15.4,12.1,57.4,Y 11 G,30,1.79,below
-wide,light,45,default,yellow,"color(display-p3 0.6712 0.5753 0.1614)",95.9,50.7,40,43.6,Y 11 G,45,2.54,below
-wide,light,45,muted,yellow,"color(display-p3 0.6347 0.582 0.3806)",95.9,25.3,20,43.9,Y 11 G,45,2.53,below
-wide,light,60,default,yellow,"color(display-p3 0.5334 0.4534 0.1028)",95.9,44.1,34.8,30.7,Y 11 G,60,3.88,AA large
-wide,light,60,muted,yellow,"color(display-p3 0.5035 0.4597 0.2905)",95.9,22,17.4,30.9,Y 11 G,60,3.85,AA large
-wide,light,75,default,yellow,"color(display-p3 0.3777 0.3187 0.0591)",95.9,34.2,27,18.5,Y 11 G,75,6.54,AA
-wide,light,75,muted,yellow,"color(display-p3 0.3562 0.3238 0.1989)",95.9,17.1,13.5,18.7,Y 11 G,75,6.49,AA
-wide,light,90,default,yellow,"color(display-p3 0.1802 0.1484 0.0151)",95.9,20.1,15.8,6.8,Y 11 G,90,12.65,AAA
-wide,light,90,muted,yellow,"color(display-p3 0.1692 0.1518 0.0847)",95.9,10,7.9,6.9,Y 11 G,90,12.58,AAA
-wide,light,15,default,green,"color(display-p3 0.7115 0.8424 0.6756)",147.3,30.7,24.3,70.1,G 17 Y,15,1.34,below
-wide,light,15,muted,green,"color(display-p3 0.7665 0.8212 0.7406)",147.3,15.4,12.1,70.9,G 17 Y,15,1.34,below
-wide,light,30,default,green,"color(display-p3 0.6015 0.735 0.5744)",148.3,30.7,24.3,56.2,G 16 Y,30,1.79,below
-wide,light,30,muted,green,"color(display-p3 0.6578 0.7142 0.6367)",148.3,15.4,12.1,56.9,G 16 Y,30,1.79,below
-wide,light,45,default,green,"color(display-p3 0.4076 0.6419 0.3709)",146.6,50.7,40,41.9,G 18 Y,45,2.54,below
-wide,light,45,muted,green,"color(display-p3 0.5115 0.6131 0.4809)",146.6,25.3,20,43.1,G 18 Y,45,2.53,below
-wide,light,60,default,green,"color(display-p3 0.3034 0.5101 0.2887)",148.1,44.1,34.8,29.4,G 16 Y,60,3.88,AA large
-wide,light,60,muted,green,"color(display-p3 0.3974 0.4862 0.3783)",148.2,22,17.4,30.3,G 16 Y,60,3.85,AA large
-wide,light,75,default,green,"color(display-p3 0.2089 0.3603 0.1961)",147.9,34.2,27,17.7,G 17 Y,75,6.54,AA
-wide,light,75,muted,green,"color(display-p3 0.2783 0.3434 0.2633)",147.8,17.1,13.5,18.3,G 17 Y,75,6.49,AA
-wide,light,90,default,green,"color(display-p3 0.0834 0.1705 0.0865)",150.5,20,15.8,6.4,G 14 Y,90,12.68,AAA
-wide,light,90,muted,green,"color(display-p3 0.1258 0.1625 0.1218)",150.5,10,7.9,6.7,G 14 Y,90,12.57,AAA
-wide,light,15,default,mint,"color(display-p3 0.6439 0.8432 0.8339)",193.6,30.7,24.3,70,G 45 B,15,1.34,below
-wide,light,15,muted,mint,"color(display-p3 0.7408 0.8208 0.8147)",193.7,15.4,12.1,70.9,G 45 B,15,1.34,below
-wide,light,30,default,mint,"color(display-p3 0.5332 0.7353 0.7299)",194.6,30.7,24.3,56.1,G 46 B,30,1.79,below
-wide,light,30,muted,mint,"color(display-p3 0.633 0.7137 0.7095)",194.6,15.4,12.1,57,G 46 B,30,1.79,below
-wide,light,45,default,mint,"color(display-p3 0.1369 0.6436 0.6297)",193,50.7,40,40.9,G 44 B,45,2.6,below
-wide,light,45,muted,mint,"color(display-p3 0.4559 0.6141 0.6052)",193,25.3,20,43,G 44 B,45,2.53,below
-wide,light,60,default,mint,"color(display-p3 0.0178 0.5094 0.5054)",194.5,44.1,34.8,28.6,G 46 B,60,3.97,AA large
-wide,light,60,muted,mint,"color(display-p3 0.352 0.4864 0.4824)",194.5,22,17.4,30.3,G 46 B,60,3.85,AA large
-wide,light,75,default,mint,"color(display-p3 0.001 0.3584 0.3545)",194.2,34.2,27,17.1,G 45 B,75,6.71,AA
-wide,light,75,muted,mint,"color(display-p3 0.2442 0.3435 0.3401)",194.2,17.1,13.5,18.3,G 45 B,75,6.5,AA
-wide,light,90,default,mint,"color(display-p3 0 0.1663 0.1693)",196.8,20,15.8,6.1,G 49 B,90,12.91,AAA
-wide,light,90,muted,mint,"color(display-p3 0.1092 0.1619 0.1624)",196.9,10,7.9,6.7,G 49 B,90,12.59,AAA
-wide,light,15,default,blue,"color(display-p3 0.6782 0.8215 0.9424)",237.6,30.7,24.3,70.7,B,15,1.34,below
-wide,light,15,muted,blue,"color(display-p3 0.7556 0.8107 0.8632)",237.6,15.4,12.1,71.2,B,15,1.34,below
-wide,light,30,default,blue,"color(display-p3 0.5683 0.7143 0.8349)",237.5,30.7,24.3,56.8,B,30,1.79,below
-wide,light,30,muted,blue,"color(display-p3 0.6477 0.7039 0.7562)",237.5,15.4,12.2,57.2,B,30,1.79,below
-wide,light,45,default,blue,"color(display-p3 0.2555 0.6072 0.836)",237.5,50.7,40,42.2,B,45,2.58,below
-wide,light,45,muted,blue,"color(display-p3 0.483 0.597 0.6922)",237.5,25.3,20,43.5,B,45,2.53,below
-wide,light,60,default,blue,"color(display-p3 0.1673 0.4789 0.6727)",237.5,44.1,34.8,29.5,B,60,3.95,AA large
-wide,light,60,muted,blue,"color(display-p3 0.3754 0.4723 0.5527)",237.6,22,17.4,30.6,B,60,3.85,AA large
-wide,light,75,default,blue,"color(display-p3 0.1048 0.3361 0.4789)",237.5,34.2,27,17.6,B,75,6.68,AA
-wide,light,75,muted,blue,"color(display-p3 0.2616 0.3332 0.3924)",237.5,17.1,13.5,18.5,B,75,6.49,AA
-wide,light,90,default,blue,"color(display-p3 0.0331 0.1556 0.2318)",237.6,20.1,15.8,6.3,B,90,12.85,AAA
-wide,light,90,muted,blue,"color(display-p3 0.1187 0.1567 0.1883)",237.6,10,7.9,6.8,B,90,12.58,AAA
-wide,light,15,default,purple,"color(display-p3 0.7862 0.785 0.978)",285.2,30.7,24.2,71.9,B 25 R,15,1.34,below
-wide,light,15,muted,purple,"color(display-p3 0.8007 0.7944 0.8788)",285.2,15.3,12.1,71.7,B 25 R,15,1.34,below
-wide,light,30,default,purple,"color(display-p3 0.6806 0.6771 0.8705)",286.1,30.7,24.3,57.9,B 26 R,30,1.79,below
-wide,light,30,muted,purple,"color(display-p3 0.6939 0.6873 0.7719)",286.2,15.4,12.2,57.7,B 26 R,30,1.79,below
-wide,light,45,default,purple,"color(display-p3 0.5329 0.5431 0.9089)",284.5,50.7,40,44.6,B 25 R,45,2.54,below
-wide,light,45,muted,purple,"color(display-p3 0.5674 0.5688 0.7208)",284.5,25.3,20,44.3,B 25 R,45,2.53,below
-wide,light,60,default,purple,"color(display-p3 0.4242 0.4239 0.7351)",286,44.1,34.8,31.5,B 26 R,60,3.86,AA large
-wide,light,60,muted,purple,"color(display-p3 0.4499 0.4477 0.5766)",286,22,17.4,31.2,B 26 R,60,3.85,AA large
-wide,light,75,default,purple,"color(display-p3 0.2965 0.2975 0.5263)",285.7,34.2,27,19,B 25 R,75,6.52,AA
-wide,light,75,muted,purple,"color(display-p3 0.3163 0.3152 0.4102)",285.7,17.1,13.5,18.9,B 25 R,75,6.49,AA
-wide,light,90,default,purple,"color(display-p3 0.1414 0.136 0.2582)",288.4,20.1,15.8,7,B 27 R,90,12.62,AAA
-wide,light,90,muted,purple,"color(display-p3 0.1499 0.1468 0.1976)",288.4,10,7.9,7,B 27 R,90,12.56,AAA
-wide,light,15,default,pink,"color(display-p3 0.9041 0.7506 0.9099)",330,30.7,24.3,72.9,R 45 B,15,1.34,below
-wide,light,15,muted,pink,"color(display-p3 0.8555 0.7788 0.8493)",330,15.4,12.1,72.2,R 45 B,15,1.34,below
-wide,light,30,default,pink,"color(display-p3 0.7966 0.6432 0.7996)",330.9,30.7,24.3,58.8,R 44 B,30,1.79,below
-wide,light,30,muted,pink,"color(display-p3 0.7479 0.6719 0.7411)",330.9,15.4,12.2,58.1,R 44 B,30,1.79,below
-wide,light,45,default,pink,"color(display-p3 0.7358 0.4819 0.7764)",329.3,50.7,40,45.8,R 45 B,45,2.54,below
-wide,light,45,muted,pink,"color(display-p3 0.66 0.5416 0.668)",329.3,25.3,20,44.9,R 45 B,45,2.53,below
-wide,light,60,default,pink,"color(display-p3 0.5925 0.3727 0.6168)",330.8,44.1,34.8,32.3,R 44 B,60,3.88,AA large
-wide,light,60,muted,pink,"color(display-p3 0.5274 0.4249 0.5295)",330.8,22,17.4,31.7,R 44 B,60,3.85,AA large
-wide,light,75,default,pink,"color(display-p3 0.4205 0.2592 0.4397)",330.5,34.2,27,19.5,R 44 B,75,6.55,AA
-wide,light,75,muted,pink,"color(display-p3 0.3735 0.2983 0.3757)",330.5,17.1,13.5,19.1,R 44 B,75,6.49,AA
-wide,light,90,default,pink,"color(display-p3 0.2052 0.1151 0.2076)",333.2,20.1,15.8,7.1,R 42 B,90,12.68,AAA
-wide,light,90,muted,pink,"color(display-p3 0.1799 0.1377 0.1774)",333.2,10,7.9,7,R 42 B,90,12.58,AAA
-wide,light,15,default,brown,"color(display-p3 0.9193 0.7696 0.7061)",39.4,18.5,14.6,72.3,R 25 Y,15,1.34,below
-wide,light,30,default,brown,"color(display-p3 0.8083 0.6632 0.6013)",39.4,18.4,14.6,58.3,R 25 Y,30,1.79,below
+standard,dark,75,default,brown,"#EFC4B4",41.1,21.3,15.3,83.4,R 27 Y,75.3,11.18,AAA
+standard,dark,90,default,brown,"#F7E1D9",43.6,8.9,6.4,91.5,R 31 Y,90.1,14.14,AAA
+wide,light,15,default,red,"color(display-p3 0.9703 0.7374 0.7838)",5.4,30.3,23.9,73.2,R 15 B,15,1.34,below
+wide,light,15,muted,red,"color(display-p3 0.8903 0.7723 0.7916)",5.4,15.1,11.9,72.3,R 15 B,15,1.34,below
+wide,light,30,default,red,"color(display-p3 0.8578 0.631 0.6774)",5.4,30.3,23.9,59,R 15 B,30,1.79,below
+wide,light,30,muted,red,"color(display-p3 0.7806 0.6658 0.6853)",5.4,15.1,12,58.3,R 15 B,30,1.79,below
+wide,light,45,default,red,"color(display-p3 0.8264 0.4617 0.5517)",5.4,50.7,40,45.9,R 15 B,45,2.56,below
+wide,light,45,muted,red,"color(display-p3 0.7142 0.53 0.5673)",5.4,25.3,20,45.1,R 15 B,45,2.53,below
+wide,light,60,default,red,"color(display-p3 0.6693 0.3516 0.4322)",5.3,45.9,36.2,32.4,R 15 B,60,3.91,AA large
+wide,light,60,muted,red,"color(display-p3 0.5742 0.4136 0.4468)",5.3,22.9,18.1,31.8,R 15 B,60,3.86,AA large
+wide,light,75,default,red,"color(display-p3 0.4761 0.2436 0.3025)",5.4,35.3,27.9,19.5,R 15 B,75,6.6,AA
+wide,light,75,muted,red,"color(display-p3 0.4076 0.2899 0.3142)",5.3,17.7,14,19.2,R 15 B,75,6.51,AA
+wide,light,90,default,red,"color(display-p3 0.231 0.1063 0.1379)",5.3,20.7,16.4,7,R 15 B,90,12.77,AAA
+wide,light,90,muted,red,"color(display-p3 0.1965 0.1332 0.1463)",5.3,10.4,8.2,7,R 15 B,90,12.61,AAA
+wide,light,15,default,orange,"color(display-p3 0.9748 0.754 0.6037)",50.4,30.3,23.9,72.6,R 40 Y,15,1.34,below
+wide,light,15,muted,orange,"color(display-p3 0.8956 0.7796 0.705)",50.3,15.1,12,72.1,R 40 Y,15,1.34,below
+wide,light,30,default,orange,"color(display-p3 0.8609 0.6475 0.501)",50.3,30.3,23.9,58.5,R 40 Y,30,1.79,below
+wide,light,30,muted,orange,"color(display-p3 0.7853 0.6731 0.6002)",50.3,15.1,11.9,58,R 40 Y,30,1.79,below
+wide,light,45,default,orange,"color(display-p3 0.8166 0.4955 0.2628)",50.3,50.7,40,45.1,R 40 Y,45,2.56,below
+wide,light,45,muted,orange,"color(display-p3 0.7172 0.5432 0.4241)",50.3,25.3,20,44.7,R 40 Y,45,2.54,below
+wide,light,60,default,orange,"color(display-p3 0.6591 0.3824 0.1795)",50.3,45.9,36.2,31.8,R 40 Y,60,3.91,AA large
+wide,light,60,muted,orange,"color(display-p3 0.5761 0.4254 0.3215)",50.3,22.9,18.1,31.5,R 40 Y,60,3.86,AA large
+wide,light,75,default,orange,"color(display-p3 0.4688 0.2661 0.1172)",50.3,35.3,27.9,19.1,R 40 Y,75,6.6,AA
+wide,light,75,muted,orange,"color(display-p3 0.409 0.2985 0.2223)",50.3,17.7,14,19,R 40 Y,75,6.51,AA
+wide,light,90,default,orange,"color(display-p3 0.2273 0.1183 0.0379)",50.4,20.7,16.4,6.9,R 40 Y,90,12.77,AAA
+wide,light,90,muted,orange,"color(display-p3 0.1973 0.1377 0.0966)",50.3,10.4,8.2,7,R 40 Y,90,12.61,AAA
+wide,light,15,default,yellow,"color(display-p3 0.8714 0.8019 0.5483)",95.3,30.3,23.9,71.3,Y 10 G,15,1.34,below
+wide,light,15,muted,yellow,"color(display-p3 0.8419 0.8025 0.6782)",95.3,15.1,12,71.4,Y 10 G,15,1.34,below
+wide,light,30,default,yellow,"color(display-p3 0.7613 0.6946 0.4468)",95.3,30.3,23.9,57.3,Y 10 G,30,1.79,below
+wide,light,30,muted,yellow,"color(display-p3 0.7331 0.6956 0.5739)",95.3,15.1,11.9,57.4,Y 10 G,30,1.79,below
+wide,light,45,default,yellow,"color(display-p3 0.6737 0.5743 0.1606)",95.3,50.7,40,43.6,Y 10 G,45,2.54,below
+wide,light,45,muted,yellow,"color(display-p3 0.636 0.5815 0.3801)",95.3,25.3,20,43.9,Y 10 G,45,2.53,below
+wide,light,60,default,yellow,"color(display-p3 0.5376 0.4519 0.0824)",95.4,45.9,36.2,30.7,Y 10 G,60,3.88,AA large
+wide,light,60,muted,yellow,"color(display-p3 0.5062 0.4591 0.2832)",95.3,22.9,18.1,30.9,Y 10 G,60,3.85,AA large
+wide,light,75,default,yellow,"color(display-p3 0.3805 0.3176 0.0464)",95.3,35.3,27.9,18.5,Y 10 G,75,6.54,AA
+wide,light,75,muted,yellow,"color(display-p3 0.3579 0.3234 0.1943)",95.3,17.7,13.9,18.7,Y 10 G,75,6.49,AA
+wide,light,90,default,yellow,"color(display-p3 0.1817 0.1477 0.0115)",95.3,20.7,16.4,6.8,Y 10 G,90,12.65,AAA
+wide,light,90,muted,yellow,"color(display-p3 0.1702 0.1515 0.0818)",95.3,10.4,8.2,6.9,Y 10 G,90,12.58,AAA
+wide,light,15,default,green,"color(display-p3 0.7315 0.8389 0.6541)",140.3,30.3,23.9,70.2,G 25 Y,15,1.34,below
+wide,light,15,muted,green,"color(display-p3 0.7751 0.8196 0.7304)",140.4,15.1,11.9,70.9,G 25 Y,15,1.34,below
+wide,light,30,default,green,"color(display-p3 0.6241 0.7311 0.55)",140.4,30.3,23.9,56.4,G 25 Y,30,1.79,below
+wide,light,30,muted,green,"color(display-p3 0.6675 0.7125 0.625)",140.3,15.1,11.9,57,G 25 Y,30,1.79,below
+wide,light,45,default,green,"color(display-p3 0.444 0.6371 0.337)",140.4,50.7,40,42.1,G 25 Y,45,2.54,below
+wide,light,45,muted,green,"color(display-p3 0.5248 0.611 0.4641)",140.4,25.3,20,43.1,G 25 Y,45,2.53,below
+wide,light,60,default,green,"color(display-p3 0.3363 0.5068 0.2442)",140.3,45.9,36.2,29.5,G 25 Y,60,3.87,AA large
+wide,light,60,muted,green,"color(display-p3 0.4088 0.485 0.3565)",140.3,22.9,18.1,30.3,G 25 Y,60,3.85,AA large
+wide,light,75,default,green,"color(display-p3 0.2331 0.3579 0.1654)",140.3,35.3,27.9,17.8,G 25 Y,75,6.53,AA
+wide,light,75,muted,green,"color(display-p3 0.2866 0.3425 0.2482)",140.4,17.7,14,18.3,G 25 Y,75,6.49,AA
+wide,light,90,default,green,"color(display-p3 0.1022 0.1693 0.0656)",140.4,20.7,16.4,6.5,G 25 Y,90,12.65,AAA
+wide,light,90,muted,green,"color(display-p3 0.1318 0.1619 0.1111)",140.4,10.4,8.2,6.7,G 25 Y,90,12.57,AAA
+wide,light,15,default,mint,"color(display-p3 0.6511 0.8445 0.8075)",185.4,30.3,23.9,70,G 33 B,15,1.34,below
+wide,light,15,muted,mint,"color(display-p3 0.7433 0.8215 0.8026)",185.4,15.1,12,70.8,G 33 B,15,1.34,below
+wide,light,30,default,mint,"color(display-p3 0.5414 0.7369 0.7007)",185.3,30.3,23.9,56.1,G 33 B,30,1.79,below
+wide,light,30,muted,mint,"color(display-p3 0.6355 0.7145 0.6961)",185.3,15.1,12,56.9,G 33 B,30,1.79,below
+wide,light,45,default,mint,"color(display-p3 0.1741 0.6461 0.5875)",185.4,50.7,40,40.9,G 33 B,45,2.6,below
+wide,light,45,muted,mint,"color(display-p3 0.4591 0.6155 0.5862)",185.4,25.3,20,43,G 33 B,45,2.53,below
+wide,light,60,default,mint,"color(display-p3 0.0004 0.5142 0.4632)",185.4,45.9,36.2,28.5,G 33 B,60,3.97,AA large
+wide,light,60,muted,mint,"color(display-p3 0.349 0.489 0.4634)",185.4,22.9,18.1,30.2,G 33 B,60,3.86,AA large
+wide,light,75,default,mint,"color(display-p3 0.0002 0.3615 0.3242)",185.4,35.3,27.9,17,G 33 B,75,6.72,AA
+wide,light,75,muted,mint,"color(display-p3 0.2428 0.3452 0.3265)",185.4,17.7,13.9,18.2,G 33 B,75,6.5,AA
+wide,light,90,default,mint,"color(display-p3 0.0001 0.1684 0.1484)",185.4,20.7,16.4,6.1,G 33 B,90,12.92,AAA
+wide,light,90,muted,mint,"color(display-p3 0.1081 0.163 0.153)",185.5,10.4,8.2,6.7,G 33 B,90,12.6,AAA
+wide,light,15,default,blue,"color(display-p3 0.67 0.8257 0.9266)",230.4,30.3,23.9,70.6,B 8 G,15,1.34,below
+wide,light,15,muted,blue,"color(display-p3 0.7523 0.8126 0.8562)",230.4,15.1,11.9,71.1,B 8 G,15,1.34,below
+wide,light,30,default,blue,"color(display-p3 0.5599 0.7184 0.8192)",230.4,30.3,23.9,56.7,B 8 G,30,1.79,below
+wide,light,30,muted,blue,"color(display-p3 0.6444 0.7057 0.7492)",230.4,15.1,11.9,57.2,B 8 G,30,1.79,below
+wide,light,45,default,blue,"color(display-p3 0.2114 0.6148 0.8091)",230.4,50.7,40,41.8,B 8 G,45,2.59,below
+wide,light,45,muted,blue,"color(display-p3 0.4741 0.6006 0.6816)",230.4,25.3,20,43.4,B 8 G,45,2.53,below
+wide,light,60,default,blue,"color(display-p3 0.0627 0.4863 0.6601)",230.4,45.9,36.2,29.1,B 8 G,60,3.97,AA large
+wide,light,60,muted,blue,"color(display-p3 0.3622 0.476 0.5478)",230.4,22.9,18.1,30.5,B 8 G,60,3.85,AA large
+wide,light,75,default,blue,"color(display-p3 0.0328 0.3412 0.468)",230.4,35.3,27.9,17.4,B 8 G,75,6.71,AA
+wide,light,75,muted,blue,"color(display-p3 0.2525 0.3357 0.3882)",230.4,17.7,13.9,18.4,B 8 G,75,6.5,AA
+wide,light,90,default,blue,"color(display-p3 0.0082 0.1576 0.2253)",230.4,20.7,16.4,6.2,B 8 G,90,12.91,AAA
+wide,light,90,muted,blue,"color(display-p3 0.1135 0.1581 0.1862)",230.3,10.4,8.2,6.8,B 8 G,90,12.59,AAA
+wide,light,15,default,purple,"color(display-p3 0.7617 0.7932 0.9761)",275.4,30.3,23.9,71.7,B 19 R,15,1.34,below
+wide,light,15,muted,purple,"color(display-p3 0.7901 0.7981 0.878)",275.3,15.1,11.9,71.6,B 19 R,15,1.34,below
+wide,light,30,default,purple,"color(display-p3 0.6533 0.6861 0.8686)",275.4,30.3,23.9,57.7,B 19 R,30,1.79,below
+wide,light,30,muted,purple,"color(display-p3 0.6822 0.6913 0.7709)",275.4,15.1,12,57.6,B 19 R,30,1.79,below
+wide,light,45,default,purple,"color(display-p3 0.4832 0.5572 0.9111)",275.4,50.7,40,44.2,B 19 R,45,2.54,below
+wide,light,45,muted,purple,"color(display-p3 0.5487 0.5746 0.7214)",275.4,25.3,20,44.1,B 19 R,45,2.53,below
+wide,light,60,default,purple,"color(display-p3 0.3686 0.4359 0.7528)",275.4,45.9,36.2,31.1,B 19 R,60,3.87,AA large
+wide,light,60,muted,purple,"color(display-p3 0.4295 0.4532 0.5831)",275.3,22.9,18.1,31.1,B 19 R,60,3.85,AA large
+wide,light,75,default,purple,"color(display-p3 0.257 0.3062 0.5371)",275.4,35.3,27.9,18.8,B 19 R,75,6.53,AA
+wide,light,75,muted,purple,"color(display-p3 0.3019 0.3191 0.4142)",275.4,17.7,14,18.8,B 19 R,75,6.49,AA
+wide,light,90,default,purple,"color(display-p3 0.1157 0.1418 0.2645)",275.4,20.7,16.4,6.9,B 19 R,90,12.64,AAA
+wide,light,90,muted,purple,"color(display-p3 0.1402 0.1494 0.2003)",275.4,10.4,8.2,6.9,B 19 R,90,12.57,AAA
+wide,light,15,default,pink,"color(display-p3 0.8789 0.7579 0.9314)",320.4,30.3,23.9,72.7,B 48 R,15,1.34,below
+wide,light,15,muted,pink,"color(display-p3 0.8431 0.7822 0.8587)",320.3,15.1,11.9,72.1,B 48 R,15,1.34,below
+wide,light,30,default,pink,"color(display-p3 0.7698 0.6511 0.8238)",320.3,30.3,23.9,58.6,B 48 R,30,1.79,below
+wide,light,30,muted,pink,"color(display-p3 0.7346 0.6756 0.7517)",320.3,15.1,11.9,58,B 48 R,30,1.79,below
+wide,light,45,default,pink,"color(display-p3 0.7021 0.4918 0.8185)",320.4,50.7,40,45.7,B 48 R,45,2.54,below
+wide,light,45,muted,pink,"color(display-p3 0.6425 0.5464 0.6854)",320.3,25.3,20,44.8,B 48 R,45,2.53,below
+wide,light,60,default,pink,"color(display-p3 0.5641 0.3776 0.6688)",320.4,45.9,36.2,32.3,B 48 R,60,3.88,AA large
+wide,light,60,muted,pink,"color(display-p3 0.5124 0.4281 0.5512)",320.3,22.9,18.1,31.6,B 48 R,60,3.85,AA large
+wide,light,75,default,pink,"color(display-p3 0.3997 0.2634 0.476)",320.4,35.3,27.9,19.4,B 48 R,75,6.54,AA
+wide,light,75,muted,pink,"color(display-p3 0.3625 0.3008 0.3907)",320.4,17.7,13.9,19.1,B 48 R,75,6.49,AA
+wide,light,90,default,pink,"color(display-p3 0.1913 0.1185 0.2318)",320.4,20.7,16.4,7.1,B 48 R,90,12.67,AAA
+wide,light,90,muted,pink,"color(display-p3 0.1726 0.1394 0.1877)",320.4,10.4,8.2,7,B 48 R,90,12.57,AAA
+wide,light,15,default,brown,"color(display-p3 0.9176 0.7702 0.7076)",39.4,18.2,14.3,72.3,R 25 Y,15,1.34,below
+wide,light,30,default,brown,"color(display-p3 0.8067 0.6637 0.6027)",39.4,18.2,14.3,58.3,R 25 Y,30,1.79,below
 wide,light,45,default,brown,"color(display-p3 0.7487 0.5264 0.4283)",39.4,30.4,24,45,R 25 Y,45,2.54,below
-wide,light,60,default,brown,"color(display-p3 0.5984 0.4126 0.3304)",39.4,26.5,20.9,31.7,R 25 Y,60,3.87,AA large
-wide,light,75,default,brown,"color(display-p3 0.4256 0.2888 0.2281)",39.4,20.5,16.2,19.1,R 25 Y,75,6.53,AA
-wide,light,90,default,brown,"color(display-p3 0.2058 0.1322 0.0995)",39.4,12,9.5,7,R 25 Y,90,12.64,AAA
-wide,dark,15,default,red,"color(display-p3 0.4702 0.2696 0.2851)",13.4,51.4,36.9,40.4,R 7 B,15,2.35,below
-wide,dark,15,muted,red,"color(display-p3 0.4087 0.3049 0.3094)",13.4,25.7,18.4,40.1,R 7 B,15,2.37,below
-wide,dark,30,default,red,"color(display-p3 0.6483 0.3927 0.4125)",13.2,55.7,40,53.7,R 7 B,30,3.99,AA large
-wide,dark,30,muted,red,"color(display-p3 0.568 0.4358 0.4416)",13.2,27.8,20,53.2,R 7 B,30,4.02,AA large
-wide,dark,45,default,red,"color(display-p3 0.7939 0.5065 0.5193)",14.6,55.7,40,64.9,R 6 B,45,6.03,AA
-wide,dark,45,muted,red,"color(display-p3 0.7017 0.5526 0.5549)",14.7,27.9,20,64.4,R 6 B,45,6.06,AA
-wide,dark,60,default,red,"color(display-p3 0.9223 0.6097 0.6312)",13.1,55.7,40,75,R 7 B,60,8.41,AAA
-wide,dark,60,muted,red,"color(display-p3 0.8208 0.6589 0.665)",13.2,27.9,20,74.4,R 7 B,60,8.44,AAA
-wide,dark,75,default,red,"color(display-p3 0.9983 0.7279 0.7444)",12.8,44.5,31.9,83.9,R 8 B,75,11.11,AAA
-wide,dark,75,muted,red,"color(display-p3 0.9079 0.7672 0.7715)",12.8,22.2,16,83.3,R 7 B,75,11.13,AAA
-wide,dark,90,default,red,"color(display-p3 1 0.8659 0.8587)",17.7,19.3,13.9,91.7,R 3 B,90,14.11,AAA
-wide,dark,90,muted,red,"color(display-p3 0.9555 0.8813 0.8752)",17.8,9.7,6.9,91.5,R 2 B,90,14.11,AAA
-wide,dark,15,default,orange,"color(display-p3 0.4548 0.2913 0.1467)",56.6,51.4,36.9,40,R 49 Y,15,2.35,below
-wide,dark,15,muted,orange,"color(display-p3 0.4036 0.3141 0.2409)",56.6,25.7,18.5,39.9,R 49 Y,15,2.37,below
-wide,dark,30,default,orange,"color(display-p3 0.6296 0.4195 0.2368)",56.4,55.7,40,53.2,R 49 Y,30,4,AA large
-wide,dark,30,muted,orange,"color(display-p3 0.562 0.4473 0.3549)",56.4,27.9,20,53,R 49 Y,30,4.02,AA large
-wide,dark,45,default,orange,"color(display-p3 0.7721 0.5358 0.3296)",56.9,55.7,40,64.4,R 49 Y,45,6.03,AA
-wide,dark,45,muted,orange,"color(display-p3 0.694 0.5655 0.4615)",56.9,27.9,20,64.1,R 49 Y,45,6.06,AA
-wide,dark,60,default,orange,"color(display-p3 0.9018 0.6406 0.4185)",56.4,55.7,40,74.4,R 49 Y,60,8.41,AAA
-wide,dark,60,muted,orange,"color(display-p3 0.8142 0.6725 0.5606)",56.4,27.9,20,74.1,R 49 Y,60,8.44,AAA
-wide,dark,75,default,orange,"color(display-p3 0.9845 0.7524 0.5631)",56,44.5,31.9,83.4,R 48 Y,75,11.11,AAA
-wide,dark,75,muted,orange,"color(display-p3 0.9037 0.7782 0.6837)",56,22.2,16,83.1,R 48 Y,75,11.13,AAA
-wide,dark,90,default,orange,"color(display-p3 0.9944 0.8759 0.7849)",57.4,19.7,14.1,91.5,R 50 Y,90,14.11,AAA
-wide,dark,90,muted,orange,"color(display-p3 0.9532 0.886 0.8405)",57.4,9.8,7,91.4,R 50 Y,90,14.11,AAA
-wide,dark,15,default,yellow,"color(display-p3 0.3834 0.3292 0.1146)",95.9,51.4,36.9,39.5,Y 11 G,15,2.37,below
-wide,dark,15,muted,yellow,"color(display-p3 0.3635 0.3323 0.2264)",95.9,25.7,18.4,39.6,Y 11 G,15,2.38,below
-wide,dark,30,default,yellow,"color(display-p3 0.5367 0.467 0.1962)",95.9,55.7,40,52.5,Y 11 G,30,4.02,AA large
-wide,dark,30,muted,yellow,"color(display-p3 0.5104 0.4702 0.336)",95.9,27.9,20,52.6,Y 11 G,30,4.03,AA large
-wide,dark,45,default,yellow,"color(display-p3 0.6668 0.5878 0.287)",95.9,55.7,40,63.6,Y 11 G,45,6.05,AA
-wide,dark,45,muted,yellow,"color(display-p3 0.6365 0.5905 0.4412)",95.9,27.9,20,63.7,Y 11 G,45,6.07,AA
-wide,dark,60,default,yellow,"color(display-p3 0.7845 0.6974 0.371)",95.9,55.7,40,73.5,Y 11 G,60,8.43,AAA
-wide,dark,60,muted,yellow,"color(display-p3 0.7508 0.6998 0.5378)",95.9,27.9,20,73.6,Y 11 G,60,8.45,AAA
-wide,dark,75,default,yellow,"color(display-p3 0.8793 0.8005 0.5223)",95.9,44.5,31.9,82.6,Y 11 G,75,11.13,AAA
-wide,dark,75,muted,yellow,"color(display-p3 0.8486 0.8012 0.6639)",96,22.2,16,82.7,Y 11 G,75,11.14,AAA
-wide,dark,90,default,yellow,"color(display-p3 0.9439 0.8965 0.7685)",95.9,19.7,14.1,91.1,Y 11 G,90,14.11,AAA
-wide,dark,90,muted,yellow,"color(display-p3 0.9285 0.8957 0.8327)",96,9.8,7,91.2,Y 11 G,90,14.12,AAA
-wide,dark,15,default,green,"color(display-p3 0.2501 0.3636 0.2221)",146.5,51.5,36.9,38.8,G 18 Y,15,2.37,below
-wide,dark,15,muted,green,"color(display-p3 0.3006 0.3485 0.2791)",146.5,25.7,18.5,39.3,G 18 Y,15,2.38,below
-wide,dark,30,default,green,"color(display-p3 0.3694 0.5104 0.3305)",146.3,55.7,40,51.6,G 18 Y,30,4.02,AA large
-wide,dark,30,muted,green,"color(display-p3 0.4312 0.4905 0.4023)",146.3,27.9,20,52.2,G 18 Y,30,4.03,AA large
-wide,dark,45,default,green,"color(display-p3 0.4767 0.6364 0.4416)",147.8,55.7,40,62.6,G 17 Y,45,6.06,AA
-wide,dark,45,muted,green,"color(display-p3 0.5469 0.6131 0.5178)",147.7,27.8,20,63.2,G 17 Y,45,6.07,AA
-wide,dark,60,default,green,"color(display-p3 0.5846 0.7491 0.532)",146.3,55.7,40,72.5,G 18 Y,60,8.43,AAA
-wide,dark,60,muted,green,"color(display-p3 0.6561 0.7238 0.6177)",146.3,27.8,20,73.1,G 18 Y,60,8.45,AAA
-wide,dark,75,default,green,"color(display-p3 0.7105 0.8437 0.6619)",146.9,44.5,31.9,81.8,G 18 Y,75,11.13,AAA
-wide,dark,75,muted,green,"color(display-p3 0.769 0.8211 0.7324)",146.9,22.2,15.9,82.3,G 18 Y,75,11.14,AAA
-wide,dark,90,default,green,"color(display-p3 0.8662 0.9154 0.8386)",150.9,19.7,14.1,90.8,G 13 Y,90,14.11,AAA
-wide,dark,90,muted,green,"color(display-p3 0.8923 0.9043 0.866)",151,9.8,7.1,91,G 13 Y,90,14.11,AAA
-wide,dark,15,default,mint,"color(display-p3 0.1554 0.3636 0.3544)",192.8,51.4,36.9,38.4,G 43 B,15,2.34,below
-wide,dark,15,muted,mint,"color(display-p3 0.274 0.3488 0.3429)",192.8,25.7,18.5,39.3,G 43 B,15,2.38,below
-wide,dark,30,default,mint,"color(display-p3 0.2607 0.5126 0.4998)",192.6,55.7,40,51.3,G 43 B,30,3.99,AA large
-wide,dark,30,muted,mint,"color(display-p3 0.3983 0.491 0.4829)",192.6,27.9,20,52.2,G 43 B,30,4.03,AA large
-wide,dark,45,default,mint,"color(display-p3 0.3719 0.6379 0.6333)",195.1,55.7,40,62.4,G 47 B,45,6.03,AA
-wide,dark,45,muted,mint,"color(display-p3 0.5133 0.6129 0.6083)",195.1,27.9,20,63.2,G 47 B,45,6.07,AA
-wide,dark,60,default,mint,"color(display-p3 0.4748 0.7524 0.736)",192.6,55.7,40,72.3,G 43 B,60,8.41,AAA
-wide,dark,60,muted,mint,"color(display-p3 0.6188 0.7243 0.7139)",192.6,27.9,20,73.1,G 43 B,60,8.45,AAA
-wide,dark,75,default,mint,"color(display-p3 0.6352 0.8452 0.8322)",193.2,44.5,31.9,81.7,G 44 B,75,11.12,AAA
-wide,dark,75,muted,mint,"color(display-p3 0.7407 0.821 0.8122)",193.2,22.2,16,82.3,G 44 B,75,11.14,AAA
-wide,dark,90,default,mint,"color(display-p3 0.8449 0.914 0.9111)",197.2,19.7,14.1,90.8,G 50 B,90,14.11,AAA
-wide,dark,90,muted,mint,"color(display-p3 0.8833 0.9035 0.8996)",197.3,9.8,7,91,G 50 B,90,14.12,AAA
-wide,dark,15,default,blue,"color(display-p3 0.1943 0.3467 0.4585)",237.5,51.4,36.9,39,B,15,2.36,below
-wide,dark,15,muted,blue,"color(display-p3 0.2873 0.3401 0.3872)",237.5,25.7,18.5,39.5,B,15,2.38,below
-wide,dark,30,default,blue,"color(display-p3 0.305 0.4896 0.6291)",237.5,55.7,40,51.9,B,30,4.01,AA large
-wide,dark,30,muted,blue,"color(display-p3 0.4149 0.4799 0.5389)",237.5,27.9,20,52.4,B,30,4.03,AA large
-wide,dark,45,default,blue,"color(display-p3 0.4191 0.6127 0.7645)",237.5,55.7,40,63,B,45,6.05,AA
-wide,dark,45,muted,blue,"color(display-p3 0.5317 0.601 0.6655)",237.5,27.9,20,63.5,B,45,6.07,AA
-wide,dark,60,default,blue,"color(display-p3 0.5221 0.7241 0.8862)",237.5,55.7,40,72.9,B,60,8.43,AAA
-wide,dark,60,muted,blue,"color(display-p3 0.6382 0.711 0.7799)",237.5,27.9,20,73.4,B,60,8.45,AAA
-wide,dark,75,default,blue,"color(display-p3 0.6718 0.8218 0.9511)",237.5,44.5,31.9,82.2,B,75,11.13,AAA
-wide,dark,75,muted,blue,"color(display-p3 0.7566 0.8101 0.8652)",237.5,22.2,15.9,82.5,B,75,11.14,AAA
-wide,dark,90,default,blue,"color(display-p3 0.8595 0.9045 0.9541)",237.5,19.7,14.1,91,B,90,14.11,AAA
-wide,dark,90,muted,blue,"color(display-p3 0.8898 0.8991 0.9192)",237.6,9.8,7.1,91.1,B,90,14.11,AAA
-wide,dark,15,default,purple,"color(display-p3 0.3145 0.3133 0.495)",285.3,51.4,36.9,39.9,B 25 R,15,2.37,below
-wide,dark,15,muted,purple,"color(display-p3 0.3298 0.3254 0.4018)",285.3,25.7,18.4,39.8,B 25 R,15,2.38,below
-wide,dark,30,default,purple,"color(display-p3 0.4486 0.4473 0.6737)",285.1,55.7,40,53,B 25 R,30,4.02,AA large
-wide,dark,30,muted,purple,"color(display-p3 0.4674 0.4615 0.5572)",285.1,27.9,20,52.8,B 25 R,30,4.03,AA large
-wide,dark,45,default,purple,"color(display-p3 0.5773 0.5637 0.8109)",287.6,55.7,40,64.2,B 27 R,45,6.06,AA
-wide,dark,45,muted,purple,"color(display-p3 0.5923 0.5797 0.6849)",287.6,27.8,20,63.9,B 27 R,45,6.07,AA
-wide,dark,60,default,purple,"color(display-p3 0.678 0.6745 0.9368)",285.1,55.7,40,74,B 25 R,60,8.44,AAA
-wide,dark,60,muted,purple,"color(display-p3 0.6989 0.6893 0.8013)",285.1,27.8,20,73.8,B 25 R,60,8.45,AAA
-wide,dark,75,default,purple,"color(display-p3 0.791 0.7813 0.9908)",285.7,44.5,31.9,83.1,B 25 R,75,11.14,AAA
-wide,dark,75,muted,purple,"color(display-p3 0.8059 0.7921 0.8825)",285.7,22.2,15.9,82.9,B 25 R,75,11.14,AAA
-wide,dark,90,default,purple,"color(display-p3 0.9087 0.8866 0.9691)",289.7,19.6,14.1,91.4,B 28 R,90,14.11,AAA
-wide,dark,90,muted,purple,"color(display-p3 0.9119 0.8909 0.926)",289.9,9.8,7.1,91.3,B 28 R,90,14.11,AAA
-wide,dark,15,default,pink,"color(display-p3 0.4152 0.2818 0.4309)",329.1,51.4,36.9,40.4,R 46 B,15,2.37,below
-wide,dark,15,muted,pink,"color(display-p3 0.3761 0.3115 0.3756)",329.1,25.7,18.5,40.1,R 46 B,15,2.38,below
-wide,dark,30,default,pink,"color(display-p3 0.5758 0.4081 0.595)",328.9,55.7,40,53.6,R 46 B,30,4.01,AA large
-wide,dark,30,muted,pink,"color(display-p3 0.5259 0.4441 0.5246)",328.9,27.9,20,53.1,R 46 B,30,4.03,AA large
-wide,dark,45,default,pink,"color(display-p3 0.7158 0.5217 0.7185)",331.4,55.7,40,64.9,R 44 B,45,6.05,AA
-wide,dark,45,muted,pink,"color(display-p3 0.6567 0.5609 0.6461)",331.4,27.8,20,64.3,R 44 B,45,6.07,AA
-wide,dark,60,default,pink,"color(display-p3 0.8292 0.6287 0.8465)",328.9,55.7,40,74.8,R 46 B,60,8.43,AAA
-wide,dark,60,muted,pink,"color(display-p3 0.7686 0.6688 0.7632)",328.9,27.9,20,74.2,R 46 B,60,8.45,AAA
-wide,dark,75,default,pink,"color(display-p3 0.9156 0.7442 0.9178)",329.5,44.5,31.9,83.7,R 45 B,75,11.13,AAA
-wide,dark,75,muted,pink,"color(display-p3 0.8636 0.7753 0.8509)",329.6,22.2,16,83.2,R 45 B,75,11.14,AAA
-wide,dark,90,default,pink,"color(display-p3 0.962 0.8716 0.9361)",333.5,19.7,14.1,91.7,R 42 B,90,14.11,AAA
-wide,dark,90,muted,pink,"color(display-p3 0.9366 0.8841 0.911)",333.5,9.8,7,91.4,R 42 B,90,14.11,AAA
-wide,dark,15,default,brown,"color(display-p3 0.424 0.3029 0.2504)",39.5,30.8,22.1,40.1,R 25 Y,15,2.37,below
+wide,light,60,default,brown,"color(display-p3 0.603 0.4104 0.325)",39.4,27.5,21.7,31.7,R 25 Y,60,3.87,AA large
+wide,light,75,default,brown,"color(display-p3 0.4284 0.2874 0.2248)",39.4,21.2,16.7,19.1,R 25 Y,75,6.53,AA
+wide,light,90,default,brown,"color(display-p3 0.2072 0.1314 0.0976)",39.5,12.4,9.8,7,R 25 Y,90,12.64,AAA
+wide,dark,15,default,red,"color(display-p3 0.4692 0.2665 0.3138)",5.4,53.3,38.3,40.5,R 15 B,15,2.35,below
+wide,dark,15,muted,red,"color(display-p3 0.4075 0.3039 0.3231)",5.4,26.7,19.1,40.2,R 15 B,15,2.37,below
+wide,dark,30,default,red,"color(display-p3 0.6415 0.3926 0.4486)",5.4,55.7,40,53.7,R 15 B,30,4,AA large
+wide,dark,30,muted,red,"color(display-p3 0.5633 0.436 0.4589)",5.3,27.9,20,53.2,R 15 B,30,4.02,AA large
+wide,dark,45,default,red,"color(display-p3 0.7847 0.5062 0.5669)",5.4,55.7,40,65,R 15 B,45,6.03,AA
+wide,dark,45,muted,red,"color(display-p3 0.6955 0.5528 0.5776)",5.3,27.9,20,64.4,R 15 B,45,6.06,AA
+wide,dark,60,default,red,"color(display-p3 0.9132 0.6097 0.6743)",5.4,55.7,40,75,R 15 B,60,8.41,AAA
+wide,dark,60,muted,red,"color(display-p3 0.8148 0.6592 0.6854)",5.4,27.8,20,74.4,R 15 B,60,8.44,AAA
+wide,dark,75,default,red,"color(display-p3 0.9954 0.7253 0.7783)",5.4,46,33,84,R 15 B,75,11.11,AAA
+wide,dark,75,muted,red,"color(display-p3 0.9058 0.7662 0.7875)",5.4,23,16.5,83.4,R 15 B,75,11.13,AAA
+wide,dark,90,default,red,"color(display-p3 0.9946 0.8652 0.8832)",5.3,19.8,14.2,91.7,R 15 B,90,14.11,AAA
+wide,dark,90,muted,red,"color(display-p3 0.9526 0.8811 0.8867)",5.4,9.9,7.1,91.5,R 15 B,90,14.11,AAA
+wide,dark,15,default,orange,"color(display-p3 0.465 0.2842 0.1558)",50.4,53.3,38.3,40.1,R 40 Y,15,2.35,below
+wide,dark,15,muted,orange,"color(display-p3 0.4095 0.3109 0.2453)",50.4,26.7,19.2,40,R 40 Y,15,2.37,below
+wide,dark,30,default,orange,"color(display-p3 0.638 0.4134 0.2557)",50.4,55.7,40,53.3,R 40 Y,30,4,AA large
+wide,dark,30,muted,orange,"color(display-p3 0.5663 0.4445 0.3642)",50.4,27.8,20,53.1,R 40 Y,30,4.02,AA large
+wide,dark,45,default,orange,"color(display-p3 0.7825 0.5285 0.3522)",50.3,55.7,40,64.5,R 40 Y,45,6.03,AA
+wide,dark,45,muted,orange,"color(display-p3 0.6994 0.5621 0.4727)",50.3,27.9,20,64.2,R 40 Y,45,6.06,AA
+wide,dark,60,default,orange,"color(display-p3 0.9121 0.6334 0.4412)",50.4,55.7,40,74.5,R 40 Y,60,8.41,AAA
+wide,dark,60,muted,orange,"color(display-p3 0.8195 0.6692 0.572)",50.4,27.8,20,74.1,R 40 Y,60,8.44,AAA
+wide,dark,75,default,orange,"color(display-p3 0.9984 0.7447 0.5737)",50.4,46,33,83.6,R 40 Y,75,11.11,AAA
+wide,dark,75,muted,orange,"color(display-p3 0.911 0.7747 0.6889)",50.4,23,16.5,83.2,R 40 Y,75,11.13,AAA
+wide,dark,90,default,orange,"color(display-p3 1 0.8727 0.7946)",50.3,19.8,14.2,91.6,R 40 Y,90,14.11,AAA
+wide,dark,90,muted,orange,"color(display-p3 0.956 0.8845 0.845)",50.4,9.9,7.1,91.4,R 40 Y,90,14.11,AAA
+wide,dark,15,default,yellow,"color(display-p3 0.3859 0.3282 0.1051)",95.4,53.4,38.3,39.5,Y 10 G,15,2.37,below
+wide,dark,15,muted,yellow,"color(display-p3 0.365 0.332 0.222)",95.4,26.7,19.2,39.6,Y 10 G,15,2.38,below
+wide,dark,30,default,yellow,"color(display-p3 0.5383 0.4664 0.1957)",95.4,55.7,40,52.5,Y 10 G,30,4.02,AA large
+wide,dark,30,muted,yellow,"color(display-p3 0.5113 0.4699 0.3357)",95.4,27.9,20,52.6,Y 10 G,30,4.03,AA large
+wide,dark,45,default,yellow,"color(display-p3 0.6688 0.587 0.2864)",95.3,55.7,40,63.6,Y 10 G,45,6.05,AA
+wide,dark,45,muted,yellow,"color(display-p3 0.6375 0.5902 0.441)",95.4,27.9,20,63.7,Y 10 G,45,6.07,AA
+wide,dark,60,default,yellow,"color(display-p3 0.7866 0.6966 0.3703)",95.4,55.7,40,73.5,Y 10 G,60,8.43,AAA
+wide,dark,60,muted,yellow,"color(display-p3 0.7519 0.6994 0.5375)",95.3,27.9,20,73.6,Y 10 G,60,8.45,AAA
+wide,dark,75,default,yellow,"color(display-p3 0.8832 0.7997 0.512)",95.4,46,33,82.6,Y 10 G,75,11.13,AAA
+wide,dark,75,muted,yellow,"color(display-p3 0.8507 0.8009 0.6588)",95.4,23,16.5,82.7,Y 10 G,75,11.14,AAA
+wide,dark,90,default,yellow,"color(display-p3 0.945 0.8962 0.7673)",95.3,19.8,14.2,91.2,Y 10 G,90,14.11,AAA
+wide,dark,90,muted,yellow,"color(display-p3 0.9291 0.8955 0.8321)",95.3,9.9,7.1,91.2,Y 10 G,90,14.11,AAA
+wide,dark,15,default,green,"color(display-p3 0.2635 0.3622 0.1998)",140.4,53.4,38.3,38.8,G 25 Y,15,2.37,below
+wide,dark,15,muted,green,"color(display-p3 0.3056 0.348 0.2681)",140.4,26.7,19.2,39.3,G 25 Y,15,2.38,below
+wide,dark,30,default,green,"color(display-p3 0.389 0.5075 0.3093)",140.4,55.7,40,51.7,G 25 Y,30,4.02,AA large
+wide,dark,30,muted,green,"color(display-p3 0.439 0.4892 0.3918)",140.4,27.9,20,52.2,G 25 Y,30,4.03,AA large
+wide,dark,45,default,green,"color(display-p3 0.5028 0.6325 0.412)",140.4,55.7,40,62.7,G 25 Y,45,6.06,AA
+wide,dark,45,muted,green,"color(display-p3 0.5574 0.6114 0.5033)",140.3,27.8,20,63.3,G 25 Y,45,6.07,AA
+wide,dark,60,default,green,"color(display-p3 0.6067 0.7457 0.5064)",140.4,55.7,40,72.5,G 25 Y,60,8.44,AAA
+wide,dark,60,muted,green,"color(display-p3 0.6652 0.7223 0.6051)",140.3,27.8,20,73.1,G 25 Y,60,8.45,AAA
+wide,dark,75,default,green,"color(display-p3 0.7259 0.842 0.6319)",140.4,46,33,81.8,G 25 Y,75,11.13,AAA
+wide,dark,75,muted,green,"color(display-p3 0.7755 0.8205 0.718)",140.3,23,16.5,82.3,G 25 Y,75,11.14,AAA
+wide,dark,90,default,green,"color(display-p3 0.8773 0.9138 0.8208)",140.4,19.8,14.2,90.8,G 25 Y,90,14.11,AAA
+wide,dark,90,muted,green,"color(display-p3 0.8973 0.9036 0.8575)",140.3,9.9,7.1,91,G 25 Y,90,14.11,AAA
+wide,dark,15,default,mint,"color(display-p3 0.1509 0.3656 0.3333)",185.4,53.3,38.3,38.2,G 33 B,15,2.33,below
+wide,dark,15,muted,mint,"color(display-p3 0.2722 0.3502 0.3334)",185.3,26.7,19.2,39.2,G 33 B,15,2.38,below
+wide,dark,30,default,mint,"color(display-p3 0.2692 0.5144 0.4745)",185.3,55.7,40,51.3,G 33 B,30,3.99,AA large
+wide,dark,30,muted,mint,"color(display-p3 0.3999 0.4919 0.4713)",185.3,27.9,20,52.2,G 33 B,30,4.03,AA large
+wide,dark,45,default,mint,"color(display-p3 0.3812 0.6405 0.5959)",185.4,55.7,40,62.4,G 33 B,45,6.03,AA
+wide,dark,45,muted,mint,"color(display-p3 0.5153 0.6143 0.5912)",185.3,27.9,20,63.2,G 33 B,45,6.07,AA
+wide,dark,60,default,mint,"color(display-p3 0.4821 0.7544 0.7057)",185.3,55.7,40,72.2,G 33 B,60,8.42,AAA
+wide,dark,60,muted,mint,"color(display-p3 0.6205 0.7254 0.7001)",185.3,27.9,20,73.1,G 33 B,60,8.45,AAA
+wide,dark,75,default,mint,"color(display-p3 0.6315 0.8489 0.8054)",185.3,46,33,81.6,G 33 B,75,11.12,AAA
+wide,dark,75,muted,mint,"color(display-p3 0.7389 0.8229 0.8)",185.3,23,16.5,82.3,G 33 B,75,11.14,AAA
+wide,dark,90,default,mint,"color(display-p3 0.8455 0.9157 0.8943)",185.3,19.8,14.2,90.8,G 33 B,90,14.11,AAA
+wide,dark,90,muted,mint,"color(display-p3 0.8834 0.9044 0.8918)",185.3,9.9,7.1,91,G 33 B,90,14.12,AAA
+wide,dark,15,default,blue,"color(display-p3 0.168 0.3507 0.4499)",230.3,53.3,38.3,38.8,B 8 G,15,2.35,below
+wide,dark,15,muted,blue,"color(display-p3 0.2802 0.3423 0.3841)",230.3,26.7,19.2,39.4,B 8 G,15,2.38,below
+wide,dark,30,default,blue,"color(display-p3 0.2885 0.4946 0.6129)",230.3,55.7,40,51.8,B 8 G,30,4,AA large
+wide,dark,30,muted,blue,"color(display-p3 0.4095 0.4822 0.5321)",230.3,27.9,20,52.4,B 8 G,30,4.03,AA large
+wide,dark,45,default,blue,"color(display-p3 0.4025 0.6183 0.747)",230.3,55.7,40,62.9,B 8 G,45,6.04,AA
+wide,dark,45,muted,blue,"color(display-p3 0.526 0.6036 0.6581)",230.3,27.9,20,63.4,B 8 G,45,6.07,AA
+wide,dark,60,default,blue,"color(display-p3 0.5053 0.7302 0.8676)",230.3,55.7,40,72.8,B 8 G,60,8.42,AAA
+wide,dark,60,muted,blue,"color(display-p3 0.6321 0.7137 0.772)",230.4,27.9,20,73.3,B 8 G,60,8.45,AAA
+wide,dark,75,default,blue,"color(display-p3 0.6521 0.8277 0.9421)",230.4,46,33,82.1,B 8 G,75,11.12,AAA
+wide,dark,75,muted,blue,"color(display-p3 0.7489 0.8128 0.8613)",230.3,23,16.5,82.5,B 8 G,75,11.14,AAA
+wide,dark,90,default,blue,"color(display-p3 0.8546 0.9067 0.9487)",230.3,19.8,14.2,91,B 8 G,90,14.11,AAA
+wide,dark,90,muted,blue,"color(display-p3 0.8877 0.9001 0.9167)",230.4,9.9,7.1,91.1,B 8 G,90,14.12,AAA
+wide,dark,15,default,purple,"color(display-p3 0.2856 0.3202 0.5036)",275.3,53.3,38.3,39.8,B 19 R,15,2.37,below
+wide,dark,15,muted,purple,"color(display-p3 0.3186 0.3285 0.4054)",275.4,26.7,19.2,39.8,B 19 R,15,2.38,below
+wide,dark,30,default,purple,"color(display-p3 0.4172 0.4568 0.6748)",275.4,55.7,40,52.8,B 19 R,30,4.02,AA large
+wide,dark,30,muted,purple,"color(display-p3 0.4548 0.4656 0.5576)",275.3,27.9,20,52.7,B 19 R,30,4.03,AA large
+wide,dark,45,default,purple,"color(display-p3 0.5352 0.5767 0.8133)",275.3,55.7,40,63.9,B 19 R,45,6.06,AA
+wide,dark,45,muted,purple,"color(display-p3 0.575 0.5853 0.6858)",275.3,27.8,20,63.8,B 19 R,45,6.07,AA
+wide,dark,60,default,purple,"color(display-p3 0.6426 0.6855 0.9379)",275.3,55.7,40,73.8,B 19 R,60,8.44,AAA
+wide,dark,60,muted,purple,"color(display-p3 0.6843 0.6941 0.8018)",275.3,27.9,20,73.7,B 19 R,60,8.45,AAA
+wide,dark,75,default,purple,"color(display-p3 0.7591 0.7901 1)",275.4,46,33,82.9,B 19 R,75,11.13,AAA
+wide,dark,75,muted,purple,"color(display-p3 0.7923 0.7961 0.8864)",275.3,23,16.5,82.8,B 19 R,75,11.14,AAA
+wide,dark,90,default,purple,"color(display-p3 0.8926 0.8918 0.9709)",275.4,19.8,14.2,91.3,B 19 R,90,14.11,AAA
+wide,dark,90,muted,purple,"color(display-p3 0.9046 0.8933 0.9268)",275.5,9.9,7.1,91.2,B 19 R,90,14.11,AAA
+wide,dark,15,default,pink,"color(display-p3 0.4001 0.2847 0.4568)",320.4,53.3,38.3,40.4,B 48 R,15,2.37,below
+wide,dark,15,muted,pink,"color(display-p3 0.3683 0.3132 0.3865)",320.4,26.6,19.1,40.1,B 48 R,15,2.38,below
+wide,dark,30,default,pink,"color(display-p3 0.5539 0.4147 0.6199)",320.3,55.7,40,53.6,B 48 R,30,4.02,AA large
+wide,dark,30,muted,pink,"color(display-p3 0.5148 0.4472 0.5351)",320.4,27.8,20,53.1,B 48 R,30,4.03,AA large
+wide,dark,45,default,pink,"color(display-p3 0.6844 0.5308 0.7542)",320.3,55.7,40,64.7,B 48 R,45,6.06,AA
+wide,dark,45,muted,pink,"color(display-p3 0.6409 0.5651 0.6613)",320.4,27.8,20,64.2,B 48 R,45,6.07,AA
+wide,dark,60,default,pink,"color(display-p3 0.8024 0.6365 0.8753)",320.3,55.7,40,74.7,B 48 R,60,8.44,AAA
+wide,dark,60,muted,pink,"color(display-p3 0.7552 0.6724 0.7756)",320.3,27.9,20,74.1,B 48 R,60,8.45,AAA
+wide,dark,75,default,pink,"color(display-p3 0.8937 0.7489 0.9485)",320.4,46,33,83.6,B 48 R,75,11.13,AAA
+wide,dark,75,muted,pink,"color(display-p3 0.8527 0.7777 0.8644)",320.3,23,16.5,83.2,B 48 R,75,11.14,AAA
+wide,dark,90,default,pink,"color(display-p3 0.9462 0.8755 0.9515)",320.3,19.8,14.2,91.6,B 48 R,90,14.11,AAA
+wide,dark,90,muted,pink,"color(display-p3 0.9291 0.8859 0.918)",320.3,9.9,7.1,91.4,B 48 R,90,14.11,AAA
+wide,dark,15,default,brown,"color(display-p3 0.4268 0.3016 0.2473)",39.4,32,23,40.1,R 25 Y,15,2.37,below
 wide,dark,30,default,brown,"color(display-p3 0.5882 0.4335 0.3668)",39.4,33.4,24,53.2,R 25 Y,30,4.02,AA large
 wide,dark,45,default,brown,"color(display-p3 0.7242 0.5501 0.4756)",39.4,33.4,24,64.4,R 25 Y,45,6.06,AA
 wide,dark,60,default,brown,"color(display-p3 0.8468 0.6563 0.5752)",39.4,33.4,24,74.3,R 25 Y,60,8.43,AAA
-wide,dark,75,default,brown,"color(display-p3 0.932 0.765 0.6954)",39.4,26.7,19.2,83.3,R 25 Y,75,11.13,AAA
-wide,dark,90,default,brown,"color(display-p3 0.9672 0.8801 0.8465)",39.4,11.8,8.5,91.5,R 25 Y,90,14.11,AAA
-ultra,light,15,default,red,"color(rec2020 0.9347 0.7622 0.7596)",13.8,31.1,24.6,73.2,R 7 B,15,1.34,below
-ultra,light,15,muted,red,"color(rec2020 0.8761 0.7891 0.7858)",13.7,15.6,12.3,72.3,R 7 B,15,1.34,below
-ultra,light,30,default,red,"color(rec2020 0.8294 0.6612 0.6593)",13.7,31.1,24.6,59,R 7 B,30,1.79,below
-ultra,light,30,muted,red,"color(rec2020 0.7728 0.6882 0.6852)",13.8,15.6,12.3,58.3,R 7 B,30,1.79,below
-ultra,light,45,default,red,"color(rec2020 0.7773 0.515 0.5289)",12.2,50.7,40,45.9,R 8 B,45,2.56,below
-ultra,light,45,muted,red,"color(rec2020 0.6968 0.5645 0.5677)",12.2,25.3,20,45.1,R 8 B,45,2.53,below
-ultra,light,60,default,red,"color(rec2020 0.6501 0.3983 0.3981)",14.6,50.7,40,32.4,R 6 B,60,3.93,AA large
-ultra,light,60,muted,red,"color(rec2020 0.5771 0.4489 0.4451)",14.6,25.4,20,31.9,R 6 B,60,3.86,AA large
-ultra,light,75,default,red,"color(rec2020 0.482 0.2857 0.2962)",12.7,41.7,32.9,19.4,R 8 B,75,6.66,AA
-ultra,light,75,muted,red,"color(rec2020 0.4276 0.3279 0.3299)",12.7,20.9,16.5,19.2,R 8 B,75,6.52,AA
-ultra,light,90,default,red,"color(rec2020 0.2586 0.1529 0.1527)",14.8,24.6,19.4,6.9,R 5 B,90,12.88,AAA
-ultra,light,90,muted,red,"color(rec2020 0.2326 0.1785 0.1767)",14.8,12.3,9.7,7,R 5 B,90,12.64,AAA
-ultra,light,15,default,orange,"color(rec2020 0.922 0.7801 0.603)",57,31.1,24.6,72.5,R 49 Y,15,1.34,below
-ultra,light,15,muted,orange,"color(rec2020 0.8711 0.7975 0.7096)",57,15.6,12.3,72,R 49 Y,15,1.34,below
-ultra,light,30,default,orange,"color(rec2020 0.8164 0.679 0.5061)",57,31.1,24.6,58.4,R 49 Y,30,1.79,below
-ultra,light,30,muted,orange,"color(rec2020 0.7678 0.6964 0.6104)",57,15.6,12.3,58,R 49 Y,30,1.79,below
-ultra,light,45,default,orange,"color(rec2020 0.7547 0.5451 0.2835)",55.4,50.7,40,45,R 47 Y,45,2.56,below
-ultra,light,45,muted,orange,"color(rec2020 0.6889 0.5776 0.445)",55.4,25.3,20,44.6,R 47 Y,45,2.53,below
-ultra,light,60,default,orange,"color(rec2020 0.6233 0.43 0.1684)",56.9,50.7,40,31.6,R 49 Y,60,3.92,AA large
-ultra,light,60,muted,orange,"color(rec2020 0.5666 0.4626 0.3312)",56.9,25.3,20,31.5,R 49 Y,60,3.86,AA large
-ultra,light,75,default,orange,"color(rec2020 0.4627 0.3109 0.1081)",55.9,41.7,32.9,19,R 48 Y,75,6.64,AA
-ultra,light,75,muted,orange,"color(rec2020 0.4204 0.3384 0.2375)",55.9,20.8,16.4,19,R 48 Y,75,6.52,AA
-ultra,light,90,default,orange,"color(rec2020 0.2482 0.168 0.0541)",57.4,24.5,19.4,6.8,R 50 Y,90,12.82,AAA
-ultra,light,90,muted,orange,"color(rec2020 0.228 0.1845 0.1283)",57.4,12.3,9.7,6.9,R 50 Y,90,12.63,AAA
-ultra,light,15,default,yellow,"color(rec2020 0.8538 0.8134 0.5706)",95.9,31.1,24.6,71.3,Y 11 G,15,1.34,below
-ultra,light,15,muted,yellow,"color(rec2020 0.8362 0.8135 0.6939)",95.9,15.6,12.3,71.4,Y 11 G,15,1.34,below
-ultra,light,30,default,yellow,"color(rec2020 0.7507 0.7117 0.4746)",95.9,31.1,24.6,57.3,Y 11 G,30,1.79,below
-ultra,light,30,muted,yellow,"color(rec2020 0.7338 0.7121 0.595)",95.8,15.6,12.3,57.4,Y 11 G,30,1.79,below
-ultra,light,45,default,yellow,"color(rec2020 0.6581 0.5992 0.2206)",95.9,50.7,40,43.6,Y 11 G,45,2.54,below
-ultra,light,45,muted,yellow,"color(rec2020 0.6353 0.6043 0.4169)",95.9,25.3,20,43.9,Y 11 G,45,2.53,below
-ultra,light,60,default,yellow,"color(rec2020 0.5377 0.4815 0.0979)",95.9,50.7,40,30.6,Y 11 G,60,3.88,AA large
-ultra,light,60,muted,yellow,"color(rec2020 0.5173 0.4879 0.307)",95.9,25.3,20,30.9,Y 11 G,60,3.85,AA large
-ultra,light,75,default,yellow,"color(rec2020 0.397 0.3532 0.0054)",95.9,41.7,32.9,18.4,Y 11 G,75,6.55,AA
-ultra,light,75,muted,yellow,"color(rec2020 0.3818 0.3589 0.2172)",95.9,20.8,16.4,18.6,Y 11 G,75,6.5,AA
-ultra,light,90,default,yellow,"color(rec2020 0.2156 0.192 0.004)",96,24.6,19.4,6.7,Y 11 G,90,12.67,AAA
-ultra,light,90,muted,yellow,"color(rec2020 0.2081 0.1958 0.119)",96,12.3,9.7,6.8,Y 11 G,90,12.59,AAA
-ultra,light,15,default,green,"color(rec2020 0.7502 0.8443 0.696)",147.9,31.1,24.6,70.1,G 17 Y,15,1.34,below
-ultra,light,15,muted,green,"color(rec2020 0.7874 0.8276 0.7557)",147.9,15.6,12.3,70.8,G 17 Y,15,1.34,below
-ultra,light,30,default,green,"color(rec2020 0.6487 0.7423 0.5967)",147.8,31.1,24.6,56.2,G 17 Y,30,1.79,below
-ultra,light,30,muted,green,"color(rec2020 0.6857 0.7261 0.6556)",147.9,15.6,12.3,56.9,G 17 Y,30,1.79,below
-ultra,light,45,default,green,"color(rec2020 0.4941 0.65 0.4085)",146.3,50.6,40,42,G 18 Y,45,2.54,below
-ultra,light,45,muted,green,"color(rec2020 0.5572 0.6279 0.5097)",146.3,25.3,20,43.1,G 18 Y,45,2.53,below
-ultra,light,60,default,green,"color(rec2020 0.3716 0.5309 0.304)",147.7,50.6,40,29.1,G 17 Y,60,3.89,AA large
-ultra,light,60,muted,green,"color(rec2020 0.4392 0.5114 0.3999)",147.7,25.3,20,30.2,G 17 Y,60,3.85,AA large
-ultra,light,75,default,green,"color(rec2020 0.2678 0.3907 0.2095)",146.8,41.7,32.9,17.4,G 18 Y,75,6.59,AA
-ultra,light,75,muted,green,"color(rec2020 0.3213 0.3773 0.2882)",146.8,20.8,16.4,18.2,G 18 Y,75,6.5,AA
-ultra,light,90,default,green,"color(rec2020 0.1408 0.2107 0.1168)",148.9,24.5,19.4,6.2,G 15 Y,90,12.79,AAA
-ultra,light,90,muted,green,"color(rec2020 0.1743 0.2059 0.1597)",149,12.3,9.7,6.7,G 15 Y,90,12.59,AAA
-ultra,light,15,default,mint,"color(rec2020 0.7134 0.8442 0.845)",194.2,31.1,24.6,70,G 45 B,15,1.34,below
-ultra,light,15,muted,mint,"color(rec2020 0.773 0.827 0.8256)",194.3,15.6,12.3,70.9,G 45 B,15,1.34,below
-ultra,light,30,default,mint,"color(rec2020 0.6108 0.7423 0.7435)",194.2,31.1,24.6,56.1,G 45 B,30,1.79,below
-ultra,light,30,muted,mint,"color(rec2020 0.6712 0.7256 0.7244)",194.1,15.6,12.3,56.9,G 45 B,30,1.79,below
-ultra,light,45,default,mint,"color(rec2020 0.3886 0.65 0.6476)",192.6,50.7,40,40.9,G 43 B,45,2.6,below
-ultra,light,45,muted,mint,"color(rec2020 0.5264 0.6284 0.6252)",192.6,25.3,20,43,G 43 B,45,2.53,below
-ultra,light,60,default,mint,"color(rec2020 0.2455 0.5307 0.5431)",195.1,50.7,40,28.2,G 47 B,60,3.99,AA large
-ultra,light,60,muted,mint,"color(rec2020 0.4081 0.5113 0.5147)",195.1,25.3,20,30.1,G 47 B,60,3.86,AA large
-ultra,light,75,default,mint,"color(rec2020 0.154 0.3911 0.393)",193.1,41.7,32.9,16.7,G 44 B,75,6.75,AA
-ultra,light,75,muted,mint,"color(rec2020 0.2951 0.3774 0.3766)",193.2,20.8,16.4,18.1,G 44 B,75,6.52,AA
-ultra,light,90,default,mint,"color(rec2020 0.0792 0.2088 0.2147)",195.3,24.5,19.4,5.9,G 47 B,90,12.98,AAA
-ultra,light,90,muted,mint,"color(rec2020 0.1609 0.2051 0.2068)",195.3,12.3,9.7,6.6,G 47 B,90,12.63,AAA
-ultra,light,15,default,blue,"color(rec2020 0.7376 0.827 0.9457)",237.6,31.1,24.6,70.7,B,15,1.34,below
-ultra,light,15,muted,blue,"color(rec2020 0.7838 0.8191 0.8704)",237.5,15.6,12.3,71.2,B,15,1.34,below
-ultra,light,30,default,blue,"color(rec2020 0.635 0.7254 0.8439)",237.5,31.1,24.6,56.8,B,30,1.79,below
-ultra,light,30,muted,blue,"color(rec2020 0.6819 0.7177 0.769)",237.6,15.6,12.3,57.2,B,30,1.79,below
-ultra,light,45,default,blue,"color(rec2020 0.4364 0.621 0.8418)",237.5,50.7,40,42.2,B,45,2.58,below
-ultra,light,45,muted,blue,"color(rec2020 0.5451 0.6149 0.707)",237.5,25.3,20,43.5,B,45,2.53,below
-ultra,light,60,default,blue,"color(rec2020 0.3003 0.5008 0.7268)",237.5,50.7,40,29.1,B,60,3.98,AA large
-ultra,light,60,muted,blue,"color(rec2020 0.4272 0.4986 0.5908)",237.5,25.3,20,30.5,B,60,3.85,AA large
-ultra,light,75,default,blue,"color(rec2020 0.2 0.3664 0.5473)",237.5,41.7,32.9,17.3,B,75,6.75,AA
-ultra,light,75,muted,blue,"color(rec2020 0.3103 0.3673 0.4405)",237.6,20.8,16.5,18.4,B,75,6.5,AA
-ultra,light,90,default,blue,"color(rec2020 0.106 0.1957 0.2927)",237.6,24.6,19.4,6.1,B,90,12.98,AAA
-ultra,light,90,muted,blue,"color(rec2020 0.1695 0.2001 0.2394)",237.6,12.3,9.7,6.7,B,90,12.6,AAA
-ultra,light,15,default,purple,"color(rec2020 0.8062 0.799 0.9791)",284.7,31.1,24.5,71.9,B 25 R,15,1.34,below
-ultra,light,15,muted,purple,"color(rec2020 0.8133 0.8065 0.885)",284.8,15.5,12.3,71.7,B 25 R,15,1.34,below
-ultra,light,30,default,purple,"color(rec2020 0.7041 0.6975 0.8772)",284.7,31,24.5,57.9,B 25 R,30,1.79,below
-ultra,light,30,muted,purple,"color(rec2020 0.7113 0.7053 0.7834)",284.8,15.5,12.2,57.7,B 25 R,30,1.79,below
-ultra,light,45,default,purple,"color(rec2020 0.579 0.5743 0.9103)",283.1,50.7,40,44.5,B 24 R,45,2.54,below
-ultra,light,45,muted,purple,"color(rec2020 0.5965 0.594 0.7336)",283.1,25.3,20,44.2,B 24 R,45,2.53,below
-ultra,light,60,default,purple,"color(rec2020 0.4692 0.451 0.7969)",285.6,50.7,40,31.5,B 25 R,60,3.87,AA large
-ultra,light,60,muted,purple,"color(rec2020 0.483 0.4765 0.617)",285.6,25.3,20,31.3,B 25 R,60,3.85,AA large
-ultra,light,75,default,purple,"color(rec2020 0.3379 0.3297 0.6058)",283.7,41.7,32.9,19,B 24 R,75,6.55,AA
-ultra,light,75,muted,purple,"color(rec2020 0.353 0.3508 0.4618)",283.7,20.8,16.5,18.9,B 24 R,75,6.49,AA
-ultra,light,90,default,purple,"color(rec2020 0.1866 0.1782 0.3258)",285.8,24.6,19.4,6.9,B 25 R,90,12.67,AAA
-ultra,light,90,muted,purple,"color(rec2020 0.194 0.1912 0.251)",285.8,12.3,9.7,6.9,B 25 R,90,12.57,AAA
-ultra,light,15,default,pink,"color(rec2020 0.8832 0.7729 0.9149)",329.5,31.1,24.6,72.9,R 45 B,15,1.34,below
-ultra,light,15,muted,pink,"color(rec2020 0.849 0.7946 0.8572)",329.5,15.6,12.3,72.2,R 45 B,15,1.34,below
-ultra,light,30,default,pink,"color(rec2020 0.7801 0.6716 0.813)",329.5,31.1,24.6,58.8,R 45 B,30,1.79,below
-ultra,light,30,muted,pink,"color(rec2020 0.7465 0.6935 0.7559)",329.5,15.6,12.3,58.1,R 45 B,30,1.79,below
-ultra,light,45,default,pink,"color(rec2020 0.7094 0.5292 0.7911)",327.9,50.7,40,45.8,R 46 B,45,2.54,below
-ultra,light,45,muted,pink,"color(rec2020 0.6562 0.5735 0.6863)",327.9,25.3,20,44.9,R 46 B,45,2.53,below
-ultra,light,60,default,pink,"color(rec2020 0.5948 0.4076 0.6617)",330.4,50.7,40,32.5,R 45 B,60,3.89,AA large
-ultra,light,60,muted,pink,"color(rec2020 0.5413 0.4566 0.5648)",330.4,25.3,20,31.8,R 45 B,60,3.85,AA large
-ultra,light,75,default,pink,"color(rec2020 0.4383 0.2942 0.5029)",328.4,41.7,32.9,19.6,R 46 B,75,6.59,AA
-ultra,light,75,muted,pink,"color(rec2020 0.399 0.3347 0.4229)",328.4,20.9,16.5,19.2,R 46 B,75,6.5,AA
-ultra,light,90,default,pink,"color(rec2020 0.2382 0.1584 0.2662)",330.6,24.5,19.4,7.1,R 44 B,90,12.76,AAA
-ultra,light,90,muted,pink,"color(rec2020 0.2184 0.1823 0.2282)",330.7,12.3,9.7,7,R 44 B,90,12.59,AAA
-ultra,light,15,default,brown,"color(rec2020 0.8901 0.7879 0.7211)",39.4,18.7,14.7,72.3,R 25 Y,15,1.34,below
-ultra,light,30,default,brown,"color(rec2020 0.7862 0.6869 0.6217)",39.4,18.7,14.7,58.3,R 25 Y,30,1.79,below
+wide,dark,75,default,brown,"color(display-p3 0.9358 0.7637 0.6917)",39.4,27.6,19.8,83.3,R 25 Y,75,11.13,AAA
+wide,dark,90,default,brown,"color(display-p3 0.9676 0.88 0.8462)",39.4,11.9,8.5,91.5,R 25 Y,90,14.11,AAA
+ultra,light,15,default,red,"color(rec2020 0.9273 0.763 0.7939)",5.3,30.7,24.2,73.2,R 15 B,15,1.34,below
+ultra,light,15,muted,red,"color(rec2020 0.8718 0.7897 0.802)",5.3,15.3,12.1,72.3,R 15 B,15,1.34,below
+ultra,light,30,default,red,"color(rec2020 0.8224 0.6621 0.6931)",5.3,30.7,24.2,59,R 15 B,30,1.79,below
+ultra,light,30,muted,red,"color(rec2020 0.7687 0.6887 0.7013)",5.3,15.3,12.1,58.3,R 15 B,30,1.79,below
+ultra,light,45,default,red,"color(rec2020 0.7724 0.5144 0.5733)",5.4,50.7,40,45.9,R 15 B,45,2.56,below
+ultra,light,45,muted,red,"color(rec2020 0.6931 0.5646 0.5891)",5.3,25.3,20,45.1,R 15 B,45,2.53,below
+ultra,light,60,default,red,"color(rec2020 0.6453 0.3968 0.4567)",5.4,50.7,40,32.5,R 15 B,60,3.92,AA large
+ultra,light,60,muted,red,"color(rec2020 0.5729 0.4489 0.4736)",5.3,25.4,20,31.9,R 15 B,60,3.86,AA large
+ultra,light,75,default,red,"color(rec2020 0.479 0.2849 0.3327)",5.4,41.6,32.9,19.5,R 15 B,75,6.65,AA
+ultra,light,75,muted,red,"color(rec2020 0.425 0.328 0.3476)",5.4,20.8,16.5,19.3,R 15 B,75,6.52,AA
+ultra,light,90,default,red,"color(rec2020 0.2569 0.1525 0.1783)",5.3,24.5,19.3,7,R 15 B,90,12.87,AAA
+ultra,light,90,muted,red,"color(rec2020 0.2308 0.1787 0.1892)",5.4,12.2,9.7,7,R 15 B,90,12.63,AAA
+ultra,light,15,default,orange,"color(rec2020 0.9274 0.7761 0.6242)",50.3,30.7,24.2,72.6,R 40 Y,15,1.34,below
+ultra,light,15,muted,orange,"color(rec2020 0.8736 0.7955 0.7203)",50.3,15.3,12.1,72.1,R 40 Y,15,1.34,below
+ultra,light,30,default,orange,"color(rec2020 0.8217 0.6751 0.527)",50.3,30.7,24.2,58.5,R 40 Y,30,1.79,below
+ultra,light,30,muted,orange,"color(rec2020 0.7703 0.6945 0.621)",50.3,15.3,12.1,58.1,R 40 Y,30,1.79,below
+ultra,light,45,default,orange,"color(rec2020 0.7621 0.5395 0.3057)",50.4,50.7,40,45.1,R 40 Y,45,2.56,below
+ultra,light,45,muted,orange,"color(rec2020 0.6928 0.5749 0.456)",50.3,25.3,20,44.7,R 40 Y,45,2.53,below
+ultra,light,60,default,orange,"color(rec2020 0.6326 0.423 0.198)",50.4,50.7,40,31.8,R 40 Y,60,3.92,AA large
+ultra,light,60,muted,orange,"color(rec2020 0.5715 0.4592 0.3446)",50.4,25.3,20,31.6,R 40 Y,60,3.86,AA large
+ultra,light,75,default,orange,"color(rec2020 0.4684 0.3061 0.1296)",50.3,41.6,32.9,19,R 40 Y,75,6.64,AA
+ultra,light,75,muted,orange,"color(rec2020 0.4236 0.3361 0.2465)",50.4,20.8,16.4,19,R 40 Y,75,6.52,AA
+ultra,light,90,default,orange,"color(rec2020 0.2518 0.1642 0.0685)",50.3,24.5,19.4,6.8,R 40 Y,90,12.85,AAA
+ultra,light,90,muted,orange,"color(rec2020 0.2302 0.1828 0.1343)",50.3,12.3,9.7,7,R 40 Y,90,12.64,AAA
+ultra,light,15,default,yellow,"color(rec2020 0.8545 0.813 0.5738)",95.3,30.7,24.2,71.3,Y 10 G,15,1.34,below
+ultra,light,15,muted,yellow,"color(rec2020 0.8365 0.8132 0.6956)",95.3,15.3,12.1,71.4,Y 10 G,15,1.34,below
+ultra,light,30,default,yellow,"color(rec2020 0.7514 0.7113 0.4777)",95.3,30.7,24.2,57.3,Y 10 G,30,1.79,below
+ultra,light,30,muted,yellow,"color(rec2020 0.7341 0.7119 0.5968)",95.3,15.3,12.1,57.5,Y 10 G,30,1.79,below
+ultra,light,45,default,yellow,"color(rec2020 0.6598 0.5984 0.2198)",95.4,50.7,40,43.6,Y 10 G,45,2.54,below
+ultra,light,45,muted,yellow,"color(rec2020 0.6362 0.604 0.4165)",95.4,25.3,20,43.9,Y 10 G,45,2.53,below
+ultra,light,60,default,yellow,"color(rec2020 0.5393 0.4808 0.0968)",95.3,50.7,40,30.7,Y 10 G,60,3.88,AA large
+ultra,light,60,muted,yellow,"color(rec2020 0.5181 0.4875 0.3066)",95.3,25.3,20,30.9,Y 10 G,60,3.85,AA large
+ultra,light,75,default,yellow,"color(rec2020 0.3981 0.3527 0)",95.4,41.6,32.9,18.5,Y 10 G,75,6.55,AA
+ultra,light,75,muted,yellow,"color(rec2020 0.3825 0.3586 0.2169)",95.3,20.8,16.4,18.6,Y 10 G,75,6.5,AA
+ultra,light,90,default,yellow,"color(rec2020 0.2163 0.1916 0.0037)",95.3,24.5,19.3,6.7,Y 10 G,90,12.67,AAA
+ultra,light,90,muted,yellow,"color(rec2020 0.2085 0.1956 0.1192)",95.3,12.2,9.6,6.8,Y 10 G,90,12.59,AAA
+ultra,light,15,default,green,"color(rec2020 0.7633 0.8415 0.6739)",140.4,30.7,24.2,70.2,G 25 Y,15,1.34,below
+ultra,light,15,muted,green,"color(rec2020 0.7932 0.8263 0.7451)",140.3,15.3,12.1,70.9,G 25 Y,15,1.34,below
+ultra,light,30,default,green,"color(rec2020 0.6618 0.7395 0.5752)",140.4,30.7,24.2,56.3,G 25 Y,30,1.79,below
+ultra,light,30,muted,green,"color(rec2020 0.6914 0.7248 0.6452)",140.3,15.3,12.1,57,G 25 Y,30,1.79,below
+ultra,light,45,default,green,"color(rec2020 0.5131 0.6466 0.3792)",140.4,50.7,40,42.1,G 25 Y,45,2.54,below
+ultra,light,45,muted,green,"color(rec2020 0.5648 0.6264 0.495)",140.3,25.3,20,43.1,G 25 Y,45,2.53,below
+ultra,light,60,default,green,"color(rec2020 0.397 0.5272 0.2688)",140.4,50.7,40,29.4,G 25 Y,60,3.88,AA large
+ultra,light,60,muted,green,"color(rec2020 0.4487 0.5096 0.3821)",140.3,25.3,20,30.3,G 25 Y,60,3.85,AA large
+ultra,light,75,default,green,"color(rec2020 0.2865 0.3886 0.1862)",140.3,41.6,32.9,17.6,G 25 Y,75,6.56,AA
+ultra,light,75,muted,green,"color(rec2020 0.328 0.376 0.276)",140.3,20.8,16.4,18.2,G 25 Y,75,6.49,AA
+ultra,light,90,default,green,"color(rec2020 0.1554 0.2105 0.101)",140.3,24.5,19.3,6.4,G 25 Y,90,12.7,AAA
+ultra,light,90,muted,green,"color(rec2020 0.1792 0.205 0.1513)",140.4,12.2,9.6,6.7,G 25 Y,90,12.58,AAA
+ultra,light,15,default,mint,"color(rec2020 0.7169 0.8454 0.8184)",185.4,30.7,24.2,70,G 33 B,15,1.34,below
+ultra,light,15,muted,mint,"color(rec2020 0.7743 0.8276 0.8134)",185.4,15.3,12.1,70.8,G 33 B,15,1.34,below
+ultra,light,30,default,mint,"color(rec2020 0.6146 0.7435 0.7173)",185.4,30.7,24.2,56.1,G 33 B,30,1.79,below
+ultra,light,30,muted,mint,"color(rec2020 0.6725 0.7261 0.7124)",185.4,15.3,12.1,56.9,G 33 B,30,1.79,below
+ultra,light,45,default,mint,"color(rec2020 0.396 0.6519 0.6103)",185.4,50.7,40,40.9,G 33 B,45,2.6,below
+ultra,light,45,muted,mint,"color(rec2020 0.5276 0.6295 0.6084)",185.4,25.3,20,43,G 33 B,45,2.53,below
+ultra,light,60,default,mint,"color(rec2020 0.2596 0.5332 0.4933)",185.4,50.7,40,28.2,G 33 B,60,3.98,AA large
+ultra,light,60,muted,mint,"color(rec2020 0.4098 0.5127 0.4925)",185.4,25.3,20,30.1,G 33 B,60,3.86,AA large
+ultra,light,75,default,mint,"color(rec2020 0.1669 0.3924 0.3613)",185.4,41.6,32.9,16.7,G 33 B,75,6.75,AA
+ultra,light,75,muted,mint,"color(rec2020 0.2964 0.3783 0.3625)",185.4,20.8,16.4,18.1,G 33 B,75,6.52,AA
+ultra,light,90,default,mint,"color(rec2020 0.0878 0.2099 0.1932)",185.4,24.5,19.3,5.9,G 33 B,90,12.97,AAA
+ultra,light,90,muted,mint,"color(rec2020 0.162 0.2058 0.1974)",185.4,12.2,9.6,6.6,G 33 B,90,12.62,AAA
+ultra,light,15,default,blue,"color(rec2020 0.732 0.8304 0.9309)",230.4,30.7,24.2,70.6,B 8 G,15,1.34,below
+ultra,light,15,muted,blue,"color(rec2020 0.7815 0.8205 0.8639)",230.5,15.3,12.1,71.1,B 8 G,15,1.34,below
+ultra,light,30,default,blue,"color(rec2020 0.6293 0.7287 0.8291)",230.4,30.7,24.2,56.7,B 8 G,30,1.79,below
+ultra,light,30,muted,blue,"color(rec2020 0.6796 0.7192 0.7625)",230.4,15.3,12.1,57.2,B 8 G,30,1.79,below
+ultra,light,45,default,blue,"color(rec2020 0.419 0.6268 0.8167)",230.4,50.7,40,41.8,B 8 G,45,2.59,below
+ultra,light,45,muted,blue,"color(rec2020 0.5395 0.6177 0.6972)",230.4,25.3,20,43.4,B 8 G,45,2.53,below
+ultra,light,60,default,blue,"color(rec2020 0.28 0.5077 0.7017)",230.4,50.7,40,28.9,B 8 G,60,3.99,AA large
+ultra,light,60,muted,blue,"color(rec2020 0.4214 0.5013 0.5809)",230.4,25.3,20,30.4,B 8 G,60,3.86,AA large
+ultra,light,75,default,blue,"color(rec2020 0.1824 0.372 0.5268)",230.4,41.6,32.9,17.1,B 8 G,75,6.76,AA
+ultra,light,75,muted,blue,"color(rec2020 0.3056 0.3694 0.4325)",230.4,20.8,16.4,18.3,B 8 G,75,6.51,AA
+ultra,light,90,default,blue,"color(rec2020 0.0964 0.1987 0.2817)",230.4,24.5,19.3,6.1,B 8 G,90,12.99,AAA
+ultra,light,90,muted,blue,"color(rec2020 0.1671 0.2012 0.2349)",230.4,12.2,9.7,6.7,B 8 G,90,12.61,AAA
+ultra,light,15,default,purple,"color(rec2020 0.791 0.805 0.9774)",275.4,30.7,24.2,71.7,B 19 R,15,1.34,below
+ultra,light,15,muted,purple,"color(rec2020 0.8066 0.8092 0.8843)",275.4,15.3,12.1,71.6,B 19 R,15,1.34,below
+ultra,light,30,default,purple,"color(rec2020 0.6889 0.7035 0.8756)",275.4,30.7,24.2,57.7,B 19 R,30,1.79,below
+ultra,light,30,muted,purple,"color(rec2020 0.7046 0.708 0.7827)",275.3,15.3,12.1,57.6,B 19 R,30,1.79,below
+ultra,light,45,default,purple,"color(rec2020 0.5538 0.5833 0.9116)",275.4,50.7,40,44.2,B 19 R,45,2.54,below
+ultra,light,45,muted,purple,"color(rec2020 0.5864 0.5978 0.734)",275.3,25.3,20,44.1,B 19 R,45,2.53,below
+ultra,light,60,default,purple,"color(rec2020 0.4343 0.4632 0.8004)",275.4,50.7,40,31.1,B 19 R,60,3.88,AA large
+ultra,light,60,muted,purple,"color(rec2020 0.4695 0.4815 0.618)",275.4,25.3,20,31.1,B 19 R,60,3.85,AA large
+ultra,light,75,default,purple,"color(rec2020 0.3148 0.3376 0.6068)",275.3,41.6,32.9,18.7,B 19 R,75,6.56,AA
+ultra,light,75,muted,purple,"color(rec2020 0.3443 0.354 0.4622)",275.4,20.8,16.5,18.8,B 19 R,75,6.49,AA
+ultra,light,90,default,purple,"color(rec2020 0.171 0.1832 0.3268)",275.4,24.5,19.4,6.8,B 19 R,90,12.69,AAA
+ultra,light,90,muted,purple,"color(rec2020 0.1881 0.1933 0.2514)",275.4,12.3,9.7,6.9,B 19 R,90,12.57,AAA
+ultra,light,15,default,pink,"color(rec2020 0.8674 0.7781 0.9344)",320.4,30.7,24.2,72.7,B 48 R,15,1.34,below
+ultra,light,15,muted,pink,"color(rec2020 0.8413 0.797 0.8657)",320.4,15.3,12.1,72.1,B 48 R,15,1.34,below
+ultra,light,30,default,pink,"color(rec2020 0.7646 0.6768 0.8324)",320.4,30.7,24.2,58.6,B 48 R,30,1.79,below
+ultra,light,30,muted,pink,"color(rec2020 0.7389 0.6959 0.7643)",320.3,15.3,12.1,58,B 48 R,30,1.79,below
+ultra,light,45,default,pink,"color(rec2020 0.6905 0.5352 0.824)",320.3,50.7,40,45.7,B 48 R,45,2.54,below
+ultra,light,45,muted,pink,"color(rec2020 0.6466 0.5765 0.6999)",320.4,25.4,20,44.8,B 48 R,45,2.53,below
+ultra,light,60,default,pink,"color(rec2020 0.5716 0.415 0.7078)",320.3,50.7,40,32.4,B 48 R,60,3.89,AA large
+ultra,light,60,muted,pink,"color(rec2020 0.5291 0.4604 0.5834)",320.4,25.3,20,31.7,B 48 R,60,3.85,AA large
+ultra,light,75,default,pink,"color(rec2020 0.4237 0.2992 0.5321)",320.3,41.6,32.9,19.5,B 48 R,75,6.58,AA
+ultra,light,75,muted,pink,"color(rec2020 0.3913 0.3372 0.4346)",320.4,20.9,16.5,19.2,B 48 R,75,6.5,AA
+ultra,light,90,default,pink,"color(rec2020 0.2289 0.1621 0.2867)",320.4,24.5,19.4,7.1,B 48 R,90,12.73,AAA
+ultra,light,90,muted,pink,"color(rec2020 0.2132 0.1842 0.2365)",320.3,12.3,9.7,7,B 48 R,90,12.58,AAA
+ultra,light,15,default,brown,"color(rec2020 0.889 0.7883 0.7225)",39.4,18.4,14.5,72.3,R 25 Y,15,1.34,below
+ultra,light,30,default,brown,"color(rec2020 0.7852 0.6873 0.6231)",39.4,18.4,14.5,58.3,R 25 Y,30,1.79,below
 ultra,light,45,default,brown,"color(rec2020 0.7151 0.5622 0.4594)",39.4,30.4,24,45,R 25 Y,45,2.54,below
 ultra,light,60,default,brown,"color(rec2020 0.5922 0.4465 0.3478)",39.4,30.4,24,31.8,R 25 Y,60,3.87,AA large
-ultra,light,75,default,brown,"color(rec2020 0.4393 0.3258 0.2487)",39.4,25,19.8,19.2,R 25 Y,75,6.55,AA
-ultra,light,90,default,brown,"color(rec2020 0.2381 0.1769 0.1351)",39.5,14.7,11.6,7,R 25 Y,90,12.68,AAA
-ultra,dark,15,default,red,"color(rec2020 0.4678 0.3154 0.3187)",13.1,55.7,40,40.5,R 7 B,15,2.35,below
-ultra,dark,15,muted,red,"color(rec2020 0.4223 0.3445 0.3438)",13.1,27.9,20,40.2,R 7 B,15,2.37,below
-ultra,dark,30,default,red,"color(rec2020 0.6195 0.4401 0.4425)",13.2,55.7,40,53.7,R 7 B,30,3.99,AA large
-ultra,dark,30,muted,red,"color(rec2020 0.5635 0.4721 0.4705)",13.2,27.8,20,53.2,R 7 B,30,4.02,AA large
-ultra,dark,45,default,red,"color(rec2020 0.7509 0.5493 0.5389)",15.6,55.7,40,64.9,R 5 B,45,6.03,AA
-ultra,dark,45,muted,red,"color(rec2020 0.6866 0.5836 0.5756)",15.7,27.8,20,64.4,R 5 B,45,6.06,AA
-ultra,dark,60,default,red,"color(rec2020 0.867 0.6482 0.6496)",13.1,55.7,40,75,R 7 B,60,8.41,AAA
-ultra,dark,60,muted,red,"color(rec2020 0.7964 0.6849 0.6822)",13.2,27.8,20,74.4,R 7 B,60,8.44,AAA
-ultra,dark,75,default,red,"color(rec2020 0.9522 0.7532 0.7501)",13.6,47,33.8,84,R 7 B,75,11.11,AAA
-ultra,dark,75,muted,red,"color(rec2020 0.8867 0.7846 0.7798)",13.7,23.5,16.9,83.4,R 7 B,75,11.13,AAA
-ultra,dark,90,default,red,"color(rec2020 0.9918 0.8699 0.8585)",16,26.4,19,91.9,R 4 B,90,14.1,AAA
-ultra,dark,90,muted,red,"color(rec2020 0.9515 0.8866 0.8783)",16,13.2,9.5,91.6,R 4 B,90,14.11,AAA
-ultra,dark,15,default,orange,"color(rec2020 0.4545 0.3328 0.181)",55.9,55.7,40,40.1,R 48 Y,15,2.35,below
-ultra,dark,15,muted,orange,"color(rec2020 0.4174 0.3521 0.2751)",55.9,27.9,20,40,R 48 Y,15,2.37,below
-ultra,dark,30,default,orange,"color(rec2020 0.6047 0.4597 0.2814)",55.9,55.7,40,53.2,R 48 Y,30,4,AA large
-ultra,dark,30,muted,orange,"color(rec2020 0.5581 0.4808 0.3906)",56,27.8,20,53,R 48 Y,30,4.02,AA large
-ultra,dark,45,default,orange,"color(rec2020 0.732 0.5717 0.3669)",57.4,55.7,40,64.4,R 50 Y,45,6.03,AA
-ultra,dark,45,muted,orange,"color(rec2020 0.679 0.5937 0.4904)",57.5,27.8,20,64.1,R 50 Y,45,6.06,AA
-ultra,dark,60,default,orange,"color(rec2020 0.8503 0.6711 0.4544)",55.9,55.7,40,74.4,R 48 Y,60,8.41,AAA
-ultra,dark,60,muted,orange,"color(rec2020 0.7904 0.6951 0.5861)",55.8,27.9,20,74.1,R 48 Y,60,8.44,AAA
-ultra,dark,75,default,orange,"color(rec2020 0.9377 0.7734 0.575)",56.4,47,33.8,83.5,R 49 Y,75,11.11,AAA
-ultra,dark,75,muted,orange,"color(rec2020 0.8813 0.7938 0.6944)",56.4,23.5,16.9,83.1,R 49 Y,75,11.13,AAA
-ultra,dark,90,default,orange,"color(rec2020 0.9834 0.8814 0.7609)",57.4,26.4,19,91.6,R 50 Y,90,14.1,AAA
-ultra,dark,90,muted,orange,"color(rec2020 0.9479 0.892 0.8317)",57.5,13.2,9.5,91.4,R 50 Y,90,14.11,AAA
-ultra,dark,15,default,yellow,"color(rec2020 0.4 0.3643 0.1492)",95.9,55.7,40,39.5,Y 11 G,15,2.36,below
-ultra,dark,15,muted,yellow,"color(rec2020 0.3872 0.3675 0.2603)",96,27.9,20,39.6,Y 11 G,15,2.38,below
-ultra,dark,30,default,yellow,"color(rec2020 0.5384 0.496 0.2455)",95.9,55.7,40,52.5,Y 11 G,30,4.02,AA large
-ultra,dark,30,muted,yellow,"color(rec2020 0.5223 0.4984 0.3732)",95.9,27.9,20,52.6,Y 11 G,30,4.03,AA large
-ultra,dark,45,default,yellow,"color(rec2020 0.6585 0.6105 0.3316)",95.9,55.7,40,63.6,Y 11 G,45,6.05,AA
-ultra,dark,45,muted,yellow,"color(rec2020 0.6398 0.6125 0.4731)",95.9,27.9,20,63.7,Y 11 G,45,6.07,AA
-ultra,dark,60,default,yellow,"color(rec2020 0.7671 0.7145 0.4114)",95.9,55.7,40,73.5,Y 11 G,60,8.43,AAA
-ultra,dark,60,muted,yellow,"color(rec2020 0.7464 0.7162 0.5649)",96,27.9,20,73.6,Y 11 G,60,8.45,AAA
-ultra,dark,75,default,yellow,"color(rec2020 0.861 0.8118 0.538)",95.9,47,33.7,82.6,Y 11 G,75,11.13,AAA
-ultra,dark,75,muted,yellow,"color(rec2020 0.8416 0.8123 0.6764)",95.9,23.5,16.9,82.7,Y 11 G,75,11.14,AAA
-ultra,dark,90,default,yellow,"color(rec2020 0.9372 0.903 0.7407)",95.9,26.4,19,91.1,Y 11 G,90,14.11,AAA
-ultra,dark,90,muted,yellow,"color(rec2020 0.9251 0.9022 0.8219)",96,13.2,9.5,91.2,Y 11 G,90,14.11,AAA
-ultra,dark,15,default,green,"color(rec2020 0.3083 0.393 0.2564)",146.3,55.7,40,38.7,G 18 Y,15,2.37,below
-ultra,dark,15,muted,green,"color(rec2020 0.3434 0.3808 0.3133)",146.3,27.9,20,39.3,G 18 Y,15,2.38,below
-ultra,dark,30,default,green,"color(rec2020 0.4321 0.5291 0.3692)",146.2,55.7,40,51.6,G 18 Y,30,4.02,AA large
-ultra,dark,30,muted,green,"color(rec2020 0.4716 0.5137 0.435)",146.2,27.9,20,52.2,G 18 Y,30,4.03,AA large
-ultra,dark,45,default,green,"color(rec2020 0.5376 0.6476 0.4748)",147.7,55.7,40,62.6,G 17 Y,45,6.06,AA
-ultra,dark,45,muted,green,"color(rec2020 0.5825 0.6296 0.5447)",147.8,27.9,20,63.2,G 17 Y,45,6.07,AA
-ultra,dark,60,default,green,"color(rec2020 0.6395 0.7539 0.5608)",146.3,55.7,40,72.5,G 18 Y,60,8.44,AAA
-ultra,dark,60,muted,green,"color(rec2020 0.6858 0.7343 0.6394)",146.2,27.9,20,73.1,G 18 Y,60,8.45,AAA
-ultra,dark,75,default,green,"color(rec2020 0.7468 0.8466 0.6749)",146.7,47,33.7,81.7,G 18 Y,75,11.13,AAA
-ultra,dark,75,muted,green,"color(rec2020 0.7876 0.8283 0.744)",146.8,23.5,16.9,82.3,G 18 Y,75,11.14,AAA
-ultra,dark,90,default,green,"color(rec2020 0.8703 0.9226 0.8264)",149,26.5,19,90.6,G 15 Y,90,14.11,AAA
-ultra,dark,90,muted,green,"color(rec2020 0.8938 0.9112 0.8632)",149.1,13.3,9.5,90.9,G 15 Y,90,14.12,AAA
-ultra,dark,15,default,mint,"color(rec2020 0.2531 0.3908 0.3881)",192.5,55.7,40,38.1,G 43 B,15,2.32,below
-ultra,dark,15,muted,mint,"color(rec2020 0.3266 0.381 0.3781)",192.5,27.9,20,39.2,G 43 B,15,2.38,below
-ultra,dark,30,default,mint,"color(rec2020 0.3777 0.53 0.5262)",192.6,55.7,40,51.3,G 43 B,30,3.99,AA large
-ultra,dark,30,muted,mint,"color(rec2020 0.4531 0.5139 0.5101)",192.5,27.9,20,52.2,G 43 B,30,4.03,AA large
-ultra,dark,45,default,mint,"color(rec2020 0.4842 0.648 0.6526)",195,55.7,40,62.4,G 47 B,45,6.03,AA
-ultra,dark,45,muted,mint,"color(rec2020 0.5638 0.6291 0.6289)",195.1,27.9,20,63.2,G 47 B,45,6.07,AA
-ultra,dark,60,default,mint,"color(rec2020 0.5819 0.7557 0.75)",192.5,55.7,40,72.3,G 43 B,60,8.41,AAA
-ultra,dark,60,muted,mint,"color(rec2020 0.6647 0.7344 0.729)",192.5,27.9,20,73.1,G 43 B,60,8.45,AAA
-ultra,dark,75,default,mint,"color(rec2020 0.7018 0.8475 0.8428)",193,47,33.7,81.6,G 44 B,75,11.12,AAA
-ultra,dark,75,muted,mint,"color(rec2020 0.7703 0.828 0.8229)",193,23.5,16.8,82.3,G 44 B,75,11.14,AAA
-ultra,dark,90,default,mint,"color(rec2020 0.8512 0.9216 0.9207)",195.4,26.4,19,90.6,G 47 B,90,14.11,AAA
-ultra,dark,90,muted,mint,"color(rec2020 0.8858 0.9105 0.9072)",195.5,13.2,9.5,91,G 47 B,90,14.12,AAA
-ultra,dark,15,default,blue,"color(rec2020 0.28 0.3774 0.497)",237.5,55.7,40,38.9,B,15,2.35,below
-ultra,dark,15,muted,blue,"color(rec2020 0.337 0.3735 0.4237)",237.5,27.9,20,39.5,B,15,2.38,below
-ultra,dark,30,default,blue,"color(rec2020 0.4055 0.512 0.6468)",237.5,55.7,40,51.9,B,30,4.01,AA large
-ultra,dark,30,muted,blue,"color(rec2020 0.4649 0.5052 0.5621)",237.5,27.9,20,52.4,B,30,4.03,AA large
-ultra,dark,45,default,blue,"color(rec2020 0.5143 0.6282 0.7748)",237.5,55.7,40,63,B,45,6.05,AA
-ultra,dark,45,muted,blue,"color(rec2020 0.5768 0.6199 0.682)",237.5,27.9,20,63.5,B,45,6.07,AA
-ultra,dark,60,default,blue,"color(rec2020 0.6133 0.7335 0.8901)",237.5,55.7,40,72.9,B,60,8.43,AAA
-ultra,dark,60,muted,blue,"color(rec2020 0.6786 0.724 0.7904)",237.4,27.9,20,73.4,B,60,8.45,AAA
-ultra,dark,75,default,blue,"color(rec2020 0.7289 0.8279 0.9617)",237.6,47,33.7,82.2,B,75,11.13,AAA
-ultra,dark,75,muted,blue,"color(rec2020 0.7825 0.8189 0.8757)",237.6,23.5,16.8,82.5,B,75,11.14,AAA
-ultra,dark,90,default,blue,"color(rec2020 0.8658 0.911 0.98)",237.5,26.4,19,90.9,B,90,14.11,AAA
-ultra,dark,90,muted,blue,"color(rec2020 0.8925 0.9056 0.934)",237.4,13.2,9.5,91.1,B,90,14.12,AAA
-ultra,dark,15,default,purple,"color(rec2020 0.3591 0.3499 0.5355)",285.1,55.7,40,40,B 25 R,15,2.37,below
-ultra,dark,15,muted,purple,"color(rec2020 0.3669 0.3613 0.4386)",285,27.8,20,39.8,B 25 R,15,2.38,below
-ultra,dark,30,default,purple,"color(rec2020 0.4903 0.4798 0.688)",285.1,55.7,40,53,B 25 R,30,4.02,AA large
-ultra,dark,30,muted,purple,"color(rec2020 0.4986 0.4911 0.5789)",285.1,27.8,20,52.8,B 25 R,30,4.03,AA large
-ultra,dark,45,default,purple,"color(rec2020 0.61 0.5908 0.8177)",287.6,55.7,40,64.1,B 27 R,45,6.06,AA
-ultra,dark,45,muted,purple,"color(rec2020 0.6158 0.6035 0.6999)",287.7,27.9,20,63.9,B 27 R,45,6.07,AA
-ultra,dark,60,default,purple,"color(rec2020 0.7086 0.6955 0.9367)",285.1,55.7,40,74,B 25 R,60,8.44,AAA
-ultra,dark,60,muted,purple,"color(rec2020 0.7179 0.7074 0.8101)",285.1,27.8,20,73.8,B 25 R,60,8.45,AAA
-ultra,dark,75,default,purple,"color(rec2020 0.8094 0.795 1)",285.6,46.8,33.6,83.1,B 25 R,75,11.13,AAA
-ultra,dark,75,muted,purple,"color(rec2020 0.8167 0.8043 0.8923)",285.7,23.4,16.8,82.9,B 25 R,75,11.14,AAA
-ultra,dark,90,default,purple,"color(rec2020 0.9096 0.8925 0.9999)",287.9,26.4,19,91.4,B 27 R,90,14.11,AAA
-ultra,dark,90,muted,purple,"color(rec2020 0.912 0.8972 0.943)",287.8,13.2,9.5,91.3,B 27 R,90,14.12,AAA
-ultra,dark,15,default,pink,"color(rec2020 0.4299 0.3244 0.4683)",328.9,55.7,40,40.5,R 46 B,15,2.36,below
-ultra,dark,15,muted,pink,"color(rec2020 0.3997 0.3498 0.4114)",329,27.9,20,40.1,R 46 B,15,2.38,below
-ultra,dark,30,default,pink,"color(rec2020 0.5721 0.4508 0.6136)",328.9,55.7,40,53.6,R 46 B,30,4.01,AA large
-ultra,dark,30,muted,pink,"color(rec2020 0.5363 0.4781 0.5481)",328.9,27.8,20,53.1,R 46 B,30,4.03,AA large
-ultra,dark,45,default,pink,"color(rec2020 0.6995 0.5598 0.7304)",331.4,55.7,40,64.9,R 44 B,45,6.05,AA
-ultra,dark,45,muted,pink,"color(rec2020 0.6575 0.5894 0.6632)",331.4,27.9,20,64.3,R 44 B,45,6.07,AA
-ultra,dark,60,default,pink,"color(rec2020 0.8062 0.6616 0.8515)",328.9,55.7,40,74.8,R 46 B,60,8.43,AAA
-ultra,dark,60,muted,pink,"color(rec2020 0.7629 0.692 0.7741)",328.9,27.9,20,74.2,R 46 B,60,8.45,AAA
-ultra,dark,75,default,pink,"color(rec2020 0.8951 0.7655 0.9275)",329.4,47,33.7,83.8,R 45 B,75,11.13,AAA
-ultra,dark,75,muted,pink,"color(rec2020 0.8563 0.7909 0.861)",329.4,23.5,16.9,83.2,R 45 B,75,11.14,AAA
-ultra,dark,90,default,pink,"color(rec2020 0.9573 0.8766 0.9584)",331.7,26.4,19,91.8,R 44 B,90,14.11,AAA
-ultra,dark,90,muted,pink,"color(rec2020 0.9342 0.8899 0.9244)",331.7,13.2,9.5,91.5,R 44 B,90,14.11,AAA
+ultra,light,75,default,brown,"color(rec2020 0.4392 0.3259 0.2489)",39.4,25,19.7,19.2,R 25 Y,75,6.55,AA
+ultra,light,90,default,brown,"color(rec2020 0.238 0.1769 0.1353)",39.4,14.7,11.6,7,R 25 Y,90,12.68,AAA
+ultra,dark,15,default,red,"color(rec2020 0.4647 0.3151 0.3477)",5.3,55.8,40,40.5,R 15 B,15,2.35,below
+ultra,dark,15,muted,red,"color(rec2020 0.4199 0.3447 0.3576)",5.4,27.8,20,40.2,R 15 B,15,2.37,below
+ultra,dark,30,default,red,"color(rec2020 0.6153 0.4399 0.4762)",5.4,55.7,40,53.7,R 15 B,30,4,AA large
+ultra,dark,30,muted,red,"color(rec2020 0.5605 0.4722 0.4865)",5.4,27.8,20,53.2,R 15 B,30,4.02,AA large
+ultra,dark,45,default,red,"color(rec2020 0.7447 0.5489 0.5882)",5.4,55.7,40,65,R 15 B,45,6.03,AA
+ultra,dark,45,muted,red,"color(rec2020 0.6824 0.5836 0.599)",5.4,27.9,20,64.4,R 15 B,45,6.06,AA
+ultra,dark,60,default,red,"color(rec2020 0.8612 0.6481 0.69)",5.3,55.7,40,75,R 15 B,60,8.41,AAA
+ultra,dark,60,muted,red,"color(rec2020 0.7926 0.685 0.7012)",5.4,27.8,20,74.4,R 15 B,60,8.44,AAA
+ultra,dark,75,default,red,"color(rec2020 0.9447 0.7539 0.7885)",5.4,46.5,33.4,84,R 15 B,75,11.11,AAA
+ultra,dark,75,muted,red,"color(rec2020 0.8822 0.7851 0.798)",5.4,23.2,16.7,83.4,R 15 B,75,11.13,AAA
+ultra,dark,90,default,red,"color(rec2020 0.9858 0.8703 0.8863)",5.4,26.2,18.8,91.9,R 15 B,90,14.1,AAA
+ultra,dark,90,muted,red,"color(rec2020 0.9483 0.8869 0.8913)",5.4,13.1,9.4,91.6,R 15 B,90,14.11,AAA
+ultra,dark,15,default,orange,"color(rec2020 0.4591 0.3292 0.1947)",50.4,55.7,40,40.1,R 40 Y,15,2.35,below
+ultra,dark,15,muted,orange,"color(rec2020 0.4198 0.3504 0.2819)",50.4,27.9,20,40,R 40 Y,15,2.37,below
+ultra,dark,30,default,orange,"color(rec2020 0.6103 0.4555 0.2972)",50.4,55.7,40,53.3,R 40 Y,30,3.99,AA large
+ultra,dark,30,muted,orange,"color(rec2020 0.561 0.4788 0.3986)",50.4,27.8,20,53.1,R 40 Y,30,4.02,AA large
+ultra,dark,45,default,orange,"color(rec2020 0.7402 0.5658 0.3889)",50.4,55.7,40,64.5,R 40 Y,45,6.03,AA
+ultra,dark,45,muted,orange,"color(rec2020 0.6833 0.5909 0.5015)",50.4,27.9,20,64.2,R 40 Y,45,6.06,AA
+ultra,dark,60,default,orange,"color(rec2020 0.8572 0.6662 0.4736)",50.4,55.7,40,74.5,R 40 Y,60,8.41,AAA
+ultra,dark,60,muted,orange,"color(rec2020 0.7939 0.6928 0.5957)",50.4,27.9,20,74.1,R 40 Y,60,8.44,AAA
+ultra,dark,75,default,orange,"color(rec2020 0.9436 0.7691 0.5959)",50.4,46.6,33.4,83.6,R 40 Y,75,11.11,AAA
+ultra,dark,75,muted,orange,"color(rec2020 0.884 0.7918 0.705)",50.4,23.3,16.7,83.2,R 40 Y,75,11.13,AAA
+ultra,dark,90,default,orange,"color(rec2020 0.9878 0.8784 0.7749)",50.3,26.2,18.8,91.7,R 40 Y,90,14.1,AAA
+ultra,dark,90,muted,orange,"color(rec2020 0.9499 0.8906 0.8386)",50.4,13.1,9.4,91.5,R 40 Y,90,14.11,AAA
+ultra,dark,15,default,yellow,"color(rec2020 0.4009 0.3639 0.1487)",95.4,55.7,40,39.5,Y 10 G,15,2.36,below
+ultra,dark,15,muted,yellow,"color(rec2020 0.3877 0.3672 0.2601)",95.4,27.8,20,39.6,Y 10 G,15,2.38,below
+ultra,dark,30,default,yellow,"color(rec2020 0.5396 0.4955 0.245)",95.4,55.7,40,52.5,Y 10 G,30,4.02,AA large
+ultra,dark,30,muted,yellow,"color(rec2020 0.5229 0.4981 0.3729)",95.3,27.9,20,52.6,Y 10 G,30,4.03,AA large
+ultra,dark,45,default,yellow,"color(rec2020 0.6598 0.6099 0.331)",95.3,55.7,40,63.6,Y 10 G,45,6.05,AA
+ultra,dark,45,muted,yellow,"color(rec2020 0.6405 0.6122 0.4728)",95.3,27.9,20,63.7,Y 10 G,45,6.07,AA
+ultra,dark,60,default,yellow,"color(rec2020 0.7686 0.7139 0.4108)",95.4,55.7,40,73.5,Y 10 G,60,8.43,AAA
+ultra,dark,60,muted,yellow,"color(rec2020 0.7472 0.7158 0.5646)",95.3,27.8,20,73.6,Y 10 G,60,8.45,AAA
+ultra,dark,75,default,yellow,"color(rec2020 0.862 0.8113 0.54)",95.4,46.6,33.4,82.6,Y 10 G,75,11.13,AAA
+ultra,dark,75,muted,yellow,"color(rec2020 0.8422 0.812 0.6774)",95.3,23.3,16.7,82.7,Y 10 G,75,11.14,AAA
+ultra,dark,90,default,yellow,"color(rec2020 0.9378 0.9027 0.7418)",95.4,26.2,18.8,91.1,Y 10 G,90,14.11,AAA
+ultra,dark,90,muted,yellow,"color(rec2020 0.9254 0.902 0.8227)",95.4,13.1,9.4,91.2,Y 10 G,90,14.11,AAA
+ultra,dark,15,default,green,"color(rec2020 0.3187 0.3912 0.2398)",140.4,55.7,40,38.8,G 25 Y,15,2.37,below
+ultra,dark,15,muted,green,"color(rec2020 0.3476 0.38 0.305)",140.4,27.9,20,39.3,G 25 Y,15,2.38,below
+ultra,dark,30,default,green,"color(rec2020 0.4434 0.5269 0.3498)",140.4,55.7,40,51.7,G 25 Y,30,4.02,AA large
+ultra,dark,30,muted,green,"color(rec2020 0.4763 0.5128 0.4254)",140.4,27.9,20,52.2,G 25 Y,30,4.03,AA large
+ultra,dark,45,default,green,"color(rec2020 0.5528 0.6446 0.4474)",140.3,55.7,40,62.7,G 25 Y,45,6.06,AA
+ultra,dark,45,muted,green,"color(rec2020 0.5889 0.6283 0.5312)",140.3,27.8,20,63.3,G 25 Y,45,6.07,AA
+ultra,dark,60,default,green,"color(rec2020 0.6525 0.7513 0.5372)",140.4,55.7,40,72.5,G 25 Y,60,8.44,AAA
+ultra,dark,60,muted,green,"color(rec2020 0.6913 0.7332 0.6278)",140.4,27.9,20,73.1,G 25 Y,60,8.45,AAA
+ultra,dark,75,default,green,"color(rec2020 0.7593 0.8439 0.6533)",140.4,46.5,33.4,81.8,G 25 Y,75,11.13,AAA
+ultra,dark,75,muted,green,"color(rec2020 0.7931 0.8271 0.7335)",140.3,23.3,16.7,82.3,G 25 Y,75,11.14,AAA
+ultra,dark,90,default,green,"color(rec2020 0.8789 0.9208 0.8089)",140.4,26.2,18.8,90.7,G 25 Y,90,14.11,AAA
+ultra,dark,90,muted,green,"color(rec2020 0.8977 0.9104 0.8549)",140.4,13.1,9.4,91,G 25 Y,90,14.12,AAA
+ultra,dark,15,default,mint,"color(rec2020 0.2568 0.3922 0.368)",185.3,55.7,40,38.1,G 33 B,15,2.32,below
+ultra,dark,15,muted,mint,"color(rec2020 0.3273 0.3816 0.3687)",185.3,27.9,20,39.2,G 33 B,15,2.38,below
+ultra,dark,30,default,mint,"color(rec2020 0.381 0.5315 0.5027)",185.3,55.7,40,51.3,G 33 B,30,3.99,AA large
+ultra,dark,30,muted,mint,"color(rec2020 0.4538 0.5146 0.4993)",185.3,27.9,20,52.2,G 33 B,30,4.03,AA large
+ultra,dark,45,default,mint,"color(rec2020 0.4877 0.6502 0.6179)",185.3,55.7,40,62.4,G 33 B,45,6.03,AA
+ultra,dark,45,muted,mint,"color(rec2020 0.5645 0.6303 0.613)",185.3,27.9,20,63.2,G 33 B,45,6.07,AA
+ultra,dark,60,default,mint,"color(rec2020 0.5848 0.7574 0.7221)",185.3,55.7,40,72.2,G 33 B,60,8.42,AAA
+ultra,dark,60,muted,mint,"color(rec2020 0.6654 0.7353 0.7163)",185.3,27.9,20,73.1,G 33 B,60,8.45,AAA
+ultra,dark,75,default,mint,"color(rec2020 0.7051 0.8488 0.8166)",185.3,46.6,33.4,81.6,G 33 B,75,11.12,AAA
+ultra,dark,75,muted,mint,"color(rec2020 0.7713 0.8287 0.811)",185.4,23.3,16.7,82.3,G 33 B,75,11.14,AAA
+ultra,dark,90,default,mint,"color(rec2020 0.8525 0.9228 0.9019)",185.3,26.2,18.8,90.6,G 33 B,90,14.11,AAA
+ultra,dark,90,muted,mint,"color(rec2020 0.8863 0.9111 0.8985)",185.3,13.1,9.4,90.9,G 33 B,90,14.12,AAA
+ultra,dark,15,default,blue,"color(rec2020 0.2706 0.38 0.4825)",230.3,55.7,40,38.7,B 8 G,15,2.34,below
+ultra,dark,15,muted,blue,"color(rec2020 0.3339 0.3751 0.4183)",230.3,27.9,20,39.4,B 8 G,15,2.38,below
+ultra,dark,30,default,blue,"color(rec2020 0.3962 0.5158 0.6316)",230.3,55.7,40,51.8,B 8 G,30,4,AA large
+ultra,dark,30,muted,blue,"color(rec2020 0.4614 0.507 0.5559)",230.3,27.9,20,52.4,B 8 G,30,4.03,AA large
+ultra,dark,45,default,blue,"color(rec2020 0.5047 0.6326 0.7586)",230.3,55.7,40,62.9,B 8 G,45,6.04,AA
+ultra,dark,45,muted,blue,"color(rec2020 0.573 0.6218 0.6751)",230.3,27.8,20,63.4,B 8 G,45,6.07,AA
+ultra,dark,60,default,blue,"color(rec2020 0.6032 0.7382 0.8728)",230.3,55.7,40,72.8,B 8 G,60,8.42,AAA
+ultra,dark,60,muted,blue,"color(rec2020 0.6745 0.7261 0.7831)",230.3,27.9,20,73.3,B 8 G,60,8.45,AAA
+ultra,dark,75,default,blue,"color(rec2020 0.7218 0.8319 0.9455)",230.3,46.5,33.4,82.1,B 8 G,75,11.13,AAA
+ultra,dark,75,muted,blue,"color(rec2020 0.7794 0.8207 0.8687)",230.3,23.3,16.7,82.5,B 8 G,75,11.14,AAA
+ultra,dark,90,default,blue,"color(rec2020 0.8622 0.9131 0.9715)",230.4,26.2,18.8,90.9,B 8 G,90,14.11,AAA
+ultra,dark,90,muted,blue,"color(rec2020 0.8909 0.9066 0.9302)",230.2,13.1,9.4,91.1,B 8 G,90,14.12,AAA
+ultra,dark,15,default,purple,"color(rec2020 0.3417 0.3563 0.5364)",275.3,55.7,40,39.8,B 19 R,15,2.37,below
+ultra,dark,15,muted,purple,"color(rec2020 0.3598 0.364 0.439)",275.2,27.8,20,39.8,B 19 R,15,2.38,below
+ultra,dark,30,default,purple,"color(rec2020 0.471 0.4869 0.689)",275.4,55.7,40,52.8,B 19 R,30,4.02,AA large
+ultra,dark,30,muted,purple,"color(rec2020 0.4905 0.4942 0.5793)",275.3,27.8,20,52.7,B 19 R,30,4.03,AA large
+ultra,dark,45,default,purple,"color(rec2020 0.5838 0.6006 0.82)",275.3,55.7,40,63.9,B 19 R,45,6.06,AA
+ultra,dark,45,muted,purple,"color(rec2020 0.6046 0.6078 0.7008)",275.3,27.9,20,63.8,B 19 R,45,6.07,AA
+ultra,dark,60,default,purple,"color(rec2020 0.6865 0.7038 0.9379)",275.4,55.7,40,73.8,B 19 R,60,8.44,AAA
+ultra,dark,60,muted,purple,"color(rec2020 0.7084 0.711 0.8106)",275.3,27.9,20,73.7,B 19 R,60,8.45,AAA
+ultra,dark,75,default,purple,"color(rec2020 0.7901 0.8025 1)",275.4,46.6,33.4,82.9,B 19 R,75,11.13,AAA
+ultra,dark,75,muted,purple,"color(rec2020 0.8082 0.8077 0.8922)",275.3,23.2,16.7,82.8,B 19 R,75,11.14,AAA
+ultra,dark,90,default,purple,"color(rec2020 0.897 0.8975 1)",275.3,26.2,18.8,91.3,B 19 R,90,14.12,AAA
+ultra,dark,90,muted,purple,"color(rec2020 0.9064 0.8994 0.9429)",275.4,13.1,9.4,91.2,B 19 R,90,14.11,AAA
+ultra,dark,15,default,pink,"color(rec2020 0.4179 0.3285 0.4893)",320.4,55.7,40,40.4,B 48 R,15,2.37,below
+ultra,dark,15,muted,pink,"color(rec2020 0.3935 0.3518 0.4201)",320.4,27.8,20,40.1,B 48 R,15,2.38,below
+ultra,dark,30,default,pink,"color(rec2020 0.5578 0.4556 0.637)",320.4,55.7,40,53.6,B 48 R,30,4.02,AA large
+ultra,dark,30,muted,pink,"color(rec2020 0.5292 0.4804 0.5581)",320.3,27.8,20,53.1,B 48 R,30,4.03,AA large
+ultra,dark,45,default,pink,"color(rec2020 0.6789 0.5664 0.7641)",320.3,55.7,40,64.7,B 48 R,45,6.06,AA
+ultra,dark,45,muted,pink,"color(rec2020 0.6472 0.5926 0.6775)",320.4,27.8,20,64.2,B 48 R,45,6.07,AA
+ultra,dark,60,default,pink,"color(rec2020 0.7886 0.6672 0.8785)",320.4,55.7,40,74.7,B 48 R,60,8.43,AAA
+ultra,dark,60,muted,pink,"color(rec2020 0.7542 0.6947 0.7857)",320.3,27.8,20,74.1,B 48 R,60,8.45,AAA
+ultra,dark,75,default,pink,"color(rec2020 0.8778 0.7712 0.9504)",320.4,46.6,33.4,83.7,B 48 R,75,11.13,AAA
+ultra,dark,75,muted,pink,"color(rec2020 0.8478 0.7936 0.871)",320.3,23.2,16.7,83.2,B 48 R,75,11.14,AAA
+ultra,dark,90,default,pink,"color(rec2020 0.9448 0.8805 0.9743)",320.4,26.2,18.8,91.7,B 48 R,90,14.11,AAA
+ultra,dark,90,muted,pink,"color(rec2020 0.9282 0.8917 0.9315)",320.3,13.1,9.4,91.4,B 48 R,90,14.11,AAA
 ultra,dark,15,default,brown,"color(rec2020 0.4325 0.343 0.2836)",39.4,33.4,24,40.1,R 25 Y,15,2.37,below
 ultra,dark,30,default,brown,"color(rec2020 0.5763 0.4705 0.4007)",39.5,33.4,24,53.2,R 25 Y,30,4.02,AA large
 ultra,dark,45,default,brown,"color(rec2020 0.7006 0.5818 0.5039)",39.4,33.4,24,64.4,R 25 Y,45,6.06,AA
 ultra,dark,60,default,brown,"color(rec2020 0.8128 0.6831 0.5984)",39.4,33.4,24,74.3,R 25 Y,60,8.43,AAA
-ultra,dark,75,default,brown,"color(rec2020 0.902 0.7831 0.7064)",39.4,28.2,20.2,83.4,R 25 Y,75,11.13,AAA
-ultra,dark,90,default,brown,"color(rec2020 0.9607 0.8858 0.8394)",39.5,15.9,11.4,91.6,R 25 Y,90,14.11,AAA
+ultra,dark,75,default,brown,"color(rec2020 0.9013 0.7834 0.7074)",39.4,27.9,20.1,83.4,R 25 Y,75,11.13,AAA
+ultra,dark,90,default,brown,"color(rec2020 0.9603 0.8859 0.84)",39.4,15.7,11.3,91.6,R 25 Y,90,14.11,AAA

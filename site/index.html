@@ -177,24 +177,31 @@
   .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
   .curve-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
   .curve-editor .hit { fill: transparent; }
-  .homes-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-width: 52rem; }
-  .homes-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
-  .homes-editor .reference { stroke: var(--fg); stroke-opacity: 0.35; }
-  .homes-editor .reference.half { stroke-dasharray: 3 4; stroke-opacity: 0.25; }
-  .homes-editor .axis { fill: var(--soft); font: 500 9px var(--sans); }
-  .homes-editor .row-label { fill: var(--fg); font-weight: 600; }
-  .homes-editor .grid { stroke: var(--line); }
-  table.homes-table { min-width: 0; width: auto; }
-  .homes-table td, .homes-table th { padding-right: 1.25rem; }
-  .homes-editor .hit { fill: transparent; }
-  .homes-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
-  .home-marker { cursor: ew-resize; outline: none; }
-  .home-ring { fill: var(--bg); stroke-width: 2.5; }
-  .home-marker:focus-visible .home-ring { stroke: var(--focus) !important; }
-  .home-link { stroke: var(--fg); stroke-opacity: 0.5; stroke-width: 1.25; }
-  .homes-readout { margin: 0; font-size: 0.8125rem; }
-  .reference-note { font-size: 0.875rem; }
-  .reference-note .source { display: block; margin-top: 0.25rem; font-size: 0.8125rem; font-style: italic; }
+  .hues-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-width: 52rem; }
+  .hues-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .hues-editor .axis { fill: var(--soft); font: 500 9px var(--sans); }
+  .hues-editor .row-label, .hues-editor .system-name { fill: var(--fg); font-weight: 600; }
+  .hues-editor .system-name { font-weight: 500; }
+  .hues-editor .grid { stroke: var(--line); }
+  .hues-editor .guide { stroke: var(--fg); stroke-opacity: 0.4; stroke-width: 1; }
+  .hues-editor .guide.half { stroke-opacity: 0.22; }
+  .hues-editor .guide-munsell { stroke-dasharray: 1 2; }
+  .hues-editor .guide-ncs { stroke-dasharray: 6 3; }
+  .hues-editor .guide-unique { stroke-dasharray: 6 2 1 2; }
+  .hues-editor .guide-focal { stroke-dasharray: 1 4; stroke-linecap: round; stroke-width: 1.5; }
+  .hues-editor .hit { fill: transparent; }
+  .hues-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
+  .hue-point { cursor: ew-resize; outline: none; }
+  .hue-point .dot-fill { stroke: var(--bg); stroke-width: 2; }
+  .hue-point:focus-visible .dot-fill { stroke: var(--focus); stroke-width: 3; }
+  .hue-point .pin { fill: var(--bg); pointer-events: none; }
+  .hue-path { stroke: var(--fg); stroke-opacity: 0.45; stroke-width: 1.25; }
+  .guide-switches { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; font-size: 0.875rem; }
+  .guide-switch { display: inline-flex; gap: 0.375rem; align-items: center; }
+  table.hues-table { min-width: 0; width: auto; }
+  .hues-table td, .hues-table th { padding-right: 1.25rem; }
+  .hues-readout, .hues-caption { margin: 0; font-size: 0.8125rem; }
+  .guide-sources { margin: 0; padding-left: 1.25rem; font-size: 0.8125rem; display: grid; gap: 0.25rem; max-width: 65ch; }
   .curve-point { cursor: grab; outline: none; }
   .curve-point circle:last-child { fill: var(--fg); stroke: var(--bg); stroke-width: 2; }
   .curve-point:focus-visible circle:last-child { stroke: var(--focus); stroke-width: 3; }
@@ -351,6 +358,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=6634a0abf1"></script>
+<script type="module" src="app.js?v=b041e00148"></script>
 </body>
 </html>

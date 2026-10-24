@@ -79,17 +79,20 @@ export interface Settings {
   readonly hueWindow: Readonly<{ identity: number; tier: number }>;
 
   /**
-   * Where each color belongs, as a CAM16 hue, shared by both modes; a color without one belongs
-   * where its name puts it (see STARTS). Colors start there and are pulled back toward it after
-   * the spacing.
+   * Where the lineup sits: the first color (yellow, with eight) stays exactly on this hue, and the
+   * circle is divided evenly from there. A reference system's id uses that system's yellow; a
+   * number is a CAM16 hue.
    */
-  readonly homes: Readonly<Record<string, number>>;
+  readonly anchor: string | number;
 
-  /** How far, at most, a color moves from even spacing toward its home (CAM16-UCS difference). */
-  readonly pull: number;
+  /**
+   * Colors placed by hand at a CAM16 hue, shared by both modes. A placed color stays exactly where
+   * it is; the others are spaced evenly around the placed ones.
+   */
+  readonly placed: Readonly<Record<string, number>>;
 
-  /** Which body of color science says where colors belong by default (see references.ts). */
-  readonly reference: string;
+  /** Which reference systems' hues are drawn as guides (see references.ts). */
+  readonly guides: readonly string[];
 }
 
 /* >----------------------------------------< Defaults >----------------------------------------< */
@@ -111,9 +114,9 @@ export const DEFAULTS: Settings = {
   muted: 0.5,
   brown: 0.6,
   hueWindow: { identity: 20, tier: 6 },
-  homes: {},
-  pull: 2,
-  reference: "cam16",
+  anchor: "ncs",
+  placed: {},
+  guides: ["cam16"],
 };
 
 /** The eight hues' names, in hue order. */
@@ -128,22 +131,8 @@ export const NAMES = [
   "pink",
 ] as const;
 
-/**
- * Where each color belongs by default, by its name on CAM16's hue circle: a pure hue (R, Y, G, B) or
- * a mix of two ("R 50 Y" is halfway from red to yellow). Yellow's "Y 11 G" (about 96°) is NCS yellow
- * and it's the anchor, the one color that never moves from its home; brown isn't spaced.
- */
-export const STARTS: Readonly<Record<string, string>> = {
-  red: "R",
-  orange: "R 50 Y",
-  yellow: "Y 11 G",
-  green: "G",
-  mint: "G 50 B",
-  blue: "B",
-  purple: "B 33 R",
-  pink: "R 33 B",
-  brown: "R 25 Y",
-};
+/** Brown's hue, by its CAM16 name: a quarter of the way from red to yellow. It isn't spaced. */
+export const BROWN = "R 25 Y";
 
 /* >----------------------------------------< Codemos >-----------------------------------------< */
 

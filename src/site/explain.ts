@@ -7,7 +7,8 @@
 
 import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUTS, type Mode, type Settings } from "../palette/settings";
-import { type GamutPalette, home, strongest } from "../palette/solve";
+import { anchorHue, SYSTEMS } from "../palette/references";
+import { type GamutPalette, strongest } from "../palette/solve";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -390,8 +391,8 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Evenly different</h2>
-      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space (CAM16-UCS) where distance matches how different colors look. Each hue starts where its name puts it on CAM16's hue circle: red at pure red, orange halfway between red and yellow, pink a third of the way from red to blue. Then the solver nudges each one, a few degrees at a time and never out of its name, until the distances around the circle are as even as they can be.</p>
-      <p>Yellow is the one hue that never moves. It sits at ${home(s, "yellow").toFixed(0)}°, NCS yellow by default, a few degrees toward green from CAM16's pure yellow (90°). Every other hue is spaced from it, so moving yellow moves its neighbors too.</p>
+      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space (CAM16-UCS) where distance matches how different colors look. The hues start evenly apart in angle, eight hues 45° apart. Angles aren't how differences are seen, though, so the solver nudges each one, a few degrees at a time, until the distances around the circle are as even as they can be. That's the uniform lineup. From there, any color can be placed by hand where its name fits best, and the rest re-space around it.</p>
+      <p>Yellow is the anchor, the one hue that never moves. Evening out the differences doesn't say where the lineup sits, since turning all of it around the circle keeps them almost the same, so yellow holds it. It sits at ${anchorHue(s).toFixed(0)}°, ${typeof s.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === s.anchor)?.name ?? ""} yellow`}. Every other hue is spaced from it, so moving yellow moves its neighbors too.</p>
       <div class="demo">
         <div class="demo-controls">
           <label for="demo-a">First color <select id="demo-a" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 0 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>

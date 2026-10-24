@@ -8,28 +8,28 @@
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#FBBDBC` WCAG 1.34 | `#DEA2A3` WCAG 1.80 | `#DA767D` WCAG 2.56 | `#AD5D60` WCAG 3.90 | `#7B4144` WCAG 6.57 | `#3C1D1D` WCAG 12.71 |
-| orange | `#F7C29B` WCAG 1.34 | `#DAA781` WCAG 1.79 | `#D1803C` WCAG 2.57 | `#A6652D` WCAG 3.90 | `#76471D` WCAG 6.55 | `#392009` WCAG 12.72 |
-| yellow | `#DECC93` WCAG 1.34 | `#C1B178` WCAG 1.79 | `#AD9225` WCAG 2.55 | `#89731C` WCAG 3.89 | `#615111` WCAG 6.54 | `#2E2604` WCAG 12.63 |
-| green | `#B3D5B4` WCAG 1.35 | `#98BA99` WCAG 1.79 | `#61A361` WCAG 2.55 | `#4A814E` WCAG 3.88 | `#335B36` WCAG 6.55 | `#132B18` WCAG 12.71 |
-| mint | `#A6D5D5` WCAG 1.34 | `#8ABABA` WCAG 1.80 | `#05A4A0` WCAG 2.58 | `#038180` WCAG 3.95 | `#025B5A` WCAG 6.66 | `#002A2B` WCAG 12.90 |
-| blue | `#B0D1EA` WCAG 1.34 | `#93B6CE` WCAG 1.79 | `#419CCE` WCAG 2.56 | `#327BA3` WCAG 3.92 | `#225774` WCAG 6.56 | `#0C2938` WCAG 12.67 |
-| purple | `#CFC8F0` WCAG 1.34 | `#B2ADD5` WCAG 1.79 | `#8C8CDD` WCAG 2.55 | `#716EAF` WCAG 3.87 | `#4F4D7D` WCAG 6.55 | `#27233D` WCAG 12.64 |
-| pink | `#EAC0E0` WCAG 1.34 | `#CDA5C5` WCAG 1.80 | `#C07DC0` WCAG 2.54 | `#996296` WCAG 3.88 | `#6D446B` WCAG 6.55 | `#361E32` WCAG 12.69 |
-| brown | `#EAC5B7` WCAG 1.34 | `#CEA99D` WCAG 1.80 | `#C28670` WCAG 2.54 | `#9A6957` WCAG 3.89 | `#6D4A3D` WCAG 6.53 | `#35221B` WCAG 12.62 |
+| red | `#F9BDC9` WCAG 1.34 | `#DCA2AE` WCAG 1.79 | `#D8768D` WCAG 2.55 | `#AC5C70` WCAG 3.90 | `#7B404E` WCAG 6.56 | `#3C1C24` WCAG 12.73 |
+| orange | `#FAC09E` WCAG 1.34 | `#DDA585` WCAG 1.80 | `#D67D42` WCAG 2.56 | `#AA6233` WCAG 3.91 | `#794521` WCAG 6.56 | `#3B1F0C` WCAG 12.70 |
+| yellow | `#DECC91` WCAG 1.34 | `#C2B077` WCAG 1.80 | `#AE9220` WCAG 2.54 | `#8A7318` WCAG 3.87 | `#62510D` WCAG 6.52 | `#2E2603` WCAG 12.63 |
+| green | `#B9D5AA` WCAG 1.34 | `#9EB990` WCAG 1.80 | `#6BA256` WCAG 2.54 | `#548043` WCAG 3.88 | `#3B5A2C` WCAG 6.56 | `#192B12` WCAG 12.62 |
+| mint | `#A6D6CD` WCAG 1.34 | `#8ABBB2` WCAG 1.79 | `#01A596` WCAG 2.58 | `#068275` WCAG 3.95 | `#035C52` WCAG 6.63 | `#012B26` WCAG 12.81 |
+| blue | `#ABD2E7` WCAG 1.34 | `#90B7CC` WCAG 1.79 | `#2C9ECA` WCAG 2.57 | `#207D9F` WCAG 3.92 | `#135871` WCAG 6.62 | `#062937` WCAG 12.76 |
+| purple | `#C3CBF3` WCAG 1.34 | `#A8AFD6` WCAG 1.80 | `#7D90E0` WCAG 2.54 | `#6272B1` WCAG 3.86 | `#44507F` WCAG 6.53 | `#1F253F` WCAG 12.63 |
+| pink | `#E1C2E9` WCAG 1.35 | `#C6A7CD` WCAG 1.80 | `#B77FCC` WCAG 2.55 | `#9164A2` WCAG 3.87 | `#674673` WCAG 6.52 | `#312038` WCAG 12.63 |
+| brown | `#EBC4B7` WCAG 1.34 | `#CFA99C` WCAG 1.80 | `#C3856E` WCAG 2.55 | `#9B6957` WCAG 3.87 | `#6E493C` WCAG 6.57 | `#35221A` WCAG 12.63 |
 
 #### Muted
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#E6C5C4` WCAG 1.34 | `#CAAAAA` WCAG 1.79 | `#BB8789` WCAG 2.54 | `#946B6A` WCAG 3.85 | `#694B4B` WCAG 6.50 | `#332222` WCAG 12.65 |
-| orange | `#E4C7B4` WCAG 1.34 | `#C7AC9A` WCAG 1.80 | `#B78B6B` WCAG 2.55 | `#916E54` WCAG 3.86 | `#674D3A` WCAG 6.53 | `#312419` WCAG 12.61 |
-| yellow | `#D7CCB1` WCAG 1.34 | `#BBB196` WCAG 1.79 | `#A29463` WCAG 2.53 | `#80754E` WCAG 3.85 | `#5B5236` WCAG 6.51 | `#2B2617` WCAG 12.65 |
-| green | `#C3D0C1` WCAG 1.34 | `#A8B5A6` WCAG 1.79 | `#809C7C` WCAG 2.53 | `#657B63` WCAG 3.86 | `#465745` WCAG 6.50 | `#202921` WCAG 12.58 |
-| mint | `#BED0D0` WCAG 1.34 | `#A3B5B5` WCAG 1.79 | `#729C9A` WCAG 2.54 | `#5A7B7B` WCAG 3.87 | `#3F5757` WCAG 6.49 | `#1C2929` WCAG 12.60 |
-| blue | `#C2CED9` WCAG 1.34 | `#A7B3BE` WCAG 1.79 | `#7B98AE` WCAG 2.54 | `#617889` WCAG 3.87 | `#435561` WCAG 6.50 | `#1F282E` WCAG 12.57 |
-| purple | `#D0CADC` WCAG 1.34 | `#B4AFC1` WCAG 1.79 | `#9391B4` WCAG 2.53 | `#75728E` WCAG 3.87 | `#525065` WCAG 6.54 | `#282531` WCAG 12.59 |
-| pink | `#DCC7D5` WCAG 1.34 | `#C0ABBA` WCAG 1.80 | `#AB8AA8` WCAG 2.54 | `#886D84` WCAG 3.86 | `#614C5D` WCAG 6.52 | `#2F232C` WCAG 12.60 |
+| red | `#E4C5CA` WCAG 1.34 | `#C8AAAF` WCAG 1.79 | `#B98791` WCAG 2.54 | `#936A73` WCAG 3.87 | `#694A50` WCAG 6.53 | `#332226` WCAG 12.60 |
+| orange | `#E5C6B6` WCAG 1.35 | `#C9AB9B` WCAG 1.80 | `#BA8A6E` WCAG 2.54 | `#936D56` WCAG 3.86 | `#694C3C` WCAG 6.52 | `#33231A` WCAG 12.62 |
+| yellow | `#D7CCB0` WCAG 1.34 | `#BBB196` WCAG 1.79 | `#A39362` WCAG 2.55 | `#81744C` WCAG 3.88 | `#5C5235` WCAG 6.49 | `#2C2616` WCAG 12.62 |
+| green | `#C6D0BC` WCAG 1.34 | `#AAB5A2` WCAG 1.79 | `#849B77` WCAG 2.54 | `#687A5E` WCAG 3.89 | `#495641` WCAG 6.55 | `#21291D` WCAG 12.59 |
+| mint | `#BED0CC` WCAG 1.35 | `#A2B5B1` WCAG 1.80 | `#719D95` WCAG 2.53 | `#5A7C75` WCAG 3.85 | `#3E5752` WCAG 6.55 | `#1C2927` WCAG 12.62 |
+| blue | `#C0CFD8` WCAG 1.34 | `#A4B4BC` WCAG 1.79 | `#7799AC` WCAG 2.54 | `#5E7988` WCAG 3.86 | `#415560` WCAG 6.54 | `#1D282E` WCAG 12.63 |
+| purple | `#CACBDD` WCAG 1.34 | `#AFB0C2` WCAG 1.80 | `#8C93B5` WCAG 2.53 | `#6F748F` WCAG 3.85 | `#4D5266` WCAG 6.49 | `#242632` WCAG 12.60 |
+| pink | `#D7C8D9` WCAG 1.34 | `#BCACBE` WCAG 1.80 | `#A68BAD` WCAG 2.55 | `#846E89` WCAG 3.85 | `#5D4D61` WCAG 6.53 | `#2C242F` WCAG 12.58 |
 
 ### Dark · base #181818
 
@@ -37,28 +37,28 @@
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#7A464A` WCAG 2.37 | `#B16067` WCAG 4.01 | `#D77D83` WCAG 6.05 | `#F997A2` WCAG 8.44 | `#FFBCBD` WCAG 11.14 | `#FFDEDB` WCAG 14.14 |
-| orange | `#764B28` WCAG 2.37 | `#AA6832` WCAG 4.00 | `#D0854A` WCAG 6.03 | `#F39F61` WCAG 8.41 | `#FBC197` WCAG 11.14 | `#FDE0CD` WCAG 14.14 |
-| yellow | `#625420` WCAG 2.37 | `#8D7722` WCAG 4.05 | `#AE953A` WCAG 6.05 | `#CDB14F` WCAG 8.45 | `#E0CC8F` WCAG 11.16 | `#F1E5CA` WCAG 14.21 |
-| green | `#3E5D3C` WCAG 2.40 | `#538450` WCAG 4.05 | `#6CA46D` WCAG 6.06 | `#88C183` WCAG 8.46 | `#B5D6B0` WCAG 11.17 | `#DEE9DA` WCAG 14.18 |
-| mint | `#285D5B` WCAG 2.37 | `#228582` WCAG 4.01 | `#44A5A3` WCAG 6.05 | `#60C3BD` WCAG 8.49 | `#A5D6D5` WCAG 11.14 | `#DBE8E7` WCAG 14.13 |
-| blue | `#345970` WCAG 2.38 | `#3D7FA4` WCAG 4.03 | `#5B9EC7` WCAG 6.05 | `#76BBE6` WCAG 8.47 | `#B0D2EB` WCAG 11.22 | `#DEE7F0` WCAG 14.20 |
-| purple | `#525278` WCAG 2.40 | `#7572B0` WCAG 4.05 | `#9390D4` WCAG 6.07 | `#ACADF5` WCAG 8.50 | `#CEC8F3` WCAG 11.14 | `#EBE2F2` WCAG 14.11 |
-| pink | `#6C4A6A` WCAG 2.39 | `#9C6699` WCAG 4.04 | `#BE83BC` WCAG 6.06 | `#DC9EDD` WCAG 8.44 | `#EBC0E2` WCAG 11.14 | `#F7DFEA` WCAG 14.12 |
-| brown | `#6D4E42` WCAG 2.38 | `#9D6D5A` WCAG 4.03 | `#C18A76` WCAG 6.06 | `#E1A58F` WCAG 8.44 | `#EEC4B5` WCAG 11.16 | `#F6E1DA` WCAG 14.12 |
+| red | `#794651` WCAG 2.37 | `#AE6172` WCAG 4.02 | `#D47D90` WCAG 6.03 | `#F797AC` WCAG 8.44 | `#FFBBC7` WCAG 11.15 | `#FEDEE2` WCAG 14.17 |
+| orange | `#784A2C` WCAG 2.38 | `#AD6638` WCAG 4.00 | `#D38350` WCAG 6.03 | `#F59E67` WCAG 8.43 | `#FFBF99` WCAG 11.13 | `#FFDFCF` WCAG 14.13 |
+| yellow | `#63541E` WCAG 2.38 | `#8D7722` WCAG 4.05 | `#AF9539` WCAG 6.07 | `#CDB14F` WCAG 8.45 | `#E2CC8B` WCAG 11.20 | `#F2E4C9` WCAG 14.13 |
+| green | `#425C36` WCAG 2.38 | `#5B8349` WCAG 4.05 | `#77A362` WCAG 6.09 | `#90C07B` WCAG 8.47 | `#BAD6A7` WCAG 11.22 | `#E1E8D4` WCAG 14.12 |
+| mint | `#285E56` WCAG 2.39 | `#288579` WCAG 3.99 | `#48A698` WCAG 6.07 | `#62C3B5` WCAG 8.45 | `#A4D7CD` WCAG 11.14 | `#D9E9E4` WCAG 14.14 |
+| blue | `#2F5A6E` WCAG 2.37 | `#3680A0` WCAG 4.02 | `#54A0C2` WCAG 6.07 | `#6FBCE2` WCAG 8.43 | `#AAD3EA` WCAG 11.17 | `#DCE7EF` WCAG 14.14 |
+| purple | `#4B5379` WCAG 2.38 | `#6975B0` WCAG 4.03 | `#8694D4` WCAG 6.09 | `#A2AFF5` WCAG 8.44 | `#C5CBF6` WCAG 11.20 | `#E5E4F4` WCAG 14.15 |
+| pink | `#674B6F` WCAG 2.38 | `#9468A1` WCAG 4.02 | `#B686C4` WCAG 6.08 | `#D5A0E4` WCAG 8.44 | `#E6C1EB` WCAG 11.15 | `#F2E0F0` WCAG 14.12 |
+| brown | `#6E4E42` WCAG 2.39 | `#9D6D5A` WCAG 4.03 | `#C18A76` WCAG 6.06 | `#E1A58F` WCAG 8.44 | `#EFC4B4` WCAG 11.18 | `#F7E1D9` WCAG 14.14 |
 
 #### Muted
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `#6A4E4F` WCAG 2.38 | `#986E6F` WCAG 4.05 | `#BB8B8D` WCAG 6.08 | `#D9A6AA` WCAG 8.44 | `#E8C5C4` WCAG 11.17 | `#F4E1E0` WCAG 14.11 |
-| orange | `#685140` WCAG 2.40 | `#957157` WCAG 4.04 | `#B78F72` WCAG 6.08 | `#D7AA8B` WCAG 8.47 | `#E6C7B2` WCAG 11.14 | `#F3E2D9` WCAG 14.11 |
-| yellow | `#5D553C` WCAG 2.39 | `#847851` WCAG 4.05 | `#A5966C` WCAG 6.07 | `#C2B283` WCAG 8.45 | `#D9CCAE` WCAG 11.16 | `#EEE4D7` WCAG 14.13 |
-| green | `#4C5949` WCAG 2.39 | `#6A7E65` WCAG 4.05 | `#879D83` WCAG 6.07 | `#A2BA9C` WCAG 8.49 | `#C4D1BE` WCAG 11.17 | `#E5E6DF` WCAG 14.13 |
-| mint | `#465958` WCAG 2.39 | `#5F7E7D` WCAG 4.03 | `#7D9E9C` WCAG 6.12 | `#97BAB6` WCAG 8.47 | `#BFD1D0` WCAG 11.20 | `#E3E6E4` WCAG 14.12 |
-| blue | `#4A5760` WCAG 2.39 | `#667B8B` WCAG 4.03 | `#839AAC` WCAG 6.07 | `#9FB6C9` WCAG 8.46 | `#C3CFD9` WCAG 11.20 | `#E5E5E8` WCAG 14.12 |
-| purple | `#555464` WCAG 2.40 | `#797690` WCAG 4.06 | `#9794B1` WCAG 6.08 | `#B2B0CF` WCAG 8.46 | `#D1CADD` WCAG 11.16 | `#EBE3E9` WCAG 14.12 |
-| pink | `#61505E` WCAG 2.38 | `#8B7087` WCAG 4.03 | `#AC8EA7` WCAG 6.07 | `#C9AAC5` WCAG 8.49 | `#DEC7D5` WCAG 11.19 | `#F0E2E6` WCAG 14.14 |
+| red | `#694E53` WCAG 2.38 | `#956E75` WCAG 4.03 | `#B98B93` WCAG 6.07 | `#D8A6AE` WCAG 8.44 | `#E8C4C9` WCAG 11.14 | `#F4E1E2` WCAG 14.13 |
+| orange | `#695041` WCAG 2.39 | `#967059` WCAG 4.02 | `#B98E75` WCAG 6.08 | `#D8A98E` WCAG 8.44 | `#E9C6B3` WCAG 11.16 | `#F4E2DA` WCAG 14.15 |
+| yellow | `#5D553B` WCAG 2.39 | `#857851` WCAG 4.06 | `#A6966B` WCAG 6.08 | `#C2B283` WCAG 8.45 | `#D9CCAC` WCAG 11.15 | `#EEE4D7` WCAG 14.13 |
+| green | `#4E5946` WCAG 2.40 | `#6D7E62` WCAG 4.07 | `#8B9D7D` WCAG 6.10 | `#A5B998` WCAG 8.45 | `#C7D1BA` WCAG 11.21 | `#E6E6DC` WCAG 14.13 |
+| mint | `#465955` WCAG 2.38 | `#607F78` WCAG 4.06 | `#7D9E97` WCAG 6.10 | `#97BAB3` WCAG 8.45 | `#BED1CC` WCAG 11.15 | `#E3E6E4` WCAG 14.12 |
+| blue | `#495760` WCAG 2.38 | `#647C89` WCAG 4.05 | `#819BA9` WCAG 6.08 | `#9CB7C7` WCAG 8.47 | `#C1CFD9` WCAG 11.16 | `#E4E6E9` WCAG 14.20 |
+| purple | `#535465` WCAG 2.39 | `#747790` WCAG 4.05 | `#9296B1` WCAG 6.10 | `#AEB1D0` WCAG 8.45 | `#CCCCDE` WCAG 11.21 | `#E8E4EA` WCAG 14.13 |
+| pink | `#5F5160` WCAG 2.39 | `#87728A` WCAG 4.06 | `#A790AA` WCAG 6.10 | `#C5ABC8` WCAG 8.48 | `#DBC7D9` WCAG 11.15 | `#EFE2E9` WCAG 14.14 |
 
 ## Wide gamut
 
@@ -68,28 +68,28 @@
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(display-p3 0.9823 0.7361 0.7458)` WCAG 1.34 | `color(display-p3 0.8698 0.6298 0.6357)` WCAG 1.79 | `color(display-p3 0.8353 0.4627 0.4948)` WCAG 2.56 | `color(display-p3 0.6705 0.3584 0.3769)` WCAG 3.91 | `color(display-p3 0.4778 0.2478 0.2627)` WCAG 6.60 | `color(display-p3 0.2325 0.1088 0.1103)` WCAG 12.77 |
-| orange | `color(display-p3 0.967 0.7596 0.5797)` WCAG 1.34 | `color(display-p3 0.8534 0.653 0.4776)` WCAG 1.79 | `color(display-p3 0.8036 0.5054 0.2315)` WCAG 2.56 | `color(display-p3 0.6418 0.395 0.1623)` WCAG 3.90 | `color(display-p3 0.4568 0.2752 0.1027)` WCAG 6.58 | `color(display-p3 0.2213 0.1235 0.0309)` WCAG 12.74 |
-| yellow | `color(display-p3 0.8705 0.8025 0.5448)` WCAG 1.34 | `color(display-p3 0.7605 0.6952 0.4433)` WCAG 1.79 | `color(display-p3 0.6712 0.5753 0.1614)` WCAG 2.54 | `color(display-p3 0.5334 0.4534 0.1028)` WCAG 3.88 | `color(display-p3 0.3777 0.3187 0.0591)` WCAG 6.54 | `color(display-p3 0.1802 0.1484 0.0151)` WCAG 12.65 |
-| green | `color(display-p3 0.7115 0.8424 0.6756)` WCAG 1.34 | `color(display-p3 0.6015 0.735 0.5744)` WCAG 1.79 | `color(display-p3 0.4076 0.6419 0.3709)` WCAG 2.54 | `color(display-p3 0.3034 0.5101 0.2887)` WCAG 3.88 | `color(display-p3 0.2089 0.3603 0.1961)` WCAG 6.54 | `color(display-p3 0.0834 0.1705 0.0865)` WCAG 12.68 |
-| mint | `color(display-p3 0.6439 0.8432 0.8339)` WCAG 1.34 | `color(display-p3 0.5332 0.7353 0.7299)` WCAG 1.79 | `color(display-p3 0.1369 0.6436 0.6297)` WCAG 2.60 | `color(display-p3 0.0178 0.5094 0.5054)` WCAG 3.97 | `color(display-p3 0.001 0.3584 0.3545)` WCAG 6.71 | `color(display-p3 0 0.1663 0.1693)` WCAG 12.91 |
-| blue | `color(display-p3 0.6782 0.8215 0.9424)` WCAG 1.34 | `color(display-p3 0.5683 0.7143 0.8349)` WCAG 1.79 | `color(display-p3 0.2555 0.6072 0.836)` WCAG 2.58 | `color(display-p3 0.1673 0.4789 0.6727)` WCAG 3.95 | `color(display-p3 0.1048 0.3361 0.4789)` WCAG 6.68 | `color(display-p3 0.0331 0.1556 0.2318)` WCAG 12.85 |
-| purple | `color(display-p3 0.7862 0.785 0.978)` WCAG 1.34 | `color(display-p3 0.6806 0.6771 0.8705)` WCAG 1.79 | `color(display-p3 0.5329 0.5431 0.9089)` WCAG 2.54 | `color(display-p3 0.4242 0.4239 0.7351)` WCAG 3.86 | `color(display-p3 0.2965 0.2975 0.5263)` WCAG 6.52 | `color(display-p3 0.1414 0.136 0.2582)` WCAG 12.62 |
-| pink | `color(display-p3 0.9041 0.7506 0.9099)` WCAG 1.34 | `color(display-p3 0.7966 0.6432 0.7996)` WCAG 1.79 | `color(display-p3 0.7358 0.4819 0.7764)` WCAG 2.54 | `color(display-p3 0.5925 0.3727 0.6168)` WCAG 3.88 | `color(display-p3 0.4205 0.2592 0.4397)` WCAG 6.55 | `color(display-p3 0.2052 0.1151 0.2076)` WCAG 12.68 |
-| brown | `color(display-p3 0.9193 0.7696 0.7061)` WCAG 1.34 | `color(display-p3 0.8083 0.6632 0.6013)` WCAG 1.79 | `color(display-p3 0.7487 0.5264 0.4283)` WCAG 2.54 | `color(display-p3 0.5984 0.4126 0.3304)` WCAG 3.87 | `color(display-p3 0.4256 0.2888 0.2281)` WCAG 6.53 | `color(display-p3 0.2058 0.1322 0.0995)` WCAG 12.64 |
+| red | `color(display-p3 0.9703 0.7374 0.7838)` WCAG 1.34 | `color(display-p3 0.8578 0.631 0.6774)` WCAG 1.79 | `color(display-p3 0.8264 0.4617 0.5517)` WCAG 2.56 | `color(display-p3 0.6693 0.3516 0.4322)` WCAG 3.91 | `color(display-p3 0.4761 0.2436 0.3025)` WCAG 6.60 | `color(display-p3 0.231 0.1063 0.1379)` WCAG 12.77 |
+| orange | `color(display-p3 0.9748 0.754 0.6037)` WCAG 1.34 | `color(display-p3 0.8609 0.6475 0.501)` WCAG 1.79 | `color(display-p3 0.8166 0.4955 0.2628)` WCAG 2.56 | `color(display-p3 0.6591 0.3824 0.1795)` WCAG 3.91 | `color(display-p3 0.4688 0.2661 0.1172)` WCAG 6.60 | `color(display-p3 0.2273 0.1183 0.0379)` WCAG 12.77 |
+| yellow | `color(display-p3 0.8714 0.8019 0.5483)` WCAG 1.34 | `color(display-p3 0.7613 0.6946 0.4468)` WCAG 1.79 | `color(display-p3 0.6737 0.5743 0.1606)` WCAG 2.54 | `color(display-p3 0.5376 0.4519 0.0824)` WCAG 3.88 | `color(display-p3 0.3805 0.3176 0.0464)` WCAG 6.54 | `color(display-p3 0.1817 0.1477 0.0115)` WCAG 12.65 |
+| green | `color(display-p3 0.7315 0.8389 0.6541)` WCAG 1.34 | `color(display-p3 0.6241 0.7311 0.55)` WCAG 1.79 | `color(display-p3 0.444 0.6371 0.337)` WCAG 2.54 | `color(display-p3 0.3363 0.5068 0.2442)` WCAG 3.87 | `color(display-p3 0.2331 0.3579 0.1654)` WCAG 6.53 | `color(display-p3 0.1022 0.1693 0.0656)` WCAG 12.65 |
+| mint | `color(display-p3 0.6511 0.8445 0.8075)` WCAG 1.34 | `color(display-p3 0.5414 0.7369 0.7007)` WCAG 1.79 | `color(display-p3 0.1741 0.6461 0.5875)` WCAG 2.60 | `color(display-p3 0.0004 0.5142 0.4632)` WCAG 3.97 | `color(display-p3 0.0002 0.3615 0.3242)` WCAG 6.72 | `color(display-p3 0.0001 0.1684 0.1484)` WCAG 12.92 |
+| blue | `color(display-p3 0.67 0.8257 0.9266)` WCAG 1.34 | `color(display-p3 0.5599 0.7184 0.8192)` WCAG 1.79 | `color(display-p3 0.2114 0.6148 0.8091)` WCAG 2.59 | `color(display-p3 0.0627 0.4863 0.6601)` WCAG 3.97 | `color(display-p3 0.0328 0.3412 0.468)` WCAG 6.71 | `color(display-p3 0.0082 0.1576 0.2253)` WCAG 12.91 |
+| purple | `color(display-p3 0.7617 0.7932 0.9761)` WCAG 1.34 | `color(display-p3 0.6533 0.6861 0.8686)` WCAG 1.79 | `color(display-p3 0.4832 0.5572 0.9111)` WCAG 2.54 | `color(display-p3 0.3686 0.4359 0.7528)` WCAG 3.87 | `color(display-p3 0.257 0.3062 0.5371)` WCAG 6.53 | `color(display-p3 0.1157 0.1418 0.2645)` WCAG 12.64 |
+| pink | `color(display-p3 0.8789 0.7579 0.9314)` WCAG 1.34 | `color(display-p3 0.7698 0.6511 0.8238)` WCAG 1.79 | `color(display-p3 0.7021 0.4918 0.8185)` WCAG 2.54 | `color(display-p3 0.5641 0.3776 0.6688)` WCAG 3.88 | `color(display-p3 0.3997 0.2634 0.476)` WCAG 6.54 | `color(display-p3 0.1913 0.1185 0.2318)` WCAG 12.67 |
+| brown | `color(display-p3 0.9176 0.7702 0.7076)` WCAG 1.34 | `color(display-p3 0.8067 0.6637 0.6027)` WCAG 1.79 | `color(display-p3 0.7487 0.5264 0.4283)` WCAG 2.54 | `color(display-p3 0.603 0.4104 0.325)` WCAG 3.87 | `color(display-p3 0.4284 0.2874 0.2248)` WCAG 6.53 | `color(display-p3 0.2072 0.1314 0.0976)` WCAG 12.64 |
 
 #### Muted
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(display-p3 0.8974 0.7715 0.7737)` WCAG 1.34 | `color(display-p3 0.7879 0.6651 0.6656)` WCAG 1.79 | `color(display-p3 0.7211 0.5298 0.5398)` WCAG 2.53 | `color(display-p3 0.5766 0.4157 0.4199)` WCAG 3.86 | `color(display-p3 0.4098 0.2911 0.2949)` WCAG 6.51 | `color(display-p3 0.198 0.1339 0.1328)` WCAG 12.61 |
-| orange | `color(display-p3 0.8918 0.7823 0.6931)` WCAG 1.34 | `color(display-p3 0.7818 0.6757 0.5885)` WCAG 1.79 | `color(display-p3 0.7101 0.5479 0.409)` WCAG 2.53 | `color(display-p3 0.5659 0.4311 0.3135)` WCAG 3.86 | `color(display-p3 0.4019 0.3027 0.2156)` WCAG 6.51 | `color(display-p3 0.1934 0.1401 0.0933)` WCAG 12.60 |
-| yellow | `color(display-p3 0.8415 0.8028 0.6764)` WCAG 1.34 | `color(display-p3 0.7327 0.6959 0.572)` WCAG 1.79 | `color(display-p3 0.6347 0.582 0.3806)` WCAG 2.53 | `color(display-p3 0.5035 0.4597 0.2905)` WCAG 3.85 | `color(display-p3 0.3562 0.3238 0.1989)` WCAG 6.49 | `color(display-p3 0.1692 0.1518 0.0847)` WCAG 12.58 |
-| green | `color(display-p3 0.7665 0.8212 0.7406)` WCAG 1.34 | `color(display-p3 0.6578 0.7142 0.6367)` WCAG 1.79 | `color(display-p3 0.5115 0.6131 0.4809)` WCAG 2.53 | `color(display-p3 0.3974 0.4862 0.3783)` WCAG 3.85 | `color(display-p3 0.2783 0.3434 0.2633)` WCAG 6.49 | `color(display-p3 0.1258 0.1625 0.1218)` WCAG 12.57 |
-| mint | `color(display-p3 0.7408 0.8208 0.8147)` WCAG 1.34 | `color(display-p3 0.633 0.7137 0.7095)` WCAG 1.79 | `color(display-p3 0.4559 0.6141 0.6052)` WCAG 2.53 | `color(display-p3 0.352 0.4864 0.4824)` WCAG 3.85 | `color(display-p3 0.2442 0.3435 0.3401)` WCAG 6.50 | `color(display-p3 0.1092 0.1619 0.1624)` WCAG 12.59 |
-| blue | `color(display-p3 0.7556 0.8107 0.8632)` WCAG 1.34 | `color(display-p3 0.6477 0.7039 0.7562)` WCAG 1.79 | `color(display-p3 0.483 0.597 0.6922)` WCAG 2.53 | `color(display-p3 0.3754 0.4723 0.5527)` WCAG 3.85 | `color(display-p3 0.2616 0.3332 0.3924)` WCAG 6.49 | `color(display-p3 0.1187 0.1567 0.1883)` WCAG 12.58 |
-| purple | `color(display-p3 0.8007 0.7944 0.8788)` WCAG 1.34 | `color(display-p3 0.6939 0.6873 0.7719)` WCAG 1.79 | `color(display-p3 0.5674 0.5688 0.7208)` WCAG 2.53 | `color(display-p3 0.4499 0.4477 0.5766)` WCAG 3.85 | `color(display-p3 0.3163 0.3152 0.4102)` WCAG 6.49 | `color(display-p3 0.1499 0.1468 0.1976)` WCAG 12.56 |
-| pink | `color(display-p3 0.8555 0.7788 0.8493)` WCAG 1.34 | `color(display-p3 0.7479 0.6719 0.7411)` WCAG 1.79 | `color(display-p3 0.66 0.5416 0.668)` WCAG 2.53 | `color(display-p3 0.5274 0.4249 0.5295)` WCAG 3.85 | `color(display-p3 0.3735 0.2983 0.3757)` WCAG 6.49 | `color(display-p3 0.1799 0.1377 0.1774)` WCAG 12.58 |
+| red | `color(display-p3 0.8903 0.7723 0.7916)` WCAG 1.34 | `color(display-p3 0.7806 0.6658 0.6853)` WCAG 1.79 | `color(display-p3 0.7142 0.53 0.5673)` WCAG 2.53 | `color(display-p3 0.5742 0.4136 0.4468)` WCAG 3.86 | `color(display-p3 0.4076 0.2899 0.3142)` WCAG 6.51 | `color(display-p3 0.1965 0.1332 0.1463)` WCAG 12.61 |
+| orange | `color(display-p3 0.8956 0.7796 0.705)` WCAG 1.34 | `color(display-p3 0.7853 0.6731 0.6002)` WCAG 1.79 | `color(display-p3 0.7172 0.5432 0.4241)` WCAG 2.54 | `color(display-p3 0.5761 0.4254 0.3215)` WCAG 3.86 | `color(display-p3 0.409 0.2985 0.2223)` WCAG 6.51 | `color(display-p3 0.1973 0.1377 0.0966)` WCAG 12.61 |
+| yellow | `color(display-p3 0.8419 0.8025 0.6782)` WCAG 1.34 | `color(display-p3 0.7331 0.6956 0.5739)` WCAG 1.79 | `color(display-p3 0.636 0.5815 0.3801)` WCAG 2.53 | `color(display-p3 0.5062 0.4591 0.2832)` WCAG 3.85 | `color(display-p3 0.3579 0.3234 0.1943)` WCAG 6.49 | `color(display-p3 0.1702 0.1515 0.0818)` WCAG 12.58 |
+| green | `color(display-p3 0.7751 0.8196 0.7304)` WCAG 1.34 | `color(display-p3 0.6675 0.7125 0.625)` WCAG 1.79 | `color(display-p3 0.5248 0.611 0.4641)` WCAG 2.53 | `color(display-p3 0.4088 0.485 0.3565)` WCAG 3.85 | `color(display-p3 0.2866 0.3425 0.2482)` WCAG 6.49 | `color(display-p3 0.1318 0.1619 0.1111)` WCAG 12.57 |
+| mint | `color(display-p3 0.7433 0.8215 0.8026)` WCAG 1.34 | `color(display-p3 0.6355 0.7145 0.6961)` WCAG 1.79 | `color(display-p3 0.4591 0.6155 0.5862)` WCAG 2.53 | `color(display-p3 0.349 0.489 0.4634)` WCAG 3.86 | `color(display-p3 0.2428 0.3452 0.3265)` WCAG 6.50 | `color(display-p3 0.1081 0.163 0.153)` WCAG 12.60 |
+| blue | `color(display-p3 0.7523 0.8126 0.8562)` WCAG 1.34 | `color(display-p3 0.6444 0.7057 0.7492)` WCAG 1.79 | `color(display-p3 0.4741 0.6006 0.6816)` WCAG 2.53 | `color(display-p3 0.3622 0.476 0.5478)` WCAG 3.85 | `color(display-p3 0.2525 0.3357 0.3882)` WCAG 6.50 | `color(display-p3 0.1135 0.1581 0.1862)` WCAG 12.59 |
+| purple | `color(display-p3 0.7901 0.7981 0.878)` WCAG 1.34 | `color(display-p3 0.6822 0.6913 0.7709)` WCAG 1.79 | `color(display-p3 0.5487 0.5746 0.7214)` WCAG 2.53 | `color(display-p3 0.4295 0.4532 0.5831)` WCAG 3.85 | `color(display-p3 0.3019 0.3191 0.4142)` WCAG 6.49 | `color(display-p3 0.1402 0.1494 0.2003)` WCAG 12.57 |
+| pink | `color(display-p3 0.8431 0.7822 0.8587)` WCAG 1.34 | `color(display-p3 0.7346 0.6756 0.7517)` WCAG 1.79 | `color(display-p3 0.6425 0.5464 0.6854)` WCAG 2.53 | `color(display-p3 0.5124 0.4281 0.5512)` WCAG 3.85 | `color(display-p3 0.3625 0.3008 0.3907)` WCAG 6.49 | `color(display-p3 0.1726 0.1394 0.1877)` WCAG 12.57 |
 
 ### Dark · base #181818
 
@@ -97,28 +97,28 @@
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(display-p3 0.4702 0.2696 0.2851)` WCAG 2.35 | `color(display-p3 0.6483 0.3927 0.4125)` WCAG 3.99 | `color(display-p3 0.7939 0.5065 0.5193)` WCAG 6.03 | `color(display-p3 0.9223 0.6097 0.6312)` WCAG 8.41 | `color(display-p3 0.9983 0.7279 0.7444)` WCAG 11.11 | `color(display-p3 1 0.8659 0.8587)` WCAG 14.11 |
-| orange | `color(display-p3 0.4548 0.2913 0.1467)` WCAG 2.35 | `color(display-p3 0.6296 0.4195 0.2368)` WCAG 4.00 | `color(display-p3 0.7721 0.5358 0.3296)` WCAG 6.03 | `color(display-p3 0.9018 0.6406 0.4185)` WCAG 8.41 | `color(display-p3 0.9845 0.7524 0.5631)` WCAG 11.11 | `color(display-p3 0.9944 0.8759 0.7849)` WCAG 14.11 |
-| yellow | `color(display-p3 0.3834 0.3292 0.1146)` WCAG 2.37 | `color(display-p3 0.5367 0.467 0.1962)` WCAG 4.02 | `color(display-p3 0.6668 0.5878 0.287)` WCAG 6.05 | `color(display-p3 0.7845 0.6974 0.371)` WCAG 8.43 | `color(display-p3 0.8793 0.8005 0.5223)` WCAG 11.13 | `color(display-p3 0.9439 0.8965 0.7685)` WCAG 14.11 |
-| green | `color(display-p3 0.2501 0.3636 0.2221)` WCAG 2.37 | `color(display-p3 0.3694 0.5104 0.3305)` WCAG 4.02 | `color(display-p3 0.4767 0.6364 0.4416)` WCAG 6.06 | `color(display-p3 0.5846 0.7491 0.532)` WCAG 8.43 | `color(display-p3 0.7105 0.8437 0.6619)` WCAG 11.13 | `color(display-p3 0.8662 0.9154 0.8386)` WCAG 14.11 |
-| mint | `color(display-p3 0.1554 0.3636 0.3544)` WCAG 2.34 | `color(display-p3 0.2607 0.5126 0.4998)` WCAG 3.99 | `color(display-p3 0.3719 0.6379 0.6333)` WCAG 6.03 | `color(display-p3 0.4748 0.7524 0.736)` WCAG 8.41 | `color(display-p3 0.6352 0.8452 0.8322)` WCAG 11.12 | `color(display-p3 0.8449 0.914 0.9111)` WCAG 14.11 |
-| blue | `color(display-p3 0.1943 0.3467 0.4585)` WCAG 2.36 | `color(display-p3 0.305 0.4896 0.6291)` WCAG 4.01 | `color(display-p3 0.4191 0.6127 0.7645)` WCAG 6.05 | `color(display-p3 0.5221 0.7241 0.8862)` WCAG 8.43 | `color(display-p3 0.6718 0.8218 0.9511)` WCAG 11.13 | `color(display-p3 0.8595 0.9045 0.9541)` WCAG 14.11 |
-| purple | `color(display-p3 0.3145 0.3133 0.495)` WCAG 2.37 | `color(display-p3 0.4486 0.4473 0.6737)` WCAG 4.02 | `color(display-p3 0.5773 0.5637 0.8109)` WCAG 6.06 | `color(display-p3 0.678 0.6745 0.9368)` WCAG 8.44 | `color(display-p3 0.791 0.7813 0.9908)` WCAG 11.14 | `color(display-p3 0.9087 0.8866 0.9691)` WCAG 14.11 |
-| pink | `color(display-p3 0.4152 0.2818 0.4309)` WCAG 2.37 | `color(display-p3 0.5758 0.4081 0.595)` WCAG 4.01 | `color(display-p3 0.7158 0.5217 0.7185)` WCAG 6.05 | `color(display-p3 0.8292 0.6287 0.8465)` WCAG 8.43 | `color(display-p3 0.9156 0.7442 0.9178)` WCAG 11.13 | `color(display-p3 0.962 0.8716 0.9361)` WCAG 14.11 |
-| brown | `color(display-p3 0.424 0.3029 0.2504)` WCAG 2.37 | `color(display-p3 0.5882 0.4335 0.3668)` WCAG 4.02 | `color(display-p3 0.7242 0.5501 0.4756)` WCAG 6.06 | `color(display-p3 0.8468 0.6563 0.5752)` WCAG 8.43 | `color(display-p3 0.932 0.765 0.6954)` WCAG 11.13 | `color(display-p3 0.9672 0.8801 0.8465)` WCAG 14.11 |
+| red | `color(display-p3 0.4692 0.2665 0.3138)` WCAG 2.35 | `color(display-p3 0.6415 0.3926 0.4486)` WCAG 4.00 | `color(display-p3 0.7847 0.5062 0.5669)` WCAG 6.03 | `color(display-p3 0.9132 0.6097 0.6743)` WCAG 8.41 | `color(display-p3 0.9954 0.7253 0.7783)` WCAG 11.11 | `color(display-p3 0.9946 0.8652 0.8832)` WCAG 14.11 |
+| orange | `color(display-p3 0.465 0.2842 0.1558)` WCAG 2.35 | `color(display-p3 0.638 0.4134 0.2557)` WCAG 4.00 | `color(display-p3 0.7825 0.5285 0.3522)` WCAG 6.03 | `color(display-p3 0.9121 0.6334 0.4412)` WCAG 8.41 | `color(display-p3 0.9984 0.7447 0.5737)` WCAG 11.11 | `color(display-p3 1 0.8727 0.7946)` WCAG 14.11 |
+| yellow | `color(display-p3 0.3859 0.3282 0.1051)` WCAG 2.37 | `color(display-p3 0.5383 0.4664 0.1957)` WCAG 4.02 | `color(display-p3 0.6688 0.587 0.2864)` WCAG 6.05 | `color(display-p3 0.7866 0.6966 0.3703)` WCAG 8.43 | `color(display-p3 0.8832 0.7997 0.512)` WCAG 11.13 | `color(display-p3 0.945 0.8962 0.7673)` WCAG 14.11 |
+| green | `color(display-p3 0.2635 0.3622 0.1998)` WCAG 2.37 | `color(display-p3 0.389 0.5075 0.3093)` WCAG 4.02 | `color(display-p3 0.5028 0.6325 0.412)` WCAG 6.06 | `color(display-p3 0.6067 0.7457 0.5064)` WCAG 8.44 | `color(display-p3 0.7259 0.842 0.6319)` WCAG 11.13 | `color(display-p3 0.8773 0.9138 0.8208)` WCAG 14.11 |
+| mint | `color(display-p3 0.1509 0.3656 0.3333)` WCAG 2.33 | `color(display-p3 0.2692 0.5144 0.4745)` WCAG 3.99 | `color(display-p3 0.3812 0.6405 0.5959)` WCAG 6.03 | `color(display-p3 0.4821 0.7544 0.7057)` WCAG 8.42 | `color(display-p3 0.6315 0.8489 0.8054)` WCAG 11.12 | `color(display-p3 0.8455 0.9157 0.8943)` WCAG 14.11 |
+| blue | `color(display-p3 0.168 0.3507 0.4499)` WCAG 2.35 | `color(display-p3 0.2885 0.4946 0.6129)` WCAG 4.00 | `color(display-p3 0.4025 0.6183 0.747)` WCAG 6.04 | `color(display-p3 0.5053 0.7302 0.8676)` WCAG 8.42 | `color(display-p3 0.6521 0.8277 0.9421)` WCAG 11.12 | `color(display-p3 0.8546 0.9067 0.9487)` WCAG 14.11 |
+| purple | `color(display-p3 0.2856 0.3202 0.5036)` WCAG 2.37 | `color(display-p3 0.4172 0.4568 0.6748)` WCAG 4.02 | `color(display-p3 0.5352 0.5767 0.8133)` WCAG 6.06 | `color(display-p3 0.6426 0.6855 0.9379)` WCAG 8.44 | `color(display-p3 0.7591 0.7901 1)` WCAG 11.13 | `color(display-p3 0.8926 0.8918 0.9709)` WCAG 14.11 |
+| pink | `color(display-p3 0.4001 0.2847 0.4568)` WCAG 2.37 | `color(display-p3 0.5539 0.4147 0.6199)` WCAG 4.02 | `color(display-p3 0.6844 0.5308 0.7542)` WCAG 6.06 | `color(display-p3 0.8024 0.6365 0.8753)` WCAG 8.44 | `color(display-p3 0.8937 0.7489 0.9485)` WCAG 11.13 | `color(display-p3 0.9462 0.8755 0.9515)` WCAG 14.11 |
+| brown | `color(display-p3 0.4268 0.3016 0.2473)` WCAG 2.37 | `color(display-p3 0.5882 0.4335 0.3668)` WCAG 4.02 | `color(display-p3 0.7242 0.5501 0.4756)` WCAG 6.06 | `color(display-p3 0.8468 0.6563 0.5752)` WCAG 8.43 | `color(display-p3 0.9358 0.7637 0.6917)` WCAG 11.13 | `color(display-p3 0.9676 0.88 0.8462)` WCAG 14.11 |
 
 #### Muted
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(display-p3 0.4087 0.3049 0.3094)` WCAG 2.37 | `color(display-p3 0.568 0.4358 0.4416)` WCAG 4.02 | `color(display-p3 0.7017 0.5526 0.5549)` WCAG 6.06 | `color(display-p3 0.8208 0.6589 0.665)` WCAG 8.44 | `color(display-p3 0.9079 0.7672 0.7715)` WCAG 11.13 | `color(display-p3 0.9555 0.8813 0.8752)` WCAG 14.11 |
-| orange | `color(display-p3 0.4036 0.3141 0.2409)` WCAG 2.37 | `color(display-p3 0.562 0.4473 0.3549)` WCAG 4.02 | `color(display-p3 0.694 0.5655 0.4615)` WCAG 6.06 | `color(display-p3 0.8142 0.6725 0.5606)` WCAG 8.44 | `color(display-p3 0.9037 0.7782 0.6837)` WCAG 11.13 | `color(display-p3 0.9532 0.886 0.8405)` WCAG 14.11 |
-| yellow | `color(display-p3 0.3635 0.3323 0.2264)` WCAG 2.38 | `color(display-p3 0.5104 0.4702 0.336)` WCAG 4.03 | `color(display-p3 0.6365 0.5905 0.4412)` WCAG 6.07 | `color(display-p3 0.7508 0.6998 0.5378)` WCAG 8.45 | `color(display-p3 0.8486 0.8012 0.6639)` WCAG 11.14 | `color(display-p3 0.9285 0.8957 0.8327)` WCAG 14.12 |
-| green | `color(display-p3 0.3006 0.3485 0.2791)` WCAG 2.38 | `color(display-p3 0.4312 0.4905 0.4023)` WCAG 4.03 | `color(display-p3 0.5469 0.6131 0.5178)` WCAG 6.07 | `color(display-p3 0.6561 0.7238 0.6177)` WCAG 8.45 | `color(display-p3 0.769 0.8211 0.7324)` WCAG 11.14 | `color(display-p3 0.8923 0.9043 0.866)` WCAG 14.11 |
-| mint | `color(display-p3 0.274 0.3488 0.3429)` WCAG 2.38 | `color(display-p3 0.3983 0.491 0.4829)` WCAG 4.03 | `color(display-p3 0.5133 0.6129 0.6083)` WCAG 6.07 | `color(display-p3 0.6188 0.7243 0.7139)` WCAG 8.45 | `color(display-p3 0.7407 0.821 0.8122)` WCAG 11.14 | `color(display-p3 0.8833 0.9035 0.8996)` WCAG 14.12 |
-| blue | `color(display-p3 0.2873 0.3401 0.3872)` WCAG 2.38 | `color(display-p3 0.4149 0.4799 0.5389)` WCAG 4.03 | `color(display-p3 0.5317 0.601 0.6655)` WCAG 6.07 | `color(display-p3 0.6382 0.711 0.7799)` WCAG 8.45 | `color(display-p3 0.7566 0.8101 0.8652)` WCAG 11.14 | `color(display-p3 0.8898 0.8991 0.9192)` WCAG 14.11 |
-| purple | `color(display-p3 0.3298 0.3254 0.4018)` WCAG 2.38 | `color(display-p3 0.4674 0.4615 0.5572)` WCAG 4.03 | `color(display-p3 0.5923 0.5797 0.6849)` WCAG 6.07 | `color(display-p3 0.6989 0.6893 0.8013)` WCAG 8.45 | `color(display-p3 0.8059 0.7921 0.8825)` WCAG 11.14 | `color(display-p3 0.9119 0.8909 0.926)` WCAG 14.11 |
-| pink | `color(display-p3 0.3761 0.3115 0.3756)` WCAG 2.38 | `color(display-p3 0.5259 0.4441 0.5246)` WCAG 4.03 | `color(display-p3 0.6567 0.5609 0.6461)` WCAG 6.07 | `color(display-p3 0.7686 0.6688 0.7632)` WCAG 8.45 | `color(display-p3 0.8636 0.7753 0.8509)` WCAG 11.14 | `color(display-p3 0.9366 0.8841 0.911)` WCAG 14.11 |
+| red | `color(display-p3 0.4075 0.3039 0.3231)` WCAG 2.37 | `color(display-p3 0.5633 0.436 0.4589)` WCAG 4.02 | `color(display-p3 0.6955 0.5528 0.5776)` WCAG 6.06 | `color(display-p3 0.8148 0.6592 0.6854)` WCAG 8.44 | `color(display-p3 0.9058 0.7662 0.7875)` WCAG 11.13 | `color(display-p3 0.9526 0.8811 0.8867)` WCAG 14.11 |
+| orange | `color(display-p3 0.4095 0.3109 0.2453)` WCAG 2.37 | `color(display-p3 0.5663 0.4445 0.3642)` WCAG 4.02 | `color(display-p3 0.6994 0.5621 0.4727)` WCAG 6.06 | `color(display-p3 0.8195 0.6692 0.572)` WCAG 8.44 | `color(display-p3 0.911 0.7747 0.6889)` WCAG 11.13 | `color(display-p3 0.956 0.8845 0.845)` WCAG 14.11 |
+| yellow | `color(display-p3 0.365 0.332 0.222)` WCAG 2.38 | `color(display-p3 0.5113 0.4699 0.3357)` WCAG 4.03 | `color(display-p3 0.6375 0.5902 0.441)` WCAG 6.07 | `color(display-p3 0.7519 0.6994 0.5375)` WCAG 8.45 | `color(display-p3 0.8507 0.8009 0.6588)` WCAG 11.14 | `color(display-p3 0.9291 0.8955 0.8321)` WCAG 14.11 |
+| green | `color(display-p3 0.3056 0.348 0.2681)` WCAG 2.38 | `color(display-p3 0.439 0.4892 0.3918)` WCAG 4.03 | `color(display-p3 0.5574 0.6114 0.5033)` WCAG 6.07 | `color(display-p3 0.6652 0.7223 0.6051)` WCAG 8.45 | `color(display-p3 0.7755 0.8205 0.718)` WCAG 11.14 | `color(display-p3 0.8973 0.9036 0.8575)` WCAG 14.11 |
+| mint | `color(display-p3 0.2722 0.3502 0.3334)` WCAG 2.38 | `color(display-p3 0.3999 0.4919 0.4713)` WCAG 4.03 | `color(display-p3 0.5153 0.6143 0.5912)` WCAG 6.07 | `color(display-p3 0.6205 0.7254 0.7001)` WCAG 8.45 | `color(display-p3 0.7389 0.8229 0.8)` WCAG 11.14 | `color(display-p3 0.8834 0.9044 0.8918)` WCAG 14.12 |
+| blue | `color(display-p3 0.2802 0.3423 0.3841)` WCAG 2.38 | `color(display-p3 0.4095 0.4822 0.5321)` WCAG 4.03 | `color(display-p3 0.526 0.6036 0.6581)` WCAG 6.07 | `color(display-p3 0.6321 0.7137 0.772)` WCAG 8.45 | `color(display-p3 0.7489 0.8128 0.8613)` WCAG 11.14 | `color(display-p3 0.8877 0.9001 0.9167)` WCAG 14.12 |
+| purple | `color(display-p3 0.3186 0.3285 0.4054)` WCAG 2.38 | `color(display-p3 0.4548 0.4656 0.5576)` WCAG 4.03 | `color(display-p3 0.575 0.5853 0.6858)` WCAG 6.07 | `color(display-p3 0.6843 0.6941 0.8018)` WCAG 8.45 | `color(display-p3 0.7923 0.7961 0.8864)` WCAG 11.14 | `color(display-p3 0.9046 0.8933 0.9268)` WCAG 14.11 |
+| pink | `color(display-p3 0.3683 0.3132 0.3865)` WCAG 2.38 | `color(display-p3 0.5148 0.4472 0.5351)` WCAG 4.03 | `color(display-p3 0.6409 0.5651 0.6613)` WCAG 6.07 | `color(display-p3 0.7552 0.6724 0.7756)` WCAG 8.45 | `color(display-p3 0.8527 0.7777 0.8644)` WCAG 11.14 | `color(display-p3 0.9291 0.8859 0.918)` WCAG 14.11 |
 
 ## Ultra gamut
 
@@ -128,28 +128,28 @@
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(rec2020 0.9347 0.7622 0.7596)` WCAG 1.34 | `color(rec2020 0.8294 0.6612 0.6593)` WCAG 1.79 | `color(rec2020 0.7773 0.515 0.5289)` WCAG 2.56 | `color(rec2020 0.6501 0.3983 0.3981)` WCAG 3.93 | `color(rec2020 0.482 0.2857 0.2962)` WCAG 6.66 | `color(rec2020 0.2586 0.1529 0.1527)` WCAG 12.88 |
-| orange | `color(rec2020 0.922 0.7801 0.603)` WCAG 1.34 | `color(rec2020 0.8164 0.679 0.5061)` WCAG 1.79 | `color(rec2020 0.7547 0.5451 0.2835)` WCAG 2.56 | `color(rec2020 0.6233 0.43 0.1684)` WCAG 3.92 | `color(rec2020 0.4627 0.3109 0.1081)` WCAG 6.64 | `color(rec2020 0.2482 0.168 0.0541)` WCAG 12.82 |
-| yellow | `color(rec2020 0.8538 0.8134 0.5706)` WCAG 1.34 | `color(rec2020 0.7507 0.7117 0.4746)` WCAG 1.79 | `color(rec2020 0.6581 0.5992 0.2206)` WCAG 2.54 | `color(rec2020 0.5377 0.4815 0.0979)` WCAG 3.88 | `color(rec2020 0.397 0.3532 0.0054)` WCAG 6.55 | `color(rec2020 0.2156 0.192 0.004)` WCAG 12.67 |
-| green | `color(rec2020 0.7502 0.8443 0.696)` WCAG 1.34 | `color(rec2020 0.6487 0.7423 0.5967)` WCAG 1.79 | `color(rec2020 0.4941 0.65 0.4085)` WCAG 2.54 | `color(rec2020 0.3716 0.5309 0.304)` WCAG 3.89 | `color(rec2020 0.2678 0.3907 0.2095)` WCAG 6.59 | `color(rec2020 0.1408 0.2107 0.1168)` WCAG 12.79 |
-| mint | `color(rec2020 0.7134 0.8442 0.845)` WCAG 1.34 | `color(rec2020 0.6108 0.7423 0.7435)` WCAG 1.79 | `color(rec2020 0.3886 0.65 0.6476)` WCAG 2.60 | `color(rec2020 0.2455 0.5307 0.5431)` WCAG 3.99 | `color(rec2020 0.154 0.3911 0.393)` WCAG 6.75 | `color(rec2020 0.0792 0.2088 0.2147)` WCAG 12.98 |
-| blue | `color(rec2020 0.7376 0.827 0.9457)` WCAG 1.34 | `color(rec2020 0.635 0.7254 0.8439)` WCAG 1.79 | `color(rec2020 0.4364 0.621 0.8418)` WCAG 2.58 | `color(rec2020 0.3003 0.5008 0.7268)` WCAG 3.98 | `color(rec2020 0.2 0.3664 0.5473)` WCAG 6.75 | `color(rec2020 0.106 0.1957 0.2927)` WCAG 12.98 |
-| purple | `color(rec2020 0.8062 0.799 0.9791)` WCAG 1.34 | `color(rec2020 0.7041 0.6975 0.8772)` WCAG 1.79 | `color(rec2020 0.579 0.5743 0.9103)` WCAG 2.54 | `color(rec2020 0.4692 0.451 0.7969)` WCAG 3.87 | `color(rec2020 0.3379 0.3297 0.6058)` WCAG 6.55 | `color(rec2020 0.1866 0.1782 0.3258)` WCAG 12.67 |
-| pink | `color(rec2020 0.8832 0.7729 0.9149)` WCAG 1.34 | `color(rec2020 0.7801 0.6716 0.813)` WCAG 1.79 | `color(rec2020 0.7094 0.5292 0.7911)` WCAG 2.54 | `color(rec2020 0.5948 0.4076 0.6617)` WCAG 3.89 | `color(rec2020 0.4383 0.2942 0.5029)` WCAG 6.59 | `color(rec2020 0.2382 0.1584 0.2662)` WCAG 12.76 |
-| brown | `color(rec2020 0.8901 0.7879 0.7211)` WCAG 1.34 | `color(rec2020 0.7862 0.6869 0.6217)` WCAG 1.79 | `color(rec2020 0.7151 0.5622 0.4594)` WCAG 2.54 | `color(rec2020 0.5922 0.4465 0.3478)` WCAG 3.87 | `color(rec2020 0.4393 0.3258 0.2487)` WCAG 6.55 | `color(rec2020 0.2381 0.1769 0.1351)` WCAG 12.68 |
+| red | `color(rec2020 0.9273 0.763 0.7939)` WCAG 1.34 | `color(rec2020 0.8224 0.6621 0.6931)` WCAG 1.79 | `color(rec2020 0.7724 0.5144 0.5733)` WCAG 2.56 | `color(rec2020 0.6453 0.3968 0.4567)` WCAG 3.92 | `color(rec2020 0.479 0.2849 0.3327)` WCAG 6.65 | `color(rec2020 0.2569 0.1525 0.1783)` WCAG 12.87 |
+| orange | `color(rec2020 0.9274 0.7761 0.6242)` WCAG 1.34 | `color(rec2020 0.8217 0.6751 0.527)` WCAG 1.79 | `color(rec2020 0.7621 0.5395 0.3057)` WCAG 2.56 | `color(rec2020 0.6326 0.423 0.198)` WCAG 3.92 | `color(rec2020 0.4684 0.3061 0.1296)` WCAG 6.64 | `color(rec2020 0.2518 0.1642 0.0685)` WCAG 12.85 |
+| yellow | `color(rec2020 0.8545 0.813 0.5738)` WCAG 1.34 | `color(rec2020 0.7514 0.7113 0.4777)` WCAG 1.79 | `color(rec2020 0.6598 0.5984 0.2198)` WCAG 2.54 | `color(rec2020 0.5393 0.4808 0.0968)` WCAG 3.88 | `color(rec2020 0.3981 0.3527 0)` WCAG 6.55 | `color(rec2020 0.2163 0.1916 0.0037)` WCAG 12.67 |
+| green | `color(rec2020 0.7633 0.8415 0.6739)` WCAG 1.34 | `color(rec2020 0.6618 0.7395 0.5752)` WCAG 1.79 | `color(rec2020 0.5131 0.6466 0.3792)` WCAG 2.54 | `color(rec2020 0.397 0.5272 0.2688)` WCAG 3.88 | `color(rec2020 0.2865 0.3886 0.1862)` WCAG 6.56 | `color(rec2020 0.1554 0.2105 0.101)` WCAG 12.70 |
+| mint | `color(rec2020 0.7169 0.8454 0.8184)` WCAG 1.34 | `color(rec2020 0.6146 0.7435 0.7173)` WCAG 1.79 | `color(rec2020 0.396 0.6519 0.6103)` WCAG 2.60 | `color(rec2020 0.2596 0.5332 0.4933)` WCAG 3.98 | `color(rec2020 0.1669 0.3924 0.3613)` WCAG 6.75 | `color(rec2020 0.0878 0.2099 0.1932)` WCAG 12.97 |
+| blue | `color(rec2020 0.732 0.8304 0.9309)` WCAG 1.34 | `color(rec2020 0.6293 0.7287 0.8291)` WCAG 1.79 | `color(rec2020 0.419 0.6268 0.8167)` WCAG 2.59 | `color(rec2020 0.28 0.5077 0.7017)` WCAG 3.99 | `color(rec2020 0.1824 0.372 0.5268)` WCAG 6.76 | `color(rec2020 0.0964 0.1987 0.2817)` WCAG 12.99 |
+| purple | `color(rec2020 0.791 0.805 0.9774)` WCAG 1.34 | `color(rec2020 0.6889 0.7035 0.8756)` WCAG 1.79 | `color(rec2020 0.5538 0.5833 0.9116)` WCAG 2.54 | `color(rec2020 0.4343 0.4632 0.8004)` WCAG 3.88 | `color(rec2020 0.3148 0.3376 0.6068)` WCAG 6.56 | `color(rec2020 0.171 0.1832 0.3268)` WCAG 12.69 |
+| pink | `color(rec2020 0.8674 0.7781 0.9344)` WCAG 1.34 | `color(rec2020 0.7646 0.6768 0.8324)` WCAG 1.79 | `color(rec2020 0.6905 0.5352 0.824)` WCAG 2.54 | `color(rec2020 0.5716 0.415 0.7078)` WCAG 3.89 | `color(rec2020 0.4237 0.2992 0.5321)` WCAG 6.58 | `color(rec2020 0.2289 0.1621 0.2867)` WCAG 12.73 |
+| brown | `color(rec2020 0.889 0.7883 0.7225)` WCAG 1.34 | `color(rec2020 0.7852 0.6873 0.6231)` WCAG 1.79 | `color(rec2020 0.7151 0.5622 0.4594)` WCAG 2.54 | `color(rec2020 0.5922 0.4465 0.3478)` WCAG 3.87 | `color(rec2020 0.4392 0.3259 0.2489)` WCAG 6.55 | `color(rec2020 0.238 0.1769 0.1353)` WCAG 12.68 |
 
 #### Muted
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(rec2020 0.8761 0.7891 0.7858)` WCAG 1.34 | `color(rec2020 0.7728 0.6882 0.6852)` WCAG 1.79 | `color(rec2020 0.6968 0.5645 0.5677)` WCAG 2.53 | `color(rec2020 0.5771 0.4489 0.4451)` WCAG 3.86 | `color(rec2020 0.4276 0.3279 0.3299)` WCAG 6.52 | `color(rec2020 0.2326 0.1785 0.1767)` WCAG 12.64 |
-| orange | `color(rec2020 0.8711 0.7975 0.7096)` WCAG 1.34 | `color(rec2020 0.7678 0.6964 0.6104)` WCAG 1.79 | `color(rec2020 0.6889 0.5776 0.445)` WCAG 2.53 | `color(rec2020 0.5666 0.4626 0.3312)` WCAG 3.86 | `color(rec2020 0.4204 0.3384 0.2375)` WCAG 6.52 | `color(rec2020 0.228 0.1845 0.1283)` WCAG 12.63 |
-| yellow | `color(rec2020 0.8362 0.8135 0.6939)` WCAG 1.34 | `color(rec2020 0.7338 0.7121 0.595)` WCAG 1.79 | `color(rec2020 0.6353 0.6043 0.4169)` WCAG 2.53 | `color(rec2020 0.5173 0.4879 0.307)` WCAG 3.85 | `color(rec2020 0.3818 0.3589 0.2172)` WCAG 6.50 | `color(rec2020 0.2081 0.1958 0.119)` WCAG 12.59 |
-| green | `color(rec2020 0.7874 0.8276 0.7557)` WCAG 1.34 | `color(rec2020 0.6857 0.7261 0.6556)` WCAG 1.79 | `color(rec2020 0.5572 0.6279 0.5097)` WCAG 2.53 | `color(rec2020 0.4392 0.5114 0.3999)` WCAG 3.85 | `color(rec2020 0.3213 0.3773 0.2882)` WCAG 6.50 | `color(rec2020 0.1743 0.2059 0.1597)` WCAG 12.59 |
-| mint | `color(rec2020 0.773 0.827 0.8256)` WCAG 1.34 | `color(rec2020 0.6712 0.7256 0.7244)` WCAG 1.79 | `color(rec2020 0.5264 0.6284 0.6252)` WCAG 2.53 | `color(rec2020 0.4081 0.5113 0.5147)` WCAG 3.86 | `color(rec2020 0.2951 0.3774 0.3766)` WCAG 6.52 | `color(rec2020 0.1609 0.2051 0.2068)` WCAG 12.63 |
-| blue | `color(rec2020 0.7838 0.8191 0.8704)` WCAG 1.34 | `color(rec2020 0.6819 0.7177 0.769)` WCAG 1.79 | `color(rec2020 0.5451 0.6149 0.707)` WCAG 2.53 | `color(rec2020 0.4272 0.4986 0.5908)` WCAG 3.85 | `color(rec2020 0.3103 0.3673 0.4405)` WCAG 6.50 | `color(rec2020 0.1695 0.2001 0.2394)` WCAG 12.60 |
-| purple | `color(rec2020 0.8133 0.8065 0.885)` WCAG 1.34 | `color(rec2020 0.7113 0.7053 0.7834)` WCAG 1.79 | `color(rec2020 0.5965 0.594 0.7336)` WCAG 2.53 | `color(rec2020 0.483 0.4765 0.617)` WCAG 3.85 | `color(rec2020 0.353 0.3508 0.4618)` WCAG 6.49 | `color(rec2020 0.194 0.1912 0.251)` WCAG 12.57 |
-| pink | `color(rec2020 0.849 0.7946 0.8572)` WCAG 1.34 | `color(rec2020 0.7465 0.6935 0.7559)` WCAG 1.79 | `color(rec2020 0.6562 0.5735 0.6863)` WCAG 2.53 | `color(rec2020 0.5413 0.4566 0.5648)` WCAG 3.85 | `color(rec2020 0.399 0.3347 0.4229)` WCAG 6.50 | `color(rec2020 0.2184 0.1823 0.2282)` WCAG 12.59 |
+| red | `color(rec2020 0.8718 0.7897 0.802)` WCAG 1.34 | `color(rec2020 0.7687 0.6887 0.7013)` WCAG 1.79 | `color(rec2020 0.6931 0.5646 0.5891)` WCAG 2.53 | `color(rec2020 0.5729 0.4489 0.4736)` WCAG 3.86 | `color(rec2020 0.425 0.328 0.3476)` WCAG 6.52 | `color(rec2020 0.2308 0.1787 0.1892)` WCAG 12.63 |
+| orange | `color(rec2020 0.8736 0.7955 0.7203)` WCAG 1.34 | `color(rec2020 0.7703 0.6945 0.621)` WCAG 1.79 | `color(rec2020 0.6928 0.5749 0.456)` WCAG 2.53 | `color(rec2020 0.5715 0.4592 0.3446)` WCAG 3.86 | `color(rec2020 0.4236 0.3361 0.2465)` WCAG 6.52 | `color(rec2020 0.2302 0.1828 0.1343)` WCAG 12.64 |
+| yellow | `color(rec2020 0.8365 0.8132 0.6956)` WCAG 1.34 | `color(rec2020 0.7341 0.7119 0.5968)` WCAG 1.79 | `color(rec2020 0.6362 0.604 0.4165)` WCAG 2.53 | `color(rec2020 0.5181 0.4875 0.3066)` WCAG 3.85 | `color(rec2020 0.3825 0.3586 0.2169)` WCAG 6.50 | `color(rec2020 0.2085 0.1956 0.1192)` WCAG 12.59 |
+| green | `color(rec2020 0.7932 0.8263 0.7451)` WCAG 1.34 | `color(rec2020 0.6914 0.7248 0.6452)` WCAG 1.79 | `color(rec2020 0.5648 0.6264 0.495)` WCAG 2.53 | `color(rec2020 0.4487 0.5096 0.3821)` WCAG 3.85 | `color(rec2020 0.328 0.376 0.276)` WCAG 6.49 | `color(rec2020 0.1792 0.205 0.1513)` WCAG 12.58 |
+| mint | `color(rec2020 0.7743 0.8276 0.8134)` WCAG 1.34 | `color(rec2020 0.6725 0.7261 0.7124)` WCAG 1.79 | `color(rec2020 0.5276 0.6295 0.6084)` WCAG 2.53 | `color(rec2020 0.4098 0.5127 0.4925)` WCAG 3.86 | `color(rec2020 0.2964 0.3783 0.3625)` WCAG 6.52 | `color(rec2020 0.162 0.2058 0.1974)` WCAG 12.62 |
+| blue | `color(rec2020 0.7815 0.8205 0.8639)` WCAG 1.34 | `color(rec2020 0.6796 0.7192 0.7625)` WCAG 1.79 | `color(rec2020 0.5395 0.6177 0.6972)` WCAG 2.53 | `color(rec2020 0.4214 0.5013 0.5809)` WCAG 3.86 | `color(rec2020 0.3056 0.3694 0.4325)` WCAG 6.51 | `color(rec2020 0.1671 0.2012 0.2349)` WCAG 12.61 |
+| purple | `color(rec2020 0.8066 0.8092 0.8843)` WCAG 1.34 | `color(rec2020 0.7046 0.708 0.7827)` WCAG 1.79 | `color(rec2020 0.5864 0.5978 0.734)` WCAG 2.53 | `color(rec2020 0.4695 0.4815 0.618)` WCAG 3.85 | `color(rec2020 0.3443 0.354 0.4622)` WCAG 6.49 | `color(rec2020 0.1881 0.1933 0.2514)` WCAG 12.57 |
+| pink | `color(rec2020 0.8413 0.797 0.8657)` WCAG 1.34 | `color(rec2020 0.7389 0.6959 0.7643)` WCAG 1.79 | `color(rec2020 0.6466 0.5765 0.6999)` WCAG 2.53 | `color(rec2020 0.5291 0.4604 0.5834)` WCAG 3.85 | `color(rec2020 0.3913 0.3372 0.4346)` WCAG 6.50 | `color(rec2020 0.2132 0.1842 0.2365)` WCAG 12.58 |
 
 ### Dark · base #181818
 
@@ -157,26 +157,26 @@
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(rec2020 0.4678 0.3154 0.3187)` WCAG 2.35 | `color(rec2020 0.6195 0.4401 0.4425)` WCAG 3.99 | `color(rec2020 0.7509 0.5493 0.5389)` WCAG 6.03 | `color(rec2020 0.867 0.6482 0.6496)` WCAG 8.41 | `color(rec2020 0.9522 0.7532 0.7501)` WCAG 11.11 | `color(rec2020 0.9918 0.8699 0.8585)` WCAG 14.10 |
-| orange | `color(rec2020 0.4545 0.3328 0.181)` WCAG 2.35 | `color(rec2020 0.6047 0.4597 0.2814)` WCAG 4.00 | `color(rec2020 0.732 0.5717 0.3669)` WCAG 6.03 | `color(rec2020 0.8503 0.6711 0.4544)` WCAG 8.41 | `color(rec2020 0.9377 0.7734 0.575)` WCAG 11.11 | `color(rec2020 0.9834 0.8814 0.7609)` WCAG 14.10 |
-| yellow | `color(rec2020 0.4 0.3643 0.1492)` WCAG 2.36 | `color(rec2020 0.5384 0.496 0.2455)` WCAG 4.02 | `color(rec2020 0.6585 0.6105 0.3316)` WCAG 6.05 | `color(rec2020 0.7671 0.7145 0.4114)` WCAG 8.43 | `color(rec2020 0.861 0.8118 0.538)` WCAG 11.13 | `color(rec2020 0.9372 0.903 0.7407)` WCAG 14.11 |
-| green | `color(rec2020 0.3083 0.393 0.2564)` WCAG 2.37 | `color(rec2020 0.4321 0.5291 0.3692)` WCAG 4.02 | `color(rec2020 0.5376 0.6476 0.4748)` WCAG 6.06 | `color(rec2020 0.6395 0.7539 0.5608)` WCAG 8.44 | `color(rec2020 0.7468 0.8466 0.6749)` WCAG 11.13 | `color(rec2020 0.8703 0.9226 0.8264)` WCAG 14.11 |
-| mint | `color(rec2020 0.2531 0.3908 0.3881)` WCAG 2.32 | `color(rec2020 0.3777 0.53 0.5262)` WCAG 3.99 | `color(rec2020 0.4842 0.648 0.6526)` WCAG 6.03 | `color(rec2020 0.5819 0.7557 0.75)` WCAG 8.41 | `color(rec2020 0.7018 0.8475 0.8428)` WCAG 11.12 | `color(rec2020 0.8512 0.9216 0.9207)` WCAG 14.11 |
-| blue | `color(rec2020 0.28 0.3774 0.497)` WCAG 2.35 | `color(rec2020 0.4055 0.512 0.6468)` WCAG 4.01 | `color(rec2020 0.5143 0.6282 0.7748)` WCAG 6.05 | `color(rec2020 0.6133 0.7335 0.8901)` WCAG 8.43 | `color(rec2020 0.7289 0.8279 0.9617)` WCAG 11.13 | `color(rec2020 0.8658 0.911 0.98)` WCAG 14.11 |
-| purple | `color(rec2020 0.3591 0.3499 0.5355)` WCAG 2.37 | `color(rec2020 0.4903 0.4798 0.688)` WCAG 4.02 | `color(rec2020 0.61 0.5908 0.8177)` WCAG 6.06 | `color(rec2020 0.7086 0.6955 0.9367)` WCAG 8.44 | `color(rec2020 0.8094 0.795 1)` WCAG 11.13 | `color(rec2020 0.9096 0.8925 0.9999)` WCAG 14.11 |
-| pink | `color(rec2020 0.4299 0.3244 0.4683)` WCAG 2.36 | `color(rec2020 0.5721 0.4508 0.6136)` WCAG 4.01 | `color(rec2020 0.6995 0.5598 0.7304)` WCAG 6.05 | `color(rec2020 0.8062 0.6616 0.8515)` WCAG 8.43 | `color(rec2020 0.8951 0.7655 0.9275)` WCAG 11.13 | `color(rec2020 0.9573 0.8766 0.9584)` WCAG 14.11 |
-| brown | `color(rec2020 0.4325 0.343 0.2836)` WCAG 2.37 | `color(rec2020 0.5763 0.4705 0.4007)` WCAG 4.02 | `color(rec2020 0.7006 0.5818 0.5039)` WCAG 6.06 | `color(rec2020 0.8128 0.6831 0.5984)` WCAG 8.43 | `color(rec2020 0.902 0.7831 0.7064)` WCAG 11.13 | `color(rec2020 0.9607 0.8858 0.8394)` WCAG 14.11 |
+| red | `color(rec2020 0.4647 0.3151 0.3477)` WCAG 2.35 | `color(rec2020 0.6153 0.4399 0.4762)` WCAG 4.00 | `color(rec2020 0.7447 0.5489 0.5882)` WCAG 6.03 | `color(rec2020 0.8612 0.6481 0.69)` WCAG 8.41 | `color(rec2020 0.9447 0.7539 0.7885)` WCAG 11.11 | `color(rec2020 0.9858 0.8703 0.8863)` WCAG 14.10 |
+| orange | `color(rec2020 0.4591 0.3292 0.1947)` WCAG 2.35 | `color(rec2020 0.6103 0.4555 0.2972)` WCAG 3.99 | `color(rec2020 0.7402 0.5658 0.3889)` WCAG 6.03 | `color(rec2020 0.8572 0.6662 0.4736)` WCAG 8.41 | `color(rec2020 0.9436 0.7691 0.5959)` WCAG 11.11 | `color(rec2020 0.9878 0.8784 0.7749)` WCAG 14.10 |
+| yellow | `color(rec2020 0.4009 0.3639 0.1487)` WCAG 2.36 | `color(rec2020 0.5396 0.4955 0.245)` WCAG 4.02 | `color(rec2020 0.6598 0.6099 0.331)` WCAG 6.05 | `color(rec2020 0.7686 0.7139 0.4108)` WCAG 8.43 | `color(rec2020 0.862 0.8113 0.54)` WCAG 11.13 | `color(rec2020 0.9378 0.9027 0.7418)` WCAG 14.11 |
+| green | `color(rec2020 0.3187 0.3912 0.2398)` WCAG 2.37 | `color(rec2020 0.4434 0.5269 0.3498)` WCAG 4.02 | `color(rec2020 0.5528 0.6446 0.4474)` WCAG 6.06 | `color(rec2020 0.6525 0.7513 0.5372)` WCAG 8.44 | `color(rec2020 0.7593 0.8439 0.6533)` WCAG 11.13 | `color(rec2020 0.8789 0.9208 0.8089)` WCAG 14.11 |
+| mint | `color(rec2020 0.2568 0.3922 0.368)` WCAG 2.32 | `color(rec2020 0.381 0.5315 0.5027)` WCAG 3.99 | `color(rec2020 0.4877 0.6502 0.6179)` WCAG 6.03 | `color(rec2020 0.5848 0.7574 0.7221)` WCAG 8.42 | `color(rec2020 0.7051 0.8488 0.8166)` WCAG 11.12 | `color(rec2020 0.8525 0.9228 0.9019)` WCAG 14.11 |
+| blue | `color(rec2020 0.2706 0.38 0.4825)` WCAG 2.34 | `color(rec2020 0.3962 0.5158 0.6316)` WCAG 4.00 | `color(rec2020 0.5047 0.6326 0.7586)` WCAG 6.04 | `color(rec2020 0.6032 0.7382 0.8728)` WCAG 8.42 | `color(rec2020 0.7218 0.8319 0.9455)` WCAG 11.13 | `color(rec2020 0.8622 0.9131 0.9715)` WCAG 14.11 |
+| purple | `color(rec2020 0.3417 0.3563 0.5364)` WCAG 2.37 | `color(rec2020 0.471 0.4869 0.689)` WCAG 4.02 | `color(rec2020 0.5838 0.6006 0.82)` WCAG 6.06 | `color(rec2020 0.6865 0.7038 0.9379)` WCAG 8.44 | `color(rec2020 0.7901 0.8025 1)` WCAG 11.13 | `color(rec2020 0.897 0.8975 1)` WCAG 14.12 |
+| pink | `color(rec2020 0.4179 0.3285 0.4893)` WCAG 2.37 | `color(rec2020 0.5578 0.4556 0.637)` WCAG 4.02 | `color(rec2020 0.6789 0.5664 0.7641)` WCAG 6.06 | `color(rec2020 0.7886 0.6672 0.8785)` WCAG 8.43 | `color(rec2020 0.8778 0.7712 0.9504)` WCAG 11.13 | `color(rec2020 0.9448 0.8805 0.9743)` WCAG 14.11 |
+| brown | `color(rec2020 0.4325 0.343 0.2836)` WCAG 2.37 | `color(rec2020 0.5763 0.4705 0.4007)` WCAG 4.02 | `color(rec2020 0.7006 0.5818 0.5039)` WCAG 6.06 | `color(rec2020 0.8128 0.6831 0.5984)` WCAG 8.43 | `color(rec2020 0.9013 0.7834 0.7074)` WCAG 11.13 | `color(rec2020 0.9603 0.8859 0.84)` WCAG 14.11 |
 
 #### Muted
 
 | Color | Lc 15 | Lc 30 | Lc 45 | Lc 60 | Lc 75 | Lc 90 |
 |---|---|---|---|---|---|---|
-| red | `color(rec2020 0.4223 0.3445 0.3438)` WCAG 2.37 | `color(rec2020 0.5635 0.4721 0.4705)` WCAG 4.02 | `color(rec2020 0.6866 0.5836 0.5756)` WCAG 6.06 | `color(rec2020 0.7964 0.6849 0.6822)` WCAG 8.44 | `color(rec2020 0.8867 0.7846 0.7798)` WCAG 11.13 | `color(rec2020 0.9515 0.8866 0.8783)` WCAG 14.11 |
-| orange | `color(rec2020 0.4174 0.3521 0.2751)` WCAG 2.37 | `color(rec2020 0.5581 0.4808 0.3906)` WCAG 4.02 | `color(rec2020 0.679 0.5937 0.4904)` WCAG 6.06 | `color(rec2020 0.7904 0.6951 0.5861)` WCAG 8.44 | `color(rec2020 0.8813 0.7938 0.6944)` WCAG 11.13 | `color(rec2020 0.9479 0.892 0.8317)` WCAG 14.11 |
-| yellow | `color(rec2020 0.3872 0.3675 0.2603)` WCAG 2.38 | `color(rec2020 0.5223 0.4984 0.3732)` WCAG 4.03 | `color(rec2020 0.6398 0.6125 0.4731)` WCAG 6.07 | `color(rec2020 0.7464 0.7162 0.5649)` WCAG 8.45 | `color(rec2020 0.8416 0.8123 0.6764)` WCAG 11.14 | `color(rec2020 0.9251 0.9022 0.8219)` WCAG 14.11 |
-| green | `color(rec2020 0.3434 0.3808 0.3133)` WCAG 2.38 | `color(rec2020 0.4716 0.5137 0.435)` WCAG 4.03 | `color(rec2020 0.5825 0.6296 0.5447)` WCAG 6.07 | `color(rec2020 0.6858 0.7343 0.6394)` WCAG 8.45 | `color(rec2020 0.7876 0.8283 0.744)` WCAG 11.14 | `color(rec2020 0.8938 0.9112 0.8632)` WCAG 14.12 |
-| mint | `color(rec2020 0.3266 0.381 0.3781)` WCAG 2.38 | `color(rec2020 0.4531 0.5139 0.5101)` WCAG 4.03 | `color(rec2020 0.5638 0.6291 0.6289)` WCAG 6.07 | `color(rec2020 0.6647 0.7344 0.729)` WCAG 8.45 | `color(rec2020 0.7703 0.828 0.8229)` WCAG 11.14 | `color(rec2020 0.8858 0.9105 0.9072)` WCAG 14.12 |
-| blue | `color(rec2020 0.337 0.3735 0.4237)` WCAG 2.38 | `color(rec2020 0.4649 0.5052 0.5621)` WCAG 4.03 | `color(rec2020 0.5768 0.6199 0.682)` WCAG 6.07 | `color(rec2020 0.6786 0.724 0.7904)` WCAG 8.45 | `color(rec2020 0.7825 0.8189 0.8757)` WCAG 11.14 | `color(rec2020 0.8925 0.9056 0.934)` WCAG 14.12 |
-| purple | `color(rec2020 0.3669 0.3613 0.4386)` WCAG 2.38 | `color(rec2020 0.4986 0.4911 0.5789)` WCAG 4.03 | `color(rec2020 0.6158 0.6035 0.6999)` WCAG 6.07 | `color(rec2020 0.7179 0.7074 0.8101)` WCAG 8.45 | `color(rec2020 0.8167 0.8043 0.8923)` WCAG 11.14 | `color(rec2020 0.912 0.8972 0.943)` WCAG 14.12 |
-| pink | `color(rec2020 0.3997 0.3498 0.4114)` WCAG 2.38 | `color(rec2020 0.5363 0.4781 0.5481)` WCAG 4.03 | `color(rec2020 0.6575 0.5894 0.6632)` WCAG 6.07 | `color(rec2020 0.7629 0.692 0.7741)` WCAG 8.45 | `color(rec2020 0.8563 0.7909 0.861)` WCAG 11.14 | `color(rec2020 0.9342 0.8899 0.9244)` WCAG 14.11 |
+| red | `color(rec2020 0.4199 0.3447 0.3576)` WCAG 2.37 | `color(rec2020 0.5605 0.4722 0.4865)` WCAG 4.02 | `color(rec2020 0.6824 0.5836 0.599)` WCAG 6.06 | `color(rec2020 0.7926 0.685 0.7012)` WCAG 8.44 | `color(rec2020 0.8822 0.7851 0.798)` WCAG 11.13 | `color(rec2020 0.9483 0.8869 0.8913)` WCAG 14.11 |
+| orange | `color(rec2020 0.4198 0.3504 0.2819)` WCAG 2.37 | `color(rec2020 0.561 0.4788 0.3986)` WCAG 4.02 | `color(rec2020 0.6833 0.5909 0.5015)` WCAG 6.06 | `color(rec2020 0.7939 0.6928 0.5957)` WCAG 8.44 | `color(rec2020 0.884 0.7918 0.705)` WCAG 11.13 | `color(rec2020 0.9499 0.8906 0.8386)` WCAG 14.11 |
+| yellow | `color(rec2020 0.3877 0.3672 0.2601)` WCAG 2.38 | `color(rec2020 0.5229 0.4981 0.3729)` WCAG 4.03 | `color(rec2020 0.6405 0.6122 0.4728)` WCAG 6.07 | `color(rec2020 0.7472 0.7158 0.5646)` WCAG 8.45 | `color(rec2020 0.8422 0.812 0.6774)` WCAG 11.14 | `color(rec2020 0.9254 0.902 0.8227)` WCAG 14.11 |
+| green | `color(rec2020 0.3476 0.38 0.305)` WCAG 2.38 | `color(rec2020 0.4763 0.5128 0.4254)` WCAG 4.03 | `color(rec2020 0.5889 0.6283 0.5312)` WCAG 6.07 | `color(rec2020 0.6913 0.7332 0.6278)` WCAG 8.45 | `color(rec2020 0.7931 0.8271 0.7335)` WCAG 11.14 | `color(rec2020 0.8977 0.9104 0.8549)` WCAG 14.12 |
+| mint | `color(rec2020 0.3273 0.3816 0.3687)` WCAG 2.38 | `color(rec2020 0.4538 0.5146 0.4993)` WCAG 4.03 | `color(rec2020 0.5645 0.6303 0.613)` WCAG 6.07 | `color(rec2020 0.6654 0.7353 0.7163)` WCAG 8.45 | `color(rec2020 0.7713 0.8287 0.811)` WCAG 11.14 | `color(rec2020 0.8863 0.9111 0.8985)` WCAG 14.12 |
+| blue | `color(rec2020 0.3339 0.3751 0.4183)` WCAG 2.38 | `color(rec2020 0.4614 0.507 0.5559)` WCAG 4.03 | `color(rec2020 0.573 0.6218 0.6751)` WCAG 6.07 | `color(rec2020 0.6745 0.7261 0.7831)` WCAG 8.45 | `color(rec2020 0.7794 0.8207 0.8687)` WCAG 11.14 | `color(rec2020 0.8909 0.9066 0.9302)` WCAG 14.12 |
+| purple | `color(rec2020 0.3598 0.364 0.439)` WCAG 2.38 | `color(rec2020 0.4905 0.4942 0.5793)` WCAG 4.03 | `color(rec2020 0.6046 0.6078 0.7008)` WCAG 6.07 | `color(rec2020 0.7084 0.711 0.8106)` WCAG 8.45 | `color(rec2020 0.8082 0.8077 0.8922)` WCAG 11.14 | `color(rec2020 0.9064 0.8994 0.9429)` WCAG 14.11 |
+| pink | `color(rec2020 0.3935 0.3518 0.4201)` WCAG 2.38 | `color(rec2020 0.5292 0.4804 0.5581)` WCAG 4.03 | `color(rec2020 0.6472 0.5926 0.6775)` WCAG 6.07 | `color(rec2020 0.7542 0.6947 0.7857)` WCAG 8.45 | `color(rec2020 0.8478 0.7936 0.871)` WCAG 11.14 | `color(rec2020 0.9282 0.8917 0.9315)` WCAG 14.11 |
 

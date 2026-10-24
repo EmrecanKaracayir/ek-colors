@@ -1,13 +1,13 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< REFERENCES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Reference systems: where each color belongs according to a body of color science. Each system    |
-| gives homes for the colors it defines (as CAM16 names or as measured colors) and the hues it     |
-| draws as guides; a color a system doesn't define falls back to CAM16. CAM16 is the default.      |
+| Reference systems: where a body of color science puts its hues, drawn as guides on the hue       |
+| graphs (pure hues solid, the rest dashed). Each system's hues are CAM16 names or measured        |
+| colors; any number of them can be shown at once.                                                 |
 \*------------------------------------------------------------------------------------------------*/
 
 import { hueOf, makeModel } from "./model";
-import { type Settings, STARTS } from "./settings";
+import type { Settings } from "./settings";
 
 /** A hue a system draws as a guide: a pure hue (solid) or an in-between one (dashed). */
 export interface Guide {
@@ -28,9 +28,10 @@ export interface ReferenceSystem {
   /** Where its numbers come from. */
   readonly source: string;
 
-  /** Per color, where it belongs: a CAM16 name or a measured color. */
-  readonly homes: Readonly<Record<string, string>>;
   readonly guides: readonly Guide[];
+
+  /** Its yellow, which the lineup can be anchored on. */
+  readonly yellow: string;
 }
 
 /* >----------------------------------------< Systems >-----------------------------------------< */
@@ -68,8 +69,8 @@ export const SYSTEMS: readonly ReferenceSystem[] = [
       "Unique hues from vision research, as built into the color model: pure red, yellow, green and blue, and the mixes between them.",
     source:
       "Li et al., Comprehensive color solutions: CAM16, CAT16 and CAM16-UCS, Color Research & Application, 2017 (hue quadrature).",
-    homes: STARTS,
     guides: CAM16_GUIDES,
+    yellow: "Y",
   },
   {
     id: "munsell",
@@ -78,71 +79,50 @@ export const SYSTEMS: readonly ReferenceSystem[] = [
       "Munsell's principal hues, spaced to look evenly different by observers in the 1930s and 40s: red 5R, orange 5YR, yellow 5Y, green 5G, mint 5BG, blue 5PB, purple 5P, pink 5RP.",
     source:
       "Newhall, Nickerson & Judd, Final report of the OSA subcommittee on the spacing of the Munsell colors, JOSA, 1943 (renotation data, value 5, chroma 10).",
-    homes: {
-      red: MUNSELL["5R"],
-      orange: MUNSELL["5YR"],
-      yellow: MUNSELL["5Y"],
-      green: MUNSELL["5G"],
-      mint: MUNSELL["5BG"],
-      blue: MUNSELL["5PB"],
-      purple: MUNSELL["5P"],
-      pink: MUNSELL["5RP"],
-    },
     guides: (Object.entries(MUNSELL) as [string, string][]).map(([label, at]) => ({
       label,
       at,
       unique: label.length === 2,
     })),
+    yellow: MUNSELL["5Y"],
   },
   {
     id: "ncs",
     name: "NCS",
     summary:
-      "The Natural Color System's four elementary hues, as painters and architects use them: the yellow, red, blue and green with no trace of their neighbors. Its mixes fall back to CAM16.",
+      "The Natural Color System's four elementary hues, as painters and architects use them: the yellow, red, blue and green with no trace of their neighbors.",
     source:
       "NCS Colour AB; screen approximations of NCS 0580-Y, S 1080-R, 2060-B and 2060-G from its NCS Navigator, as listed on Wikipedia. The measured values are in the paid standard SS 19104.",
-    homes: { yellow: "#FFD300", red: "#C40233", blue: "#0087BD", green: "#009F6B" },
     guides: [
       { label: "Y", at: "#FFD300", unique: true },
       { label: "R", at: "#C40233", unique: true },
       { label: "B", at: "#0087BD", unique: true },
       { label: "G", at: "#009F6B", unique: true },
     ],
+    yellow: "#FFD300",
   },
   {
     id: "unique",
     name: "Unique hues",
     summary:
-      "Where observers in lab studies set pure red, yellow, green and blue, averaged. Unique green varies the most between people. Other colors fall back to CAM16.",
+      "Where observers in lab studies set pure red, yellow, green and blue, averaged. Unique green varies the most between people.",
     source:
       "Kuehni, Determination of unique hues using Munsell color chips, Color Research & Application, 2001 (mean chips 3R, 3.5Y, 2.5BG, 2.75PB), as reported by Wright, Prime colors and the hues; converted at Munsell value 5, chroma 10.",
-    homes: {
-      red: "color(xyz-d65 0.27986 0.19176 0.13411)",
-      yellow: "color(xyz-d65 0.19312 0.19324 0.01482)",
-      green: "color(xyz-d65 0.10069 0.19372 0.21758)",
-      blue: "color(xyz-d65 0.17438 0.19184 0.50820)",
-    },
     guides: [
       { label: "R", at: "color(xyz-d65 0.27986 0.19176 0.13411)", unique: true },
       { label: "Y", at: "color(xyz-d65 0.19312 0.19324 0.01482)", unique: true },
       { label: "G", at: "color(xyz-d65 0.10069 0.19372 0.21758)", unique: true },
       { label: "B", at: "color(xyz-d65 0.17438 0.19184 0.50820)", unique: true },
     ],
+    yellow: "color(xyz-d65 0.19312 0.19324 0.01482)",
   },
   {
     id: "focal",
     name: "Focal colors",
     summary:
-      "The best examples of red, yellow, green, blue and purple chosen by speakers of over a hundred languages in the World Color Survey. Other colors fall back to CAM16.",
+      "The best examples of red, yellow, green, blue and purple chosen by speakers of over a hundred languages in the World Color Survey.",
     source:
       "World Color Survey chips G1 (2.5R 4/14), C9 (2.5Y 8/16), F17 (2.5G 5/12), F29 (2.5PB 5/12) and H34 (5P 3/10), CIELAB under illuminant C; focal hues after MacLaury 1997 and Regier, Kay & Cook, PNAS 2005.",
-    homes: {
-      red: "color(xyz-d65 0.22536 0.11883 0.07142)",
-      yellow: "color(xyz-d65 0.59992 0.59263 0.02931)",
-      green: "color(xyz-d65 0.08950 0.19929 0.09208)",
-      blue: "color(xyz-d65 0.17627 0.19649 0.60571)",
-      purple: "color(xyz-d65 0.10249 0.06463 0.19475)",
-    },
     guides: [
       { label: "Red", at: "color(xyz-d65 0.22536 0.11883 0.07142)", unique: true },
       { label: "Yellow", at: "color(xyz-d65 0.59992 0.59263 0.02931)", unique: true },
@@ -150,11 +130,9 @@ export const SYSTEMS: readonly ReferenceSystem[] = [
       { label: "Blue", at: "color(xyz-d65 0.17627 0.19649 0.60571)", unique: true },
       { label: "Purple", at: "color(xyz-d65 0.10249 0.06463 0.19475)", unique: false },
     ],
+    yellow: "color(xyz-d65 0.59992 0.59263 0.02931)",
   },
 ];
-
-/** Not a system: each color is pulled toward whichever system's home is closest to it. */
-export const NEAREST = "nearest";
 
 /* >---------------------------------------< Resolving >----------------------------------------< */
 
@@ -162,7 +140,7 @@ const NAME = /^[RYGB]( \d+ [RYGB])?$/;
 const cache = new Map<string, number>();
 
 /**
- * A home or guide as a CAM16 hue. A name is exact; a measured color's hue depends a little on the
+ * A guide as a CAM16 hue. A name is exact; a measured color's hue depends a little on the
  * room and base, so it's the average of light and dark.
  *
  * @param settings  The bases and rooms.
@@ -183,55 +161,30 @@ export function hueAt(settings: Pick<Settings, "bases" | "rooms">, at: string): 
 }
 
 /**
- * The reference system settings point at.
+ * The guides of every system the settings show, as hues.
  *
  * @param settings  The settings.
- * @returns         The system; CAM16 when unknown.
+ * @returns         Each guide's system, label, hue and whether it's a pure hue.
  */
-export function system(settings: Pick<Settings, "reference">): ReferenceSystem {
-  return SYSTEMS.find((s) => s.id === settings.reference) ?? SYSTEMS[0]!;
+export function guides(settings: Pick<Settings, "bases" | "rooms" | "guides">) {
+  return SYSTEMS.filter((s) => settings.guides.includes(s.id)).flatMap((s) =>
+    s.guides.map((g) => ({
+      system: s.id,
+      label: g.label,
+      hue: hueAt(settings, g.at),
+      unique: g.unique,
+    })),
+  );
 }
 
 /**
- * Where a color belongs by default under the settings' reference system, falling back to CAM16.
+ * The hue the lineup is anchored on.
  *
  * @param settings  The settings.
- * @param key       The color.
  * @returns         CAM16 hue (degrees).
  */
-export function systemHome(
-  settings: Pick<Settings, "bases" | "rooms" | "reference">,
-  key: string,
-): number {
-  return hueAt(settings, system(settings).homes[key] ?? STARTS[key] ?? "R");
-}
-
-/**
- * Where a color may belong: under one system, its home there; under "nearest", its home in every
- * system, so the closest one can be chosen.
- *
- * @param settings  The settings.
- * @param key       The color.
- * @returns         CAM16 hues (degrees).
- */
-export function systemHomes(
-  settings: Pick<Settings, "bases" | "rooms" | "reference">,
-  key: string,
-): number[] {
-  if (settings.reference !== NEAREST) return [systemHome(settings, key)];
-  return [...new Set(SYSTEMS.map((s) => hueAt(settings, s.homes[key] ?? STARTS[key] ?? "R")))];
-}
-
-/**
- * The guides the settings' reference system draws, as hues.
- *
- * @param settings  The settings.
- * @returns         Each guide's label, hue and whether it's a pure hue.
- */
-export function guides(settings: Pick<Settings, "bases" | "rooms" | "reference">) {
-  return system(settings).guides.map((g) => ({
-    label: g.label,
-    hue: hueAt(settings, g.at),
-    unique: g.unique,
-  }));
+export function anchorHue(settings: Pick<Settings, "bases" | "rooms" | "anchor">): number {
+  if (typeof settings.anchor === "number") return settings.anchor;
+  const system = SYSTEMS.find((s) => s.id === settings.anchor) ?? SYSTEMS[0]!;
+  return hueAt(settings, system.yellow);
 }
