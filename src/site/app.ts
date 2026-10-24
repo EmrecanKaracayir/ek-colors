@@ -51,6 +51,9 @@ const state = {
   format: "json" as Format,
   gamut: SCREEN,
   palettes: {} as Partial<Record<Gamut, GamutPalette>>,
+
+  /** The same settings without exceptions, for comparing in Settings. */
+  baselines: {} as Partial<Record<Gamut, GamutPalette>>,
   solving: false,
   took: 0,
   error: null as string | null,
@@ -89,7 +92,10 @@ function save(): void {
 
 /* >-----------------------------------------< Solve >------------------------------------------< */
 
-const worker = new Worker("worker.js", { type: "module" });
+/** The worker, at the same version as this script, so the two always match. */
+const WORKER = new URL(`worker.js${new URL(import.meta.url).search}`, import.meta.url);
+
+const worker = new Worker(WORKER, { type: "module" });
 let latest = 0;
 let timer = 0;
 
@@ -135,8 +141,43 @@ function solve(wait = 0): void {
   timer = window.setTimeout(() => {
     latest++;
     state.palettes = {};
+    state.baselines = {};
     post(state.gamut);
+    compareExceptions();
   }, wait);
+}
+
+/* >---------------------------------------< Exceptions >---------------------------------------< */
+
+// A second worker solves the settings without exceptions, so both can be shown side by side.
+const baseline = new Worker(WORKER, { type: "module" });
+let asked = "";
+
+baseline.addEventListener("message", (event: MessageEvent<Response>) => {
+  const data = event.data;
+  if (data.id !== latest || "error" in data) return;
+  state.baselines[data.gamut] = data.palette;
+  if (state.view === "tune") updateTune();
+});
+
+/**
+ * Whether any color has an exception.
+ *
+ * @returns  True when an exception isn't zero.
+ */
+function hasExceptions(): boolean {
+  return Object.values(state.settings.offsets).some((o) => Object.values(o).some((v) => v !== 0));
+}
+
+/**
+ * Asks for the gamut tier on screen without exceptions, once per change.
+ */
+function compareExceptions(): void {
+  const key = `${String(latest)}:${state.gamut}`;
+  if (!hasExceptions() || state.baselines[state.gamut] || asked === key) return;
+  asked = key;
+  const settings = { ...state.settings, offsets: { light: {}, dark: {} } };
+  baseline.postMessage({ id: latest, settings, gamut: state.gamut } satisfies Request);
 }
 
 /**
@@ -631,12 +672,23 @@ function updateTune(): void {
   const strip = document.querySelector("#tune-preview");
   if (!strip) return;
   const tier = state.settings.identityTier[state.mode];
-  strip.innerHTML = colors()
-    .map((c) => {
-      const s = c.tiers[tier]?.default;
-      return s ? `<span class="strip-item" style="--c:${s.color}" title="${label(c.key)} ${s.color}"><span class="fill"></span><span class="mono">${s.color.startsWith("#") ? s.color : label(c.key)}</span></span>` : "";
-    })
-    .join("");
+  const offsets = state.settings.offsets[state.mode];
+  const row = (list: readonly Color[], marked: boolean) =>
+    `<div class="strip-items">${list
+      .map((c) => {
+        const s = c.tiers[tier]?.default;
+        if (!s) return "";
+        const offset = marked ? (offsets[c.key] ?? 0) : 0;
+        const name = `${label(c.key)}${offset ? ` ${offset > 0 ? "+" : ""}${String(offset)}` : ""}`;
+        return `<span class="strip-item${offset ? " changed" : ""}" style="--c:${s.color}" title="${name} ${s.color}"><span class="fill"></span><span class="mono">${name}</span></span>`;
+      })
+      .join("")}</div>`;
+  compareExceptions();
+  const without = state.baselines[state.gamut]?.[state.mode].colors;
+  strip.innerHTML =
+    hasExceptions() && without
+      ? `<span class="strip-label">Without exceptions</span>${row(without, false)}<span class="strip-label">With exceptions</span>${row(colors(), true)}`
+      : row(colors(), false);
   // A new hue count brings new colors, so their exceptions need drawing.
   const shown = document.querySelectorAll('[data-set^="offsets.light."]').length;
   if (shown !== colors().filter((c) => c.key !== "brown").length) render();
