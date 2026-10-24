@@ -12,6 +12,11 @@ export type Mode = "light" | "dark";
 
 export const MODES = ["light", "dark"] as const satisfies readonly Mode[];
 
+/** How much colour a screen can show: every screen, most new ones, and the widest. */
+export type Gamut = "standard" | "wide" | "ultra";
+
+export const GAMUTS = ["standard", "wide", "ultra"] as const satisfies readonly Gamut[];
+
 /** Where a mode's colours are seen: how bright the room is, and how bright its surround is. */
 export interface Room {
   /** Ambient light in lux. */

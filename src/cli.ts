@@ -9,7 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 
 import { CONFIG } from "./config";
 import { toCsv, toJson, toMarkdown } from "./palette/formats";
-import { MODES } from "./palette/settings";
+import { GAMUTS, MODES } from "./palette/settings";
 import { solvePalette } from "./palette/solve";
 
 const palette = solvePalette(CONFIG);
@@ -19,13 +19,18 @@ writeFileSync("out/palette.json", toJson(CONFIG, palette));
 writeFileSync("out/palette.csv", toCsv(CONFIG, palette));
 writeFileSync("out/palette.md", toMarkdown(CONFIG, palette));
 
+for (const gamut of GAMUTS) {
+  console.log(
+    `${gamut}: M per tier, light ${JSON.stringify(palette[gamut].light.targets)} dark ${JSON.stringify(palette[gamut].dark.targets)}`,
+  );
+}
 for (const mode of MODES) {
   const tier = CONFIG.identityTier;
-  const colours = palette[mode].colours.map((c) => {
+  const colours = palette.standard[mode].colours.map((c) => {
     const s = c.tiers[tier]!.default;
-    return `${c.key} ${s.hex}${s.short ? "*" : ""}`;
+    return `${c.key} ${s.color}${s.short ? "*" : ""}`;
   });
   console.log(
-    `${mode} Lc ${String(tier)}: ${colours.join(" ")} · ring ${palette[mode].ring[tier]!.join(" ")}`,
+    `${mode} Lc ${String(tier)}: ${colours.join(" ")} · ring ${palette.standard[mode].ring[tier]!.join(" ")}`,
   );
 }

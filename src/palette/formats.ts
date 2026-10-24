@@ -6,7 +6,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import type { Palette } from "./solve";
-import { MODES, type Settings } from "./settings";
+import { GAMUTS, MODES, type Settings } from "./settings";
 
 /**
  * The palette and what it was solved from, as JSON.
@@ -28,32 +28,35 @@ export function toJson(settings: Settings, palette: Palette): string {
  */
 export function toCsv(settings: Settings, palette: Palette): string {
   const rows = [
-    "mode,tier,variant,colour,hex,cam16_hue,cam16_chroma,cam16_colourfulness,cam16_lightness,cam16_name,apca,wcag2,wcag2_level",
+    "gamut,mode,tier,variant,colour,color,cam16_hue,cam16_chroma,cam16_colourfulness,cam16_lightness,cam16_name,apca,wcag2,wcag2_level",
   ];
-  for (const mode of MODES) {
-    for (const colour of palette[mode].colours) {
-      for (const tier of settings.tiers) {
-        const cell = colour.tiers[tier]!;
-        for (const variant of ["default", "muted"] as const) {
-          const s = cell[variant];
-          if (!s) continue;
-          rows.push(
-            [
-              mode,
-              tier,
-              variant,
-              colour.key,
-              s.hex,
-              s.hue,
-              s.chroma,
-              s.colourfulness,
-              s.lightness,
-              s.name,
-              s.apca,
-              s.wcag,
-              s.wcagLevel,
-            ].join(","),
-          );
+  for (const gamut of GAMUTS) {
+    for (const mode of MODES) {
+      for (const colour of palette[gamut][mode].colours) {
+        for (const tier of settings.tiers) {
+          const cell = colour.tiers[tier]!;
+          for (const variant of ["default", "muted"] as const) {
+            const s = cell[variant];
+            if (!s) continue;
+            rows.push(
+              [
+                gamut,
+                mode,
+                tier,
+                variant,
+                colour.key,
+                `"${s.color}"`,
+                s.hue,
+                s.chroma,
+                s.colourfulness,
+                s.lightness,
+                s.name,
+                s.apca,
+                s.wcag,
+                s.wcagLevel,
+              ].join(","),
+            );
+          }
         }
       }
     }
@@ -70,23 +73,26 @@ export function toCsv(settings: Settings, palette: Palette): string {
  */
 export function toMarkdown(settings: Settings, palette: Palette): string {
   const md = ["# Codemos palette v2", ""];
-  for (const mode of MODES) {
-    md.push(`## ${mode === "light" ? "Light" : "Dark"} · base ${settings.bases[mode]}`, "");
-    for (const variant of ["default", "muted"] as const) {
-      md.push(
-        `### ${variant === "default" ? "Default" : "Muted"}`,
-        "",
-        `| Colour | ${settings.tiers.map((t) => `Lc ${String(t)}`).join(" | ")} |`,
-        `|---|${settings.tiers.map(() => "---").join("|")}|`,
-      );
-      for (const colour of palette[mode].colours) {
-        const cells = settings.tiers.map((t) => colour.tiers[t]![variant]);
-        if (cells.every((s) => !s)) continue;
+  for (const gamut of GAMUTS) {
+    md.push(`## ${gamut.charAt(0).toUpperCase()}${gamut.slice(1)} gamut`, "");
+    for (const mode of MODES) {
+      md.push(`### ${mode === "light" ? "Light" : "Dark"} · base ${settings.bases[mode]}`, "");
+      for (const variant of ["default", "muted"] as const) {
         md.push(
-          `| ${colour.key} | ${cells.map((s) => (s ? `\`${s.hex}\` WCAG ${s.wcag.toFixed(2)}` : "")).join(" | ")} |`,
+          `#### ${variant === "default" ? "Default" : "Muted"}`,
+          "",
+          `| Colour | ${settings.tiers.map((t) => `Lc ${String(t)}`).join(" | ")} |`,
+          `|---|${settings.tiers.map(() => "---").join("|")}|`,
         );
+        for (const colour of palette[gamut][mode].colours) {
+          const cells = settings.tiers.map((t) => colour.tiers[t]![variant]);
+          if (cells.every((s) => !s)) continue;
+          md.push(
+            `| ${colour.key} | ${cells.map((s) => (s ? `\`${s.color}\` WCAG ${s.wcag.toFixed(2)}` : "")).join(" | ")} |`,
+          );
+        }
+        md.push("");
       }
-      md.push("");
     }
   }
   return `${md.join("\n")}\n`;

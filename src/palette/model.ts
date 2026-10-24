@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< MODEL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Colour as it appears on each base in its room: CAM16 under that mode's viewing conditions        |
-| (Google's material-color-utilities), contrast by WCAG 2 and APCA (Color.js), and CAM16's hue     |
-| names.                                                                                           |
+| Colour as it appears on each base in its room, for one gamut tier: CAM16 under that mode's       |
+| viewing conditions (Google's material-color-utilities), contrast by WCAG 2 and APCA (Color.js),  |
+| and CAM16's hue names.                                                                           |
 \*------------------------------------------------------------------------------------------------*/
 
 import {
@@ -18,16 +18,23 @@ import {
   contrastWCAG21,
   getColor,
   inGamut,
+  P3,
+  REC_2020,
   serialize,
   sRGB,
   to,
   XYZ_D65,
 } from "colorjs.io/fn";
 
-import type { Mode, Settings } from "./settings";
+import type { Gamut, Mode, Settings } from "./settings";
 
-ColorSpace.register(sRGB);
-ColorSpace.register(XYZ_D65);
+for (const space of [sRGB, P3, REC_2020, XYZ_D65]) ColorSpace.register(space);
+
+/** The colour space each gamut tier's colours are written in. */
+const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies Record<
+  Gamut,
+  unknown
+>;
 
 /* >-----------------------------------< Viewing conditions >-----------------------------------< */
 
@@ -36,9 +43,9 @@ const LUX_TO_ADAPTING = 0.0586;
 
 export interface Model {
   /** The colour in CAM16 as it appears in a mode. */
-  readonly cam: (mode: Mode, hex: string) => Cam16;
+  readonly cam: (mode: Mode, color: string) => Cam16;
 
-  /** The colour with a CAM16 lightness, colourfulness and hue, or null off-screen. */
+  /** The colour with a CAM16 lightness, colourfulness and hue, or null when the gamut can't show it. */
   readonly colorAt: (mode: Mode, hue: number, colourfulness: number, j: number) => string | null;
 
   /** How different two colours look (CAM16-UCS). */
@@ -46,13 +53,17 @@ export interface Model {
 }
 
 /**
- * The colour model for a set of settings: CAM16 told what each mode's eye looks at (its base as
- * the background) and where (its room).
+ * The colour model for a set of settings and a gamut: CAM16 told what each mode's eye looks at
+ * (its base as the background) and where (its room), and which screens the colours are for.
  *
  * @param settings  The bases and rooms.
+ * @param gamut     The gamut tier colours must fit.
  * @returns         CAM16 conversions and distance for both modes.
  */
-export function makeModel(settings: Pick<Settings, "bases" | "rooms">): Model {
+export function makeModel(
+  settings: Pick<Settings, "bases" | "rooms">,
+  gamut: Gamut = "standard",
+): Model {
   const viewing = (mode: Mode) =>
     ViewingConditions.make(
       undefined,
@@ -64,11 +75,14 @@ export function makeModel(settings: Pick<Settings, "bases" | "rooms">): Model {
     light: viewing("light"),
     dark: viewing("dark"),
   };
-  const cam = (mode: Mode, hex: string) =>
-    Cam16.fromIntInViewingConditions(argbFromHex(hex), conditions[mode]);
+  const cam = (mode: Mode, color: string) => {
+    const [x, y, z] = to(getColor(color), XYZ_D65).coords as [number, number, number];
+    return Cam16.fromXyzInViewingConditions(x * 100, y * 100, z * 100, conditions[mode]);
+  };
   return {
     cam,
-    colorAt: (mode, hue, colourfulness, j) => colorAt(conditions[mode], hue, colourfulness, j),
+    colorAt: (mode, hue, colourfulness, j) =>
+      colorAt(conditions[mode], gamut, hue, colourfulness, j),
     distance: (mode, a, b) => cam(mode, a).distance(cam(mode, b)),
   };
 }
@@ -82,13 +96,15 @@ export function makeModel(settings: Pick<Settings, "bases" | "rooms">): Model {
  * taken out (M divided by the fourth root of the luminance adaptation).
  *
  * @param conditions     Where it is seen.
+ * @param gamut          The gamut tier it must fit.
  * @param hue            CAM16 hue (degrees).
  * @param colourfulness  CAM16 colourfulness (M).
  * @param j              CAM16 lightness (0 to 100).
- * @returns              It as #RRGGBB, or null when a screen can't show it.
+ * @returns              It as CSS (#RRGGBB on the standard tier), or null when the gamut can't show it.
  */
 function colorAt(
   conditions: ViewingConditions,
+  gamut: Gamut,
   hue: number,
   colourfulness: number,
   j: number,
@@ -100,13 +116,20 @@ function colorAt(
     hue,
     conditions,
   ).xyzInViewingConditions(conditions) as [number, number, number];
+  const space = SPACES[gamut];
   const color = {
     space: XYZ_D65,
     coords: [x / 100, y / 100, z / 100] as [number, number, number],
     alpha: 1,
   };
-  if (!inGamut(color, sRGB, { epsilon: 0.0005 })) return null;
-  return serialize(to(color, sRGB), { format: "hex", collapse: false }).toUpperCase();
+  if (!inGamut(color, space, { epsilon: 0.0005 })) return null;
+  const inSpace = to(color, space);
+  if (gamut === "standard")
+    return serialize(inSpace, { format: "hex", collapse: false }).toUpperCase();
+  const coords = inSpace.coords.map(
+    (c) => Math.round(Math.min(1, Math.max(0, c ?? 0)) * 10_000) / 10_000,
+  );
+  return serialize({ ...inSpace, coords: coords as [number, number, number] });
 }
 
 /* >----------------------------------------< Contrast >----------------------------------------< */

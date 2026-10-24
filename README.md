@@ -17,6 +17,9 @@ rather than picked.
 - **Hues.** Yellow is the anchor, one hue per mode, set a little warmer than pure yellow so a darkened yellow doesn't
   turn olive. Every other hue moves within its name until neighbours are equally different in
   CAM16-UCS, first on the identity tier (45), then a little on each tier.
+- **Gamut tiers.** Every palette is solved three times, each on its own: standard (every screen,
+  written as hex), wide (most new phones and computers) and ultra (the widest screens). Wider tiers
+  reach more colourfulness on the tiers where the standard one runs out.
 - **Muted.** The same hue on the same tier at half the default's colourfulness. Brown is default only.
 
 The colour model is Google's

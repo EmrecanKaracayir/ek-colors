@@ -8,8 +8,8 @@
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, REFERENCES, wcag, wcagLevel } from "../palette/model";
-import { type Mode, NAMES, type Settings, V1, V1_MUTED } from "../palette/settings";
-import type { Colour, Palette, Swatch } from "../palette/solve";
+import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, V1, V1_MUTED } from "../palette/settings";
+import type { Colour, GamutPalette, Palette, Swatch } from "../palette/solve";
 import type { Request, Response } from "./worker";
 
 /* >-----------------------------------------< State >------------------------------------------< */
@@ -31,13 +31,21 @@ const ROLES: Readonly<Record<number, string>> = {
   90: "Long reading",
 };
 
+/** The widest gamut tier this screen covers. */
+const SCREEN: Gamut = matchMedia("(color-gamut: rec2020)").matches
+  ? "ultra"
+  : matchMedia("(color-gamut: p3)").matches
+    ? "wide"
+    : "standard";
+
 const state = {
   settings: load(),
   mode: (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light") as Mode,
   variant: "default" as Variant,
   view: "overview",
   format: "json" as Format,
-  palette: null as Palette | null,
+  gamut: SCREEN,
+  palettes: {} as Partial<Record<Gamut, GamutPalette>>,
   solving: false,
   took: 0,
   error: null as string | null,
@@ -78,16 +86,35 @@ let timer = 0;
 worker.addEventListener("message", (event: MessageEvent<Response>) => {
   const data = event.data;
   if (data.id !== latest) return;
-  state.solving = false;
-  if ("error" in data) state.error = data.error;
-  else [state.palette, state.took, state.error] = [data.palette, data.took, null];
-  if (state.view === "tune") updateTune();
-  else render();
+  if ("error" in data) {
+    [state.solving, state.error] = [false, data.error];
+    status();
+    return;
+  }
+  state.palettes[data.gamut] = data.palette;
+  const shown = data.gamut === state.gamut;
+  if (shown) [state.solving, state.took, state.error] = [false, data.took, null];
+  // The other gamut tiers solve after the one on screen, one at a time, so a newer change can start sooner.
+  const next = GAMUTS.find((g) => !state.palettes[g]);
+  if (next) post(next);
+  if (shown || state.view === "export") {
+    if (state.view === "tune") updateTune();
+    else render();
+  }
   status();
 });
 
 /**
- * Solves the current settings, a moment after the last change.
+ * Asks the worker for one gamut tier of the current settings.
+ *
+ * @param gamut  The gamut tier.
+ */
+function post(gamut: Gamut): void {
+  worker.postMessage({ id: latest, settings: state.settings, gamut } satisfies Request);
+}
+
+/**
+ * Solves the current settings, a moment after the last change: the gamut tier on screen first.
  *
  * @param wait  Milliseconds to wait for more changes.
  */
@@ -97,8 +124,18 @@ function solve(wait = 0): void {
   status();
   timer = window.setTimeout(() => {
     latest++;
-    worker.postMessage({ id: latest, settings: state.settings } satisfies Request);
+    state.palettes = {};
+    post(state.gamut);
   }, wait);
+}
+
+/**
+ * The palette on screen.
+ *
+ * @returns  The current gamut tier's palette, or null while it solves.
+ */
+function current(): GamutPalette | null {
+  return state.palettes[state.gamut] ?? null;
 }
 
 /* >----------------------------------------< Helpers >-----------------------------------------< */
@@ -143,11 +180,11 @@ function badge(level: Swatch["wcagLevel"]): string {
  */
 function card(s: Swatch, title: string, href?: string): string {
   const tag = href ? "a" : "div";
-  return `<${tag} class="card"${href ? ` href="#${href}"` : ""} style="--c:${s.hex}">
+  return `<${tag} class="card"${href ? ` href="#${href}"` : ""} style="--c:${s.color}">
     <span class="fill"></span>
     <span class="sample">Aa</span>
     <span class="card-name">${title}</span>
-    <span class="mono">${s.hex}</span>
+    <span class="mono value">${s.color}</span>
     <span class="facts"><span class="mono">Lc ${s.apca.toFixed(1)}</span>${badge(s.wcagLevel)}</span>
     <span class="mono soft">WCAG ${s.wcag.toFixed(2)} · M ${s.colourfulness.toFixed(1)}${s.short ? " ▾" : ""}</span>
   </${tag}>`;
@@ -159,7 +196,7 @@ function card(s: Swatch, title: string, href?: string): string {
  * @returns  Its colours, or none before the first solve.
  */
 function colours(): readonly Colour[] {
-  return state.palette?.[state.mode].colours ?? [];
+  return current()?.[state.mode].colours ?? [];
 }
 
 /**
@@ -177,7 +214,7 @@ function range(ring: readonly number[]): string {
 interface Dot {
   readonly hue: number;
   readonly m: number;
-  readonly hex: string;
+  readonly color: string;
   readonly hollow?: boolean;
 }
 
@@ -207,8 +244,8 @@ function circle(dots: readonly Dot[]): string {
   const marks = dots.map((d) => {
     const [x, y] = at(d.hue, (Math.min(d.m, max) / max) * R);
     return d.hollow
-      ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="none" stroke="${d.hex}" stroke-width="2.5"></circle>`
-      : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="${d.hex}"></circle>`;
+      ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="none" stroke="${d.color}" stroke-width="2.5"></circle>`
+      : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="${d.color}"></circle>`;
   });
   return `<svg class="circle" viewBox="-200 -200 400 400" role="img" aria-label="Hue circle">
     ${rings.join("")}${spokes.join("")}${marks.join("")}</svg>`;
@@ -226,7 +263,7 @@ function overview(): string {
   const tier = settings.identityTier;
   const room = settings.rooms[mode];
   const list = colours();
-  const ring = state.palette?.[mode].ring[tier] ?? [];
+  const ring = current()?.[mode].ring[tier] ?? [];
   return `<section class="intro">
       <h1>Codemos palette v2</h1>
       <p>${String(list.length)} colours that read the same on the ${mode} base: each sits exactly on its APCA contrast, aims at the same colourfulness, and is as different from its neighbours as they are from theirs.</p>
@@ -241,11 +278,11 @@ function overview(): string {
         .join("")}</div>
     </section>
     <section class="split">
-      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, ...(c.tiers[tier]!.muted ? [c.tiers[tier]!.muted!] : [])]).map((s) => ({ hue: s.hue, m: s.colourfulness, hex: s.hex })))}</div>
+      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, ...(c.tiers[tier]!.muted ? [c.tiers[tier]!.muted!] : [])]).map((s) => ({ hue: s.hue, m: s.colourfulness, color: s.color })))}</div>
       <dl class="facts-list">
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${["dark", "dim", "average"][room.surround] ?? ""} surround</dd></div>
-        <div><dt>Colourfulness</dt><dd>M ${String(state.palette?.[mode].targets[tier] ?? settings.colourfulness)} on this tier (target ${String(settings.colourfulness)}), muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
+        <div><dt>Colourfulness</dt><dd>M ${String(current()?.[mode].targets[tier] ?? settings.colourfulness)} on this tier (target ${String(settings.colourfulness)}), muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
         <div><dt>Yellow</dt><dd>hue ${String(settings.yellowHue[mode])}°</dd></div>
         <div><dt>Neighbour differences</dt><dd>${ring.length ? range(ring) : "…"} (CAM16-UCS)</dd></div>
         <div><dt>▾</dt><dd>The screen held this colour below its colourfulness.</dd></div>
@@ -268,11 +305,11 @@ function tiers(): string {
     </section>
     ${settings.tiers
       .map((tier) => {
-        const ring = state.palette?.[mode].ring[tier] ?? [];
+        const ring = current()?.[mode].ring[tier] ?? [];
         const list = colours().filter((c) => c.tiers[tier]![variant]);
         return `<section>
           <h2>Lc ${String(tier)} <span class="soft">· ${ROLES[tier] ?? ""}</span></h2>
-          <p class="soft">Colourfulness M ${String(state.palette?.[mode].targets[tier] ?? "…")} · neighbour differences ${ring.length ? range(ring) : "…"}</p>
+          <p class="soft">Colourfulness M ${String(current()?.[mode].targets[tier] ?? "…")} · neighbour differences ${ring.length ? range(ring) : "…"}</p>
           <div class="cards small">${list.map((c) => card(c.tiers[tier]![variant]!, label(c.key), c.key)).join("")}</div>
         </section>`;
       })
@@ -304,13 +341,13 @@ function colour(key: string): string {
             const s = c.tiers[t]![variant]!;
             return `<tr>
               <th scope="row">Lc ${String(t)}<span class="soft">${ROLES[t] ?? ""}</span></th>
-              <td><span class="pair" style="--c:${s.hex}"><span class="fill"></span><span class="sample">Aa</span></span></td>
-              <td class="mono">${s.hex}</td>
+              <td><span class="pair" style="--c:${s.color}"><span class="fill"></span><span class="sample">Aa</span></span></td>
+              <td class="mono">${s.color}</td>
               <td class="mono">${s.apca.toFixed(1)}</td>
               <td><span class="mono">${s.wcag.toFixed(2)}</span> ${badge(s.wcagLevel)}</td>
               <td class="mono">${s.lightness.toFixed(1)}</td>
               <td class="mono">${s.chroma.toFixed(1)}</td>
-              <td class="mono">${s.colourfulness.toFixed(1)}${s.short && variant === "default" ? ` <span class="soft">of ${((state.palette?.[state.mode].targets[t] ?? 0) + c.target - state.settings.colourfulness).toFixed(0)}</span>` : ""}</td>
+              <td class="mono">${s.colourfulness.toFixed(1)}${s.short && variant === "default" ? ` <span class="soft">of ${((current()?.[state.mode].targets[t] ?? 0) + c.target - state.settings.colourfulness).toFixed(0)}</span>` : ""}</td>
               <td class="mono">${s.hue.toFixed(1)}° <span class="soft">${s.name}</span></td>
             </tr>`;
           })
@@ -319,9 +356,9 @@ function colour(key: string): string {
     </section>`;
   };
   return `<nav class="chips" aria-label="Colours">${list
-    .map((x) => `<a href="#${x.key}" style="--c:${x.tiers[state.settings.identityTier]!.default.hex}"${x.key === key ? ' aria-current="page"' : ""}><span class="dot"></span>${label(x.key)}</a>`)
+    .map((x) => `<a href="#${x.key}" style="--c:${x.tiers[state.settings.identityTier]!.default.color}"${x.key === key ? ' aria-current="page"' : ""}><span class="dot"></span>${label(x.key)}</a>`)
     .join("")}</nav>
-    <section class="intro hero" style="--c:${id.hex}">
+    <section class="intro hero" style="--c:${id.color}">
       <h1>${label(key)}</h1>
       <p>CAM16 hue ${id.hue.toFixed(1)}°, read as ${id.name}. Aims at colourfulness ${c.target.toFixed(0)}${state.settings.offsets[state.mode][key] ? `, ${state.settings.offsets[state.mode][key]! > 0 ? "+" : ""}${String(state.settings.offsets[state.mode][key])} from the target` : ""}.${state.settings.equalTiers ? " A tier lowers it to what its least colourful hue can reach." : ""}</p>
     </section>
@@ -347,17 +384,17 @@ function compare(): string {
   const rows = colours()
     .filter((c) => source[c.key] && c.tiers[tier]![variant])
     .map((c) => {
-      const hex = source[c.key]!;
-      const cam = model.cam(mode, hex);
-      const ratio = wcag(hex, base);
+      const color = source[c.key]!;
+      const cam = model.cam(mode, color);
+      const ratio = wcag(color, base);
       const old: Swatch = {
-        hex,
+        color,
         hue: cam.hue,
         chroma: cam.chroma,
         colourfulness: cam.m,
         lightness: cam.j,
         name: "",
-        apca: apca(hex, base),
+        apca: apca(color, base),
         wcag: ratio,
         wcagLevel: wcagLevel(ratio),
         short: false,
@@ -366,8 +403,8 @@ function compare(): string {
     });
   const ring = (list: readonly string[]) => list.map((h, i) => model.distance(mode, h, list[(i + 1) % list.length]!));
   const hues = rows.filter((r) => r.key !== "brown");
-  const oldRing = ring(hues.map((r) => r.old.hex));
-  const newRing = ring(hues.map((r) => r.now.hex));
+  const oldRing = ring(hues.map((r) => r.old.color));
+  const newRing = ring(hues.map((r) => r.now.color));
   const most = Math.max(...oldRing, ...newRing);
   const bars = (values: readonly number[]) =>
     values
@@ -381,7 +418,7 @@ function compare(): string {
       <p>v1's ${variant} colours next to v2's on Lc ${String(tier)}, on the ${mode} base. v1 was picked by eye; v2 is solved.</p>
     </section>
     <section class="split">
-      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colourfulness, hex: r.old.hex, hollow: true })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colourfulness, hex: r.now.hex }))])}</div>
+      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colourfulness, color: r.old.color, hollow: true })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colourfulness, color: r.now.color }))])}</div>
       <div class="legend">
         <p><span class="key hollow"></span> v1 <span class="key"></span> v2</p>
         <p class="soft">Distance from the centre is colourfulness. v2's dots share one ring; v1's scatter, so some of its colours look stronger than others.</p>
@@ -528,7 +565,7 @@ function updateTune(): void {
   strip.innerHTML = colours()
     .map((c) => {
       const s = c.tiers[tier]?.default;
-      return s ? `<span class="strip-item" style="--c:${s.hex}" title="${label(c.key)} ${s.hex}"><span class="fill"></span><span class="mono">${s.hex}</span></span>` : "";
+      return s ? `<span class="strip-item" style="--c:${s.color}" title="${label(c.key)} ${s.color}"><span class="fill"></span><span class="mono">${s.color.startsWith("#") ? s.color : label(c.key)}</span></span>` : "";
     })
     .join("");
   // A new hue count brings new colours, so their exceptions need drawing.
@@ -544,12 +581,12 @@ function updateTune(): void {
  * @returns  HTML.
  */
 function exporting(): string {
-  const p = state.palette;
-  const text = p ? { json: toJson, csv: toCsv, md: toMarkdown }[state.format](state.settings, p) : "Solving…";
+  const p = GAMUTS.every((g) => state.palettes[g]) ? (state.palettes as Palette) : null;
+  const text = p ? { json: toJson, csv: toCsv, md: toMarkdown }[state.format](state.settings, p) : "Solving every gamut tier…";
   const tab = (f: Format, t: string) => `<button type="button" data-format="${f}" aria-pressed="${String(state.format === f)}">${t}</button>`;
   return `<section class="intro">
       <h1>Export</h1>
-      <p>Both modes, every tier, default and muted. JSON keeps the settings too, so the palette can be solved again.</p>
+      <p>Every gamut tier, both modes, every tier, default and muted. JSON keeps the settings too, so the palette can be solved again.</p>
     </section>
     <section>
       <div class="row"><div class="segmented">${tab("json", "JSON")}${tab("csv", "CSV")}${tab("md", "Markdown")}</div>
@@ -574,6 +611,12 @@ function render(): void {
     a.toggleAttribute("aria-current", target === view || (target === "colours" && isColour));
   }
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
+  for (const b of document.querySelectorAll<HTMLButtonElement>("[data-gamut]")) {
+    b.setAttribute("aria-pressed", String(b.dataset.gamut === state.gamut));
+    b.title = b.dataset.gamut === SCREEN ? "Your screen" : "";
+  }
+  const beyond = GAMUTS.indexOf(state.gamut) > GAMUTS.indexOf(SCREEN);
+  $<HTMLElement>("#beyond").hidden = !beyond || view === "tune" || view === "export";
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-variant]")) b.setAttribute("aria-pressed", String(b.dataset.variant === state.variant));
   $<HTMLElement>("#variant").hidden = view !== "tiers" && view !== "compare";
   const main = $<HTMLElement>("main");
@@ -609,9 +652,16 @@ function route(): void {
 /* >----------------------------------------< Events >------------------------------------------< */
 
 document.addEventListener("click", (event) => {
-  const el = (event.target as Element).closest<HTMLElement>("[data-mode],[data-variant],[data-format],[data-action]");
+  const el = (event.target as Element).closest<HTMLElement>("[data-mode],[data-variant],[data-gamut],[data-format],[data-action]");
   if (!el) return;
-  const { mode, variant, format, action } = el.dataset;
+  const { mode, variant, gamut, format, action } = el.dataset;
+  if (gamut) {
+    state.gamut = gamut as Gamut;
+    if (!state.palettes[state.gamut]) {
+      state.solving = true;
+      status();
+    }
+  }
   if (mode) state.mode = mode as Mode;
   if (variant) state.variant = variant as Variant;
   if (format) state.format = format as Format;

@@ -2,14 +2,16 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SOLVE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | Solves a palette from settings: every hue on every APCA tier, default and muted, for light and   |
-| dark, each exactly on its tier, equally colourful and evenly spaced around the yellow anchor.    |
+| dark and every gamut tier, each exactly on its tier, equally colourful and evenly spaced around  |
+| the yellow anchor.                                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
 import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./model";
-import { type Mode, MODES, NAMES, type Settings, V1 } from "./settings";
+import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings, V1 } from "./settings";
 
 export interface Swatch {
-  readonly hex: string;
+  /** The colour as CSS: #RRGGBB on the standard tier, color() on wider ones. */
+  readonly color: string;
   readonly hue: number;
   readonly chroma: number;
   readonly colourfulness: number;
@@ -42,7 +44,11 @@ export interface ModePalette {
   readonly ring: Readonly<Record<number, readonly number[]>>;
 }
 
-export type Palette = Readonly<Record<Mode, ModePalette>>;
+/** Both modes on one gamut tier. */
+export type GamutPalette = Readonly<Record<Mode, ModePalette>>;
+
+/** Every gamut tier, each solved on its own. */
+export type Palette = Readonly<Record<Gamut, GamutPalette>>;
 
 /* >------------------------------------< Placing a colour >------------------------------------< */
 
@@ -51,7 +57,7 @@ export type Palette = Readonly<Record<Mode, ModePalette>>;
  *
  * Its CAM16 lightness is searched until APCA against the base just reaches the tier: the lowest
  * that does in dark mode, the highest in light mode, so it is never below the tier and only as far
- * above as hex rounding forces.
+ * above as rounding forces.
  *
  * @param model          The colour model.
  * @param base           The background.
@@ -74,14 +80,14 @@ function place(
   let hi = 100;
   for (let i = 0; i < 34; i++) {
     const m = (lo + hi) / 2;
-    const hex = model.colorAt(mode, hue, colourfulness, m);
-    const passes = hex !== null && apca(hex, base) >= tier;
+    const color = model.colorAt(mode, hue, colourfulness, m);
+    const passes = color !== null && apca(color, base) >= tier;
     // Off-screen counts as too far from the base, so the search moves back towards it.
-    if (dark) passes || hex === null ? (hi = m) : (lo = m);
-    else passes || hex === null ? (lo = m) : (hi = m);
+    if (dark) passes || color === null ? (hi = m) : (lo = m);
+    else passes || color === null ? (lo = m) : (hi = m);
   }
-  const hex = model.colorAt(mode, hue, colourfulness, dark ? hi : lo);
-  return hex !== null && apca(hex, base) >= tier ? hex : null;
+  const color = model.colorAt(mode, hue, colourfulness, dark ? hi : lo);
+  return color !== null && apca(color, base) >= tier ? color : null;
 }
 
 /**
@@ -215,22 +221,22 @@ function seeds(settings: Settings, model: Model, mode: Mode) {
  * @param model   The colour model.
  * @param base    The background.
  * @param mode    The mode.
- * @param hex     The colour.
+ * @param color   The colour.
  * @param target  The colourfulness it aimed at.
  * @returns       Its CAM16 description, name and contrasts.
  */
-function swatch(model: Model, base: string, mode: Mode, hex: string, target: number): Swatch {
-  const c = model.cam(mode, hex);
+function swatch(model: Model, base: string, mode: Mode, color: string, target: number): Swatch {
+  const c = model.cam(mode, color);
   const round = (x: number, d = 1) => Math.round(x * 10 ** d) / 10 ** d;
-  const ratio = wcag(hex, base);
+  const ratio = wcag(color, base);
   return {
-    hex,
+    color,
     hue: round(c.hue),
     chroma: round(c.chroma),
     colourfulness: round(c.m),
     lightness: round(c.j),
     name: composition(c.hue),
-    apca: round(apca(hex, base)),
+    apca: round(apca(color, base)),
     wcag: round(ratio, 2),
     wcagLevel: wcagLevel(ratio),
     short: c.m < target - 1,
@@ -322,14 +328,25 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
 }
 
 /**
- * A whole palette: both modes, every tier, default and muted.
+ * Both modes on one gamut tier.
+ *
+ * @param settings  What to solve from.
+ * @param gamut     The gamut tier colours must fit.
+ * @returns         The palette for that tier.
+ */
+export function solveGamut(settings: Settings, gamut: Gamut): GamutPalette {
+  const model = makeModel(settings, gamut);
+  return Object.fromEntries(
+    MODES.map((mode) => [mode, solveMode(settings, model, mode)]),
+  ) as GamutPalette;
+}
+
+/**
+ * A whole palette: every gamut tier, both modes, every tier, default and muted.
  *
  * @param settings  What to solve from.
  * @returns         The palette.
  */
 export function solvePalette(settings: Settings): Palette {
-  const model = makeModel(settings);
-  return Object.fromEntries(
-    MODES.map((mode) => [mode, solveMode(settings, model, mode)]),
-  ) as Palette;
+  return Object.fromEntries(GAMUTS.map((gamut) => [gamut, solveGamut(settings, gamut)])) as Palette;
 }
