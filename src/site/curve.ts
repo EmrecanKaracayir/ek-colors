@@ -6,6 +6,7 @@
 | scroll over it to widen and narrow it. The values beside it can be typed in too.                 |
 \*------------------------------------------------------------------------------------------------*/
 
+import { REFERENCES } from "../palette/model";
 import type { Curve, Mode } from "../palette/settings";
 import { boost } from "../palette/solve";
 
@@ -89,6 +90,11 @@ export function curveEditor(view: CurveView, field: (path: string, title: string
     (m) => `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>
       <text x="-4" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${m > 0 ? "+" : ""}${String(m)}</text>`,
   );
+  // CAM16's unique hues (solid) and the halfway mixes (dashed), as on the hue circle.
+  const references = REFERENCES.map(
+    (r) => `<line x1="${String(r.hue)}" x2="${String(r.hue)}" y1="0" y2="${String(HEIGHT)}" class="reference${r.unique ? "" : " half"}"></line>
+      <text x="${String(r.hue)}" y="-5" class="axis" text-anchor="middle">${r.label}</text>`,
+  );
   const hues = [0, 90, 180, 270, 360].map(
     (h) => `<text x="${String(h)}" y="${String(HEIGHT + 14)}" class="axis" text-anchor="middle">${String(h)}°</text>`,
   );
@@ -98,10 +104,10 @@ export function curveEditor(view: CurveView, field: (path: string, title: string
       ${field(`curve.${mode}.center`, "Hue", [0, 359, 1])}
       ${field(`curve.${mode}.width`, "Width", [MIN_WIDTH, 180, 5])}
     </div>
-    <svg viewBox="-22 -4 396 ${String(HEIGHT + 22)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
+    <svg viewBox="-22 -16 396 ${String(HEIGHT + 34)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
       <defs><linearGradient id="band-${mode}">${bandStops(view)}</linearGradient></defs>
       <rect x="0" y="0" width="${String(WIDTH)}" height="${String(HEIGHT)}" rx="6" fill="url(#band-${mode})" class="curve-band"></rect>
-      ${guides.join("")}
+      ${guides.join("")}${references.join("")}
       <line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE)}" y2="${String(MIDDLE)}" class="zero"></line>
       ${hues.join("")}
       <g class="curve-layers">${curveLayers(view)}</g>

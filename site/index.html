@@ -167,6 +167,8 @@
   .curve-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
   .curve-band { opacity: 0.4; }
   .curve-editor .grid { stroke: var(--line); }
+  .curve-editor .reference { stroke: var(--fg); stroke-opacity: 0.35; }
+  .curve-editor .reference.half { stroke-dasharray: 3 4; stroke-opacity: 0.25; }
   .curve-editor .zero { stroke: var(--soft); stroke-opacity: 0.6; }
   .curve-editor .axis { fill: var(--soft); font: 500 9px var(--sans); }
   .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
@@ -233,6 +235,18 @@
   .line-key { display: inline-block; width: 1rem; margin-right: 0.375rem; vertical-align: middle; border-top: 2px solid var(--fair); }
   .line-key.target { border-top: 2px dashed var(--soft); }
 
+  /* Blind test */
+  .checklist { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.25rem; }
+  .test-stage { justify-items: center; text-align: center; gap: 1.25rem; }
+  .test-pair { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 4vw, 2.5rem); width: min(100%, 36rem); }
+  .test-swatch { aspect-ratio: 1; border: 0; padding: 0; border-radius: 1rem; background: var(--c); cursor: pointer; }
+  .test-pair.resting .test-swatch { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+  .test-answers { justify-content: center; }
+  button.link { background: none; border: 0; padding: 0; color: var(--soft); text-decoration: underline; font-size: inherit; }
+  #test-code { font: inherit; font-family: var(--mono); font-size: 0.8125rem; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.375rem 0.5rem; min-width: 0; flex: 1 1 12rem; }
+  .test-runs { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.5rem; }
+  table.test-results { min-width: 0; width: auto; }
+
   /* Export */
   .row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
   textarea { width: 100%; min-height: 28rem; font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem; resize: vertical; }
@@ -277,6 +291,7 @@
     <a href="#colors">Colors</a>
     <a href="#compare" id="nav-compare" hidden>Compare with Codemos</a>
     <a href="#how">How it works</a>
+    <a href="#test">Blind test</a>
     <a href="#tune">Settings</a>
     <a href="#export">Export</a>
   </nav>
@@ -295,6 +310,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=c6f90563f0"></script>
+<script type="module" src="app.js?v=f6bf551b7f"></script>
 </body>
 </html>

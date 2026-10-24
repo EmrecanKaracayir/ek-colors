@@ -13,6 +13,7 @@ import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, CODEMOS, CODEMOS_M
 import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
+import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
 
 /* >-----------------------------------------< State >------------------------------------------< */
@@ -20,7 +21,7 @@ import type { Request, Response } from "./worker";
 type Variant = "default" | "muted";
 type Format = "json" | "csv" | "md";
 
-const VIEWS = ["overview", "tiers", "compare", "how", "tune", "export"] as const;
+const VIEWS = ["overview", "tiers", "compare", "how", "test", "tune", "export"] as const;
 
 const STORE = "ek-colors:settings";
 
@@ -260,6 +261,25 @@ bindCurves(curveView, (mode, curve) => {
 function context(): Context {
   return { settings: state.settings, mode: state.mode, gamut: state.gamut, palette: current(), label };
 }
+
+/**
+ * What the blind test needs from the page.
+ *
+ * @returns  The settings, mode, gamut tier and palette on screen, and ways to change the curve and
+ *           redraw.
+ */
+function testContext(): TestContext {
+  return {
+    ...context(),
+    applyCurve: (mode, curve) => {
+      write(`curve.${mode}`, curve);
+      solve();
+    },
+    redraw: render,
+  };
+}
+
+bindTest(testContext);
 
 /**
  * The palette on screen.
@@ -841,6 +861,7 @@ function render(): void {
     : view === "tune" ? tune()
     : view === "export" ? exporting()
     : view === "how" ? explain(context())
+    : view === "test" ? testPage(testContext())
     : color(view === "colors" ? first : view);
   if (view === "tune") updateTune();
 }
