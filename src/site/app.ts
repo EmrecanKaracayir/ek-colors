@@ -264,6 +264,9 @@ interface Dot {
   readonly m: number;
   readonly color: string;
   readonly hollow?: boolean;
+
+  /** Brown sits among the oranges, so it's drawn as a diamond to tell it apart. */
+  readonly brown?: boolean;
 }
 
 /**
@@ -291,12 +294,19 @@ function circle(dots: readonly Dot[]): string {
   });
   const marks = dots.map((d) => {
     const [x, y] = at(d.hue, (Math.min(d.m, max) / max) * R);
-    return d.hollow
-      ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="none" stroke="${d.color}" stroke-width="2.5"></circle>`
-      : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="${d.color}"></circle>`;
+    const [cx, cy] = [x.toFixed(1), y.toFixed(1)];
+    const paint = d.hollow ? `fill="none" stroke="${d.color}" stroke-width="2.5"` : `fill="${d.color}"`;
+    if (d.brown) {
+      const r = d.hollow ? 8 : 10;
+      return `<rect x="${(x - r / Math.SQRT2).toFixed(1)}" y="${(y - r / Math.SQRT2).toFixed(1)}" width="${(r * Math.SQRT2).toFixed(1)}" height="${(r * Math.SQRT2).toFixed(1)}" transform="rotate(45 ${cx} ${cy})" ${paint}></rect>`;
+    }
+    return `<circle cx="${cx}" cy="${cy}" r="${d.hollow ? "7" : "9"}" ${paint}></circle>`;
   });
+  const legend = dots.some((d) => d.brown)
+    ? `<rect x="152" y="185" width="8" height="8" transform="rotate(45 156 189)" class="key-mark"></rect><text x="196" y="193" class="axis" text-anchor="end">Brown</text>`
+    : "";
   return `<svg class="circle" viewBox="-200 -200 400 400" role="img" aria-label="Hue circle">
-    ${rings.join("")}${spokes.join("")}${marks.join("")}</svg>`;
+    ${rings.join("")}${spokes.join("")}${marks.join("")}${legend}</svg>`;
 }
 
 /* >----------------------------------------< Overview >----------------------------------------< */
@@ -326,7 +336,7 @@ function overview(): string {
         .join("")}</div>
     </section>
     <section class="split">
-      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, ...(c.tiers[tier]!.muted ? [c.tiers[tier]!.muted!] : [])]).map((s) => ({ hue: s.hue, m: s.colorfulness, color: s.color })))}</div>
+      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, ...(c.tiers[tier]!.muted ? [c.tiers[tier]!.muted!] : [])].map((s) => ({ hue: s.hue, m: s.colorfulness, color: s.color, brown: c.key === "brown" }))))}</div>
       <dl class="facts-list">
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${["dark", "dim", "average"][room.surround] ?? ""} surround</dd></div>
@@ -466,7 +476,7 @@ function compare(): string {
       <p>Codemos's ${variant} colors next to EK Colors' on Lc ${String(tier)}, on the ${mode} base. Codemos was picked by eye; EK Colors is solved.</p>
     </section>
     <section class="split">
-      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colorfulness, color: r.old.color, hollow: true })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colorfulness, color: r.now.color }))])}</div>
+      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colorfulness, color: r.old.color, hollow: true, brown: r.key === "brown" })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colorfulness, color: r.now.color, brown: r.key === "brown" }))])}</div>
       <div class="legend">
         <p><span class="key hollow"></span> Codemos <span class="key"></span> EK Colors</p>
         <p class="soft">Distance from the center is colorfulness. EK Colors' dots share one ring; Codemos's scatter, so some of its colors look stronger than others.</p>
