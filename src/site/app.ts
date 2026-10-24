@@ -850,6 +850,7 @@ function render(): void {
   }
   // On phones the views scroll sideways; keep the current one in sight.
   document.querySelector(".nav a[aria-current]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  for (const row of document.querySelectorAll(".nav, .tools")) fadeEdges(row);
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-gamut]")) {
     b.setAttribute("aria-pressed", String(b.dataset.gamut === state.gamut));
@@ -1030,6 +1031,22 @@ new ResizeObserver(([entry]) => {
   const height = (entry!.target as HTMLElement).offsetHeight;
   document.documentElement.style.setProperty("--header-height", `${String(height)}px`);
 }).observe($("header"));
+
+/**
+ * Marks a row that scrolls sideways with which of its ends have more to scroll to.
+ *
+ * @param row  The menu or the switches.
+ */
+function fadeEdges(row: Element): void {
+  const more = row.scrollWidth - row.clientWidth;
+  row.classList.toggle("fade-start", more > 1 && row.scrollLeft > 1);
+  row.classList.toggle("fade-end", more > 1 && row.scrollLeft < more - 1);
+}
+
+for (const row of document.querySelectorAll(".nav, .tools")) {
+  row.addEventListener("scroll", () => fadeEdges(row), { passive: true });
+  new ResizeObserver(() => fadeEdges(row)).observe(row);
+}
 
 addEventListener("hashchange", route);
 route();

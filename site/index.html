@@ -266,6 +266,10 @@
     #status { order: 1; }
     .nav, .tools { grid-column: 1 / -1; flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; }
     .nav::-webkit-scrollbar, .tools::-webkit-scrollbar { display: none; }
+    /* A soft edge on whichever side has more to scroll to. */
+    .fade-start { -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem); mask-image: linear-gradient(to right, transparent, #000 2rem); }
+    .fade-end { -webkit-mask-image: linear-gradient(to left, transparent, #000 2rem); mask-image: linear-gradient(to left, transparent, #000 2rem); }
+    .fade-start.fade-end { -webkit-mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent); mask-image: linear-gradient(to right, transparent, #000 2rem, #000 calc(100% - 2rem), transparent); }
     .nav { order: 2; }
     .nav > :nth-child(1 of :not([hidden])) { margin-left: auto; }
     .nav > :nth-last-child(1 of :not([hidden])) { margin-right: auto; }
@@ -319,6 +323,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=1b93aee7dc"></script>
+<script type="module" src="app.js?v=91de108500"></script>
 </body>
 </html>
