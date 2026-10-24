@@ -298,12 +298,12 @@ function circle(dots: readonly Dot[]): string {
     const paint = d.hollow ? `fill="none" stroke="${d.color}" stroke-width="2.5"` : `fill="${d.color}"`;
     if (d.brown) {
       const r = d.hollow ? 8 : 10;
-      return `<rect x="${(x - r / Math.SQRT2).toFixed(1)}" y="${(y - r / Math.SQRT2).toFixed(1)}" width="${(r * Math.SQRT2).toFixed(1)}" height="${(r * Math.SQRT2).toFixed(1)}" transform="rotate(45 ${cx} ${cy})" ${paint}></rect>`;
+      return `<rect x="${(x - r / Math.SQRT2).toFixed(1)}" y="${(y - r / Math.SQRT2).toFixed(1)}" width="${(r * Math.SQRT2).toFixed(1)}" height="${(r * Math.SQRT2).toFixed(1)}" rx="${String(r / 4)}" transform="rotate(45 ${cx} ${cy})" ${paint}></rect>`;
     }
     return `<circle cx="${cx}" cy="${cy}" r="${d.hollow ? "7" : "9"}" ${paint}></circle>`;
   });
   const legend = dots.some((d) => d.brown)
-    ? `<rect x="152" y="185" width="8" height="8" transform="rotate(45 156 189)" class="key-mark"></rect><text x="196" y="193" class="axis" text-anchor="end">Brown</text>`
+    ? `<rect x="152" y="185" width="8" height="8" rx="2" transform="rotate(45 156 189)" class="key-mark"></rect><text x="196" y="193" class="axis" text-anchor="end">Brown</text>`
     : "";
   return `<svg class="circle" viewBox="-200 -200 400 400" role="img" aria-label="Hue circle">
     ${rings.join("")}${spokes.join("")}${marks.join("")}${legend}</svg>`;
