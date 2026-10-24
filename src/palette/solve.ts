@@ -1,0 +1,335 @@
+/*------------------------------------------------------------------------------------------------*\
+| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SOLVE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
+|*------------------------------------------------------------------------------------------------*|
+| Solves a palette from settings: every hue on every APCA tier, default and muted, for light and   |
+| dark, each exactly on its tier, equally colourful and evenly spaced around the yellow anchor.    |
+\*------------------------------------------------------------------------------------------------*/
+
+import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./model";
+import { type Mode, MODES, NAMES, type Settings, V1 } from "./settings";
+
+export interface Swatch {
+  readonly hex: string;
+  readonly hue: number;
+  readonly chroma: number;
+  readonly colourfulness: number;
+  readonly lightness: number;
+  readonly name: string;
+  readonly apca: number;
+  readonly wcag: number;
+  readonly wcagLevel: ReturnType<typeof wcagLevel>;
+
+  /** Whether the screen held it below its colourfulness target. */
+  readonly short: boolean;
+}
+
+export interface Colour {
+  readonly key: string;
+  readonly target: number;
+  readonly tiers: Readonly<
+    Record<number, { readonly default: Swatch; readonly muted: Swatch | null }>
+  >;
+}
+
+export interface ModePalette {
+  readonly base: string;
+  readonly colours: readonly Colour[];
+
+  /** Per tier, the colourfulness its colours aim at (before exceptions). */
+  readonly targets: Readonly<Record<number, number>>;
+
+  /** Per tier, each hue's distance to the next around the circle (CAM16-UCS). */
+  readonly ring: Readonly<Record<number, readonly number[]>>;
+}
+
+export type Palette = Readonly<Record<Mode, ModePalette>>;
+
+/* >------------------------------------< Placing a colour >------------------------------------< */
+
+/**
+ * The colour at a hue and colourfulness that sits exactly on a tier.
+ *
+ * Its CAM16 lightness is searched until APCA against the base just reaches the tier: the lowest
+ * that does in dark mode, the highest in light mode, so it is never below the tier and only as far
+ * above as hex rounding forces.
+ *
+ * @param model          The colour model.
+ * @param base           The background.
+ * @param mode           The mode.
+ * @param hue            CAM16 hue.
+ * @param colourfulness  CAM16 colourfulness.
+ * @param tier           The APCA contrast to sit on.
+ * @returns              The colour, or null when no colour that colourful reaches the tier.
+ */
+function place(
+  model: Model,
+  base: string,
+  mode: Mode,
+  hue: number,
+  colourfulness: number,
+  tier: number,
+) {
+  const dark = mode === "dark";
+  let lo = 0;
+  let hi = 100;
+  for (let i = 0; i < 34; i++) {
+    const m = (lo + hi) / 2;
+    const hex = model.colorAt(mode, hue, colourfulness, m);
+    const passes = hex !== null && apca(hex, base) >= tier;
+    // Off-screen counts as too far from the base, so the search moves back towards it.
+    if (dark) passes || hex === null ? (hi = m) : (lo = m);
+    else passes || hex === null ? (lo = m) : (hi = m);
+  }
+  const hex = model.colorAt(mode, hue, colourfulness, dark ? hi : lo);
+  return hex !== null && apca(hex, base) >= tier ? hex : null;
+}
+
+/**
+ * The most colourfulness, up to a target, a hue can hold on a tier.
+ *
+ * @param model   The colour model.
+ * @param base    The background.
+ * @param mode    The mode.
+ * @param hue     CAM16 hue.
+ * @param target  The colourfulness wanted.
+ * @param tier    The tier.
+ * @returns       The colour.
+ *
+ * @throws        When not even a grey reaches the tier.
+ */
+function strongest(
+  model: Model,
+  base: string,
+  mode: Mode,
+  hue: number,
+  target: number,
+  tier: number,
+): string {
+  const full = place(model, base, mode, hue, target, tier);
+  if (full) return full;
+  let lo = 0;
+  let hi = target;
+  for (let i = 0; i < 18; i++) {
+    const m = (lo + hi) / 2;
+    place(model, base, mode, hue, m, tier) ? (lo = m) : (hi = m);
+  }
+  const color = place(model, base, mode, hue, lo, tier);
+  if (!color)
+    throw new Error(`No ${mode} colour at hue ${String(hue)} reaches Lc ${String(tier)}.`);
+  return color;
+}
+
+/* >----------------------------------------< Spacing >-----------------------------------------< */
+
+/**
+ * How unevenly spaced a ring of distances is.
+ *
+ * @param distances  Neighbour distances.
+ * @returns          Their standard deviation.
+ */
+function spread(distances: readonly number[]): number {
+  const mean = distances.reduce((a, b) => a + b, 0) / distances.length;
+  return Math.sqrt(distances.reduce((a, d) => a + (d - mean) ** 2, 0) / distances.length);
+}
+
+interface Spacing {
+  readonly model: Model;
+  readonly base: string;
+  readonly mode: Mode;
+  readonly tier: number;
+  readonly start: readonly number[];
+  readonly anchor: number;
+  readonly window: number;
+  readonly targets: readonly number[];
+}
+
+/**
+ * Hues moved, each within a window of its start, until neighbours are equally different.
+ *
+ * The anchor (yellow) stays where it is.
+ *
+ * @param spacing  What to space, where, and how far hues may move.
+ * @returns        The hues, their colours and the neighbour distances.
+ */
+function space({ model, base, mode, tier, start, anchor, window, targets }: Spacing) {
+  const ring = (cs: readonly string[]) =>
+    cs.map((c, i) => model.distance(mode, c, cs[(i + 1) % cs.length]!));
+  const hues = [...start];
+  const colors = hues.map((h, i) => strongest(model, base, mode, h, targets[i]!, tier));
+  let best = spread(ring(colors));
+  for (let pass = 0; pass < 8; pass++) {
+    let improved = false;
+    for (let i = 0; i < hues.length; i++) {
+      if (i === anchor) continue;
+      for (const step of [-3, 3, -1, 1]) {
+        const hue = hues[i]! + step;
+        if (Math.abs(hue - start[i]!) > window) continue;
+        const trial = [...colors];
+        trial[i] = strongest(model, base, mode, hue, targets[i]!, tier);
+        const score = spread(ring(trial));
+        if (score < best - 1e-4)
+          [best, hues[i], colors[i], improved] = [score, hue, trial[i]!, true];
+      }
+    }
+    if (!improved) break;
+  }
+  return { hues, colors, ring: ring(colors) };
+}
+
+/* >----------------------------------------< Palette >-----------------------------------------< */
+
+/**
+ * The hues a mode starts from, in hue order, with which one is yellow.
+ *
+ * Eight hues start from Codemos v1 and keep its names; any other count is spread evenly around the
+ * circle from yellow and named later by CAM16.
+ *
+ * @param settings  The settings.
+ * @param model     The colour model.
+ * @param mode      The mode.
+ * @returns         The keys, starting hues and the anchor's index.
+ */
+function seeds(settings: Settings, model: Model, mode: Mode) {
+  if (settings.hues === NAMES.length) {
+    const start = NAMES.map((n) =>
+      n === "yellow" ? settings.yellowHue[mode] : model.cam(mode, V1[mode][n]!).hue,
+    );
+    return { keys: [...NAMES] as string[], start, anchor: NAMES.indexOf("yellow") };
+  }
+  const step = 360 / settings.hues;
+  const start = Array.from(
+    { length: settings.hues },
+    (_, k) => (settings.yellowHue[mode] + k * step) % 360,
+  );
+  const order = start.map((h, i) => [h, i] as const).toSorted((a, b) => a[0] - b[0]);
+  return {
+    keys: order.map(([, i]) => `hue-${String(i + 1)}`),
+    start: order.map(([h]) => h),
+    anchor: order.findIndex(([, i]) => i === 0),
+  };
+}
+
+/**
+ * A colour described for output and display.
+ *
+ * @param model   The colour model.
+ * @param base    The background.
+ * @param mode    The mode.
+ * @param hex     The colour.
+ * @param target  The colourfulness it aimed at.
+ * @returns       Its CAM16 description, name and contrasts.
+ */
+function swatch(model: Model, base: string, mode: Mode, hex: string, target: number): Swatch {
+  const c = model.cam(mode, hex);
+  const round = (x: number, d = 1) => Math.round(x * 10 ** d) / 10 ** d;
+  const ratio = wcag(hex, base);
+  return {
+    hex,
+    hue: round(c.hue),
+    chroma: round(c.chroma),
+    colourfulness: round(c.m),
+    lightness: round(c.j),
+    name: composition(c.hue),
+    apca: round(apca(hex, base)),
+    wcag: round(ratio, 2),
+    wcagLevel: wcagLevel(ratio),
+    short: c.m < target - 1,
+  };
+}
+
+/**
+ * Every tier of one mode.
+ *
+ * The identity tier is spaced first; every other tier starts from its hues and may move them a
+ * little, so each tier is evenly spaced in its own right. With equal tiers, every colour on a tier
+ * is equally colourful.
+ *
+ * @param settings  The settings.
+ * @param model     The colour model.
+ * @param mode      The mode.
+ * @returns         The mode's colours on every tier.
+ */
+function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
+  const base = settings.bases[mode];
+  const { keys, start, anchor } = seeds(settings, model, mode);
+  const offsets = keys.map((k) => settings.offsets[mode][k] ?? 0);
+  const window =
+    settings.hues === NAMES.length
+      ? settings.hueWindow.identity
+      : Math.min(settings.hueWindow.identity, 180 / settings.hues);
+
+  // On an equal tier, the target drops to what its least colourful hue can reach.
+  const ceiling = (tier: number, hues: readonly number[]) =>
+    settings.equalTiers
+      ? Math.min(
+          settings.colourfulness,
+          ...hues.map((h) => model.cam(mode, strongest(model, base, mode, h, 200, tier)).m),
+        )
+      : settings.colourfulness;
+  const solveTier = (tier: number, hues: readonly number[], window: number) => {
+    const target = ceiling(tier, hues);
+    const targets = offsets.map((o) => target + o);
+    return {
+      target,
+      targets,
+      ...space({ model, base, mode, anchor, tier, start: hues, window, targets }),
+    };
+  };
+
+  const identity = solveTier(settings.identityTier, start, window);
+  const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch | null }>> = {};
+  const targets: Record<number, number> = {};
+  const ring: Record<number, number[]> = {};
+  for (const tier of settings.tiers) {
+    const solved =
+      tier === settings.identityTier
+        ? identity
+        : solveTier(tier, identity.hues, settings.hueWindow.tier);
+    tiers[tier] = {};
+    targets[tier] = Math.round(solved.target * 10) / 10;
+    ring[tier] = solved.ring.map((d) => Math.round(d * 10) / 10);
+    keys.forEach((key, i) => {
+      const def = swatch(model, base, mode, solved.colors[i]!, solved.targets[i]!);
+      const quiet = def.colourfulness * settings.muted;
+      const muted = swatch(
+        model,
+        base,
+        mode,
+        strongest(model, base, mode, solved.hues[i]!, quiet, tier),
+        quiet,
+      );
+      tiers[tier]![key] = { default: def, muted };
+    });
+    if (settings.brown !== null) {
+      const target = solved.target * settings.brown;
+      const hue = model.cam(mode, V1[mode]["brown"]!).hue;
+      tiers[tier]!["brown"] = {
+        default: swatch(model, base, mode, strongest(model, base, mode, hue, target, tier), target),
+        muted: null,
+      };
+    }
+  }
+  const allKeys = settings.brown === null ? keys : [...keys, "brown"];
+  const colours = allKeys.map((key) => ({
+    key,
+    target:
+      key === "brown"
+        ? settings.colourfulness * (settings.brown ?? 0)
+        : settings.colourfulness + offsets[keys.indexOf(key)]!,
+    tiers: Object.fromEntries(settings.tiers.map((t) => [t, tiers[t]![key]!])),
+  }));
+  return { base, colours, targets, ring };
+}
+
+/**
+ * A whole palette: both modes, every tier, default and muted.
+ *
+ * @param settings  What to solve from.
+ * @returns         The palette.
+ */
+export function solvePalette(settings: Settings): Palette {
+  const model = makeModel(settings);
+  return Object.fromEntries(
+    MODES.map((mode) => [mode, solveMode(settings, model, mode)]),
+  ) as Palette;
+}

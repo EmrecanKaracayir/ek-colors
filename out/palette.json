@@ -1,2051 +1,2979 @@
 {
-  "config": {
-    "CHROMA": 50,
-    "CHROMA_OVERRIDES": {},
-    "MUTED": 0.5,
-    "BROWN": 0.6,
-    "YELLOW_HUE": {
+  "settings": {
+    "bases": {
+      "light": "#EBEBEB",
+      "dark": "#181818"
+    },
+    "rooms": {
+      "light": {
+        "lux": 200,
+        "surround": 2
+      },
+      "dark": {
+        "lux": 64,
+        "surround": 1
+      }
+    },
+    "colourfulness": 40,
+    "equalTiers": true,
+    "offsets": {
+      "light": {},
+      "dark": {}
+    },
+    "yellowHue": {
       "light": 100,
       "dark": 100
+    },
+    "hues": 8,
+    "tiers": [
+      15,
+      30,
+      45,
+      60,
+      75,
+      90
+    ],
+    "identityTier": 45,
+    "muted": 0.5,
+    "brown": 0.6,
+    "hueWindow": {
+      "identity": 20,
+      "tier": 6
     }
   },
   "palette": {
     "light": {
       "base": "#EBEBEB",
-      "tiers": {
-        "15": {
-          "default": {
-            "red": {
-              "hex": "#FBBDC2",
-              "hue": 12.2,
-              "chroma": 24.5,
-              "lightness": 72.8,
-              "name": "R 8 B",
-              "apca": 15,
-              "wcag": 1.34
+      "colours": [
+        {
+          "key": "red",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#FBBDBF",
+                "hue": 15.3,
+                "chroma": 24.2,
+                "colourfulness": 19.1,
+                "lightness": 72.7,
+                "name": "R 5 B",
+                "apca": 15.1,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#E6C5C6",
+                "hue": 14.1,
+                "chroma": 12.6,
+                "colourfulness": 9.9,
+                "lightness": 72.1,
+                "name": "R 6 B",
+                "apca": 15,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#F9C28C",
-              "hue": 65,
-              "chroma": 28.5,
-              "lightness": 72.1,
-              "name": "Y 39 R",
-              "apca": 15.1,
-              "wcag": 1.34
+            "30": {
+              "default": {
+                "hex": "#DEA2A6",
+                "hue": 13.4,
+                "chroma": 24.3,
+                "colourfulness": 19.2,
+                "lightness": 58.7,
+                "name": "R 7 B",
+                "apca": 30,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#C9AAAC",
+                "hue": 11.9,
+                "chroma": 12.3,
+                "colourfulness": 9.7,
+                "lightness": 58.1,
+                "name": "R 8 B",
+                "apca": 30.1,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#E5CC4B",
-              "hue": 99.7,
-              "chroma": 49.9,
-              "lightness": 70.7,
-              "name": "Y 18 G",
-              "apca": 15.3,
-              "wcag": 1.35
+            "45": {
+              "default": {
+                "hex": "#DB7679",
+                "hue": 17.4,
+                "chroma": 43.5,
+                "colourfulness": 34.3,
+                "lightness": 45.5,
+                "name": "R 3 B",
+                "apca": 45.2,
+                "wcag": 2.56,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#BC8787",
+                "hue": 17.6,
+                "chroma": 21.9,
+                "colourfulness": 17.3,
+                "lightness": 44.9,
+                "name": "R 3 B",
+                "apca": 45,
+                "wcag": 2.53,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#8FDF90",
-              "hue": 147.7,
-              "chroma": 49.5,
-              "lightness": 69,
-              "name": "G 17 Y",
-              "apca": 15.1,
-              "wcag": 1.34
+            "60": {
+              "default": {
+                "hex": "#AD5D63",
+                "hue": 14.8,
+                "chroma": 35.8,
+                "colourfulness": 28.3,
+                "lightness": 32,
+                "name": "R 6 B",
+                "apca": 60.1,
+                "wcag": 3.89,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#946A6C",
+                "hue": 14.6,
+                "chroma": 18.2,
+                "colourfulness": 14.3,
+                "lightness": 31.4,
+                "name": "R 6 B",
+                "apca": 60.2,
+                "wcag": 3.88,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#47E1DD",
-              "hue": 194.2,
-              "chroma": 50,
-              "lightness": 68.6,
-              "name": "G 45 B",
-              "apca": 15,
-              "wcag": 1.35
+            "75": {
+              "default": {
+                "hex": "#7B4145",
+                "hue": 15,
+                "chroma": 27.3,
+                "colourfulness": 21.5,
+                "lightness": 19.3,
+                "name": "R 5 B",
+                "apca": 75,
+                "wcag": 6.56,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#694A4C",
+                "hue": 13.6,
+                "chroma": 14.2,
+                "colourfulness": 11.2,
+                "lightness": 18.9,
+                "name": "R 7 B",
+                "apca": 75.2,
+                "wcag": 6.56,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#A6D1F7",
-              "hue": 244.4,
-              "chroma": 31.3,
-              "lightness": 70.6,
-              "name": "B 3 R",
-              "apca": 15.3,
-              "wcag": 1.35
-            },
-            "purple": {
-              "hex": "#CFC6F9",
-              "hue": 293.2,
-              "chroma": 29.1,
-              "lightness": 71.8,
-              "name": "B 30 R",
-              "apca": 15.3,
-              "wcag": 1.34
-            },
-            "pink": {
-              "hex": "#FCB4FC",
-              "hue": 329.4,
-              "chroma": 45,
-              "lightness": 73.3,
-              "name": "R 45 B",
-              "apca": 15.3,
-              "wcag": 1.35
-            },
-            "brown": {
-              "hex": "#FABFAA",
-              "hue": 38.9,
-              "chroma": 23.2,
-              "lightness": 72.3,
-              "name": "R 24 Y",
-              "apca": 15.3,
-              "wcag": 1.34
+            "90": {
+              "default": {
+                "hex": "#3C1D1E",
+                "hue": 17.1,
+                "chroma": 15.9,
+                "colourfulness": 12.5,
+                "lightness": 7,
+                "name": "R 3 B",
+                "apca": 90,
+                "wcag": 12.7,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#332222",
+                "hue": 17.6,
+                "chroma": 8.4,
+                "colourfulness": 6.6,
+                "lightness": 6.9,
+                "name": "R 3 B",
+                "apca": 90.1,
+                "wcag": 12.65,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#E5C5C7",
-              "hue": 11.8,
-              "chroma": 12.3,
-              "lightness": 72,
-              "name": "R 9 B",
-              "apca": 15.1,
-              "wcag": 1.34
-            },
-            "orange": {
-              "hex": "#E5C7AD",
-              "hue": 64.2,
-              "chroma": 14.4,
-              "lightness": 71.6,
-              "name": "Y 40 R",
-              "apca": 15.3,
-              "wcag": 1.34
-            },
-            "yellow": {
-              "hex": "#DBCD92",
-              "hue": 99.6,
-              "chroma": 24.7,
-              "lightness": 71.2,
-              "name": "Y 18 G",
-              "apca": 15.1,
-              "wcag": 1.34
-            },
-            "green": {
-              "hex": "#B4D5B0",
-              "hue": 148,
-              "chroma": 24.4,
-              "lightness": 70.1,
-              "name": "G 16 Y",
-              "apca": 15.4,
-              "wcag": 1.35
-            },
-            "mint": {
-              "hex": "#A4D6D4",
-              "hue": 195,
-              "chroma": 24.8,
-              "lightness": 70.3,
-              "name": "G 46 B",
-              "apca": 15.1,
-              "wcag": 1.34
-            },
-            "blue": {
-              "hex": "#BECEDF",
-              "hue": 245.1,
-              "chroma": 15.8,
-              "lightness": 70.9,
-              "name": "B 4 R",
-              "apca": 15.4,
-              "wcag": 1.35
-            },
-            "purple": {
-              "hex": "#CFCAE0",
-              "hue": 291.5,
-              "chroma": 14.3,
-              "lightness": 71.7,
-              "name": "B 29 R",
-              "apca": 15,
-              "wcag": 1.34
-            },
-            "pink": {
-              "hex": "#E5C2E2",
-              "hue": 329,
-              "chroma": 22.6,
-              "lightness": 72.4,
-              "name": "R 46 B",
-              "apca": 15.1,
-              "wcag": 1.34
-            }
-          },
-          "ring": [
-            7.9,
-            8.3,
-            10.1,
-            9.9,
-            9.8,
-            8,
-            8,
-            8.7
-          ]
+          }
         },
-        "30": {
-          "default": {
-            "red": {
-              "hex": "#DEA1A8",
-              "hue": 10.4,
-              "chroma": 25.1,
-              "lightness": 58.5,
-              "name": "R 10 B",
-              "apca": 30.3,
-              "wcag": 1.8
+        {
+          "key": "orange",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#F7C29B",
+                "hue": 57,
+                "chroma": 24.2,
+                "colourfulness": 19.1,
+                "lightness": 72.2,
+                "name": "R 49 Y",
+                "apca": 15.1,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#E3C7B4",
+                "hue": 57.2,
+                "chroma": 12.1,
+                "colourfulness": 9.5,
+                "lightness": 71.6,
+                "name": "R 50 Y",
+                "apca": 15.3,
+                "wcag": 1.35,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#DCA772",
-              "hue": 65,
-              "chroma": 28.5,
-              "lightness": 58.1,
-              "name": "Y 39 R",
-              "apca": 30.1,
-              "wcag": 1.79
+            "30": {
+              "default": {
+                "hex": "#DAA781",
+                "hue": 56.9,
+                "chroma": 24,
+                "colourfulness": 19,
+                "lightness": 58.2,
+                "name": "R 49 Y",
+                "apca": 30,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#C8AC9A",
+                "hue": 55.1,
+                "chroma": 12.2,
+                "colourfulness": 9.6,
+                "lightness": 57.8,
+                "name": "R 47 Y",
+                "apca": 30.1,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#C9B12D",
-              "hue": 99.7,
-              "chroma": 49.9,
-              "lightness": 57,
-              "name": "Y 18 G",
-              "apca": 30,
-              "wcag": 1.8
+            "45": {
+              "default": {
+                "hex": "#D08138",
+                "hue": 58.8,
+                "chroma": 42.9,
+                "colourfulness": 33.9,
+                "lightness": 44.6,
+                "name": "Y 48 R",
+                "apca": 45.2,
+                "wcag": 2.56,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#B68C69",
+                "hue": 60.2,
+                "chroma": 21.3,
+                "colourfulness": 16.8,
+                "lightness": 44.4,
+                "name": "Y 46 R",
+                "apca": 45.1,
+                "wcag": 2.54,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#72C375",
-              "hue": 147.6,
-              "chroma": 49.6,
-              "lightness": 55.2,
-              "name": "G 17 Y",
-              "apca": 30.1,
-              "wcag": 1.8
+            "60": {
+              "default": {
+                "hex": "#A6652C",
+                "hue": 57.3,
+                "chroma": 36,
+                "colourfulness": 28.4,
+                "lightness": 31.5,
+                "name": "R 50 Y",
+                "apca": 60.1,
+                "wcag": 3.9,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#916E53",
+                "hue": 57.8,
+                "chroma": 17.9,
+                "colourfulness": 14.1,
+                "lightness": 31.3,
+                "name": "Y 49 R",
+                "apca": 60.1,
+                "wcag": 3.86,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#00C4C0",
-              "hue": 194,
-              "chroma": 49,
-              "lightness": 54.5,
-              "name": "G 45 B",
-              "apca": 30.2,
-              "wcag": 1.82
+            "75": {
+              "default": {
+                "hex": "#76471D",
+                "hue": 57.9,
+                "chroma": 27.5,
+                "colourfulness": 21.7,
+                "lightness": 19,
+                "name": "Y 49 R",
+                "apca": 75,
+                "wcag": 6.55,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#674D3A",
+                "hue": 56.2,
+                "chroma": 13.7,
+                "colourfulness": 10.8,
+                "lightness": 18.9,
+                "name": "R 48 Y",
+                "apca": 75.1,
+                "wcag": 6.53,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#8AB6DC",
-              "hue": 244.5,
-              "chroma": 31.3,
-              "lightness": 56.8,
-              "name": "B 3 R",
-              "apca": 30.1,
-              "wcag": 1.8
-            },
-            "purple": {
-              "hex": "#B3ABDE",
-              "hue": 292.6,
-              "chroma": 29.3,
-              "lightness": 57.8,
-              "name": "B 30 R",
-              "apca": 30.2,
-              "wcag": 1.8
-            },
-            "pink": {
-              "hex": "#E099E1",
-              "hue": 329.4,
-              "chroma": 45.1,
-              "lightness": 59.4,
-              "name": "R 45 B",
-              "apca": 30,
-              "wcag": 1.8
-            },
-            "brown": {
-              "hex": "#DDA48F",
-              "hue": 39.4,
-              "chroma": 23.3,
-              "lightness": 58.2,
-              "name": "R 25 Y",
-              "apca": 30.2,
-              "wcag": 1.8
+            "90": {
+              "default": {
+                "hex": "#392009",
+                "hue": 58.7,
+                "chroma": 16.1,
+                "colourfulness": 12.7,
+                "lightness": 6.9,
+                "name": "Y 48 R",
+                "apca": 90.1,
+                "wcag": 12.72,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#312419",
+                "hue": 60.7,
+                "chroma": 7.9,
+                "colourfulness": 6.2,
+                "lightness": 6.9,
+                "name": "Y 45 R",
+                "apca": 90,
+                "wcag": 12.61,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#C9AAAD",
-              "hue": 9.7,
-              "chroma": 12.4,
-              "lightness": 58.1,
-              "name": "R 11 B",
-              "apca": 30,
-              "wcag": 1.79
-            },
-            "orange": {
-              "hex": "#C9AC93",
-              "hue": 63.5,
-              "chroma": 14.3,
-              "lightness": 57.7,
-              "name": "Y 41 R",
-              "apca": 30.2,
-              "wcag": 1.8
-            },
-            "yellow": {
-              "hex": "#BFB177",
-              "hue": 99,
-              "chroma": 24.7,
-              "lightness": 57,
-              "name": "Y 17 G",
-              "apca": 30.3,
-              "wcag": 1.8
-            },
-            "green": {
-              "hex": "#99BA95",
-              "hue": 147.5,
-              "chroma": 24.6,
-              "lightness": 56.4,
-              "name": "G 17 Y",
-              "apca": 30.1,
-              "wcag": 1.8
-            },
-            "mint": {
-              "hex": "#89BAB8",
-              "hue": 194.8,
-              "chroma": 24.2,
-              "lightness": 56.3,
-              "name": "G 46 B",
-              "apca": 30.3,
-              "wcag": 1.8
-            },
-            "blue": {
-              "hex": "#A3B3C4",
-              "hue": 245.8,
-              "chroma": 15.7,
-              "lightness": 57.1,
-              "name": "B 4 R",
-              "apca": 30.2,
-              "wcag": 1.8
-            },
-            "purple": {
-              "hex": "#B4AEC5",
-              "hue": 294.3,
-              "chroma": 14.9,
-              "lightness": 57.6,
-              "name": "B 31 R",
-              "apca": 30.2,
-              "wcag": 1.8
-            },
-            "pink": {
-              "hex": "#C9A7C7",
-              "hue": 328.7,
-              "chroma": 22.7,
-              "lightness": 58.4,
-              "name": "R 46 B",
-              "apca": 30,
-              "wcag": 1.79
-            }
-          },
-          "ring": [
-            8.1,
-            8.3,
-            10.1,
-            9.9,
-            9.8,
-            8,
-            8,
-            8.5
-          ]
+          }
         },
-        "45": {
-          "default": {
-            "red": {
-              "hex": "#E47076",
-              "hue": 16.7,
-              "chroma": 50.4,
-              "lightness": 45.8,
-              "name": "R 4 B",
-              "apca": 45,
-              "wcag": 2.56
+        {
+          "key": "yellow",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#DBCD94",
+                "hue": 99.3,
+                "chroma": 23.9,
+                "colourfulness": 18.9,
+                "lightness": 71.3,
+                "name": "Y 17 G",
+                "apca": 15,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#D5CCB1",
+                "hue": 98.3,
+                "chroma": 11.8,
+                "colourfulness": 9.3,
+                "lightness": 71.1,
+                "name": "Y 15 G",
+                "apca": 15.3,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#D77D23",
-              "hue": 58.6,
-              "chroma": 50.1,
-              "lightness": 44.6,
-              "name": "Y 48 R",
-              "apca": 45.3,
-              "wcag": 2.57
+            "30": {
+              "default": {
+                "hex": "#BEB27A",
+                "hue": 100.6,
+                "chroma": 23.9,
+                "colourfulness": 18.9,
+                "lightness": 57.3,
+                "name": "Y 19 G",
+                "apca": 30,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#B9B197",
+                "hue": 99,
+                "chroma": 11.6,
+                "colourfulness": 9.2,
+                "lightness": 57.2,
+                "name": "Y 16 G",
+                "apca": 30.2,
+                "wcag": 1.8,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#A99400",
-              "hue": 100.5,
-              "chroma": 49.2,
-              "lightness": 43.4,
-              "name": "Y 19 G",
-              "apca": 45.1,
-              "wcag": 2.54
+            "45": {
+              "default": {
+                "hex": "#A89427",
+                "hue": 99.7,
+                "chroma": 42.8,
+                "colourfulness": 33.8,
+                "lightness": 43.5,
+                "name": "Y 18 G",
+                "apca": 45.1,
+                "wcag": 2.54,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#9F9564",
+                "hue": 101.1,
+                "chroma": 21.5,
+                "colourfulness": 17,
+                "lightness": 43.7,
+                "name": "Y 20 G",
+                "apca": 45.1,
+                "wcag": 2.53,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#4FA55A",
-              "hue": 148.7,
-              "chroma": 49.7,
-              "lightness": 41.6,
-              "name": "G 16 Y",
-              "apca": 45.4,
-              "wcag": 2.57
+            "60": {
+              "default": {
+                "hex": "#85751E",
+                "hue": 99.7,
+                "chroma": 35.6,
+                "colourfulness": 28.1,
+                "lightness": 30.7,
+                "name": "Y 18 G",
+                "apca": 60,
+                "wcag": 3.86,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#7E754E",
+                "hue": 99.6,
+                "chroma": 17.8,
+                "colourfulness": 14,
+                "lightness": 30.7,
+                "name": "Y 18 G",
+                "apca": 60.3,
+                "wcag": 3.88,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#00A3A8",
-              "hue": 200.4,
-              "chroma": 42.5,
-              "lightness": 41.5,
-              "name": "B 46 G",
-              "apca": 45.3,
-              "wcag": 2.59
+            "75": {
+              "default": {
+                "hex": "#5E5212",
+                "hue": 99.5,
+                "chroma": 27.4,
+                "colourfulness": 21.7,
+                "lightness": 18.4,
+                "name": "Y 17 G",
+                "apca": 75.1,
+                "wcag": 6.54,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#595336",
+                "hue": 100.9,
+                "chroma": 13.9,
+                "colourfulness": 11,
+                "lightness": 18.6,
+                "name": "Y 20 G",
+                "apca": 75,
+                "wcag": 6.49,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#3D99E4",
-              "hue": 250.3,
-              "chroma": 50.1,
-              "lightness": 42.9,
-              "name": "B 6 R",
-              "apca": 45.2,
-              "wcag": 2.56
-            },
-            "purple": {
-              "hex": "#9587EB",
-              "hue": 292.6,
-              "chroma": 50.2,
-              "lightness": 44.9,
-              "name": "B 30 R",
-              "apca": 45,
-              "wcag": 2.54
-            },
-            "pink": {
-              "hex": "#CB76C3",
-              "hue": 334.2,
-              "chroma": 50.1,
-              "lightness": 45.9,
-              "name": "R 42 B",
-              "apca": 45,
-              "wcag": 2.55
-            },
-            "brown": {
-              "hex": "#C88369",
-              "hue": 39.1,
-              "chroma": 30,
-              "lightness": 44.8,
-              "name": "R 25 Y",
-              "apca": 45.2,
-              "wcag": 2.55
+            "90": {
+              "default": {
+                "hex": "#2D2605",
+                "hue": 98.4,
+                "chroma": 15.9,
+                "colourfulness": 12.6,
+                "lightness": 6.7,
+                "name": "Y 15 G",
+                "apca": 90.1,
+                "wcag": 12.66,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#2A2718",
+                "hue": 101.4,
+                "chroma": 7.9,
+                "colourfulness": 6.2,
+                "lightness": 6.9,
+                "name": "Y 21 G",
+                "apca": 90,
+                "wcag": 12.57,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#C18486",
-              "hue": 15.9,
-              "chroma": 25.5,
-              "lightness": 44.9,
-              "name": "R 4 B",
-              "apca": 45.2,
-              "wcag": 2.55
-            },
-            "orange": {
-              "hex": "#BC8A62",
-              "hue": 58.2,
-              "chroma": 25.1,
-              "lightness": 44.6,
-              "name": "Y 49 R",
-              "apca": 45,
-              "wcag": 2.53
-            },
-            "yellow": {
-              "hex": "#A1945C",
-              "hue": 99.1,
-              "chroma": 24.4,
-              "lightness": 43.5,
-              "name": "Y 17 G",
-              "apca": 45.3,
-              "wcag": 2.55
-            },
-            "green": {
-              "hex": "#7B9D7A",
-              "hue": 149,
-              "chroma": 24.4,
-              "lightness": 43,
-              "name": "G 15 Y",
-              "apca": 45.1,
-              "wcag": 2.54
-            },
-            "mint": {
-              "hex": "#729C9D",
-              "hue": 199.3,
-              "chroma": 21.4,
-              "lightness": 43.2,
-              "name": "B 48 G",
-              "apca": 45,
-              "wcag": 2.53
-            },
-            "blue": {
-              "hex": "#7B97B7",
-              "hue": 251.2,
-              "chroma": 25.1,
-              "lightness": 43.6,
-              "name": "B 7 R",
-              "apca": 45.1,
-              "wcag": 2.53
-            },
-            "purple": {
-              "hex": "#968FBA",
-              "hue": 292.9,
-              "chroma": 25.5,
-              "lightness": 44.2,
-              "name": "B 30 R",
-              "apca": 45.2,
-              "wcag": 2.54
-            },
-            "pink": {
-              "hex": "#B088A9",
-              "hue": 333.9,
-              "chroma": 24.8,
-              "lightness": 44.8,
-              "name": "R 42 B",
-              "apca": 45.1,
-              "wcag": 2.54
-            }
-          },
-          "ring": [
-            9.4,
-            9.3,
-            10.1,
-            10.2,
-            10.1,
-            9.4,
-            9.3,
-            9.5
-          ]
+          }
         },
-        "60": {
-          "default": {
-            "red": {
-              "hex": "#BD505D",
-              "hue": 13.8,
-              "chroma": 49.7,
-              "lightness": 32.2,
-              "name": "R 7 B",
-              "apca": 60.2,
-              "wcag": 3.94
+        {
+          "key": "green",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#B5D5B1",
+                "hue": 148.1,
+                "chroma": 23.8,
+                "colourfulness": 18.8,
+                "lightness": 70.2,
+                "name": "G 16 Y",
+                "apca": 15.2,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#C4D0BF",
+                "hue": 147.3,
+                "chroma": 11.6,
+                "colourfulness": 9.1,
+                "lightness": 70.8,
+                "name": "G 17 Y",
+                "apca": 15.2,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#B35D00",
-              "hue": 55.7,
-              "chroma": 49.1,
-              "lightness": 31.5,
-              "name": "R 48 Y",
-              "apca": 60.1,
-              "wcag": 3.93
+            "30": {
+              "default": {
+                "hex": "#99BA97",
+                "hue": 149,
+                "chroma": 24,
+                "colourfulness": 18.9,
+                "lightness": 56.5,
+                "name": "G 15 Y",
+                "apca": 30.1,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#A8B5A5",
+                "hue": 149.7,
+                "chroma": 11.6,
+                "colourfulness": 9.2,
+                "lightness": 57,
+                "name": "G 15 Y",
+                "apca": 30.1,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#867400",
-              "hue": 99.7,
-              "chroma": 40.9,
-              "lightness": 30.4,
-              "name": "Y 18 G",
-              "apca": 60.3,
-              "wcag": 3.9
+            "45": {
+              "default": {
+                "hex": "#59A468",
+                "hue": 151.7,
+                "chroma": 42.7,
+                "colourfulness": 33.7,
+                "lightness": 42.2,
+                "name": "G 12 Y",
+                "apca": 45,
+                "wcag": 2.54,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#7E9C80",
+                "hue": 152.2,
+                "chroma": 21.1,
+                "colourfulness": 16.6,
+                "lightness": 43.2,
+                "name": "G 12 Y",
+                "apca": 45.1,
+                "wcag": 2.53,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#318436",
-              "hue": 145.8,
-              "chroma": 49.7,
-              "lightness": 28.9,
-              "name": "G 19 Y",
-              "apca": 60.3,
-              "wcag": 3.93
+            "60": {
+              "default": {
+                "hex": "#4A814E",
+                "hue": 148.6,
+                "chroma": 35.4,
+                "colourfulness": 28,
+                "lightness": 29.7,
+                "name": "G 16 Y",
+                "apca": 60.1,
+                "wcag": 3.88,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#657B63",
+                "hue": 148.3,
+                "chroma": 17.4,
+                "colourfulness": 13.7,
+                "lightness": 30.4,
+                "name": "G 16 Y",
+                "apca": 60.1,
+                "wcag": 3.86,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#00817F",
-              "hue": 194.7,
-              "chroma": 35.7,
-              "lightness": 29,
-              "name": "G 46 B",
-              "apca": 60.4,
-              "wcag": 3.96
+            "75": {
+              "default": {
+                "hex": "#335B36",
+                "hue": 148.7,
+                "chroma": 27.1,
+                "colourfulness": 21.4,
+                "lightness": 17.9,
+                "name": "G 16 Y",
+                "apca": 75.1,
+                "wcag": 6.55,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#465745",
+                "hue": 149,
+                "chroma": 13.8,
+                "colourfulness": 10.9,
+                "lightness": 18.4,
+                "name": "G 15 Y",
+                "apca": 75.1,
+                "wcag": 6.5,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#007AB5",
-              "hue": 244.3,
-              "chroma": 44.1,
-              "lightness": 29.6,
-              "name": "B 3 R",
-              "apca": 60.3,
-              "wcag": 3.96
-            },
-            "purple": {
-              "hex": "#6E68CE",
-              "hue": 288.5,
-              "chroma": 50.2,
-              "lightness": 31.5,
-              "name": "B 27 R",
-              "apca": 60.1,
-              "wcag": 3.88
-            },
-            "pink": {
-              "hex": "#A656A7",
-              "hue": 331.2,
-              "chroma": 49.9,
-              "lightness": 32.4,
-              "name": "R 44 B",
-              "apca": 60.1,
-              "wcag": 3.91
-            },
-            "brown": {
-              "hex": "#A6644A",
-              "hue": 39.6,
-              "chroma": 30.4,
-              "lightness": 31.8,
-              "name": "R 25 Y",
-              "apca": 60,
-              "wcag": 3.88
+            "90": {
+              "default": {
+                "hex": "#162B17",
+                "hue": 148.2,
+                "chroma": 15.8,
+                "colourfulness": 12.5,
+                "lightness": 6.5,
+                "name": "G 16 Y",
+                "apca": 90.1,
+                "wcag": 12.65,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#202920",
+                "hue": 150.6,
+                "chroma": 7.8,
+                "colourfulness": 6.2,
+                "lightness": 6.8,
+                "name": "G 14 Y",
+                "apca": 90,
+                "wcag": 12.59,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#9E656A",
-              "hue": 12.9,
-              "chroma": 25.2,
-              "lightness": 31.6,
-              "name": "R 7 B",
-              "apca": 60.3,
-              "wcag": 3.89
-            },
-            "orange": {
-              "hex": "#9A6A46",
-              "hue": 55.5,
-              "chroma": 24.7,
-              "lightness": 31.3,
-              "name": "R 47 Y",
-              "apca": 60.3,
-              "wcag": 3.89
-            },
-            "yellow": {
-              "hex": "#7F7548",
-              "hue": 99.7,
-              "chroma": 20.3,
-              "lightness": 30.7,
-              "name": "Y 18 G",
-              "apca": 60.3,
-              "wcag": 3.88
-            },
-            "green": {
-              "hex": "#5D7D59",
-              "hue": 146.1,
-              "chroma": 24.4,
-              "lightness": 30.1,
-              "name": "G 18 Y",
-              "apca": 60.2,
-              "wcag": 3.88
-            },
-            "mint": {
-              "hex": "#5A7B7A",
-              "hue": 195.5,
-              "chroma": 17.5,
-              "lightness": 30.3,
-              "name": "G 47 B",
-              "apca": 60.2,
-              "wcag": 3.87
-            },
-            "blue": {
-              "hex": "#5C7891",
-              "hue": 245.1,
-              "chroma": 22,
-              "lightness": 30.6,
-              "name": "B 4 R",
-              "apca": 60.2,
-              "wcag": 3.87
-            },
-            "purple": {
-              "hex": "#74719B",
-              "hue": 288.8,
-              "chroma": 25.1,
-              "lightness": 31.3,
-              "name": "B 27 R",
-              "apca": 60,
-              "wcag": 3.85
-            },
-            "pink": {
-              "hex": "#8F698C",
-              "hue": 331.3,
-              "chroma": 25.4,
-              "lightness": 31.8,
-              "name": "R 44 B",
-              "apca": 60,
-              "wcag": 3.86
-            }
-          },
-          "ring": [
-            9.3,
-            9.3,
-            9.5,
-            9.7,
-            9.4,
-            9.5,
-            9.5,
-            9.4
-          ]
+          }
         },
-        "75": {
-          "default": {
-            "red": {
-              "hex": "#912A40",
-              "hue": 10.8,
-              "chroma": 49.6,
-              "lightness": 19.4,
-              "name": "R 10 B",
-              "apca": 75,
-              "wcag": 6.75
+        {
+          "key": "mint",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#A6D5D4",
+                "hue": 196.4,
+                "chroma": 23.8,
+                "colourfulness": 18.8,
+                "lightness": 70.1,
+                "name": "G 48 B",
+                "apca": 15.3,
+                "wcag": 1.35,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#BED0CF",
+                "hue": 196,
+                "chroma": 11.7,
+                "colourfulness": 9.3,
+                "lightness": 70.8,
+                "name": "G 48 B",
+                "apca": 15.3,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#823E00",
-              "hue": 52.3,
-              "chroma": 39.6,
-              "lightness": 18.9,
-              "name": "R 43 Y",
-              "apca": 75.2,
-              "wcag": 6.68
+            "30": {
+              "default": {
+                "hex": "#8ABAB9",
+                "hue": 196.2,
+                "chroma": 23.9,
+                "colourfulness": 18.8,
+                "lightness": 56.4,
+                "name": "G 48 B",
+                "apca": 30.2,
+                "wcag": 1.8,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#A3B5B4",
+                "hue": 195.7,
+                "chroma": 11.6,
+                "colourfulness": 9.1,
+                "lightness": 57,
+                "name": "G 47 B",
+                "apca": 30.1,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#5F5200",
-              "hue": 100,
-              "chroma": 31.7,
-              "lightness": 18.4,
-              "name": "Y 18 G",
-              "apca": 75.1,
-              "wcag": 6.54
+            "45": {
+              "default": {
+                "hex": "#00A3A9",
+                "hue": 201.1,
+                "chroma": 42.6,
+                "colourfulness": 33.6,
+                "lightness": 41.6,
+                "name": "B 45 G",
+                "apca": 45.3,
+                "wcag": 2.59,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#729C9D",
+                "hue": 199.3,
+                "chroma": 21.4,
+                "colourfulness": 16.9,
+                "lightness": 43.2,
+                "name": "B 48 G",
+                "apca": 45,
+                "wcag": 2.53,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#005E21",
-              "hue": 148.8,
-              "chroma": 42.8,
-              "lightness": 17,
-              "name": "G 15 Y",
-              "apca": 75.3,
-              "wcag": 6.72
+            "60": {
+              "default": {
+                "hex": "#028182",
+                "hue": 197.5,
+                "chroma": 35.6,
+                "colourfulness": 28.1,
+                "lightness": 29.2,
+                "name": "G 50 B",
+                "apca": 60.2,
+                "wcag": 3.95,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#5A7B7B",
+                "hue": 197.6,
+                "chroma": 17.6,
+                "colourfulness": 13.9,
+                "lightness": 30.4,
+                "name": "G 50 B",
+                "apca": 60.2,
+                "wcag": 3.87,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#005B5C",
-              "hue": 197.8,
-              "chroma": 27.5,
-              "lightness": 17.5,
-              "name": "G 50 B",
-              "apca": 75.1,
-              "wcag": 6.65
+            "75": {
+              "default": {
+                "hex": "#015B5B",
+                "hue": 196.6,
+                "chroma": 27.5,
+                "colourfulness": 21.7,
+                "lightness": 17.5,
+                "name": "G 49 B",
+                "apca": 75.2,
+                "wcag": 6.65,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#3F5757",
+                "hue": 197.6,
+                "chroma": 13.5,
+                "colourfulness": 10.6,
+                "lightness": 18.4,
+                "name": "G 50 B",
+                "apca": 75,
+                "wcag": 6.49,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#00548C",
-              "hue": 252.5,
-              "chroma": 37.8,
-              "lightness": 17.9,
-              "name": "B 7 R",
-              "apca": 75.1,
-              "wcag": 6.66
-            },
-            "purple": {
-              "hex": "#533FAB",
-              "hue": 293.8,
-              "chroma": 50,
-              "lightness": 19.2,
-              "name": "B 30 R",
-              "apca": 75,
-              "wcag": 6.61
-            },
-            "pink": {
-              "hex": "#802E81",
-              "hue": 332.5,
-              "chroma": 49.6,
-              "lightness": 19.5,
-              "name": "R 43 B",
-              "apca": 75.1,
-              "wcag": 6.71
-            },
-            "brown": {
-              "hex": "#7D4129",
-              "hue": 39.3,
-              "chroma": 30,
-              "lightness": 19,
-              "name": "R 25 Y",
-              "apca": 75.2,
-              "wcag": 6.62
+            "90": {
+              "default": {
+                "hex": "#012A2B",
+                "hue": 199,
+                "chroma": 15.9,
+                "colourfulness": 12.5,
+                "lightness": 6.2,
+                "name": "B 48 G",
+                "apca": 90.2,
+                "wcag": 12.88,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#1D2929",
+                "hue": 197.7,
+                "chroma": 7.5,
+                "colourfulness": 6,
+                "lightness": 6.8,
+                "name": "G 50 B",
+                "apca": 90,
+                "wcag": 12.57,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#77434A",
-              "hue": 10.9,
-              "chroma": 24.6,
-              "lightness": 19.2,
-              "name": "R 9 B",
-              "apca": 75.1,
-              "wcag": 6.56
-            },
-            "orange": {
-              "hex": "#6F4A30",
-              "hue": 53.6,
-              "chroma": 19.6,
-              "lightness": 19,
-              "name": "R 45 Y",
-              "apca": 75,
-              "wcag": 6.53
-            },
-            "yellow": {
-              "hex": "#5A5231",
-              "hue": 98.6,
-              "chroma": 15.7,
-              "lightness": 18.4,
-              "name": "Y 16 G",
-              "apca": 75.3,
-              "wcag": 6.56
-            },
-            "green": {
-              "hex": "#3C593D",
-              "hue": 149.2,
-              "chroma": 21,
-              "lightness": 18,
-              "name": "G 15 Y",
-              "apca": 75.2,
-              "wcag": 6.55
-            },
-            "mint": {
-              "hex": "#3F5757",
-              "hue": 197.6,
-              "chroma": 13.5,
-              "lightness": 18.4,
-              "name": "G 50 B",
-              "apca": 75,
-              "wcag": 6.49
-            },
-            "blue": {
-              "hex": "#41546C",
-              "hue": 254.6,
-              "chroma": 19.1,
-              "lightness": 18.6,
-              "name": "B 8 R",
-              "apca": 75,
-              "wcag": 6.5
-            },
-            "purple": {
-              "hex": "#544D78",
-              "hue": 293.6,
-              "chroma": 25.3,
-              "lightness": 19,
-              "name": "B 30 R",
-              "apca": 75,
-              "wcag": 6.5
-            },
-            "pink": {
-              "hex": "#6B4668",
-              "hue": 332.5,
-              "chroma": 25.1,
-              "lightness": 19.3,
-              "name": "R 43 B",
-              "apca": 75,
-              "wcag": 6.52
-            }
-          },
-          "ring": [
-            8.9,
-            8.7,
-            9.1,
-            9,
-            9,
-            8.9,
-            8.9,
-            8.8
-          ]
+          }
         },
-        "90": {
-          "default": {
-            "red": {
-              "hex": "#490014",
-              "hue": 11.6,
-              "chroma": 37.8,
-              "lightness": 6.1,
-              "name": "R 9 B",
-              "apca": 90.1,
-              "wcag": 13.62
+        {
+          "key": "blue",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#B4D0EC",
+                "hue": 246,
+                "chroma": 23.7,
+                "colourfulness": 18.7,
+                "lightness": 71.1,
+                "name": "B 4 R",
+                "apca": 15,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#C4CDDA",
+                "hue": 250.1,
+                "chroma": 11.8,
+                "colourfulness": 9.3,
+                "lightness": 71,
+                "name": "B 6 R",
+                "apca": 15.4,
+                "wcag": 1.35,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#3F1B00",
-              "hue": 52.8,
-              "chroma": 23,
-              "lightness": 6.7,
-              "name": "R 43 Y",
-              "apca": 90.1,
-              "wcag": 12.88
+            "30": {
+              "default": {
+                "hex": "#97B5D0",
+                "hue": 243.9,
+                "chroma": 23.8,
+                "colourfulness": 18.8,
+                "lightness": 57.1,
+                "name": "B 3 R",
+                "apca": 30,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#A8B2BF",
+                "hue": 248.8,
+                "chroma": 12,
+                "colourfulness": 9.5,
+                "lightness": 57.1,
+                "name": "B 5 R",
+                "apca": 30.3,
+                "wcag": 1.8,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#2E2600",
-              "hue": 98.4,
-              "chroma": 18.6,
-              "lightness": 6.8,
-              "name": "Y 15 G",
-              "apca": 90,
-              "wcag": 12.64
+            "45": {
+              "default": {
+                "hex": "#5799D6",
+                "hue": 250.3,
+                "chroma": 42.7,
+                "colourfulness": 33.7,
+                "lightness": 43.3,
+                "name": "B 6 R",
+                "apca": 45,
+                "wcag": 2.54,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#8096B1",
+                "hue": 252.1,
+                "chroma": 21.6,
+                "colourfulness": 17,
+                "lightness": 43.5,
+                "name": "B 7 R",
+                "apca": 45.3,
+                "wcag": 2.55,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#002C02",
-              "hue": 143.5,
-              "chroma": 28.8,
-              "lightness": 6,
-              "name": "G 21 Y",
-              "apca": 90.1,
-              "wcag": 12.94
+            "60": {
+              "default": {
+                "hex": "#3E7AA7",
+                "hue": 245.3,
+                "chroma": 35.4,
+                "colourfulness": 27.9,
+                "lightness": 30.4,
+                "name": "B 4 R",
+                "apca": 60,
+                "wcag": 3.87,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#63778B",
+                "hue": 246.8,
+                "chroma": 17.9,
+                "colourfulness": 14.1,
+                "lightness": 30.6,
+                "name": "B 4 R",
+                "apca": 60.3,
+                "wcag": 3.88,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#002B2A",
-              "hue": 194.2,
-              "chroma": 16.4,
-              "lightness": 6.4,
-              "name": "G 45 B",
-              "apca": 90,
-              "wcag": 12.77
+            "75": {
+              "default": {
+                "hex": "#295677",
+                "hue": 244.9,
+                "chroma": 27.5,
+                "colourfulness": 21.7,
+                "lightness": 18.3,
+                "name": "B 3 R",
+                "apca": 75,
+                "wcag": 6.54,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#455463",
+                "hue": 246.9,
+                "chroma": 14.1,
+                "colourfulness": 11.1,
+                "lightness": 18.5,
+                "name": "B 4 R",
+                "apca": 75.1,
+                "wcag": 6.52,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#002648",
-              "hue": 256.3,
-              "chroma": 23.6,
-              "lightness": 6.4,
-              "name": "B 9 R",
-              "apca": 90,
-              "wcag": 12.85
-            },
-            "purple": {
-              "hex": "#24006B",
-              "hue": 296.5,
-              "chroma": 40.2,
-              "lightness": 6,
-              "name": "B 32 R",
-              "apca": 90,
-              "wcag": 13.68
-            },
-            "pink": {
-              "hex": "#410042",
-              "hue": 333.9,
-              "chroma": 36.9,
-              "lightness": 6.3,
-              "name": "R 42 B",
-              "apca": 90,
-              "wcag": 13.51
-            },
-            "brown": {
-              "hex": "#451400",
-              "hue": 40.4,
-              "chroma": 28.9,
-              "lightness": 6.7,
-              "name": "R 26 Y",
-              "apca": 90,
-              "wcag": 13.02
+            "90": {
+              "default": {
+                "hex": "#11283A",
+                "hue": 246.3,
+                "chroma": 16.1,
+                "colourfulness": 12.7,
+                "lightness": 6.6,
+                "name": "B 4 R",
+                "apca": 90.1,
+                "wcag": 12.69,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#1F272F",
+                "hue": 246.9,
+                "chroma": 8.2,
+                "colourfulness": 6.5,
+                "lightness": 6.7,
+                "name": "B 4 R",
+                "apca": 90.2,
+                "wcag": 12.68,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#3F1A20",
-              "hue": 10.6,
-              "chroma": 19.4,
-              "lightness": 7,
-              "name": "R 10 B",
-              "apca": 90,
-              "wcag": 12.76
+          }
+        },
+        {
+          "key": "purple",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#CDC8F1",
+                "hue": 289.8,
+                "chroma": 24.3,
+                "colourfulness": 19.2,
+                "lightness": 71.7,
+                "name": "B 28 R",
+                "apca": 15.2,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#CFCADD",
+                "hue": 292,
+                "chroma": 12.6,
+                "colourfulness": 9.9,
+                "lightness": 71.6,
+                "name": "B 29 R",
+                "apca": 15.1,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#352214",
-              "hue": 55,
-              "chroma": 11.1,
-              "lightness": 6.9,
-              "name": "R 47 Y",
-              "apca": 90.1,
-              "wcag": 12.67
+            "30": {
+              "default": {
+                "hex": "#B0ADD5",
+                "hue": 288,
+                "chroma": 24,
+                "colourfulness": 19,
+                "lightness": 57.6,
+                "name": "B 27 R",
+                "apca": 30.3,
+                "wcag": 1.8,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#B2AFC1",
+                "hue": 288,
+                "chroma": 12.2,
+                "colourfulness": 9.6,
+                "lightness": 57.5,
+                "name": "B 27 R",
+                "apca": 30.3,
+                "wcag": 1.8,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#2A2715",
-              "hue": 102.7,
-              "chroma": 9.3,
-              "lightness": 6.8,
-              "name": "Y 23 G",
-              "apca": 90,
-              "wcag": 12.59
+            "45": {
+              "default": {
+                "hex": "#958ADC",
+                "hue": 292.3,
+                "chroma": 43,
+                "colourfulness": 34,
+                "lightness": 44.7,
+                "name": "B 29 R",
+                "apca": 45.1,
+                "wcag": 2.54,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#9690B4",
+                "hue": 292.6,
+                "chroma": 21.9,
+                "colourfulness": 17.3,
+                "lightness": 44.2,
+                "name": "B 30 R",
+                "apca": 45.1,
+                "wcag": 2.54,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#1A2A17",
-              "hue": 144,
-              "chroma": 14,
-              "lightness": 6.5,
-              "name": "G 21 Y",
-              "apca": 90.1,
-              "wcag": 12.7
+            "60": {
+              "default": {
+                "hex": "#716EAF",
+                "hue": 288.1,
+                "chroma": 35.7,
+                "colourfulness": 28.2,
+                "lightness": 31.3,
+                "name": "B 27 R",
+                "apca": 60.1,
+                "wcag": 3.87,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#74728E",
+                "hue": 287.9,
+                "chroma": 17.9,
+                "colourfulness": 14.2,
+                "lightness": 31,
+                "name": "B 27 R",
+                "apca": 60.3,
+                "wcag": 3.88,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#1C2929",
-              "hue": 197.7,
-              "chroma": 8,
-              "lightness": 6.7,
-              "name": "G 50 B",
-              "apca": 90,
-              "wcag": 12.6
+            "75": {
+              "default": {
+                "hex": "#504D7D",
+                "hue": 288.9,
+                "chroma": 27.7,
+                "colourfulness": 21.9,
+                "lightness": 18.9,
+                "name": "B 27 R",
+                "apca": 75.1,
+                "wcag": 6.53,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#525065",
+                "hue": 289.1,
+                "chroma": 14.1,
+                "colourfulness": 11.1,
+                "lightness": 18.7,
+                "name": "B 27 R",
+                "apca": 75.2,
+                "wcag": 6.54,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#1D2735",
-              "hue": 257.2,
-              "chroma": 11.7,
-              "lightness": 6.8,
-              "name": "B 10 R",
-              "apca": 90.1,
-              "wcag": 12.64
-            },
-            "purple": {
-              "hex": "#292143",
-              "hue": 297.2,
-              "chroma": 20.2,
-              "lightness": 7,
-              "name": "B 32 R",
-              "apca": 90,
-              "wcag": 12.65
-            },
-            "pink": {
-              "hex": "#371D35",
-              "hue": 333.3,
-              "chroma": 18.6,
-              "lightness": 7.1,
-              "name": "R 42 B",
-              "apca": 90,
-              "wcag": 12.68
+            "90": {
+              "default": {
+                "hex": "#26233D",
+                "hue": 291.4,
+                "chroma": 16.4,
+                "colourfulness": 13,
+                "lightness": 6.9,
+                "name": "B 29 R",
+                "apca": 90.1,
+                "wcag": 12.67,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#272531",
+                "hue": 292.7,
+                "chroma": 8.7,
+                "colourfulness": 6.9,
+                "lightness": 6.9,
+                "name": "B 30 R",
+                "apca": 90.1,
+                "wcag": 12.63,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "ring": [
-            7.8,
-            6.4,
-            7.1,
-            7.5,
-            7.5,
-            8,
-            7.7,
-            7.6
-          ]
+          }
+        },
+        {
+          "key": "pink",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#E9C0E1",
+                "hue": 333.4,
+                "chroma": 24.4,
+                "colourfulness": 19.2,
+                "lightness": 72.3,
+                "name": "R 42 B",
+                "apca": 15.3,
+                "wcag": 1.35,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#DCC7D5",
+                "hue": 334.6,
+                "chroma": 11.9,
+                "colourfulness": 9.4,
+                "lightness": 72,
+                "name": "R 41 B",
+                "apca": 15,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              }
+            },
+            "30": {
+              "default": {
+                "hex": "#CCA5C7",
+                "hue": 331.5,
+                "chroma": 24.6,
+                "colourfulness": 19.4,
+                "lightness": 58.2,
+                "name": "R 44 B",
+                "apca": 30.3,
+                "wcag": 1.8,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#BFACBB",
+                "hue": 330.3,
+                "chroma": 12.1,
+                "colourfulness": 9.5,
+                "lightness": 57.9,
+                "name": "R 45 B",
+                "apca": 30.1,
+                "wcag": 1.79,
+                "wcagLevel": "below",
+                "short": false
+              }
+            },
+            "45": {
+              "default": {
+                "hex": "#C47BBB",
+                "hue": 334.5,
+                "chroma": 43.4,
+                "colourfulness": 34.3,
+                "lightness": 45.4,
+                "name": "R 41 B",
+                "apca": 45.2,
+                "wcag": 2.55,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#AD8AA6",
+                "hue": 334.2,
+                "chroma": 21.6,
+                "colourfulness": 17.1,
+                "lightness": 44.8,
+                "name": "R 42 B",
+                "apca": 45,
+                "wcag": 2.53,
+                "wcagLevel": "below",
+                "short": false
+              }
+            },
+            "60": {
+              "default": {
+                "hex": "#996297",
+                "hue": 331.4,
+                "chroma": 35.8,
+                "colourfulness": 28.3,
+                "lightness": 32,
+                "name": "R 44 B",
+                "apca": 60.1,
+                "wcag": 3.87,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#886D85",
+                "hue": 331,
+                "chroma": 18.4,
+                "colourfulness": 14.5,
+                "lightness": 31.5,
+                "name": "R 44 B",
+                "apca": 60,
+                "wcag": 3.85,
+                "wcagLevel": "AA large",
+                "short": false
+              }
+            },
+            "75": {
+              "default": {
+                "hex": "#6D446B",
+                "hue": 331.8,
+                "chroma": 27.9,
+                "colourfulness": 22,
+                "lightness": 19.3,
+                "name": "R 43 B",
+                "apca": 75.1,
+                "wcag": 6.55,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#604C5E",
+                "hue": 330.7,
+                "chroma": 14.4,
+                "colourfulness": 11.4,
+                "lightness": 18.9,
+                "name": "R 44 B",
+                "apca": 75.2,
+                "wcag": 6.54,
+                "wcagLevel": "AA",
+                "short": false
+              }
+            },
+            "90": {
+              "default": {
+                "hex": "#351F32",
+                "hue": 334.7,
+                "chroma": 15.7,
+                "colourfulness": 12.4,
+                "lightness": 7.1,
+                "name": "R 41 B",
+                "apca": 90,
+                "wcag": 12.64,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#2E232C",
+                "hue": 333.4,
+                "chroma": 8.2,
+                "colourfulness": 6.5,
+                "lightness": 6.9,
+                "name": "R 42 B",
+                "apca": 90.1,
+                "wcag": 12.65,
+                "wcagLevel": "AAA",
+                "short": false
+              }
+            }
+          }
+        },
+        {
+          "key": "brown",
+          "target": 24,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#EAC5B7",
+                "hue": 41.1,
+                "chroma": 14.2,
+                "colourfulness": 11.2,
+                "lightness": 72.1,
+                "name": "R 27 Y",
+                "apca": 15,
+                "wcag": 1.34,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": null
+            },
+            "30": {
+              "default": {
+                "hex": "#CEA99C",
+                "hue": 39.2,
+                "chroma": 14.6,
+                "colourfulness": 11.5,
+                "lightness": 57.9,
+                "name": "R 25 Y",
+                "apca": 30.3,
+                "wcag": 1.8,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": null
+            },
+            "45": {
+              "default": {
+                "hex": "#C2866F",
+                "hue": 39.7,
+                "chroma": 25.8,
+                "colourfulness": 20.3,
+                "lightness": 44.8,
+                "name": "R 25 Y",
+                "apca": 45.1,
+                "wcag": 2.54,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": null
+            },
+            "60": {
+              "default": {
+                "hex": "#9A6957",
+                "hue": 38.9,
+                "chroma": 21.8,
+                "colourfulness": 17.2,
+                "lightness": 31.4,
+                "name": "R 24 Y",
+                "apca": 60.2,
+                "wcag": 3.89,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": null
+            },
+            "75": {
+              "default": {
+                "hex": "#6D4A3D",
+                "hue": 39.1,
+                "chroma": 16.3,
+                "colourfulness": 12.9,
+                "lightness": 19,
+                "name": "R 25 Y",
+                "apca": 75.1,
+                "wcag": 6.53,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": null
+            },
+            "90": {
+              "default": {
+                "hex": "#35221B",
+                "hue": 39,
+                "chroma": 9.7,
+                "colourfulness": 7.6,
+                "lightness": 7,
+                "name": "R 24 Y",
+                "apca": 90,
+                "wcag": 12.62,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": null
+            }
+          }
         }
+      ],
+      "targets": {
+        "15": 19,
+        "30": 19,
+        "45": 33.9,
+        "60": 28.2,
+        "75": 21.8,
+        "90": 12.7
+      },
+      "ring": {
+        "15": [
+          6.5,
+          6.5,
+          7.1,
+          7,
+          7.1,
+          6.7,
+          6.7,
+          6.5
+        ],
+        "30": [
+          6.7,
+          6.7,
+          7.1,
+          6.9,
+          7,
+          6.7,
+          6.7,
+          6.5
+        ],
+        "45": [
+          8.7,
+          8.6,
+          9.9,
+          9.6,
+          9.6,
+          8.7,
+          8.8,
+          8.9
+        ],
+        "60": [
+          8.1,
+          8,
+          8.7,
+          8.7,
+          8.6,
+          8.1,
+          8.1,
+          8.1
+        ],
+        "75": [
+          7,
+          6.9,
+          7.6,
+          7.5,
+          7.6,
+          7.2,
+          7.1,
+          7.1
+        ],
+        "90": [
+          5.2,
+          5,
+          5.7,
+          5.8,
+          5.6,
+          5.5,
+          5.3,
+          5.2
+        ]
       }
     },
     "dark": {
       "base": "#181818",
-      "tiers": {
-        "15": {
-          "default": {
-            "red": {
-              "hex": "#7E4349",
-              "hue": 13.2,
-              "chroma": 50.1,
-              "lightness": 34.8,
-              "name": "R 7 B",
-              "apca": 15,
-              "wcag": 2.36
+      "colours": [
+        {
+          "key": "red",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#7A464A",
+                "hue": 13.9,
+                "chroma": 42,
+                "colourfulness": 30.2,
+                "lightness": 40.4,
+                "name": "R 6 B",
+                "apca": 15.1,
+                "wcag": 2.37,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#6A4E50",
+                "hue": 12.3,
+                "chroma": 21.8,
+                "colourfulness": 15.6,
+                "lightness": 40.2,
+                "name": "R 8 B",
+                "apca": 15.1,
+                "wcag": 2.38,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#7A4920",
-              "hue": 56.2,
-              "chroma": 50.5,
-              "lightness": 34.5,
-              "name": "R 48 Y",
-              "apca": 15.1,
-              "wcag": 2.37
+            "30": {
+              "default": {
+                "hex": "#B16068",
+                "hue": 13.2,
+                "chroma": 56.5,
+                "colourfulness": 40.6,
+                "lightness": 53.8,
+                "name": "R 7 B",
+                "apca": 30.1,
+                "wcag": 4.01,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#986E70",
+                "hue": 14.1,
+                "chroma": 27.9,
+                "colourfulness": 20,
+                "lightness": 53.5,
+                "name": "R 6 B",
+                "apca": 30.3,
+                "wcag": 4.06,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#605515",
-              "hue": 100.6,
-              "chroma": 50.2,
-              "lightness": 33.8,
-              "name": "Y 19 G",
-              "apca": 15,
-              "wcag": 2.37
+            "45": {
+              "default": {
+                "hex": "#D77D83",
+                "hue": 14.6,
+                "chroma": 55.7,
+                "colourfulness": 40,
+                "lightness": 65,
+                "name": "R 6 B",
+                "apca": 45.1,
+                "wcag": 6.05,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#BB8B8D",
+                "hue": 14.3,
+                "chroma": 28.4,
+                "colourfulness": 20.4,
+                "lightness": 64.5,
+                "name": "R 6 B",
+                "apca": 45.1,
+                "wcag": 6.08,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#385E36",
-              "hue": 146,
-              "chroma": 50.5,
-              "lightness": 33.3,
-              "name": "G 19 Y",
-              "apca": 15.2,
-              "wcag": 2.39
+            "60": {
+              "default": {
+                "hex": "#F997A0",
+                "hue": 12.9,
+                "chroma": 55.8,
+                "colourfulness": 40.1,
+                "lightness": 75.1,
+                "name": "R 7 B",
+                "apca": 60.1,
+                "wcag": 8.42,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#D9A6AA",
+                "hue": 11.6,
+                "chroma": 27.9,
+                "colourfulness": 20,
+                "lightness": 74.4,
+                "name": "R 9 B",
+                "apca": 60,
+                "wcag": 8.44,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#1F5E5C",
-              "hue": 193.9,
-              "chroma": 45.4,
-              "lightness": 33.3,
-              "name": "G 45 B",
-              "apca": 15.2,
-              "wcag": 2.38
+            "75": {
+              "default": {
+                "hex": "#FEBCC0",
+                "hue": 13.2,
+                "chroma": 33.8,
+                "colourfulness": 24.3,
+                "lightness": 83.7,
+                "name": "R 7 B",
+                "apca": 75.1,
+                "wcag": 11.13,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#E7C5C6",
+                "hue": 13.2,
+                "chroma": 16.3,
+                "colourfulness": 11.7,
+                "lightness": 83.3,
+                "name": "R 7 B",
+                "apca": 75.1,
+                "wcag": 11.16,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#295978",
-              "hue": 241.4,
-              "chroma": 50.1,
-              "lightness": 33.5,
-              "name": "B 2 R",
-              "apca": 15,
-              "wcag": 2.36
-            },
-            "purple": {
-              "hex": "#505180",
-              "hue": 284.9,
-              "chroma": 49.8,
-              "lightness": 34.4,
-              "name": "B 25 R",
-              "apca": 15.2,
-              "wcag": 2.39
-            },
-            "pink": {
-              "hex": "#6E4870",
-              "hue": 328.4,
-              "chroma": 49.5,
-              "lightness": 34.9,
-              "name": "R 46 B",
-              "apca": 15.2,
-              "wcag": 2.39
-            },
-            "brown": {
-              "hex": "#704D3F",
-              "hue": 40.6,
-              "chroma": 29.6,
-              "lightness": 34.6,
-              "name": "R 27 Y",
-              "apca": 15.2,
-              "wcag": 2.39
+            "90": {
+              "default": {
+                "hex": "#FEDEDE",
+                "hue": 14.8,
+                "chroma": 14.1,
+                "colourfulness": 10.1,
+                "lightness": 91.7,
+                "name": "R 6 B",
+                "apca": 90.1,
+                "wcag": 14.14,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#F4E1E0",
+                "hue": 16.6,
+                "chroma": 7.2,
+                "colourfulness": 5.2,
+                "lightness": 91.4,
+                "name": "R 4 B",
+                "apca": 90,
+                "wcag": 14.11,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#6C4D4F",
-              "hue": 13.5,
-              "chroma": 25.5,
-              "lightness": 34.5,
-              "name": "R 7 B",
-              "apca": 15,
-              "wcag": 2.38
-            },
-            "orange": {
-              "hex": "#6A503C",
-              "hue": 57.8,
-              "chroma": 25.1,
-              "lightness": 34.4,
-              "name": "Y 49 R",
-              "apca": 15.1,
-              "wcag": 2.39
-            },
-            "yellow": {
-              "hex": "#5C5639",
-              "hue": 101,
-              "chroma": 25.1,
-              "lightness": 34.2,
-              "name": "Y 20 G",
-              "apca": 15.3,
-              "wcag": 2.41
-            },
-            "green": {
-              "hex": "#4A5A46",
-              "hue": 144.9,
-              "chroma": 25.8,
-              "lightness": 33.9,
-              "name": "G 20 Y",
-              "apca": 15.2,
-              "wcag": 2.4
-            },
-            "mint": {
-              "hex": "#445958",
-              "hue": 194.6,
-              "chroma": 22.2,
-              "lightness": 33.7,
-              "name": "G 46 B",
-              "apca": 15,
-              "wcag": 2.38
-            },
-            "blue": {
-              "hex": "#475764",
-              "hue": 241.1,
-              "chroma": 24.6,
-              "lightness": 33.9,
-              "name": "B 2 R",
-              "apca": 15,
-              "wcag": 2.38
-            },
-            "purple": {
-              "hex": "#545468",
-              "hue": 284.2,
-              "chroma": 24.7,
-              "lightness": 34.4,
-              "name": "B 25 R",
-              "apca": 15.3,
-              "wcag": 2.41
-            },
-            "pink": {
-              "hex": "#625061",
-              "hue": 328.7,
-              "chroma": 24.3,
-              "lightness": 34.6,
-              "name": "R 46 B",
-              "apca": 15.2,
-              "wcag": 2.4
-            }
-          },
-          "ring": [
-            9.5,
-            9.7,
-            9.8,
-            10,
-            9.9,
-            9.6,
-            9.5,
-            9.7
-          ]
+          }
         },
-        "30": {
-          "default": {
-            "red": {
-              "hex": "#A8656B",
-              "hue": 13.2,
-              "chroma": 49.1,
-              "lightness": 48.3,
-              "name": "R 7 B",
-              "apca": 30,
-              "wcag": 4.01
+        {
+          "key": "orange",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#764B28",
+                "hue": 57.2,
+                "chroma": 42,
+                "colourfulness": 30.2,
+                "lightness": 40.1,
+                "name": "R 50 Y",
+                "apca": 15.1,
+                "wcag": 2.37,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#68513F",
+                "hue": 60,
+                "chroma": 21.2,
+                "colourfulness": 15.2,
+                "lightness": 40.1,
+                "name": "Y 46 R",
+                "apca": 15.2,
+                "wcag": 2.4,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#A46B3D",
-              "hue": 56.6,
-              "chroma": 50.3,
-              "lightness": 47.9,
-              "name": "R 49 Y",
-              "apca": 30.1,
-              "wcag": 4.02
+            "30": {
+              "default": {
+                "hex": "#AA6831",
+                "hue": 56.8,
+                "chroma": 56.1,
+                "colourfulness": 40.3,
+                "lightness": 53.2,
+                "name": "R 49 Y",
+                "apca": 30,
+                "wcag": 4,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#957156",
+                "hue": 58,
+                "chroma": 28.2,
+                "colourfulness": 20.2,
+                "lightness": 53.1,
+                "name": "Y 49 R",
+                "apca": 30.1,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#867933",
-              "hue": 100.6,
-              "chroma": 50.3,
-              "lightness": 47.3,
-              "name": "Y 19 G",
-              "apca": 30.3,
-              "wcag": 4.06
+            "45": {
+              "default": {
+                "hex": "#CF8648",
+                "hue": 58.2,
+                "chroma": 55.7,
+                "colourfulness": 40,
+                "lightness": 64.5,
+                "name": "Y 49 R",
+                "apca": 45.1,
+                "wcag": 6.05,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#B78F71",
+                "hue": 58.5,
+                "chroma": 27.9,
+                "colourfulness": 20,
+                "lightness": 64.2,
+                "name": "Y 48 R",
+                "apca": 45.1,
+                "wcag": 6.07,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#5A8255",
-              "hue": 145.3,
-              "chroma": 49.7,
-              "lightness": 46.4,
-              "name": "G 19 Y",
-              "apca": 30,
-              "wcag": 4.02
+            "60": {
+              "default": {
+                "hex": "#F2A05F",
+                "hue": 56.8,
+                "chroma": 56,
+                "colourfulness": 40.2,
+                "lightness": 74.5,
+                "name": "R 49 Y",
+                "apca": 60.1,
+                "wcag": 8.43,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#D7AA8A",
+                "hue": 57.2,
+                "chroma": 28.2,
+                "colourfulness": 20.2,
+                "lightness": 74.1,
+                "name": "R 50 Y",
+                "apca": 60.1,
+                "wcag": 8.46,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#44837F",
-              "hue": 192,
-              "chroma": 45.6,
-              "lightness": 46.6,
-              "name": "G 42 B",
-              "apca": 30.4,
-              "wcag": 4.06
+            "75": {
+              "default": {
+                "hex": "#FBC197",
+                "hue": 57.1,
+                "chroma": 34.5,
+                "colourfulness": 24.8,
+                "lightness": 83.3,
+                "name": "R 50 Y",
+                "apca": 75.1,
+                "wcag": 11.14,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#E6C7B2",
+                "hue": 58.6,
+                "chroma": 17.1,
+                "colourfulness": 12.3,
+                "lightness": 83,
+                "name": "Y 48 R",
+                "apca": 75,
+                "wcag": 11.14,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#4C7E9F",
-              "hue": 239.6,
-              "chroma": 50.1,
-              "lightness": 47,
-              "name": "B 1 R",
-              "apca": 30.3,
-              "wcag": 4.05
-            },
-            "purple": {
-              "hex": "#7374A7",
-              "hue": 284.8,
-              "chroma": 49.3,
-              "lightness": 47.7,
-              "name": "B 25 R",
-              "apca": 30.2,
-              "wcag": 4.05
-            },
-            "pink": {
-              "hex": "#966996",
-              "hue": 329.4,
-              "chroma": 50.9,
-              "lightness": 48.2,
-              "name": "R 45 B",
-              "apca": 30,
-              "wcag": 4.02
-            },
-            "brown": {
-              "hex": "#986F5F",
-              "hue": 40.5,
-              "chroma": 29.8,
-              "lightness": 47.9,
-              "name": "R 26 Y",
-              "apca": 30.1,
-              "wcag": 4.04
+            "90": {
+              "default": {
+                "hex": "#FDE0CD",
+                "hue": 58.8,
+                "chroma": 14.6,
+                "colourfulness": 10.5,
+                "lightness": 91.5,
+                "name": "Y 48 R",
+                "apca": 90.1,
+                "wcag": 14.14,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#F3E2D9",
+                "hue": 57.5,
+                "chroma": 7.1,
+                "colourfulness": 5.1,
+                "lightness": 91.3,
+                "name": "R 50 Y",
+                "apca": 90,
+                "wcag": 14.11,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#927072",
-              "hue": 13.4,
-              "chroma": 24.2,
-              "lightness": 47.9,
-              "name": "R 7 B",
-              "apca": 30.1,
-              "wcag": 4.04
-            },
-            "orange": {
-              "hex": "#91725C",
-              "hue": 56.1,
-              "chroma": 25.3,
-              "lightness": 47.7,
-              "name": "R 48 Y",
-              "apca": 30,
-              "wcag": 4.03
-            },
-            "yellow": {
-              "hex": "#807958",
-              "hue": 101.3,
-              "chroma": 25.3,
-              "lightness": 47.4,
-              "name": "Y 20 G",
-              "apca": 30.2,
-              "wcag": 4.05
-            },
-            "green": {
-              "hex": "#6D7D67",
-              "hue": 143.7,
-              "chroma": 24.6,
-              "lightness": 47,
-              "name": "G 21 Y",
-              "apca": 30.1,
-              "wcag": 4.04
-            },
-            "mint": {
-              "hex": "#657D7A",
-              "hue": 189.9,
-              "chroma": 23.2,
-              "lightness": 46.9,
-              "name": "G 39 B",
-              "apca": 30,
-              "wcag": 4.03
-            },
-            "blue": {
-              "hex": "#697B89",
-              "hue": 239,
-              "chroma": 24.8,
-              "lightness": 47.3,
-              "name": "B 1 R",
-              "apca": 30.2,
-              "wcag": 4.05
-            },
-            "purple": {
-              "hex": "#78768D",
-              "hue": 287.8,
-              "chroma": 25.3,
-              "lightness": 47.5,
-              "name": "B 27 R",
-              "apca": 30,
-              "wcag": 4.04
-            },
-            "pink": {
-              "hex": "#877285",
-              "hue": 329.2,
-              "chroma": 24.6,
-              "lightness": 47.8,
-              "name": "R 45 B",
-              "apca": 30.1,
-              "wcag": 4.04
-            }
-          },
-          "ring": [
-            9.5,
-            9.7,
-            9.7,
-            9.8,
-            9.9,
-            9.8,
-            9.7,
-            9.6
-          ]
+          }
         },
-        "45": {
-          "default": {
-            "red": {
-              "hex": "#CE8287",
-              "hue": 14.4,
-              "chroma": 50.3,
-              "lightness": 60.4,
-              "name": "R 6 B",
-              "apca": 45.1,
-              "wcag": 6.06
+        {
+          "key": "yellow",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#5F5521",
+                "hue": 101.2,
+                "chroma": 41.8,
+                "colourfulness": 30,
+                "lightness": 39.5,
+                "name": "Y 20 G",
+                "apca": 15,
+                "wcag": 2.37,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#5C553C",
+                "hue": 99.6,
+                "chroma": 21.3,
+                "colourfulness": 15.3,
+                "lightness": 39.7,
+                "name": "Y 17 G",
+                "apca": 15,
+                "wcag": 2.38,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#C88956",
-              "hue": 57.4,
-              "chroma": 50.4,
-              "lightness": 59.8,
-              "name": "R 50 Y",
-              "apca": 45.1,
-              "wcag": 6.06
+            "30": {
+              "default": {
+                "hex": "#887823",
+                "hue": 100.6,
+                "chroma": 56.1,
+                "colourfulness": 40.3,
+                "lightness": 52.4,
+                "name": "Y 19 G",
+                "apca": 30,
+                "wcag": 4.02,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#837852",
+                "hue": 98.4,
+                "chroma": 27.5,
+                "colourfulness": 19.8,
+                "lightness": 52.6,
+                "name": "Y 15 G",
+                "apca": 30.1,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#A7974C",
-              "hue": 99.4,
-              "chroma": 50,
-              "lightness": 58.9,
-              "name": "Y 17 G",
-              "apca": 45,
-              "wcag": 6.07
+            "45": {
+              "default": {
+                "hex": "#AA973B",
+                "hue": 100.1,
+                "chroma": 56.1,
+                "colourfulness": 40.3,
+                "lightness": 63.6,
+                "name": "Y 18 G",
+                "apca": 45.2,
+                "wcag": 6.09,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#A2976C",
+                "hue": 100.7,
+                "chroma": 28.1,
+                "colourfulness": 20.2,
+                "lightness": 63.6,
+                "name": "Y 19 G",
+                "apca": 45,
+                "wcag": 6.07,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#75A273",
-              "hue": 147.5,
-              "chroma": 49.6,
-              "lightness": 58.1,
-              "name": "G 17 Y",
-              "apca": 45,
-              "wcag": 6.06
+            "60": {
+              "default": {
+                "hex": "#C8B351",
+                "hue": 100.1,
+                "chroma": 55.9,
+                "colourfulness": 40.1,
+                "lightness": 73.5,
+                "name": "Y 18 G",
+                "apca": 60.2,
+                "wcag": 8.47,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#BFB384",
+                "hue": 101.1,
+                "chroma": 28.4,
+                "colourfulness": 20.4,
+                "lightness": 73.5,
+                "name": "Y 20 G",
+                "apca": 60,
+                "wcag": 8.45,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#57A3A2",
-              "hue": 196,
-              "chroma": 50.4,
-              "lightness": 58,
-              "name": "G 48 B",
-              "apca": 45.1,
-              "wcag": 6.06
+            "75": {
+              "default": {
+                "hex": "#DCCD90",
+                "hue": 100.9,
+                "chroma": 34.2,
+                "colourfulness": 24.6,
+                "lightness": 82.6,
+                "name": "Y 20 G",
+                "apca": 75.1,
+                "wcag": 11.14,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#D7CDAF",
+                "hue": 101.3,
+                "chroma": 17.4,
+                "colourfulness": 12.5,
+                "lightness": 82.8,
+                "name": "Y 20 G",
+                "apca": 75.3,
+                "wcag": 11.2,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#6C9DC1",
-              "hue": 241.2,
-              "chroma": 49.6,
-              "lightness": 58.9,
-              "name": "B 2 R",
-              "apca": 45.4,
-              "wcag": 6.11
-            },
-            "purple": {
-              "hex": "#9392C9",
-              "hue": 286.4,
-              "chroma": 49.4,
-              "lightness": 59.6,
-              "name": "B 26 R",
-              "apca": 45.1,
-              "wcag": 6.08
-            },
-            "pink": {
-              "hex": "#B887B7",
-              "hue": 329.6,
-              "chroma": 50.7,
-              "lightness": 60.2,
-              "name": "R 45 B",
-              "apca": 45.1,
-              "wcag": 6.08
-            },
-            "brown": {
-              "hex": "#BA8D7B",
-              "hue": 41.2,
-              "chroma": 29.7,
-              "lightness": 59.8,
-              "name": "R 27 Y",
-              "apca": 45.1,
-              "wcag": 6.07
+            "90": {
+              "default": {
+                "hex": "#EFE5CA",
+                "hue": 101.7,
+                "chroma": 14.9,
+                "colourfulness": 10.7,
+                "lightness": 91.2,
+                "name": "Y 21 G",
+                "apca": 90.2,
+                "wcag": 14.15,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#EDE5D7",
+                "hue": 102.5,
+                "chroma": 7.9,
+                "colourfulness": 5.7,
+                "lightness": 91.4,
+                "name": "Y 22 G",
+                "apca": 90.4,
+                "wcag": 14.2,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#B58E8F",
-              "hue": 15.4,
-              "chroma": 24.9,
-              "lightness": 60,
-              "name": "R 5 B",
-              "apca": 45.3,
-              "wcag": 6.11
-            },
-            "orange": {
-              "hex": "#B29177",
-              "hue": 59.7,
-              "chroma": 25.3,
-              "lightness": 59.6,
-              "name": "Y 47 R",
-              "apca": 45.2,
-              "wcag": 6.1
-            },
-            "yellow": {
-              "hex": "#A09874",
-              "hue": 101.2,
-              "chroma": 25.3,
-              "lightness": 59.3,
-              "name": "Y 20 G",
-              "apca": 45.3,
-              "wcag": 6.12
-            },
-            "green": {
-              "hex": "#899D86",
-              "hue": 148.4,
-              "chroma": 25.6,
-              "lightness": 58.9,
-              "name": "G 16 Y",
-              "apca": 45.3,
-              "wcag": 6.11
-            },
-            "mint": {
-              "hex": "#809D9C",
-              "hue": 195.8,
-              "chroma": 25.6,
-              "lightness": 58.8,
-              "name": "G 48 B",
-              "apca": 45.2,
-              "wcag": 6.11
-            },
-            "blue": {
-              "hex": "#889AA9",
-              "hue": 240.1,
-              "chroma": 24.3,
-              "lightness": 59.2,
-              "name": "B 1 R",
-              "apca": 45.4,
-              "wcag": 6.12
-            },
-            "purple": {
-              "hex": "#9695AC",
-              "hue": 284.7,
-              "chroma": 23.9,
-              "lightness": 59.3,
-              "name": "B 25 R",
-              "apca": 45.1,
-              "wcag": 6.08
-            },
-            "pink": {
-              "hex": "#A890A5",
-              "hue": 329.8,
-              "chroma": 25.2,
-              "lightness": 59.7,
-              "name": "R 45 B",
-              "apca": 45.1,
-              "wcag": 6.09
-            }
-          },
-          "ring": [
-            9.5,
-            9.4,
-            10.1,
-            10.2,
-            9.8,
-            9.7,
-            9.5,
-            9.8
-          ]
+          }
         },
-        "60": {
-          "default": {
-            "red": {
-              "hex": "#EE9DA3",
-              "hue": 13.6,
-              "chroma": 49.8,
-              "lightness": 71.3,
-              "name": "R 7 B",
-              "apca": 60.1,
-              "wcag": 8.44
+        {
+          "key": "green",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#3E5D3C",
+                "hue": 147.6,
+                "chroma": 42.3,
+                "colourfulness": 30.3,
+                "lightness": 39.2,
+                "name": "G 17 Y",
+                "apca": 15.3,
+                "wcag": 2.4,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#4C5949",
+                "hue": 148.3,
+                "chroma": 21.5,
+                "colourfulness": 15.5,
+                "lightness": 39.5,
+                "name": "G 16 Y",
+                "apca": 15.2,
+                "wcag": 2.39,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#E8A46E",
-              "hue": 57.3,
-              "chroma": 50,
-              "lightness": 70.7,
-              "name": "R 50 Y",
-              "apca": 60,
-              "wcag": 8.43
+            "30": {
+              "default": {
+                "hex": "#53844F",
+                "hue": 146.4,
+                "chroma": 56.4,
+                "colourfulness": 40.5,
+                "lightness": 51.7,
+                "name": "G 18 Y",
+                "apca": 30.2,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#6A7E64",
+                "hue": 146.1,
+                "chroma": 28.5,
+                "colourfulness": 20.5,
+                "lightness": 52.3,
+                "name": "G 18 Y",
+                "apca": 30.1,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#C4B464",
-              "hue": 100.4,
-              "chroma": 50.1,
-              "lightness": 70,
-              "name": "Y 19 G",
-              "apca": 60.4,
-              "wcag": 8.51
+            "45": {
+              "default": {
+                "hex": "#6EA46B",
+                "hue": 147.5,
+                "chroma": 55.9,
+                "colourfulness": 40.2,
+                "lightness": 62.7,
+                "name": "G 17 Y",
+                "apca": 45.1,
+                "wcag": 6.08,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#889D82",
+                "hue": 147.3,
+                "chroma": 27.4,
+                "colourfulness": 19.6,
+                "lightness": 63.3,
+                "name": "G 17 Y",
+                "apca": 45.1,
+                "wcag": 6.08,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#8EBF8E",
-              "hue": 149,
-              "chroma": 49.6,
-              "lightness": 68.9,
-              "name": "G 15 Y",
-              "apca": 60.1,
-              "wcag": 8.45
+            "60": {
+              "default": {
+                "hex": "#89C182",
+                "hue": 146.5,
+                "chroma": 56,
+                "colourfulness": 40.2,
+                "lightness": 72.6,
+                "name": "G 18 Y",
+                "apca": 60.2,
+                "wcag": 8.47,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#A3BA9B",
+                "hue": 146.4,
+                "chroma": 28.5,
+                "colourfulness": 20.4,
+                "lightness": 73.3,
+                "name": "G 18 Y",
+                "apca": 60.3,
+                "wcag": 8.5,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#73C0BE",
-              "hue": 195.2,
-              "chroma": 50,
-              "lightness": 68.9,
-              "name": "G 47 B",
-              "apca": 60.2,
-              "wcag": 8.47
+            "75": {
+              "default": {
+                "hex": "#B7D6AE",
+                "hue": 146.6,
+                "chroma": 34.2,
+                "colourfulness": 24.6,
+                "lightness": 82.2,
+                "name": "G 18 Y",
+                "apca": 75.3,
+                "wcag": 11.2,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#C5D1BD",
+                "hue": 147,
+                "chroma": 17.8,
+                "colourfulness": 12.7,
+                "lightness": 82.5,
+                "name": "G 17 Y",
+                "apca": 75.2,
+                "wcag": 11.19,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#85B9DF",
-              "hue": 240.4,
-              "chroma": 50.1,
-              "lightness": 69.5,
-              "name": "B 1 R",
-              "apca": 60.1,
-              "wcag": 8.46
-            },
-            "purple": {
-              "hex": "#AEAEE8",
-              "hue": 285.3,
-              "chroma": 49.5,
-              "lightness": 70.4,
-              "name": "B 25 R",
-              "apca": 60.2,
-              "wcag": 8.47
-            },
-            "pink": {
-              "hex": "#D6A2D4",
-              "hue": 329.8,
-              "chroma": 50.2,
-              "lightness": 71.1,
-              "name": "R 45 B",
-              "apca": 60,
-              "wcag": 8.44
-            },
-            "brown": {
-              "hex": "#D9A895",
-              "hue": 40.7,
-              "chroma": 29.8,
-              "lightness": 70.6,
-              "name": "R 27 Y",
-              "apca": 60,
-              "wcag": 8.44
+            "90": {
+              "default": {
+                "hex": "#E0E8D8",
+                "hue": 148.1,
+                "chroma": 13.8,
+                "colourfulness": 9.9,
+                "lightness": 91,
+                "name": "G 16 Y",
+                "apca": 90,
+                "wcag": 14.12,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#E5E6DD",
+                "hue": 147.7,
+                "chroma": 7.7,
+                "colourfulness": 5.5,
+                "lightness": 91.1,
+                "name": "G 17 Y",
+                "apca": 90,
+                "wcag": 14.12,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#D2A9AB",
-              "hue": 13.6,
-              "chroma": 24.5,
-              "lightness": 70.7,
-              "name": "R 7 B",
-              "apca": 60.1,
-              "wcag": 8.46
-            },
-            "orange": {
-              "hex": "#D0AC91",
-              "hue": 58.6,
-              "chroma": 25.2,
-              "lightness": 70.4,
-              "name": "Y 48 R",
-              "apca": 60,
-              "wcag": 8.45
-            },
-            "yellow": {
-              "hex": "#BDB38D",
-              "hue": 99.4,
-              "chroma": 25,
-              "lightness": 69.9,
-              "name": "Y 17 G",
-              "apca": 60,
-              "wcag": 8.45
-            },
-            "green": {
-              "hex": "#A4B9A1",
-              "hue": 149,
-              "chroma": 25.3,
-              "lightness": 69.6,
-              "name": "G 15 Y",
-              "apca": 60.2,
-              "wcag": 8.48
-            },
-            "mint": {
-              "hex": "#9BB9B7",
-              "hue": 194,
-              "chroma": 25.4,
-              "lightness": 69.6,
-              "name": "G 45 B",
-              "apca": 60.1,
-              "wcag": 8.47
-            },
-            "blue": {
-              "hex": "#A2B6C6",
-              "hue": 238.7,
-              "chroma": 25,
-              "lightness": 69.9,
-              "name": "B 1 R",
-              "apca": 60.2,
-              "wcag": 8.49
-            },
-            "purple": {
-              "hex": "#B2B1CA",
-              "hue": 284.2,
-              "chroma": 24.5,
-              "lightness": 70.3,
-              "name": "B 24 R",
-              "apca": 60.2,
-              "wcag": 8.48
-            },
-            "pink": {
-              "hex": "#C5ACC2",
-              "hue": 329,
-              "chroma": 24.8,
-              "lightness": 70.7,
-              "name": "R 46 B",
-              "apca": 60.3,
-              "wcag": 8.5
-            }
-          },
-          "ring": [
-            9.6,
-            9.5,
-            10.2,
-            9.9,
-            9.8,
-            9.7,
-            9.7,
-            9.6
-          ]
+          }
         },
-        "75": {
-          "default": {
-            "red": {
-              "hex": "#FFBCC3",
-              "hue": 10.9,
-              "chroma": 38.7,
-              "lightness": 81.5,
-              "name": "R 9 B",
-              "apca": 75.4,
-              "wcag": 11.19
+        {
+          "key": "mint",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#285D5B",
+                "hue": 194.1,
+                "chroma": 41.6,
+                "colourfulness": 29.9,
+                "lightness": 38.9,
+                "name": "G 45 B",
+                "apca": 15.1,
+                "wcag": 2.37,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#465957",
+                "hue": 192,
+                "chroma": 21.2,
+                "colourfulness": 15.2,
+                "lightness": 39.5,
+                "name": "G 42 B",
+                "apca": 15.1,
+                "wcag": 2.39,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#FFC08D",
-              "hue": 58.9,
-              "chroma": 43.6,
-              "lightness": 80.9,
-              "name": "Y 48 R",
-              "apca": 75.1,
-              "wcag": 11.14
+            "30": {
+              "default": {
+                "hex": "#238580",
+                "hue": 192.2,
+                "chroma": 55.9,
+                "colourfulness": 40.1,
+                "lightness": 51.4,
+                "name": "G 42 B",
+                "apca": 30.1,
+                "wcag": 4.01,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#607E7C",
+                "hue": 194,
+                "chroma": 27.3,
+                "colourfulness": 19.6,
+                "lightness": 52.2,
+                "name": "G 45 B",
+                "apca": 30.1,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#DFCE79",
-              "hue": 100.6,
-              "chroma": 50.6,
-              "lightness": 80.1,
-              "name": "Y 19 G",
-              "apca": 75.4,
-              "wcag": 11.2
+            "45": {
+              "default": {
+                "hex": "#44A5A2",
+                "hue": 194.5,
+                "chroma": 55.8,
+                "colourfulness": 40,
+                "lightness": 62.5,
+                "name": "G 46 B",
+                "apca": 45.1,
+                "wcag": 6.05,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#7D9E9C",
+                "hue": 194.7,
+                "chroma": 27.8,
+                "colourfulness": 20,
+                "lightness": 63.5,
+                "name": "G 46 B",
+                "apca": 45.4,
+                "wcag": 6.12,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#ABD9A1",
-              "hue": 144.6,
-              "chroma": 49.6,
-              "lightness": 79,
-              "name": "G 20 Y",
-              "apca": 75,
-              "wcag": 11.14
+            "60": {
+              "default": {
+                "hex": "#60C2BE",
+                "hue": 194,
+                "chroma": 55.5,
+                "colourfulness": 39.8,
+                "lightness": 72.3,
+                "name": "G 45 B",
+                "apca": 60,
+                "wcag": 8.42,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#97BAB7",
+                "hue": 193.3,
+                "chroma": 27.9,
+                "colourfulness": 20.1,
+                "lightness": 73.2,
+                "name": "G 44 B",
+                "apca": 60.2,
+                "wcag": 8.47,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#8CDBD4",
-              "hue": 190.7,
-              "chroma": 50.2,
-              "lightness": 79,
-              "name": "G 40 B",
-              "apca": 75.2,
-              "wcag": 11.16
+            "75": {
+              "default": {
+                "hex": "#A6D6D2",
+                "hue": 193,
+                "chroma": 33.9,
+                "colourfulness": 24.3,
+                "lightness": 82,
+                "name": "G 44 B",
+                "apca": 75,
+                "wcag": 11.14,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#BFD1CE",
+                "hue": 191.7,
+                "chroma": 17.2,
+                "colourfulness": 12.4,
+                "lightness": 82.5,
+                "name": "G 42 B",
+                "apca": 75.2,
+                "wcag": 11.18,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#9BD4F8",
-              "hue": 236,
-              "chroma": 49.7,
-              "lightness": 79.5,
-              "name": "B 2 G",
-              "apca": 75,
-              "wcag": 11.13
-            },
-            "purple": {
-              "hex": "#C5C9FF",
-              "hue": 281.4,
-              "chroma": 45.5,
-              "lightness": 80.4,
-              "name": "B 23 R",
-              "apca": 75,
-              "wcag": 11.14
-            },
-            "pink": {
-              "hex": "#EFBDF3",
-              "hue": 325.8,
-              "chroma": 49.6,
-              "lightness": 81.5,
-              "name": "R 48 B",
-              "apca": 75.4,
-              "wcag": 11.2
-            },
-            "brown": {
-              "hex": "#F6C2AE",
-              "hue": 40.7,
-              "chroma": 29.6,
-              "lightness": 81.1,
-              "name": "R 27 Y",
-              "apca": 75.4,
-              "wcag": 11.2
+            "90": {
+              "default": {
+                "hex": "#DBE8E7",
+                "hue": 197.9,
+                "chroma": 14,
+                "colourfulness": 10,
+                "lightness": 91,
+                "name": "G 50 B",
+                "apca": 90.1,
+                "wcag": 14.13,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#E3E6E4",
+                "hue": 191.6,
+                "chroma": 7.3,
+                "colourfulness": 5.3,
+                "lightness": 91.1,
+                "name": "G 42 B",
+                "apca": 90,
+                "wcag": 14.12,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#E7C5C7",
-              "hue": 12.2,
-              "chroma": 19,
-              "lightness": 80.8,
-              "name": "R 8 B",
-              "apca": 75.2,
-              "wcag": 11.17
-            },
-            "orange": {
-              "hex": "#E8C7AE",
-              "hue": 59.8,
-              "chroma": 21.7,
-              "lightness": 80.6,
-              "name": "Y 47 R",
-              "apca": 75.2,
-              "wcag": 11.17
-            },
-            "yellow": {
-              "hex": "#D8CDA4",
-              "hue": 99.4,
-              "chroma": 25.5,
-              "lightness": 80.1,
-              "name": "Y 17 G",
-              "apca": 75.1,
-              "wcag": 11.15
-            },
-            "green": {
-              "hex": "#BFD3B8",
-              "hue": 145.4,
-              "chroma": 25.2,
-              "lightness": 79.8,
-              "name": "G 19 Y",
-              "apca": 75.2,
-              "wcag": 11.18
-            },
-            "mint": {
-              "hex": "#B5D3D0",
-              "hue": 192.2,
-              "chroma": 24.7,
-              "lightness": 79.7,
-              "name": "G 42 B",
-              "apca": 75.1,
-              "wcag": 11.16
-            },
-            "blue": {
-              "hex": "#BAD0DF",
-              "hue": 234.1,
-              "chroma": 24.8,
-              "lightness": 79.9,
-              "name": "B 4 G",
-              "apca": 75,
-              "wcag": 11.14
-            },
-            "purple": {
-              "hex": "#CBCBE2",
-              "hue": 281,
-              "chroma": 22.1,
-              "lightness": 80.3,
-              "name": "B 23 R",
-              "apca": 75,
-              "wcag": 11.14
-            },
-            "pink": {
-              "hex": "#DEC6DD",
-              "hue": 325.6,
-              "chroma": 24,
-              "lightness": 80.8,
-              "name": "R 48 B",
-              "apca": 75.2,
-              "wcag": 11.18
-            }
-          },
-          "ring": [
-            9.3,
-            9.1,
-            9.6,
-            9.9,
-            9.8,
-            9.6,
-            9.5,
-            9.3
-          ]
+          }
         },
-        "90": {
-          "default": {
-            "red": {
-              "hex": "#FFDEE1",
-              "hue": 9.6,
-              "chroma": 17.6,
-              "lightness": 90.6,
-              "name": "R 11 B",
-              "apca": 90.4,
-              "wcag": 14.19
+        {
+          "key": "blue",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#365971",
+                "hue": 239.8,
+                "chroma": 41.3,
+                "colourfulness": 29.7,
+                "lightness": 39.5,
+                "name": "B 1 R",
+                "apca": 15.2,
+                "wcag": 2.39,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#4B5761",
+                "hue": 239,
+                "chroma": 20.4,
+                "colourfulness": 14.6,
+                "lightness": 39.7,
+                "name": "B 1 R",
+                "apca": 15.2,
+                "wcag": 2.4,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#FFE0C4",
-              "hue": 65.8,
-              "chroma": 21,
-              "lightness": 90.1,
-              "name": "Y 38 R",
-              "apca": 90.1,
-              "wcag": 14.13
+            "30": {
+              "default": {
+                "hex": "#3E7FA5",
+                "hue": 237.9,
+                "chroma": 55.8,
+                "colourfulness": 40,
+                "lightness": 52.2,
+                "name": "B",
+                "apca": 30.3,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#667B8B",
+                "hue": 237.9,
+                "chroma": 27.6,
+                "colourfulness": 19.8,
+                "lightness": 52.4,
+                "name": "B",
+                "apca": 30,
+                "wcag": 4.03,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#F8E68E",
-              "hue": 100.5,
-              "chroma": 50.1,
-              "lightness": 89.5,
-              "name": "Y 19 G",
-              "apca": 90.1,
-              "wcag": 14.12
+            "45": {
+              "default": {
+                "hex": "#609DC9",
+                "hue": 241.6,
+                "chroma": 55.4,
+                "colourfulness": 39.7,
+                "lightness": 63.2,
+                "name": "B 2 R",
+                "apca": 45.1,
+                "wcag": 6.06,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#859AAD",
+                "hue": 241.6,
+                "chroma": 27.8,
+                "colourfulness": 20,
+                "lightness": 63.7,
+                "name": "B 2 R",
+                "apca": 45.3,
+                "wcag": 6.11,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#C2F2B8",
-              "hue": 145,
-              "chroma": 49.4,
-              "lightness": 88.6,
-              "name": "G 20 Y",
-              "apca": 90,
-              "wcag": 14.11
+            "60": {
+              "default": {
+                "hex": "#78BAE8",
+                "hue": 240,
+                "chroma": 55.8,
+                "colourfulness": 40,
+                "lightness": 73.1,
+                "name": "B 1 R",
+                "apca": 60.1,
+                "wcag": 8.44,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#9FB6C9",
+                "hue": 238.7,
+                "chroma": 27.6,
+                "colourfulness": 19.8,
+                "lightness": 73.4,
+                "name": "B 1 R",
+                "apca": 60.1,
+                "wcag": 8.46,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#A3F4EC",
-              "hue": 190.2,
-              "chroma": 50.2,
-              "lightness": 88.6,
-              "name": "G 40 B",
-              "apca": 90.2,
-              "wcag": 14.13
+            "75": {
+              "default": {
+                "hex": "#B1D1EB",
+                "hue": 239.3,
+                "chroma": 33.7,
+                "colourfulness": 24.2,
+                "lightness": 82.4,
+                "name": "B 1 R",
+                "apca": 75.1,
+                "wcag": 11.15,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#C4CED9",
+                "hue": 239.9,
+                "chroma": 16.5,
+                "colourfulness": 11.9,
+                "lightness": 82.6,
+                "name": "B 1 R",
+                "apca": 75,
+                "wcag": 11.14,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#CBEAFF",
-              "hue": 234.9,
-              "chroma": 31.3,
-              "lightness": 89.6,
-              "name": "B 3 G",
-              "apca": 90.3,
-              "wcag": 14.16
-            },
-            "purple": {
-              "hex": "#E3E3FF",
-              "hue": 281.6,
-              "chroma": 25.2,
-              "lightness": 89.9,
-              "name": "B 23 R",
-              "apca": 90,
-              "wcag": 14.12
-            },
-            "pink": {
-              "hex": "#FFDAFF",
-              "hue": 326.3,
-              "chroma": 35,
-              "lightness": 90.7,
-              "name": "R 48 B",
-              "apca": 90.2,
-              "wcag": 14.14
-            },
-            "brown": {
-              "hex": "#FFDFD3",
-              "hue": 41.4,
-              "chroma": 16.7,
-              "lightness": 90.3,
-              "name": "R 28 Y",
-              "apca": 90.2,
-              "wcag": 14.16
+            "90": {
+              "default": {
+                "hex": "#DFE6F0",
+                "hue": 242.2,
+                "chroma": 14.2,
+                "colourfulness": 10.2,
+                "lightness": 91.1,
+                "name": "B 2 R",
+                "apca": 90.1,
+                "wcag": 14.13,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#E5E5E8",
+                "hue": 234.7,
+                "chroma": 6.8,
+                "colourfulness": 4.8,
+                "lightness": 91.2,
+                "name": "B 3 G",
+                "apca": 90,
+                "wcag": 14.12,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "muted": {
-            "red": {
-              "hex": "#F3E2E3",
-              "hue": 8.9,
-              "chroma": 8.4,
-              "lightness": 90.3,
-              "name": "R 11 B",
-              "apca": 90.4,
-              "wcag": 14.2
+          }
+        },
+        {
+          "key": "purple",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#525278",
+                "hue": 284.5,
+                "chroma": 41.5,
+                "colourfulness": 29.8,
+                "lightness": 40.1,
+                "name": "B 25 R",
+                "apca": 15.2,
+                "wcag": 2.4,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#555464",
+                "hue": 283.3,
+                "chroma": 20.4,
+                "colourfulness": 14.6,
+                "lightness": 40,
+                "name": "B 24 R",
+                "apca": 15.2,
+                "wcag": 2.4,
+                "wcagLevel": "below",
+                "short": false
+              }
             },
-            "orange": {
-              "hex": "#F4E3D5",
-              "hue": 66.7,
-              "chroma": 10.6,
-              "lightness": 90.2,
-              "name": "Y 36 R",
-              "apca": 90.4,
-              "wcag": 14.2
+            "30": {
+              "default": {
+                "hex": "#7173B0",
+                "hue": 283.3,
+                "chroma": 55.1,
+                "colourfulness": 39.6,
+                "lightness": 53.1,
+                "name": "B 24 R",
+                "apca": 30.2,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#777690",
+                "hue": 283.5,
+                "chroma": 27.5,
+                "colourfulness": 19.7,
+                "lightness": 52.9,
+                "name": "B 24 R",
+                "apca": 30.1,
+                "wcag": 4.04,
+                "wcagLevel": "AA large",
+                "short": false
+              }
             },
-            "yellow": {
-              "hex": "#F1E6BB",
-              "hue": 100.3,
-              "chroma": 25.6,
-              "lightness": 89.9,
-              "name": "Y 19 G",
-              "apca": 90.4,
-              "wcag": 14.19
+            "45": {
+              "default": {
+                "hex": "#9390D4",
+                "hue": 286.7,
+                "chroma": 55.7,
+                "colourfulness": 40,
+                "lightness": 64.2,
+                "name": "B 26 R",
+                "apca": 45.1,
+                "wcag": 6.07,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#9794B1",
+                "hue": 285.9,
+                "chroma": 27.7,
+                "colourfulness": 19.9,
+                "lightness": 63.9,
+                "name": "B 25 R",
+                "apca": 45,
+                "wcag": 6.08,
+                "wcagLevel": "AA",
+                "short": false
+              }
             },
-            "green": {
-              "hex": "#D8EBCF",
-              "hue": 143.9,
-              "chroma": 24.4,
-              "lightness": 89.3,
-              "name": "G 21 Y",
-              "apca": 90.1,
-              "wcag": 14.12
+            "60": {
+              "default": {
+                "hex": "#ADACF5",
+                "hue": 285,
+                "chroma": 56.2,
+                "colourfulness": 40.3,
+                "lightness": 74.1,
+                "name": "B 25 R",
+                "apca": 60.1,
+                "wcag": 8.45,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#B2B0CF",
+                "hue": 283.4,
+                "chroma": 27.8,
+                "colourfulness": 20,
+                "lightness": 73.8,
+                "name": "B 24 R",
+                "apca": 60.1,
+                "wcag": 8.46,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "mint": {
-              "hex": "#CCECE7",
-              "hue": 188.8,
-              "chroma": 25.4,
-              "lightness": 89.3,
-              "name": "G 38 B",
-              "apca": 90.1,
-              "wcag": 14.14
+            "75": {
+              "default": {
+                "hex": "#CBC9F3",
+                "hue": 283.8,
+                "chroma": 34.2,
+                "colourfulness": 24.5,
+                "lightness": 83,
+                "name": "B 24 R",
+                "apca": 75.1,
+                "wcag": 11.15,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#CECBDD",
+                "hue": 281.1,
+                "chroma": 17,
+                "colourfulness": 12.2,
+                "lightness": 82.9,
+                "name": "B 23 R",
+                "apca": 75.2,
+                "wcag": 11.17,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             },
-            "blue": {
-              "hex": "#DBE7F0",
-              "hue": 233.4,
-              "chroma": 16,
-              "lightness": 89.6,
-              "name": "B 5 G",
-              "apca": 90,
-              "wcag": 14.12
-            },
-            "purple": {
-              "hex": "#E6E4F0",
-              "hue": 280.8,
-              "chroma": 12.3,
-              "lightness": 89.9,
-              "name": "B 23 R",
-              "apca": 90.1,
-              "wcag": 14.14
-            },
-            "pink": {
-              "hex": "#F3E0F0",
-              "hue": 326.6,
-              "chroma": 17.1,
-              "lightness": 90.3,
-              "name": "R 47 B",
-              "apca": 90.2,
-              "wcag": 14.15
+            "90": {
+              "default": {
+                "hex": "#E9E3F3",
+                "hue": 287.1,
+                "chroma": 14.5,
+                "colourfulness": 10.4,
+                "lightness": 91.4,
+                "name": "B 26 R",
+                "apca": 90.2,
+                "wcag": 14.16,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#EAE4EA",
+                "hue": 285.4,
+                "chroma": 6.7,
+                "colourfulness": 4.8,
+                "lightness": 91.5,
+                "name": "B 25 R",
+                "apca": 90.4,
+                "wcag": 14.19,
+                "wcagLevel": "AAA",
+                "short": false
+              }
             }
-          },
-          "ring": [
-            6.9,
-            8.9,
-            9.7,
-            9.8,
-            9.3,
-            7.6,
-            7.8,
-            7.8
-          ]
+          }
+        },
+        {
+          "key": "pink",
+          "target": 40,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#6B4A6A",
+                "hue": 329.2,
+                "chroma": 41,
+                "colourfulness": 29.4,
+                "lightness": 40.4,
+                "name": "R 45 B",
+                "apca": 15.1,
+                "wcag": 2.38,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": {
+                "hex": "#61505E",
+                "hue": 330.1,
+                "chroma": 20.7,
+                "colourfulness": 14.9,
+                "lightness": 40,
+                "name": "R 45 B",
+                "apca": 15,
+                "wcag": 2.38,
+                "wcagLevel": "below",
+                "short": false
+              }
+            },
+            "30": {
+              "default": {
+                "hex": "#9A669B",
+                "hue": 328.4,
+                "chroma": 55.4,
+                "colourfulness": 39.8,
+                "lightness": 53.6,
+                "name": "R 46 B",
+                "apca": 30,
+                "wcag": 4.01,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": {
+                "hex": "#8A7187",
+                "hue": 328.8,
+                "chroma": 26.8,
+                "colourfulness": 19.2,
+                "lightness": 53.3,
+                "name": "R 46 B",
+                "apca": 30.2,
+                "wcag": 4.05,
+                "wcagLevel": "AA large",
+                "short": false
+              }
+            },
+            "45": {
+              "default": {
+                "hex": "#BF83BB",
+                "hue": 330.8,
+                "chroma": 55.3,
+                "colourfulness": 39.7,
+                "lightness": 64.9,
+                "name": "R 44 B",
+                "apca": 45.1,
+                "wcag": 6.07,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#AC8EA7",
+                "hue": 330.1,
+                "chroma": 28.1,
+                "colourfulness": 20.1,
+                "lightness": 64.3,
+                "name": "R 45 B",
+                "apca": 45,
+                "wcag": 6.07,
+                "wcagLevel": "AA",
+                "short": false
+              }
+            },
+            "60": {
+              "default": {
+                "hex": "#DD9EDB",
+                "hue": 329.2,
+                "chroma": 55.2,
+                "colourfulness": 39.6,
+                "lightness": 74.9,
+                "name": "R 45 B",
+                "apca": 60.1,
+                "wcag": 8.45,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#C9AAC4",
+                "hue": 329,
+                "chroma": 27,
+                "colourfulness": 19.4,
+                "lightness": 74.3,
+                "name": "R 46 B",
+                "apca": 60.2,
+                "wcag": 8.48,
+                "wcagLevel": "AAA",
+                "short": false
+              }
+            },
+            "75": {
+              "default": {
+                "hex": "#EAC0E5",
+                "hue": 329,
+                "chroma": 34.7,
+                "colourfulness": 24.9,
+                "lightness": 83.5,
+                "name": "R 46 B",
+                "apca": 75,
+                "wcag": 11.14,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#DDC7D7",
+                "hue": 328.3,
+                "chroma": 17,
+                "colourfulness": 12.2,
+                "lightness": 83.2,
+                "name": "R 46 B",
+                "apca": 75.2,
+                "wcag": 11.18,
+                "wcagLevel": "AAA",
+                "short": false
+              }
+            },
+            "90": {
+              "default": {
+                "hex": "#F6DFED",
+                "hue": 332.2,
+                "chroma": 15.3,
+                "colourfulness": 11,
+                "lightness": 91.6,
+                "name": "R 43 B",
+                "apca": 90,
+                "wcag": 14.12,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": {
+                "hex": "#F0E2E7",
+                "hue": 335.2,
+                "chroma": 7.1,
+                "colourfulness": 5.1,
+                "lightness": 91.5,
+                "name": "R 41 B",
+                "apca": 90.2,
+                "wcag": 14.15,
+                "wcagLevel": "AAA",
+                "short": false
+              }
+            }
+          }
+        },
+        {
+          "key": "brown",
+          "target": 24,
+          "tiers": {
+            "15": {
+              "default": {
+                "hex": "#6D4E41",
+                "hue": 42.4,
+                "chroma": 24.9,
+                "colourfulness": 17.9,
+                "lightness": 40.1,
+                "name": "R 29 Y",
+                "apca": 15.1,
+                "wcag": 2.38,
+                "wcagLevel": "below",
+                "short": false
+              },
+              "muted": null
+            },
+            "30": {
+              "default": {
+                "hex": "#9D6D59",
+                "hue": 41.9,
+                "chroma": 33.3,
+                "colourfulness": 23.9,
+                "lightness": 53.3,
+                "name": "R 28 Y",
+                "apca": 30.1,
+                "wcag": 4.03,
+                "wcagLevel": "AA large",
+                "short": false
+              },
+              "muted": null
+            },
+            "45": {
+              "default": {
+                "hex": "#C18B75",
+                "hue": 41.7,
+                "chroma": 33.2,
+                "colourfulness": 23.8,
+                "lightness": 64.6,
+                "name": "R 28 Y",
+                "apca": 45.3,
+                "wcag": 6.1,
+                "wcagLevel": "AA",
+                "short": false
+              },
+              "muted": null
+            },
+            "60": {
+              "default": {
+                "hex": "#E1A58E",
+                "hue": 40.5,
+                "chroma": 33.5,
+                "colourfulness": 24.1,
+                "lightness": 74.3,
+                "name": "R 27 Y",
+                "apca": 60,
+                "wcag": 8.43,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": null
+            },
+            "75": {
+              "default": {
+                "hex": "#EEC4B5",
+                "hue": 40.3,
+                "chroma": 20.7,
+                "colourfulness": 14.8,
+                "lightness": 83.3,
+                "name": "R 26 Y",
+                "apca": 75.2,
+                "wcag": 11.16,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": null
+            },
+            "90": {
+              "default": {
+                "hex": "#F6E1D9",
+                "hue": 45.2,
+                "chroma": 8.5,
+                "colourfulness": 6.1,
+                "lightness": 91.4,
+                "name": "R 33 Y",
+                "apca": 90,
+                "wcag": 14.11,
+                "wcagLevel": "AAA",
+                "short": false
+              },
+              "muted": null
+            }
+          }
         }
+      ],
+      "targets": {
+        "15": 29.9,
+        "30": 40,
+        "45": 40,
+        "60": 40,
+        "75": 24.5,
+        "90": 10.5
+      },
+      "ring": {
+        "15": [
+          8.4,
+          8.5,
+          8.7,
+          8.8,
+          8.6,
+          8.5,
+          8.5,
+          8.5
+        ],
+        "30": [
+          9.7,
+          9.7,
+          10,
+          9.9,
+          9.9,
+          9.9,
+          9.8,
+          9.8
+        ],
+        "45": [
+          9.6,
+          9.4,
+          10.2,
+          10.1,
+          10.1,
+          9.8,
+          9.7,
+          9.6
+        ],
+        "60": [
+          9.7,
+          9.6,
+          10,
+          10.1,
+          9.9,
+          9.9,
+          9.7,
+          9.6
+        ],
+        "75": [
+          7.6,
+          7.6,
+          7.8,
+          7.9,
+          7.8,
+          7.7,
+          7.8,
+          7.7
+        ],
+        "90": [
+          4.8,
+          4.8,
+          4.9,
+          5,
+          4.7,
+          4.8,
+          5,
+          4.8
+        ]
       }
     }
   }
