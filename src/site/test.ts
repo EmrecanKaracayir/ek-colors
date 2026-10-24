@@ -10,6 +10,7 @@
 import { makeModel, type Model } from "../palette/model";
 import type { CurvePoint, Gamut, Mode, Settings } from "../palette/settings";
 import { boost, type GamutPalette, strongest } from "../palette/solve";
+import { balance, climb, fromCode, type Stair as Staircase, savedRuns, stair, toCode } from "./blind";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -55,15 +56,9 @@ interface Run {
   readonly points: readonly Point[];
 }
 
-/** One hue's staircase: where it is, how big a step it takes, and how often it has turned. */
-interface Stair {
-  readonly key: string;
+/** One hue's staircase, and the hue it tests. */
+interface Stair extends Staircase {
   readonly hue: number;
-  delta: number;
-  step: number;
-  turns: number;
-  last: number;
-  count: number;
 }
 
 /** The pair on screen. */
@@ -136,7 +131,7 @@ function start(ctx: TestContext): boolean {
     target: palette.targets[tier]!,
     base: ctx.settings.bases[ctx.mode],
     model: makeModel(ctx.settings, ctx.gamut),
-    stairs: hues.map((h, i) => ({ ...h, delta: 8 * signs[i]!, step: 4, turns: 0, last: 0, count: 0 })),
+    stairs: hues.map((h, i) => ({ ...stair(h.key, 8 * signs[i]!), hue: h.hue })),
     points: [],
     resting: false,
   };
@@ -144,56 +139,18 @@ function start(ctx: TestContext): boolean {
   return true;
 }
 
-/**
- * Moves a staircase after an answer: down when the test color looked more colorful, up when it
- * looked less, smaller steps after it has turned.
- *
- * @param stair   The staircase.
- * @param picked  1, 0 or ½.
- */
-function climb(stair: Stair, picked: number): void {
-  stair.count++;
-  if (picked === 0.5) return;
-  const direction = picked === 1 ? -1 : 1;
-  if (stair.last && direction !== stair.last) {
-    stair.turns++;
-    stair.step = stair.turns >= 4 ? 1 : stair.turns >= 2 ? 2 : 4;
-  }
-  stair.last = direction;
-  stair.delta = Math.max(-REACH, Math.min(REACH, stair.delta + direction * stair.step));
-}
-
 /* >----------------------------------------< Results >-----------------------------------------< */
 
 /**
- * Where a hue looks as colorful as the others, and how sure that is: a logistic curve fitted to
- * its answers, read where either color is equally likely to be picked, with the range the answers
- * can't tell apart from it (a likelihood drop of 1.92, about 95%).
+ * Where a hue looks as colorful as the others: how much more colorful it must be, with the range
+ * its answers can't rule out.
  *
  * @param points  One hue's answers.
- * @returns       How much more colorful it must be to look equal, with a low and high bound.
+ * @returns       The point, or null with too few answers.
  */
-function equalPoint(points: readonly Point[]) {
-  if (points.length < 4) return null;
-  const profile: { at: number; likelihood: number }[] = [];
-  for (let at = -24; at <= 24; at += 0.5) {
-    let best = -Infinity;
-    // Wide spreads let answers that barely depend on the difference (guessing) come out unsure.
-    for (const spread of [1.5, 2.5, 4, 6, 10, 20, 40]) {
-      let likelihood = 0;
-      for (const p of points) {
-        const chance = Math.min(0.99, Math.max(0.01, 1 / (1 + Math.exp(-(p.x - at) / spread))));
-        likelihood += p.y * Math.log(chance) + (1 - p.y) * Math.log(1 - chance);
-      }
-      best = Math.max(best, likelihood);
-    }
-    profile.push({ at, likelihood: best });
-  }
-  const peak = profile.reduce((a, b) => (b.likelihood > a.likelihood ? b : a));
-  const inside = profile.filter((p) => p.likelihood >= peak.likelihood - 1.92).map((p) => p.at);
-  const [low, high] = [Math.min(...inside), Math.max(...inside)];
-  // A range that runs off the end can't be pinned down, so it counts as unsure.
-  return { equal: peak.at, low, high, sure: low > -24 && high < 24 };
+function equal(points: readonly Point[]) {
+  const found = balance(points, 0, 24);
+  return found && { equal: found.at, low: found.low, high: found.high, sure: found.sure };
 }
 
 /**
@@ -210,7 +167,7 @@ function pooled(mode: Mode) {
     key,
     hue: points.reduce((s, p) => s + p.hue, 0) / points.length,
     count: points.length,
-    result: equalPoint(points),
+    result: equal(points),
   }));
 }
 
@@ -235,7 +192,7 @@ function bestPoint(left: readonly Measured[], mode: Mode) {
   let best = { error: Infinity, point: { amount: 0, center: 0, width: 90 } as CurvePoint };
   for (let center = 0; center < 360; center += 5) {
     for (let width = 30; width <= 180; width += 10) {
-      for (let amount = -20; amount <= 20; amount++) {
+      for (let amount = -24; amount <= 24; amount++) {
         const point = { amount, center, width };
         const settings = { curve: { light: [point], dark: [point] } };
         const error = left.reduce((s, m) => s + m.weight * (boost(settings, mode, m.hue) - m.equal) ** 2, 0);
@@ -272,36 +229,9 @@ function fitCurve(measured: readonly Measured[], mode: Mode): CurvePoint[] {
 
 /* >---------------------------------------< Saved runs >---------------------------------------< */
 
-const STORE = "ek-colors:tests";
-
-let memory: Run[] = [];
-
-/**
- * Every finished test in this browser, including ones added from codes.
- *
- * @returns  The runs.
- */
-function runs(): Run[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORE) ?? "[]") as Run[];
-  } catch {
-    return memory;
-  }
-}
-
-/**
- * Saves the runs.
- *
- * @param list  The runs.
- */
-function keep(list: Run[]): void {
-  memory = list;
-  try {
-    localStorage.setItem(STORE, JSON.stringify(list));
-  } catch {
-    // Storage can be blocked; the runs then last until the page closes.
-  }
-}
+const saved = savedRuns<Run>("ek-colors:tests");
+const runs = () => saved.all();
+const keep = (list: Run[]) => saved.keep(list);
 
 /**
  * A run as a short code to send.
@@ -311,7 +241,7 @@ function keep(list: Run[]): void {
  */
 function encode(run: Run): string {
   const points = run.points.map((p) => [p.key, Math.round(p.hue), Math.round(p.x * 10) / 10, p.y]);
-  return btoa(JSON.stringify([run.mode, run.gamut, run.tier, run.when, points]));
+  return toCode([run.mode, run.gamut, run.tier, run.when, points]);
 }
 
 /**
@@ -321,12 +251,10 @@ function encode(run: Run): string {
  * @returns     The run, or null when it isn't one.
  */
 function decode(code: string): Run | null {
-  try {
-    const [mode, gamut, tier, when, points] = JSON.parse(atob(code.trim())) as [Mode, Gamut, number, string, [string, number, number, number][]];
-    return { mode, gamut, tier, when, points: points.map(([key, hue, x, y]) => ({ key, hue, x, y })) };
-  } catch {
-    return null;
-  }
+  const value = fromCode(code);
+  if (!Array.isArray(value) || value.length !== 5 || !Array.isArray(value[4])) return null;
+  const [mode, gamut, tier, when, points] = value as [Mode, Gamut, number, string, [string, number, number, number][]];
+  return { mode, gamut, tier, when, points: points.map(([key, hue, x, y]) => ({ key, hue, x, y })) };
 }
 
 /* >------------------------------------------< Page >------------------------------------------< */
@@ -457,7 +385,7 @@ function answer(ctx: TestContext, answer: "left" | "right" | "same"): void {
   const pair = s.pair;
   const picked = answer === "same" ? 0.5 : (answer === "left") === pair.left ? 1 : 0;
   s.points.push({ key: pair.stair.key, hue: pair.stair.hue, x: pair.x, y: picked });
-  climb(pair.stair, picked);
+  climb(pair.stair, picked, REACH);
   const next = nextPair(s, pair.stair.key);
   if (!next) {
     keep([...runs(), { mode: s.mode, gamut: s.gamut, tier: s.tier, when: new Date().toISOString(), points: s.points }]);

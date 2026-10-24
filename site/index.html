@@ -221,6 +221,9 @@
   .strip-item .fill:first-child { border-radius: 0.5rem 0.5rem 0 0; }
   .strip-item .fill:nth-last-child(2) { border-radius: 0 0 0.5rem 0.5rem; margin-bottom: 0.25rem; }
   .strip-item .mono { font-size: 0.6875rem; color: var(--c); font-weight: 500; }
+  .strip-cost { display: grid; grid-template-rows: repeat(3, 1rem) auto; align-items: center; font-size: 0.6875rem; color: var(--soft); }
+  .strip-cost .noticeable { color: var(--fg); font-weight: 700; }
+  .strip-cost .total { margin-top: 0.25rem; }
 
   /* How it works */
   .step { max-width: 46rem; }
@@ -275,9 +278,11 @@
   .test-pair { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 4vw, 2.5rem); width: min(100%, 36rem); }
   .test-swatch { aspect-ratio: 1; border: 0; padding: 0; border-radius: 1rem; background: var(--c); cursor: pointer; }
   .test-pair.resting .test-swatch { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+  .test-single { width: min(100%, 20rem); aspect-ratio: 1; border-radius: 1rem; background: var(--c); }
+  .test-single.resting { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
   .test-answers { justify-content: center; }
   button.link { background: none; border: 0; padding: 0; color: var(--soft); text-decoration: underline; font-size: inherit; }
-  #test-code { font: inherit; font-family: var(--mono); font-size: 0.8125rem; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.375rem 0.5rem; min-width: 0; flex: 1 1 12rem; }
+  #test-code, .test-code { font: inherit; font-family: var(--mono); font-size: 0.8125rem; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.375rem 0.5rem; min-width: 0; flex: 1 1 12rem; }
   .test-runs { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.5rem; }
   table.test-results { min-width: 0; width: auto; }
   .test-results tr.clear th, .test-results tr.clear td:not(.soft) { font-weight: 700; }
@@ -332,6 +337,7 @@
     .strip-item .fill { height: 0.75rem; }
     .strip-item .name { display: none; }
     .strip-item .mono { font-size: 0.625rem; min-height: 0.8rem; }
+    .strip-cost { grid-template-rows: repeat(3, 0.75rem) auto; font-size: 0.625rem; }
   }
   @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 </style>
@@ -364,6 +370,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=4188c55dcf"></script>
+<script type="module" src="app.js?v=d93d71a8ac"></script>
 </body>
 </html>

@@ -205,7 +205,14 @@ WCAG level              ≥ 7 AAA · ≥ 4.5 AA · ≥ 3 AA large · else below<
 μ ∈ [−24, 24] step 0.5,   s ∈ {1.5, 2.5, 4, 6, 10, 20, 40}
 log L(μ) = max over s of Σ y·ln P + (1 − y)·ln(1 − P),   P clamped to [0.01, 0.99]
 μ̂ = argmax log L;   range = { μ : log L(μ) ≥ log L(μ̂) − 1.92 }   // ≈ 95%
-unsure if the range reaches ±24</pre>
-      <p><strong>Curve fit.</strong> Hues with a sure result, weighted w = 1/max(1, (range width/3.92)²). Points are added greedily, at most three: each is the single bump (center step 5°, width 30–180° step 10°, amount −20…20) that minimizes Σ w·(curve(h) − μ̂)² on what's left, kept only if it lowers that error by at least 6, so a point has to explain clearly more than noise would.</p>
+log L₀ = Σ y·ln ȳ + (1 − y)·ln(1 − ȳ)   // a flat guess at the answers' average
+unsure if the range reaches ±24, or log L(μ̂) − log L₀ &lt; 1.92</pre>
+      <p><strong>Curve fit.</strong> Hues with a sure result, weighted w = 1/max(1, (range width/3.92)²). Points are added greedily, at most three: each is the single bump (center step 5°, width 30–180° step 10°, amount −24…24) that minimizes Σ w·(curve(h) − μ̂)² on what's left, kept only if it lowers that error by at least 6, so a point has to explain clearly more than noise would.</p>
+    </section>
+
+    <section class="step">
+      <h2>12. The blind hue test</h2>
+      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, alternating; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, 12 per color, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps as in step 11.</p>
+      <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 11, over μ within ±40° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
     </section>`;
 }

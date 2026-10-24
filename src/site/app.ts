@@ -17,6 +17,7 @@ import { type Context, explain, updateDemo } from "./explain";
 import { bindGuides } from "./graph";
 import { bindHues, huesEditor, huesLayers, huesPanel, huesReadout, type HuesView } from "./hues";
 import { technical } from "./technical";
+import { bindHueTest, type HueTestContext, hueTestPage } from "./hue-test";
 import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
 
@@ -25,7 +26,7 @@ import type { Request, Response } from "./worker";
 type Variant = "default" | "muted";
 type Format = "json" | "csv" | "md";
 
-const VIEWS = ["overview", "tiers", "compare", "how", "algorithm", "curve-test", "tune", "export"] as const;
+const VIEWS = ["overview", "tiers", "compare", "how", "algorithm", "curve-test", "hue-test", "tune", "export"] as const;
 
 const STORE = "ek-colors:settings";
 
@@ -477,6 +478,28 @@ function testContext(): TestContext {
 bindTest(testContext);
 
 /**
+ * What the blind hue test needs from the page.
+ *
+ * @returns  The settings, mode, gamut tier and palette on screen, and ways to place colors and
+ *           redraw.
+ */
+function hueTestContext(): HueTestContext {
+  return {
+    ...context(),
+    applyHues: (hues) => {
+      for (const [key, hue] of Object.entries(hues)) {
+        if (key === anchored()) write("anchor", hue);
+        else write(`placed.${key}`, hue);
+      }
+      solve();
+    },
+    redraw: render,
+  };
+}
+
+bindHueTest(hueTestContext);
+
+/**
  * The palette on screen.
  *
  * @returns  The current gamut tier's palette, or null while it solves.
@@ -910,6 +933,7 @@ function tune(): string {
       ${number("hues", "How many hues", [4, 16, 1])}
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
       <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
+      <p><a href="#hue-test" class="button">Measure it with the blind hue test</a></p>
       <label class="field wide" for="set-anchor"><span>Anchor</span><select id="set-anchor" data-anchor="from">${[
         ...SYSTEMS.map((r) => [r.id, `${r.name} yellow`] as const),
         ["hand", "Set by hand"] as const,
@@ -970,7 +994,8 @@ const lastSteps = new Map<string, readonly Color[]>();
 
 /**
  * Draws a mode's palette step by step, each color as a swatch with one band per step, so they
- * touch. Colors a step changes are marked with how much: degrees of hue, colorfulness added.
+ * touch. Colors a step changes are marked with how much: degrees of hue, colorfulness added. The
+ * last column says how far each step moved the most-moved color, and both together.
  *
  * @param el    Where to draw.
  * @param mode  The mode.
@@ -983,20 +1008,27 @@ function drawComparison(el: Element, mode: Mode): void {
     if (solved) lastSteps.set(`${mode}|${String(i)}`, solved);
     return lastSteps.get(`${mode}|${String(i)}`) ?? now;
   });
+  // How far each step moved the most-moved color: placing, the curve, and both (CAM16-UCS ΔE).
+  const moved = [0, 0, 0];
   const items = now.map((c) => {
+    if (c.key === "brown") return "";
     const found = [...steps, now].map((colors) => colors.find((b) => b.key === c.key)?.tiers[tier]?.default ?? c.tiers[tier]?.default);
     if (found.some((s) => !s)) return "";
     const swatches = found as Swatch[];
     const [first, hued, last] = swatches as [Swatch, Swatch, Swatch];
+    [[first, hued], [hued, last], [first, last]].forEach(([a, b], i) => (moved[i] = Math.max(moved[i]!, model().distance(mode, a!.color, b!.color))));
     const turned = Math.round((((hued.hue - first.hue + 540) % 360) - 180));
-    const added = c.key === "brown" ? 0 : Math.round(boost(state.settings, mode, last.hue));
+    const added = Math.round(boost(state.settings, mode, last.hue));
     const marks = [turned ? `${turned > 0 ? "+" : ""}${String(turned)}°` : "", added ? `${added > 0 ? "+" : ""}${String(added)}` : ""].filter(Boolean);
     const fills = swatches.map((s) => `<span class="fill" style="--f:${s.color}"></span>`).join("");
     return `<span class="strip-item${marks.length ? " changed" : ""}" style="--c:${last.color}" title="${label(c.key)}: ${swatches.map((s) => s.color).join(" → ")}">
       ${fills}<span class="mono"><span class="name">${label(c.key)}</span> ${marks.join(" ")}</span></span>`;
   });
+  const value = (d: number) => `<span class="${d >= 2 ? "noticeable" : ""}">${d.toFixed(1)}</span>`;
+  const cost = `<span class="strip-cost mono" title="How far each step moved the most-moved color (CAM16-UCS ΔE); about 2 is the smallest difference seen side by side.">
+      <span>ΔE</span>${value(moved[0]!)}${value(moved[1]!)}<span class="total">Total ${value(moved[2]!)}</span></span>`;
   const names = STEPS.map((step) => `<span title="${step.title}">${step.name}</span>`).join("");
-  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div>`;
+  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}${cost}</div>`;
 }
 
 let dock: IntersectionObserver | null = null;
@@ -1084,7 +1116,7 @@ function render(): void {
   const isColor = !(VIEWS as readonly string[]).includes(view);
   for (const a of document.querySelectorAll<HTMLAnchorElement>(".nav a")) {
     const target = a.getAttribute("href")!.slice(1);
-    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && view === "curve-test") || (target === "how" && view === "algorithm"));
+    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && (view === "curve-test" || view === "hue-test")) || (target === "how" && view === "algorithm"));
   }
   for (const row of document.querySelectorAll(".tools")) fadeEdges(row);
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
@@ -1107,6 +1139,7 @@ function render(): void {
     : view === "how" ? explain(context())
     : view === "algorithm" ? technical(context())
     : view === "curve-test" ? testPage(testContext())
+    : view === "hue-test" ? hueTestPage(hueTestContext())
     : color(view === "colors" ? first : view);
   if (view === "tune") updateTune();
   watchDock();
