@@ -658,6 +658,8 @@ function render(): void {
     const target = a.getAttribute("href")!.slice(1);
     a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor));
   }
+  // On phones the views scroll sideways; keep the current one in sight.
+  document.querySelector(".nav a[aria-current]")?.scrollIntoView({ block: "nearest", inline: "nearest" });
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-gamut]")) {
     b.setAttribute("aria-pressed", String(b.dataset.gamut === state.gamut));
