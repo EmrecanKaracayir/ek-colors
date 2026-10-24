@@ -74,13 +74,16 @@ let selected: { key: string; row: Row } = { key: "", row: "current" };
  */
 export function huesLayers(view: HuesView): string {
   const on = (key: string, row: Row) => selected.key === key && selected.row === row;
-  // The gaps: above the uniform row, below the current one.
-  const gaps = (Object.entries(view.gaps) as [Row, readonly HueGap[]][]).flatMap(([row, list]) =>
-    list.map(
-      (g) =>
-        `<text x="${g.hue.toFixed(1)}" y="${String(row === "uniform" ? ROWS.uniform - 10 : ROWS.current + 18)}" class="axis hue-gap" text-anchor="middle">${g.gap.toFixed(1)}</text>`,
-    ),
-  );
+  // The gaps: above the uniform row, below the current one; each row's shortest and longest bold,
+  // unless they're all the same.
+  const gaps = (Object.entries(view.gaps) as [Row, readonly HueGap[]][]).flatMap(([row, list]) => {
+    const values = list.map((g) => Math.round(g.gap * 10));
+    const [low, high] = [Math.min(...values), Math.max(...values)];
+    return list.map((g, i) => {
+      const extreme = high > low && (values[i] === low || values[i] === high);
+      return `<text x="${g.hue.toFixed(1)}" y="${String(row === "uniform" ? ROWS.uniform - 10 : ROWS.current + 18)}" class="axis hue-gap${extreme ? " extreme" : ""}" text-anchor="middle">${g.gap.toFixed(1)}</text>`;
+    });
+  });
   return gaps.join("") + view.rows
     .map((r) => {
       const uniform = r.uniform ?? r.current;
