@@ -198,6 +198,40 @@ export function composition(hue: number): string {
     : `${next} ${String(100 - share)} ${from}`;
 }
 
+/**
+ * A hue from its name: the reverse of composition.
+ *
+ * @param name  E.g. "R", "R 50 Y" (halfway from red to yellow) or "B 33 R".
+ * @returns     CAM16 hue (degrees).
+ *
+ * @throws      When the name isn't a pure hue or a mix of two neighboring ones.
+ */
+export function hueOf(name: string): number {
+  const [from, share, next] = name.split(" ");
+  const at = (letter: string | undefined) => ["R", "Y", "G", "B"].indexOf(letter ?? "");
+  if (share === undefined) {
+    if (at(from) < 0) throw new Error(`"${name}" isn't a CAM16 hue name.`);
+    return UNIQUE.h[at(from)]!;
+  }
+  // "A n B" is n% of the way from A to B; the four pure hues go round R, Y, G, B and back to R.
+  const forward = (at(from) + 1) % 4 === at(next);
+  const backward = (at(next) + 1) % 4 === at(from);
+  if (at(from) < 0 || at(next) < 0 || (!forward && !backward))
+    throw new Error(`"${name}" isn't a CAM16 hue name.`);
+  const i = forward ? at(from) : at(next);
+  const toward = (forward ? Number(share) : 100 - Number(share)) / 100;
+  let lo: number = UNIQUE.h[i]!;
+  let hi: number = UNIQUE.h[i + 1]!;
+  for (let k = 0; k < 50; k++) {
+    const h = (lo + hi) / 2;
+    const a = (h - UNIQUE.h[i]!) / UNIQUE.e[i]!;
+    const b = (UNIQUE.h[i + 1]! - h) / UNIQUE.e[i + 1]!;
+    if (a / (a + b) < toward) lo = h;
+    else hi = h;
+  }
+  return ((lo + hi) / 2) % 360;
+}
+
 /** CAM16's reference hues: the unique ones and the halfway mixes, for the hue circle. */
 export const REFERENCES = [
   { label: "R", hue: 20.14, unique: true },

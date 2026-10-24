@@ -104,7 +104,7 @@ export const DEFAULTS: Settings = {
   hueWindow: { identity: 20, tier: 6 },
 };
 
-/** Codemos's names for eight hues, in hue order. */
+/** The eight hues' names, in hue order. */
 export const NAMES = [
   "red",
   "orange",
@@ -116,9 +116,25 @@ export const NAMES = [
   "pink",
 ] as const;
 
+/**
+ * Where each hue starts, by its name on CAM16's hue circle: a pure hue (R, Y, G, B) or a mix of two
+ * ("R 50 Y" is halfway from red to yellow). Yellow starts at its anchor instead; brown isn't spaced
+ * and stays where it starts.
+ */
+export const STARTS: Readonly<Record<string, string>> = {
+  red: "R",
+  orange: "R 50 Y",
+  green: "G",
+  mint: "G 50 B",
+  blue: "B",
+  purple: "B 33 R",
+  pink: "R 33 B",
+  brown: "R 25 Y",
+};
+
 /* >----------------------------------------< Codemos >-----------------------------------------< */
 
-/** Codemos's colors, the palette this one replaces: where eight hues start, and the comparison. */
+/** Codemos's colors, the palette this one replaces, for the comparison. */
 export const CODEMOS: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#B70004",

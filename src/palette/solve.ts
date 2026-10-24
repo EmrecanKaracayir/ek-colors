@@ -6,8 +6,8 @@
 | the yellow anchor.                                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./model";
-import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings, CODEMOS } from "./settings";
+import { apca, composition, hueOf, makeModel, type Model, wcag, wcagLevel } from "./model";
+import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings, STARTS } from "./settings";
 
 export interface Swatch {
   /** The color as CSS: #RRGGBB on the standard tier, color() on wider ones. */
@@ -207,9 +207,9 @@ function space({ model, base, mode, tier, start, anchor, window, target }: Spaci
 /**
  * The hues a mode starts from, in hue order, with which one is yellow.
  *
- * Eight hues start from Codemos and keep its names, at the same hues in both modes: halfway between
- * where Codemos put each one in light and in dark, so the modes can't drift apart. Any other count
- * is spread evenly around the circle from yellow and named later by CAM16.
+ * Eight hues start where their names put them on CAM16's hue circle (red at R, orange at R 50 Y…),
+ * the same in both modes, and yellow at its anchor. Any other count is spread evenly around the
+ * circle from yellow and named later by CAM16.
  *
  * @param settings  The settings.
  * @param model     The color model.
@@ -218,14 +218,7 @@ function space({ model, base, mode, tier, start, anchor, window, target }: Spaci
  */
 function seeds(settings: Settings, model: Model, mode: Mode) {
   if (settings.hues === NAMES.length) {
-    const midway = (n: string) => {
-      const [light, dark] = [
-        model.cam("light", CODEMOS.light[n]!).hue,
-        model.cam("dark", CODEMOS.dark[n]!).hue,
-      ];
-      return (light + (((dark - light + 540) % 360) - 180) / 2 + 360) % 360;
-    };
-    const start = NAMES.map((n) => (n === "yellow" ? settings.yellowHue[mode] : midway(n)));
+    const start = NAMES.map((n) => (n === "yellow" ? settings.yellowHue[mode] : hueOf(STARTS[n]!)));
     return { keys: [...NAMES] as string[], start, anchor: NAMES.indexOf("yellow") };
   }
   const step = 360 / settings.hues;
@@ -333,7 +326,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     });
     if (settings.brown !== null) {
       const target = solved.target * settings.brown;
-      const hue = model.cam(mode, CODEMOS[mode]["brown"]!).hue;
+      const hue = hueOf(STARTS.brown!);
       tiers[tier]!["brown"] = {
         default: swatch(model, base, mode, strongest(model, base, mode, hue, target, tier), target),
         muted: null,

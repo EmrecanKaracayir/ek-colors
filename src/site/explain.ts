@@ -389,7 +389,7 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Evenly different</h2>
-      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space (CAM16-UCS) where distance matches how different colors look. The solver nudges each hue, a few degrees at a time and never out of its name, until the distances around the circle are as even as they can be.</p>
+      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space (CAM16-UCS) where distance matches how different colors look. Each hue starts where its name puts it on CAM16's hue circle: red at pure red, orange halfway between red and yellow, pink a third of the way from red to blue. Then the solver nudges each one, a few degrees at a time and never out of its name, until the distances around the circle are as even as they can be.</p>
       <p>Yellow is the one hue that never moves. It sits at ${String(s.yellowHue[ctx.mode])}°, chosen by eye a few degrees toward green from CAM16's pure yellow (90°). Every other hue is spaced from it, so moving yellow moves its neighbors too.</p>
       <div class="demo">
         <div class="demo-controls">
