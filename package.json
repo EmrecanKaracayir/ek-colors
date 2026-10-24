@@ -1,0 +1,22 @@
+{
+  "name": "codemos-palette",
+  "version": "2.0.0-dev",
+  "private": true,
+  "description": "Codemos palette v2: accessible, evenly spaced colours solved in CAM16, for light and dark.",
+  "type": "module",
+  "scripts": {
+    "solve": "tsx src/solve.ts",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@material/material-color-utilities": "0.4.0",
+    "colorjs.io": "0.7.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "prettier": "3.4.2",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

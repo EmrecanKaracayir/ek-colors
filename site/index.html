@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codemos Palette v2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: controls, then per mode a colour wheel beside a grid of the colours in use (v1 against v2). */
+:root { --bg:#f3f2ef; --panel:#fbfaf8; --ink:#1c1b19; --ink-2:#5d5a54; --line:#dcd9d2; --mark:#3b5bdb;
+  --body:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#161614; --panel:#1e1e1b; --ink:#ecebe7; --ink-2:#a19d95; --line:#34332f; --mark:#8ca2ff; color-scheme:dark } }
+:root[data-theme="dark"] { --bg:#161614; --panel:#1e1e1b; --ink:#ecebe7; --ink-2:#a19d95; --line:#34332f; --mark:#8ca2ff; color-scheme:dark }
+* { box-sizing:border-box }
+body { background:var(--bg); color:var(--ink); font:15px/1.5 var(--body); padding-block:28px 56px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px)) }
+main { max-width:1240px; margin:0 auto; display:grid; gap:24px }
+h1 { font:700 clamp(26px,3.6vw,38px)/1.1 var(--body); margin:0; text-wrap:balance }
+h2 { font:700 19px/1.2 var(--body); margin:0 }
+p { margin:0; max-width:74ch; color:var(--ink-2) }
+.eyebrow { font:500 11px/1 var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--ink-2) }
+.controls { position:sticky; top:env(safe-area-inset-top, 0px); z-index:2; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 16px; display:flex; flex-wrap:wrap; gap:10px 24px; align-items:center }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:10px; padding:3px; gap:3px }
+.seg button { font:600 13px var(--body); border:0; background:transparent; color:var(--ink-2); padding:6px 12px; border-radius:7px; cursor:pointer }
+.seg button[aria-pressed="true"] { background:var(--ink); color:var(--panel) }
+.mode { display:grid; gap:12px }
+.row2 { display:grid; grid-template-columns:minmax(0, 360px) minmax(0, 1fr); gap:16px; align-items:start }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; display:grid; gap:10px; min-width:0 }
+.wheel svg { width:100%; height:auto; display:block; border-radius:12px }
+.legend { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12px; color:var(--ink-2) }
+.grid { display:grid; gap:6px; overflow-x:auto }
+.line { display:grid; grid-template-columns:70px repeat(2, minmax(250px, 1fr)); gap:8px; align-items:stretch }
+.line.head { font:500 11px/1.2 var(--mono); text-transform:uppercase; letter-spacing:.06em; color:var(--ink-2) }
+.name { font-weight:600; text-transform:capitalize; display:flex; align-items:center }
+.use { border-radius:10px; padding:8px 10px; display:grid; grid-template-columns:auto auto 1fr; gap:4px 10px; align-items:center }
+.use .s { font-size:14px; font-weight:500 } .use .l { font-size:22px; font-weight:700; line-height:1 }
+.use .f { display:flex; gap:6px; justify-self:end }
+.use .f span { font:700 12px var(--body); padding:5px 8px; border-radius:6px }
+.use .m { grid-column:1 / -1; font:10.5px/1.3 var(--mono); opacity:.85 }
+.note { font-size:12.5px; color:var(--ink-2) }
+.table { overflow-x:auto; border:1px solid var(--line); border-radius:14px; background:var(--panel) }
+.table table { border-collapse:collapse; width:100%; font:12px/1.35 var(--mono); font-variant-numeric:tabular-nums }
+.table th, .table td { padding:7px 10px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap }
+.table th { font-weight:500; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-2); font-size:10.5px; position:sticky; top:0; background:var(--panel) }
+.table td.num { text-align:right }
+.table tr.v2 td { border-bottom-width:2px }
+.table .sw { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:6px; border:1px solid rgba(127,127,127,.4) }
+.fail { color:#d9480f; font-weight:600 }
+.over { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:8px 14px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 14px }
+.over label { display:grid; gap:3px; font-size:12px; color:var(--ink-2) }
+.over .v { font:600 12px var(--mono); color:var(--ink) }
+.over .v button { font:500 11px var(--body); margin-left:6px; border:1px solid var(--line); background:transparent; color:var(--ink-2); border-radius:6px; padding:1px 6px; cursor:pointer }
+:focus-visible { outline:2px solid var(--mark); outline-offset:2px }
+@media (max-width: 760px) { .row2 { grid-template-columns:1fr } }
+</style>
+</head>
+<body>
+<main>
+  <header style="display:grid;gap:10px">
+    <span class="eyebrow">Codemos · palette · version 2</span>
+    <h1>Codemos palette v2, next to v1</h1>
+    <p>Eight hues plus brown, solved live in this page. Each colour sits exactly on its contrast target: the harder of WCAG 4.5 and the APCA bar, never below it and only as far above as hex rounding forces. All aim at one CAM16 chroma, measured as each colour appears on its own base, so equal numbers look equally colourful there; a colour can take its own target, and where the screen can't reach one the colour goes as far as it can (▼ in the table). Yellow is the anchor: you set its hue (a little warmer than pure yellow's 111 keeps a darkened yellow from turning olive), and the other hues move within their names until every neighbour is equally different, measured in CAM16-UCS (made for differences this large). The muted version keeps each hue at half its chroma on the same contrast target; brown sits at 60% of the global target. Bases: #EBEBEB light, #181818 dark.</p>
+  </header>
+  <div class="controls">
+    <span class="eyebrow">Accessibility bar</span>
+    <span class="seg" id="bar"><button data-v="60" aria-pressed="false">APCA 60 + WCAG 4.5</button><button data-v="45" aria-pressed="true">APCA 45 + WCAG 4.5</button></span>
+    <label for="target" style="display:grid;gap:4px;font-size:12.5px;color:var(--ink-2);min-width:220px">Chroma target (CAM16 on the base) <b id="target-out" style="font:600 16px var(--mono);color:var(--ink)"></b><input id="target" type="range" min="30" max="70" step="5" value="50"></label>
+    <span class="eyebrow">Set</span>
+    <span class="seg" id="set"><button data-v="def" aria-pressed="true">Default</button><button data-v="alt" aria-pressed="false">Muted</button></span>
+    <span class="note" id="status" aria-live="polite"></span>
+  </div>
+  <section class="card" id="reference" style="gap:8px">
+    <span class="eyebrow">CAM16 reference hues · the yellow ruled lines on the wheels</span>
+    <p class="note">CAM16 places the hues that look pure, neither reddish nor greenish and so on, at fixed angles; the hues between are described as mixes of their two neighbours ("Y 10 G": yellow with 10% green). Solid lines on the wheels are the unique hues, dashed ones the halfway mixes.</p>
+    <div class="table"><table><thead><tr><th>Name</th><th>CAM16 reference</th><th>Hue</th></tr></thead><tbody id="ref-rows"></tbody></table></div>
+  </section>
+  <section class="mode" id="light"></section>
+  <section class="mode" id="dark"></section>
+</main>
+<script id="data" type="application/json">{"bases": {"light": "#EBEBEB", "dark": "#181818"}, "v1": {"light": {"def": {"red": "#B70004", "orange": "#9F5500", "yellow": "#7D7000", "green": "#006904", "mint": "#006560", "blue": "#0052C6", "purple": "#7700EE", "pink": "#AC0074", "brown": "#784F3F"}, "alt": {"red": "#C35354", "orange": "#8D7252", "yellow": "#7D7852", "green": "#528256", "mint": "#567E7C", "blue": "#5B79A2", "purple": "#8E64B9", "pink": "#AF5A92"}}, "dark": {"def": {"red": "#EF6363", "orange": "#D28342", "yellow": "#BFAF40", "green": "#45AA41", "mint": "#46A598", "blue": "#4B9ECD", "purple": "#9B87EA", "pink": "#ED63BA", "brown": "#CB8569"}, "alt": {"red": "#D19797", "orange": "#C59E7F", "yellow": "#ADA77F", "green": "#80B27F", "mint": "#83AEA8", "blue": "#87ABC0", "purple": "#A9A0CB", "pink": "#CD95B8"}}}}</script>
+<script src="https://cdn.jsdelivr.net/npm/colorjs.io@0.7.1/dist/color.global.min.js"></script>
+<script>
+const D = JSON.parse(document.getElementById("data").textContent);
+const NAMES = ["red", "orange", "yellow", "green", "mint", "blue", "purple", "pink"];
+const C = (x) => new Color(x);
+const lch = (x) => { const c = C(x).to("oklch").coords; return [c[0] ?? 0, c[1] ?? 0, c[2] ?? 0]; };
+const hctOf = (x) => { const c = C(x).to("hct").coords; return [c[0] ?? 0, c[1] ?? 0, c[2] ?? 0]; };
+
+/* CAM16 as seen on each mode's base (Google's material-color-utilities): equal chroma means equally
+   colourful on that background, and distances use CAM16-UCS, made for large differences. */
+let M = null; const VC = {};
+const ready = import("https://cdn.jsdelivr.net/npm/@material/material-color-utilities@0.4.0/+esm").then((m) => {
+  M = m;
+  for (const mode of ["light", "dark"]) VC[mode] = m.ViewingConditions.make(undefined, undefined, m.lstarFromArgb(m.argbFromHex(D.bases[mode])), 2, false);
+});
+const cam = (mode, hex) => M.Cam16.fromIntInViewingConditions(M.argbFromHex(hex), VC[mode]);
+const camOf = (mode, hex) => { const c = cam(mode, hex); return [c.hue, c.chroma, c.j]; };
+const camDistance = (mode, a, b) => cam(mode, a).distance(cam(mode, b));
+
+/* CAM16's unique hues (HCT's hue is CAM16's) and its hue composition: how much of the two
+   neighbouring unique hues a hue holds, e.g. "Y 10 G" is yellow with 10% green. */
+const UNIQUE = { h: [20.14, 90, 164.25, 237.53, 380.14], e: [0.8, 0.7, 1, 1.2, 0.8], H: [0, 100, 200, 300, 400], name: ["R", "Y", "G", "B", "R"] };
+function quadrature(h) {
+  const hp = h < UNIQUE.h[0] ? h + 360 : h;
+  let i = 0; while (i < 3 && hp >= UNIQUE.h[i + 1]) i++;
+  const a = (hp - UNIQUE.h[i]) / UNIQUE.e[i], b = (UNIQUE.h[i + 1] - hp) / UNIQUE.e[i + 1];
+  return { H: UNIQUE.H[i] + (100 * a) / (a + b), i };
+}
+function composition(h) {
+  const { H, i } = quadrature(h), share = Math.round(H - UNIQUE.H[i]);
+  if (share <= 0) return UNIQUE.name[i];
+  if (share >= 100) return UNIQUE.name[i + 1];
+  return share <= 50 ? `${UNIQUE.name[i]} ${share} ${UNIQUE.name[i + 1]}` : `${UNIQUE.name[i + 1]} ${100 - share} ${UNIQUE.name[i]}`;
+}
+function hueAt(Hq) { // the hue angle at a hue-composition value (inverse of quadrature)
+  let i = 0; while (i < 3 && Hq >= UNIQUE.H[i + 1]) i++;
+  const [h1, h2, e1, e2] = [UNIQUE.h[i], UNIQUE.h[i + 1], UNIQUE.e[i], UNIQUE.e[i + 1]], d = Hq - UNIQUE.H[i];
+  const h = (d * (e2 * h1 - e1 * h2) - 100 * h1 * e2) / (d * (e2 - e1) - 100 * e2);
+  return h >= 360 ? h - 360 : h;
+}
+const REFERENCE = [
+  ["red", "unique red", 0], ["orange", "halfway red–yellow (R 50 Y)", 50], ["yellow", "unique yellow", 100],
+  ["green", "unique green", 200], ["mint", "halfway green–blue (G 50 B)", 250], ["blue", "unique blue", 300],
+  ["purple", "halfway blue–red (B 50 R)", 350], ["pink", "no unique reference: a light red–purple", null],
+];
+const wcag = (a, b) => C(a).contrast(C(b), "WCAG21");
+const apca = (text, bg) => Math.abs(C(bg).contrast(C(text), "APCA"));
+const best = (fill) => (apca("#000000", fill) > apca("#FFFFFF", fill) ? "#000000" : "#FFFFFF");
+const state = { bar: "45", target: 50, set: "def", over: {}, yellow: { light: 103, dark: 103 } };
+function seg(id, key) {
+  document.querySelectorAll("#" + id + " button").forEach((b) => b.addEventListener("click", () => {
+    state[key] = b.dataset.v;
+    document.querySelectorAll("#" + id + " button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  }));
+}
+seg("bar", "bar"); seg("set", "set");
+document.getElementById("target").addEventListener("change", (e) => { state.target = +e.target.value; render(); });
+
+function wheel(mode, base, v1, v2) {
+  const W = 340, cx = W / 2, cy = W / 2, R = 145, maxC = 90;
+  const pt = (hex) => { const [h, c] = camOf(mode, hex); const a = (h - 90) * Math.PI / 180, r = Math.min(1, c / maxC) * R; return [cx + r * Math.cos(a), cy + r * Math.sin(a)]; };
+  const ink = mode === "dark" ? "#8a8a8a" : "#9a9a9a";
+  let s = `<svg viewBox="0 0 ${W} ${W}" role="img" aria-label="Hue around the circle, vividness outward, v1 rings and v2 dots"><rect width="${W}" height="${W}" fill="${base}"/>`;
+  for (const f of [0.25, 0.5, 0.75, 1]) s += `<circle cx="${cx}" cy="${cy}" r="${R * f}" fill="none" stroke="${ink}" stroke-opacity=".35"/>`;
+  for (let h = 0; h < 360; h += 30) {
+    const a = (h - 90) * Math.PI / 180;
+    s += `<line x1="${cx}" y1="${cy}" x2="${cx + R * Math.cos(a)}" y2="${cy + R * Math.sin(a)}" stroke="${ink}" stroke-opacity=".18"/>`;
+    s += `<text x="${cx + (R + 12) * Math.cos(a)}" y="${cy + (R + 12) * Math.sin(a) + 3}" font-size="9" text-anchor="middle" fill="${ink}" font-family="JetBrains Mono, monospace">${h}°</text>`;
+  }
+  for (const [, , Hq] of REFERENCE) {
+    if (Hq === null) continue;
+    const h = hueAt(Hq % 400), a = (h - 90) * Math.PI / 180, unique = Hq % 100 === 0;
+    s += `<line x1="${cx}" y1="${cy}" x2="${cx + R * Math.cos(a)}" y2="${cy + R * Math.sin(a)}" stroke="${mode === "dark" ? "#f0c674" : "#a0522d"}" stroke-opacity="${unique ? 0.8 : 0.45}" stroke-dasharray="${unique ? "0" : "3 3"}"/>`;
+    s += `<text x="${cx + (R - 12) * Math.cos(a)}" y="${cy + (R - 12) * Math.sin(a) + 3}" font-size="9" text-anchor="middle" fill="${mode === "dark" ? "#f0c674" : "#a0522d"}" font-family="JetBrains Mono, monospace">${unique ? ["R", "Y", "G", "B"][Hq / 100] : "½"}</text>`;
+  }
+  const ring = (list) => list.map(pt).map(([x, y]) => `${x},${y}`).join(" ");
+  s += `<polygon points="${ring(NAMES.map((n) => v1[n]))}" fill="none" stroke="${ink}" stroke-dasharray="4 3" stroke-width="1.2"/>`;
+  s += `<polygon points="${ring(NAMES.map((n) => v2[n]))}" fill="none" stroke="${mode === "dark" ? "#dddddd" : "#333333"}" stroke-width="1.2"/>`;
+  for (const n of [...NAMES, "brown"]) {
+    if (!v1[n] || !v2[n]) continue;
+    const [x1, y1] = pt(v1[n]), [x2, y2] = pt(v2[n]);
+    s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${ink}"/>`;
+    s += `<circle cx="${x1}" cy="${y1}" r="7" fill="none" stroke="${v1[n]}" stroke-width="3"/>`;
+    s += `<circle cx="${x2}" cy="${y2}" r="9" fill="${v2[n]}" stroke="${base}" stroke-width="2"><title>${n}: v2 ${v2[n]}, v1 ${v1[n]}</title></circle>`;
+  }
+  return s + "</svg>";
+}
+
+/* The solver's core, live: a colour exactly on its contrast target, as strong as possible up to a chroma. */
+const sRGBhex = (c) => c.to("srgb").toString({ format: "hex", collapse: false }).toUpperCase();
+function at(mode, H, Cc, J) {
+  const [x, y, z] = M.Cam16.fromJchInViewingConditions(J, Cc, H, VC[mode]).xyzInViewingConditions(VC[mode]);
+  const c = new Color("xyz-d65", [x / 100, y / 100, z / 100]);
+  return c.inGamut("srgb", { epsilon: 0.0005 }) ? sRGBhex(c) : null;
+}
+const meets = (hex, base, bar) => wcag(hex, base) >= 4.5 && apca(hex, base) >= bar;
+function onTarget(H, Cc, mode, bar) {
+  const base = D.bases[mode], dark = mode === "dark";
+  let lo = 0, hi = 100; // contrast grows with CAM16 lightness in dark mode and falls with it in light mode
+  for (let i = 0; i < 32; i++) {
+    const m = (lo + hi) / 2, hex = at(mode, H, Cc, m), ok = hex !== null && meets(hex, base, bar);
+    if (dark) { if (ok) hi = m; else if (hex === null) hi = m; else lo = m; } else { if (ok) lo = m; else if (hex === null) lo = m; else hi = m; }
+  }
+  const J = dark ? hi : lo, hex = at(mode, H, Cc, J);
+  return hex && meets(hex, base, bar) ? hex : null;
+}
+function strongest(H, target, mode, bar) {
+  const full = onTarget(H, target, mode, bar); if (full) return full;
+  let lo = 0, hi = target; for (let i = 0; i < 16; i++) { const m = (lo + hi) / 2; onTarget(H, m, mode, bar) ? (lo = m) : (hi = m); }
+  return onTarget(H, lo, mode, bar);
+}
+const ringOf = (list) => list.map((h, i) => C(h).deltaE(C(list[(i + 1) % list.length]), "2000").toFixed(1));
+
+function use(hex, base) {
+  const label = best(hex), meta = apca("#000000", base) > 50 ? "#444444" : "#bbbbbb";
+  return `<div class="use" style="background:${base};color:${hex}">
+    <span class="s">Small text</span><span class="l">Aa</span>
+    <span class="f"><span style="background:${hex};color:${label}">Label</span><span style="background:${hex};color:${base}">Base</span></span>
+    <span class="m" style="color:${meta}">${hex} · on base WCAG ${wcag(hex, base).toFixed(2)} APCA ${apca(hex, base).toFixed(0)} · ${label === "#000000" ? "black" : "white"} label APCA ${apca(label, hex).toFixed(0)} · base on it APCA ${apca(base, hex).toFixed(0)}</span>
+  </div>`;
+}
+
+const f = (x, d) => x.toFixed(d);
+function table(base, v1, v2, set) {
+  const rows = [...NAMES, ...(set === "def" ? ["brown"] : [])].flatMap((n) => [["v1", v1[n]], ["v2", v2[n]]].map(([ver, hex]) => {
+    const mode = base === D.bases.dark ? "dark" : "light";
+    const hsl = C(hex).to("hsl").coords.map((v) => v ?? 0), [L, Cc, H] = lch(hex), [hh, hc, ht] = hctOf(hex), [ch, cc, cj] = camOf(mode, hex), label = best(hex);
+    const own = (state.over[state.bar + "-" + (base === D.bases.dark ? "dark" : "light")] ?? {})[n] ?? state.target;
+    const limited = ver === "v2" && set === "def" && n !== "brown" && cc < own - 1;
+    const w = wcag(hex, base), a = apca(hex, base), lw = wcag(label, hex), la = apca(label, hex);
+    const bad = (ok) => (ok ? "" : ' class="fail num"');
+    return `<tr class="${ver}"><td>${ver === "v1" ? n : ""}</td><td>${ver}</td><td><span class="sw" style="background:${hex}"></span>${hex}</td>
+      <td>${f(ch, 1)}° ${f(cc, 1)}${limited ? " ▼" : ""} ${f(cj, 1)}</td><td>${composition(ch)}</td><td>${f(hh, 1)}° ${f(hc, 1)} ${f(ht, 1)}</td><td>${f(hsl[0], 0)}° ${f(hsl[1], 0)}% ${f(hsl[2], 0)}%</td><td>${f(L, 3)} ${f(Cc, 3)} ${f(H, 1)}°</td>
+      <td class="num"${bad(w >= 4.5)}>${f(w, 2)}</td><td class="num"${a >= 60 ? "" : a >= 45 ? ' class="num"' : bad(false)}>${f(a, 1)}</td>
+      <td>${label === "#000000" ? "black" : "white"}</td><td class="num"${bad(lw >= 4.5)}>${f(lw, 2)}</td><td class="num">${f(la, 1)}</td></tr>`;
+  })).join("");
+  return `<div class="table"><table><thead><tr><th>Colour</th><th></th><th>Hex</th><th>CAM16 on base (h C J)</th><th>CAM16 hue</th><th>HCT (H C T)</th><th>HSL</th><th>OKLCH (L C h)</th><th>WCAG 2 on base</th><th>APCA Lc on base</th><th>Label</th><th>Label WCAG 2</th><th>Label APCA Lc</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* The whole solve, live: on target, at the chroma asked, hues spaced evenly from the yellow anchor. */
+const cache = new Map();
+const spreadOf = (ds) => { const m = ds.reduce((a, b) => a + b, 0) / ds.length; return Math.sqrt(ds.reduce((a, d) => a + (d - m) ** 2, 0) / ds.length); };
+const ringNums = (mode, list) => list.map((h, i) => camDistance(mode, h, list[(i + 1) % list.length]));
+function solve(mode) {
+  const bar = +state.bar, over = state.over[state.bar + "-" + mode] ?? {}, yH = state.yellow[mode];
+  const key = JSON.stringify([mode, bar, state.target, over, yH]);
+  if (cache.has(key)) return cache.get(key);
+  const target = (n) => over[n] ?? state.target;
+  const start = NAMES.map((n) => (n === "yellow" ? yH : camOf(mode, D.v1[mode].def[n])[0]));
+  const hues = [...start], colors = hues.map((H, i) => strongest(H, target(NAMES[i]), mode, bar));
+  let best = spreadOf(ringNums(mode, colors));
+  for (let pass = 0; pass < 6; pass++) {
+    let improved = false;
+    for (let i = 0; i < 8; i++) {
+      if (NAMES[i] === "yellow") continue;
+      for (const d of [-3, 3, -1, 1]) {
+        const H = hues[i] + d; if (Math.abs(H - start[i]) > 20) continue;
+        const c = strongest(H, target(NAMES[i]), mode, bar); if (!c) continue;
+        const trial = [...colors]; trial[i] = c;
+        const sc = spreadOf(ringNums(mode, trial)); if (sc < best - 1e-4) { best = sc; hues[i] = H; colors[i] = c; improved = true; }
+      }
+    }
+    if (!improved) break;
+  }
+  const def = {}, alt = {};
+  NAMES.forEach((n, i) => { const got = camOf(mode, colors[i]); def[n] = { hex: colors[i], H: hues[i], C: +got[1].toFixed(1) }; alt[n] = { hex: strongest(hues[i], got[1] * 0.5, mode, bar) }; });
+  const result = { def, alt, brown: { hex: strongest(camOf(mode, D.v1[mode].def.brown)[0], state.target * 0.6, mode, bar) } };
+  cache.set(key, result);
+  return result;
+}
+
+document.getElementById("ref-rows").innerHTML = REFERENCE.map(([n, what, Hq]) => `<tr><td style="text-transform:capitalize">${n}</td><td>${what}</td><td>${Hq === null ? "—" : hueAt(Hq % 400).toFixed(1) + "°"}</td></tr>`).join("");
+
+function render() {
+  document.getElementById("target-out").textContent = state.target;
+  const status = document.getElementById("status");
+  status.textContent = "Solving…";
+  ready.then(() => setTimeout(() => {
+    const t0 = performance.now();
+    for (const mode of ["light", "dark"]) draw(mode, solve(mode));
+    status.textContent = `Solved in ${Math.round(performance.now() - t0)} ms.`;
+  }, 20)).catch(() => { status.textContent = "Couldn't load the colour model (material-color-utilities)."; });
+}
+
+function draw(mode, P) {
+  const base = D.bases[mode], set = state.set, key = state.bar + "-" + mode, over = state.over[key] ?? {};
+  const pick = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, v.hex]));
+  const v1 = { ...D.v1[mode][set], ...(set === "def" ? { brown: D.v1[mode].def.brown } : {}) };
+  const v2 = { ...pick(set === "def" ? P.def : P.alt), ...(set === "def" ? { brown: P.brown.hex } : {}) };
+  const sec = document.getElementById(mode);
+  sec.innerHTML = `<h2>${mode === "light" ? "Light" : "Dark"} · ${set === "def" ? "default" : "muted"} on ${base}</h2>`;
+  const panel = document.createElement("div"); panel.className = "over";
+  panel.innerHTML = `<label for="y-${mode}">yellow hue (anchor)
+      <span class="v">${state.yellow[mode]}° = ${composition(state.yellow[mode])} · unique yellow 90°, pure #FFFF00 111°</span>
+      <input id="y-${mode}" type="range" min="85" max="115" step="1" value="${state.yellow[mode]}"></label>` +
+    NAMES.map((n) => { const v = over[n]; return `<label for="o-${mode}-${n}">${n}
+      <span class="v">${v ? "chroma " + v : "global " + state.target} · got ${P.def[n].C}${v ? `<button data-reset="${n}">reset</button>` : ""}</span>
+      <input id="o-${mode}-${n}" type="range" min="20" max="90" step="5" value="${v ?? state.target}" data-name="${n}"></label>`; }).join("");
+  panel.querySelector(`#y-${mode}`).addEventListener("change", (e) => { state.yellow[mode] = +e.target.value; render(); });
+  panel.querySelectorAll("input[data-name]").forEach((inp) => inp.addEventListener("change", () => { (state.over[key] ??= {})[inp.dataset.name] = +inp.value; render(); }));
+  panel.querySelectorAll("button[data-reset]").forEach((b) => b.addEventListener("click", (e) => { e.preventDefault(); delete state.over[key][b.dataset.reset]; render(); }));
+  sec.insertAdjacentHTML("beforeend", `<span class="eyebrow">Yellow's hue, and chroma per colour (${state.bar === "45" ? "APCA 45" : "APCA 60"}, ${mode})</span>`);
+  sec.append(panel);
+  const row = document.createElement("div"); row.className = "row2";
+  const rg = ringNums(mode, NAMES.map((n) => v2[n])).map((x) => x.toFixed(1));
+  row.innerHTML = `<div class="card wheel"><span class="eyebrow">CAM16 hue around, chroma outward (on this base)</span>${wheel(mode, base, v1, v2)}
+    <div class="legend"><span>○ ring: v1</span><span>● dot: v2</span><span>dashed: v1's shape · solid: v2's</span></div>
+    <p class="note">Neighbour differences (CAM16-UCS on this base), red → pink → red: ${rg.join(" · ")}</p></div>`;
+  const g = document.createElement("div"); g.className = "card grid";
+  g.innerHTML = `<div class="line head"><span></span><span>v1 (Codemos today)</span><span>v2</span></div>` +
+    [...NAMES, ...(set === "def" ? ["brown"] : [])].map((n) => `<div class="line"><span class="name">${n}</span>${use(v1[n], base)}${use(v2[n], base)}</div>`).join("");
+  row.append(g); sec.append(row);
+  sec.insertAdjacentHTML("beforeend", table(base, v1, v2, set));
+}
+render();
+</script>
+
+</body>
+</html>
