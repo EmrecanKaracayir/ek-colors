@@ -2,14 +2,15 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CURVE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | The colorfulness curve editor: the curve over the hue circle, drawn on the colors it changes,    |
-| made of points that add up. Double-click the graph to add a point and a point to remove it;      |
-| Option-click a point to switch it off and on; drag a point to move its hue and amount; drag the  |
-| selected point's edges, or hold Option and scroll, to set its width. The selected point's values |
-| can be typed in too.                                                                             |
+| made of points that add up. Double-click the graph to add a point; double-click a point, or      |
+| press Backspace, to remove the selected one; Option-click a point to switch it off and on; drag  |
+| a point to move its hue and amount; drag the selected point's edges, or hold Option and scroll,  |
+| to set its width. The selected point's values can be typed in too.                               |
 \*------------------------------------------------------------------------------------------------*/
 
 import type { CurvePoint, Mode } from "../palette/settings";
 import { boost } from "../palette/solve";
+import { band, type Guide, guideLayer, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -22,8 +23,8 @@ export interface CurveView {
   /** Colors around the circle, painted behind the curve. */
   readonly band: readonly { readonly hue: number; readonly color: string }[];
 
-  /** The shown reference systems' hues, drawn as guides: pure hues solid, the rest dashed. */
-  readonly guides: readonly { readonly label: string; readonly hue: number; readonly unique: boolean }[];
+  /** The shown reference systems' hues, drawn as guides. */
+  readonly guides: readonly Guide[];
 }
 
 /** Draws a number field bound to a setting. */
@@ -35,7 +36,7 @@ const MIN_WIDTH = 10;
 
 
 /** Drawing space: hue across, amount up, zero in the middle. */
-const [WIDTH, HEIGHT] = [360, 120];
+const HEIGHT = 120;
 const MIDDLE = HEIGHT / 2;
 const SCALE = (HEIGHT / 2 - 8) / LIMIT;
 
@@ -100,7 +101,7 @@ function valuesPanel(view: CurveView): string {
   const i = selected[mode];
   if (!points[i]) return `<p class="soft">No points: the curve is flat.</p>`;
   return `<p class="soft">Point ${String(i + 1)} of ${String(points.length)}</p>
-    <label class="field curve-on" for="curve-on-${mode}"><span>On</span><input id="curve-on-${mode}" type="checkbox" data-curve-on ${points[i].off ? "" : "checked"}></label>
+    <label class="field graph-check" for="curve-on-${mode}"><span>On</span><input id="curve-on-${mode}" type="checkbox" data-curve-on ${points[i].off ? "" : "checked"}></label>
     ${field(`curve.${mode}.${String(i)}.amount`, "Amount", [-LIMIT, LIMIT, 1])}
     ${field(`curve.${mode}.${String(i)}.center`, "Hue", [0, 359, 1])}
     ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, 180, 5])}`;
@@ -113,7 +114,7 @@ function valuesPanel(view: CurveView): string {
  * @returns     SVG stops.
  */
 export function bandStops(view: CurveView): string {
-  return view.band.map((b) => `<stop offset="${(b.hue / 360).toFixed(4)}" stop-color="${b.color}"></stop>`).join("");
+  return stops(view.band);
 }
 
 /**
@@ -127,29 +128,21 @@ export function curveEditor(view: CurveView, drawField: Field): string {
   field = drawField;
   const { mode } = view;
   selected[mode] = clamp(selected[mode], 0, Math.max(0, view.points.length - 1));
-  const guides = [-LIMIT, -LIMIT / 2, LIMIT / 2, LIMIT].map(
+  const levels = [-LIMIT, -LIMIT / 2, LIMIT / 2, LIMIT].map(
     (m) => `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>
-      <text x="-4" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${m > 0 ? "+" : ""}${String(m)}</text>`,
+      <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${m > 0 ? "+" : ""}${String(m)}</text>`,
   );
-  // The guides: pure hues solid, the rest dashed, as on the hue circle.
-  const references = view.guides.map(
-    (r) => `<line x1="${r.hue.toFixed(1)}" x2="${r.hue.toFixed(1)}" y1="0" y2="${String(HEIGHT)}" class="reference${r.unique ? "" : " half"}"></line>
-      <text x="${r.hue.toFixed(1)}" y="-5" class="axis" text-anchor="middle">${r.label}</text>`,
-  );
-  const hues = [0, 90, 180, 270, 360].map(
-    (h) => `<text x="${String(h)}" y="${String(HEIGHT + 14)}" class="axis" text-anchor="middle">${String(h)}°</text>`,
-  );
-  return `<div class="curve-editor" data-curve="${mode}">
-    <div class="curve-values">${valuesPanel(view)}</div>
-    <svg viewBox="-22 -16 396 ${String(HEIGHT + 34)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
-      <defs><linearGradient id="band-${mode}">${bandStops(view)}</linearGradient></defs>
-      <rect x="0" y="0" width="${String(WIDTH)}" height="${String(HEIGHT)}" rx="6" fill="url(#band-${mode})" class="curve-band"></rect>
-      ${guides.join("")}${references.join("")}
+  const { svg: guides, top } = guideLayer(view.guides, HEIGHT);
+  return `<div class="graph-editor curve-editor" data-curve="${mode}">
+    <div class="graph-values curve-values">${valuesPanel(view)}</div>
+    <svg viewBox="${viewBox(top, HEIGHT)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
+      ${band(`band-${mode}`, bandStops(view), HEIGHT)}
+      ${levels.join("")}${guides}
       <line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE)}" y2="${String(MIDDLE)}" class="zero"></line>
-      ${hues.join("")}
+      ${hueScale(HEIGHT)}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
-    <p class="curve-caption soft">Double-click the graph to add a point; double-click a point to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
+    <p class="graph-caption soft">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
   </div>`;
 }
 
@@ -165,9 +158,12 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   let drag: { mode: Mode; part: string; svg: SVGSVGElement } | null = null;
   let wheel = 0;
 
+  /** The editor last pressed in, whose selected point Backspace and Delete remove. */
+  let active: Mode | null = null;
+
   const point = (svg: SVGSVGElement, event: { clientX: number; clientY: number }) => {
     const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.getScreenCTM()!.inverse());
-    return { hue: wrap(Math.round(clamp(p.x, 0, WIDTH))), amount: Math.round(clamp((MIDDLE - p.y) / SCALE, -LIMIT, LIMIT)) };
+    return { hue: hueAt(svg, event), amount: Math.round(clamp((MIDDLE - p.y) / SCALE, -LIMIT, LIMIT)) };
   };
   /**
    * Applies new points and redraws the editor.
@@ -213,6 +209,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   let lastPress = { time: 0, on: "" };
 
   document.addEventListener("pointerdown", (event) => {
+    active = (editorOf(event.target)?.dataset.curve as Mode | undefined) ?? null;
     const svg = (event.target as Element).closest<SVGSVGElement>("[data-curve] svg");
     if (!svg) return;
     const part = (event.target as Element).closest<SVGElement>("[data-drag]");
@@ -233,7 +230,8 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
       drag = null;
       return remove(mode, Number(part.dataset.index));
     }
-    if (twice && !part) {
+    // The padding around the data takes no new points.
+    if (twice && !part && pointAt(svg, event)) {
       const points = [...get(mode).points];
       // No more points than hues: past that, a point has no color of its own to adjust.
       if (points.length >= get(mode).dots.length) return;
@@ -289,15 +287,19 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   );
 
   document.addEventListener("keydown", (event) => {
+    // Backspace and Delete remove the selected point of the focused editor, or the one last pressed
+    // in, unless typing.
+    const typing = (event.target as Element).closest?.("input, select, textarea");
+    const target = (editorOf(event.target)?.dataset.curve as Mode | undefined) ?? active;
+    if ((event.key === "Backspace" || event.key === "Delete") && target && !typing && get(target).points.length) {
+      event.preventDefault();
+      return remove(target, selected[target]);
+    }
     const editor = editorOf(event.target);
     const node = (event.target as Element).closest?.<SVGElement>('[data-drag="point"]');
     if (!editor || !node) return;
     const mode = editor.dataset.curve as Mode;
     selected[mode] = Number(node.dataset.index);
-    if (event.key === "Delete" || event.key === "Backspace") {
-      event.preventDefault();
-      return remove(mode, selected[mode]);
-    }
     const step = event.shiftKey ? 10 : 1;
     const moves: Record<string, (p: CurvePoint) => CurvePoint> = {
       ArrowLeft: (p) => ({ ...p, center: wrap(p.center - step) }),

@@ -14,7 +14,7 @@ import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode,
 import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
-import { bindHues, huesEditor, huesLayers, huesReadout, huesTable, type HuesView } from "./hues";
+import { bindHues, guideSwitches, huesEditor, huesLayers, huesPanel, huesReadout, huesTable, type HuesView } from "./hues";
 import { technical } from "./technical";
 import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
@@ -824,9 +824,10 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Hues</h2>
+      ${number("hues", "How many hues", [4, 16, 1])}
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
       <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
-      <label class="field" for="set-anchor"><span>Anchor</span><select id="set-anchor" data-anchor="from">${[
+      <label class="field wide" for="set-anchor"><span>Anchor</span><select id="set-anchor" data-anchor="from">${[
         ...SYSTEMS.map((r) => [r.id, `${r.name} yellow`] as const),
         ["hand", "Set by hand"] as const,
       ]
@@ -836,8 +837,8 @@ function tune(): string {
         <input type="range" data-anchor-hue min="0" max="359" step="1" value="${String(Math.round(anchorHue(s)))}" aria-label="Anchor hue">
         <input id="set-anchor-hue" type="number" data-anchor-hue min="0" max="359" step="1" value="${String(Math.round(anchorHue(s)))}">
       </label>
+      ${guideSwitches(huesView())}
       ${huesEditor(huesView())}
-      ${number("hues", "How many hues", [4, 16, 1])}
     </section>
     <section class="group">
       <h2>Tiers</h2>
@@ -918,6 +919,8 @@ function updateTune(): void {
     layers.innerHTML = huesLayers(view);
     document.querySelector(".hues-readout")!.textContent = huesReadout(view);
     document.querySelector(".hues-table tbody")!.innerHTML = huesTable(view);
+    const values = document.querySelector(".hues-values")!;
+    if (!values.contains(document.activeElement)) values.innerHTML = huesPanel(view);
   }
   for (const m of ["light", "dark"] as const) {
     const editor = document.querySelector(`[data-curve="${m}"]`);

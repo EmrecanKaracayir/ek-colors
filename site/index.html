@@ -163,52 +163,55 @@
   .split > div { display: grid; gap: 0.5rem; align-content: start; }
   .checks { display: flex; flex-wrap: wrap; gap: 1rem; }
   .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem) - 1px); z-index: 4; background: var(--bg); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem; align-items: start; padding-block: 0.75rem; }
-  .curve-editor { max-width: 52rem; display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 1rem 1.5rem; align-items: center; }
-  .curve-values { display: grid; gap: 0.5rem; }
-  .curve-values .field, .curve-values .field:not(:has(input[type="range"])) { grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.5rem; }
-  .curve-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
-  .curve-band { opacity: 0.28; }
-  .curve-caption { grid-column: 2; margin: 0; font-size: 0.8125rem; }
-  .curve-editor .grid { stroke: var(--line); }
-  .curve-editor .reference { stroke: var(--fg); stroke-opacity: 0.35; }
-  .curve-editor .reference.half { stroke-dasharray: 3 4; stroke-opacity: 0.25; }
+  .graph-editor { max-width: 56rem; display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: 0.75rem 1.5rem; align-items: center; }
+  .graph-values { display: grid; gap: 0.5rem; align-content: center; }
+  .graph-values .field, .graph-values .field:not(:has(input[type="range"])) { grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.5rem; }
+  .graph-values .graph-check { grid-template-columns: 3.5rem auto; }
+  .graph-values > p { margin: 0; }
+  .graph-editor svg { width: 100%; display: block; overflow: visible; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .graph-band { opacity: 0.28; }
+  .graph-caption { grid-column: 2; margin: 0; font-size: 0.8125rem; }
+  .graph-editor .grid { stroke: var(--line); }
+  .graph-editor .axis { fill: var(--soft); font: 500 8px var(--sans); }
+  .graph-editor .row-label { fill: var(--fg); font-weight: 600; }
+  .graph-editor .system-name { fill: var(--fg); }
+  .graph-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1; }
+  .graph-editor .hit { fill: transparent; }
+  .guide { stroke: var(--fg); stroke-opacity: 0.22; stroke-width: 1; }
+  .guide.half { stroke-opacity: 0.12; }
+  .guide-munsell { stroke-dasharray: 1 2; }
+  .guide-ncs { stroke-dasharray: 5 3; }
+  .guide-unique { stroke-dasharray: 5 2 1 2; }
+  .guide-focal { stroke-dasharray: 0.5 3; stroke-linecap: round; stroke-width: 1.5; }
+  .guide-switch svg { width: 1.125rem; height: 0.375rem; }
+  .guide-switch .guide { stroke-opacity: 0.8; stroke-width: 1.5; }
+  .curve-editor svg { cursor: crosshair; }
   .curve-editor .zero { stroke: var(--soft); stroke-opacity: 0.6; }
-  .curve-editor .axis { fill: var(--soft); font: 500 9px var(--sans); }
-  .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
-  .curve-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
-  .curve-editor .hit { fill: transparent; }
-  .hues-editor { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; max-width: 52rem; }
-  .hues-editor svg { width: 100%; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
-  .hues-editor .axis { fill: var(--soft); font: 500 9px var(--sans); }
-  .hues-editor .row-label, .hues-editor .system-name { fill: var(--fg); font-weight: 600; }
-  .hues-editor .system-name { font-weight: 500; }
-  .hues-editor .grid { stroke: var(--line); }
-  .hues-editor .guide { stroke: var(--fg); stroke-opacity: 0.4; stroke-width: 1; }
-  .hues-editor .guide.half { stroke-opacity: 0.22; }
-  .hues-editor .guide-munsell { stroke-dasharray: 1 2; }
-  .hues-editor .guide-ncs { stroke-dasharray: 6 3; }
-  .hues-editor .guide-unique { stroke-dasharray: 6 2 1 2; }
-  .hues-editor .guide-focal { stroke-dasharray: 1 4; stroke-linecap: round; stroke-width: 1.5; }
-  .hues-editor .hit { fill: transparent; }
-  .hues-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1.2; }
-  .hue-point { cursor: ew-resize; outline: none; }
-  .hue-point .dot-fill { stroke: var(--bg); stroke-width: 2; }
-  .hue-point:focus-visible .dot-fill { stroke: var(--focus); stroke-width: 3; }
-  .hue-point .pin { fill: var(--bg); pointer-events: none; }
-  .hue-path { stroke: var(--fg); stroke-opacity: 0.45; stroke-width: 1.25; }
-  .guide-switches { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; font-size: 0.875rem; }
-  .guide-switch { display: inline-flex; gap: 0.375rem; align-items: center; }
-  table.hues-table { min-width: 0; width: auto; }
-  .hues-table td, .hues-table th { padding-right: 1.25rem; }
-  .hues-readout, .hues-caption { margin: 0; font-size: 0.8125rem; }
-  .guide-sources { margin: 0; padding-left: 1.25rem; font-size: 0.8125rem; display: grid; gap: 0.25rem; max-width: 65ch; }
   .curve-point { cursor: grab; outline: none; }
   .curve-point circle:last-child { fill: var(--fg); stroke: var(--bg); stroke-width: 2; }
   .curve-point:focus-visible circle:last-child { stroke: var(--focus); stroke-width: 3; }
   .curve-point.off circle:last-child { fill: var(--bg); stroke: var(--soft); stroke-width: 1.5; stroke-dasharray: 2 2; }
-  .curve-values .curve-on { grid-template-columns: 3.5rem auto; }
   .curve-edge { cursor: ew-resize; }
   .curve-edge rect:last-child { fill: var(--fg); }
+  .curve-line { fill: none; stroke: var(--fg); stroke-width: 2; stroke-linejoin: round; }
+  .hue-point { cursor: ew-resize; outline: none; }
+  .hue-point .dot-fill { stroke: var(--bg); stroke-width: 1.5; }
+  .hue-point.selected .dot-fill { stroke: var(--fg); stroke-width: 2; }
+  .hue-point:focus-visible .dot-fill { stroke: var(--focus); stroke-width: 2.5; }
+  .hue-point .pin { fill: var(--bg); pointer-events: none; }
+  .hue-path { stroke: var(--fg); stroke-opacity: 0.4; stroke-width: 1; }
+  .hue-name { display: flex; gap: 0.375rem; align-items: center; flex-wrap: wrap; font-weight: 600; }
+  .hue-name .soft { font-weight: 400; font-size: 0.8125rem; }
+  .hue-facts { margin: 0; display: grid; gap: 0.25rem; font-size: 0.8125rem; }
+  .hue-facts div { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.5rem; }
+  .hue-facts dt { color: var(--soft); }
+  .hue-facts dd { margin: 0; }
+  .guide-switches { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; font-size: 0.875rem; }
+  .guide-switch { display: inline-flex; gap: 0.375rem; align-items: center; }
+  table.hues-table { min-width: 0; width: auto; }
+  .hues-table td, .hues-table th { padding-right: 1.25rem; }
+  .guide-sources { margin: 0; padding-left: 1.25rem; font-size: 0.8125rem; display: grid; gap: 0.25rem; max-width: 65ch; }
+  .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 9rem 13rem; }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr)); gap: 0.5rem; }
   .strip-labels { display: grid; grid-template-rows: 1.25rem 1.25rem; align-items: center; font-size: 0.75rem; color: var(--soft); text-align: right; }
   .strip-item.changed .mono { font-weight: 700; }
@@ -287,11 +290,12 @@
   textarea { width: 100%; min-height: 28rem; font-family: var(--mono); font-size: 0.75rem; line-height: 1.5; color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: 0.75rem; padding: 1rem; resize: vertical; }
 
   @media (max-width: 48rem) {
-    .curve-editor { grid-template-columns: minmax(0, 1fr); }
-    .curve-values { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .curve-values > p { grid-column: 1 / -1; }
-    .curve-caption { grid-column: 1; }
-    .curve-values .field, .curve-values .field:not(:has(input[type="range"])) { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+    .graph-editor { grid-template-columns: minmax(0, 1fr); }
+    .graph-values { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
+    .graph-values > p, .graph-values > dl { grid-column: 1 / -1; }
+    .graph-caption { grid-column: 1; }
+    .graph-values .field, .graph-values .field:not(:has(input[type="range"])), .graph-values .graph-check { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
+    .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 7rem minmax(0, 1fr); }
     /* Phones: name, status and the menu button on one line, the views in a dropdown, the switches below. */
     header { grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.375rem 0.75rem; padding-block: 0.5rem; }
     #status { order: 1; }
@@ -358,6 +362,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=b041e00148"></script>
+<script type="module" src="app.js?v=1cc3899f53"></script>
 </body>
 </html>
