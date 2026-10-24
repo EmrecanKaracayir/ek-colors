@@ -160,7 +160,7 @@
   .split .field { grid-template-columns: 7rem 6rem; }
   .split > div { display: grid; gap: 0.5rem; align-content: start; }
   .checks { display: flex; flex-wrap: wrap; gap: 1rem; }
-  .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem)); z-index: 4; background: var(--bg); display: grid; gap: 0.375rem; padding-block: 0.75rem; }
+  .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem)); z-index: 4; background: var(--bg); display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.75rem; align-items: start; padding-block: 0.75rem; }
   .curve-editor { max-width: 52rem; display: grid; grid-template-columns: 8rem minmax(0, 1fr); gap: 1rem 1.5rem; align-items: center; }
   .curve-values { display: grid; gap: 0.5rem; }
   .curve-values .field, .curve-values .field:not(:has(input[type="range"])) { grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.5rem; }
@@ -177,11 +177,13 @@
   .curve-point:focus-visible circle:last-child { stroke: var(--focus); stroke-width: 3; }
   .curve-edge { cursor: ew-resize; }
   .curve-edge rect:last-child { fill: var(--fg); }
-  .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr)); gap: 0.5rem; }
-  .strip-label { font-size: 0.75rem; color: var(--soft); }
+  .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr)); gap: 0.5rem; }
+  .strip-labels { display: grid; grid-template-rows: 1.25rem 1.25rem; align-items: center; font-size: 0.75rem; color: var(--soft); text-align: right; }
   .strip-item.changed .mono { font-weight: 700; }
-  .strip-item { display: grid; gap: 0.25rem; }
-  .strip-item .fill { height: 2rem; margin: 0; }
+  .strip-item { display: grid; gap: 0; }
+  .strip-item .fill { height: 1.25rem; margin: 0; border-radius: 0; }
+  .strip-item .before { background: var(--b); border-radius: 0.5rem 0.5rem 0 0; }
+  .strip-item .after { border-radius: 0 0 0.5rem 0.5rem; margin-bottom: 0.25rem; }
   .strip-item .mono { font-size: 0.6875rem; color: var(--c); font-weight: 500; }
 
   /* How it works */
@@ -257,10 +259,11 @@
     /* The strip stays pinned on phones too, compact: thinner swatches, only the curve's changes named. */
     .strip { gap: 0.25rem; padding-block: 0.5rem; }
     .strip-items { grid-template-columns: repeat(auto-fit, minmax(1.75rem, 1fr)); gap: 0.25rem; }
-    .strip-item .fill { height: 1.25rem; border-radius: 0.375rem; }
+    .strip { gap: 0.5rem; }
+    .strip-labels { grid-template-rows: 1rem 1rem; font-size: 0.625rem; }
+    .strip-item .fill { height: 1rem; }
     .strip-item .name { display: none; }
     .strip-item .mono { font-size: 0.625rem; min-height: 0.8rem; }
-    .strip-items:first-of-type .mono { display: none; }
   }
   @media (prefers-reduced-motion: reduce) { body { transition: none; } }
 </style>
@@ -292,6 +295,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=f3e4bc9acc"></script>
+<script type="module" src="app.js?v=c6f90563f0"></script>
 </body>
 </html>

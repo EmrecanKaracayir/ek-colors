@@ -732,30 +732,33 @@ function tune(): string {
     </section>`;
 }
 
+const lastWithout = new Map<Mode, readonly Color[]>();
+
 /**
- * Draws a mode's palette without the curve above the palette with it, each color marked with what
- * the curve adds.
+ * Draws a mode's palette without and with the curve, each color as a swatch whose top half is
+ * without and bottom half with, so the two touch. Colors the curve changes are marked with how
+ * much it adds.
  *
  * @param el    Where to draw.
  * @param mode  The mode.
  */
 function drawComparison(el: Element, mode: Mode): void {
   const tier = state.settings.identityTier[mode];
-  const row = (list: readonly Color[], marked: boolean) =>
-    `<div class="strip-items">${list
-      .map((c) => {
-        const s = c.tiers[tier]?.default;
-        if (!s) return "";
-        const added = marked && c.key !== "brown" ? Math.round(boost(state.settings, mode, s.hue)) : 0;
-        const delta = added ? `${added > 0 ? "+" : ""}${String(added)}` : "";
-        return `<span class="strip-item${added ? " changed" : ""}" style="--c:${s.color}" title="${label(c.key)} ${delta} ${s.color}"><span class="fill"></span><span class="mono"><span class="name">${label(c.key)}</span> ${delta}</span></span>`;
-      })
-      .join("")}</div>`;
-  const without = uncurved()?.[mode].colors;
   const withCurve = current()?.[mode].colors ?? [];
-  // Both rows are always drawn, so the page doesn't jump while one of them solves.
-  const previous = el.querySelector(".strip-items")?.outerHTML;
-  el.innerHTML = `<span class="strip-label">Without curve</span>${without ? row(without, false) : (previous ?? row(withCurve, false))}<span class="strip-label">With curve</span>${row(withCurve, true)}`;
+  // The last palette without the curve stays until the new one arrives, so nothing jumps.
+  const solved = uncurved()?.[mode].colors;
+  if (solved) lastWithout.set(mode, solved);
+  const without = lastWithout.get(mode) ?? withCurve;
+  const items = withCurve.map((c) => {
+    const after = c.tiers[tier]?.default;
+    if (!after) return "";
+    const before = without.find((b) => b.key === c.key)?.tiers[tier]?.default ?? after;
+    const added = c.key === "brown" ? 0 : Math.round(boost(state.settings, mode, after.hue));
+    const delta = added ? `${added > 0 ? "+" : ""}${String(added)}` : "";
+    return `<span class="strip-item${added ? " changed" : ""}" style="--b:${before.color};--c:${after.color}" title="${label(c.key)}: ${before.color} → ${after.color}">
+      <span class="fill before"></span><span class="fill after"></span><span class="mono"><span class="name">${label(c.key)}</span> ${delta}</span></span>`;
+  });
+  el.innerHTML = `<span class="strip-labels"><span>Without curve</span><span>With curve</span></span><div class="strip-items">${items.join("")}</div>`;
 }
 
 /**
