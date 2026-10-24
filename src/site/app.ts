@@ -10,6 +10,7 @@ import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, REFERENCES, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUTS, type Mode, NAMES, type Settings, V1, V1_MUTED } from "../palette/settings";
 import type { Colour, GamutPalette, Palette, Swatch } from "../palette/solve";
+import { type Context, explain, updateDemo } from "./explain";
 import type { Request, Response } from "./worker";
 
 /* >-----------------------------------------< State >------------------------------------------< */
@@ -17,7 +18,7 @@ import type { Request, Response } from "./worker";
 type Variant = "default" | "muted";
 type Format = "json" | "csv" | "md";
 
-const VIEWS = ["overview", "tiers", "compare", "tune", "export"] as const;
+const VIEWS = ["overview", "tiers", "compare", "how", "tune", "export"] as const;
 
 const STORE = "codemos-palette:settings";
 
@@ -127,6 +128,15 @@ function solve(wait = 0): void {
     state.palettes = {};
     post(state.gamut);
   }, wait);
+}
+
+/**
+ * What the explainer needs to know about the page.
+ *
+ * @returns  The settings, mode, gamut tier and palette on screen.
+ */
+function context(): Context {
+  return { settings: state.settings, mode: state.mode, gamut: state.gamut, palette: current(), label };
 }
 
 /**
@@ -661,6 +671,7 @@ function render(): void {
     : view === "compare" ? compare()
     : view === "tune" ? tune()
     : view === "export" ? exporting()
+    : view === "how" ? explain(context())
     : colour(view === "colours" ? first : view);
   if (view === "tune") updateTune();
 }
@@ -728,6 +739,7 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("input", (event) => {
   const el = event.target as HTMLInputElement;
+  if (el.dataset.demo) return void updateDemo(context(), el.dataset.demo);
   if (el.dataset.tier) {
     const checked = [...document.querySelectorAll<HTMLInputElement>("[data-tier]")].filter((c) => c.checked).map((c) => Number(c.dataset.tier));
     if (!checked.length) return void (el.checked = true);

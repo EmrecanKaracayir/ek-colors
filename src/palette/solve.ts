@@ -106,7 +106,7 @@ function place(
  *
  * @throws        When not even a grey reaches the tier.
  */
-function strongest(
+export function strongest(
   model: Model,
   base: string,
   mode: Mode,
