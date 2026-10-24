@@ -14,7 +14,8 @@ import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode,
 import { boost, type Color, type GamutPalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
-import { bindHues, guideSwitches, huesEditor, huesLayers, huesPanel, huesReadout, huesTable, type HuesView } from "./hues";
+import { bindGuides } from "./graph";
+import { bindHues, huesEditor, huesLayers, huesPanel, huesReadout, type HuesView } from "./hues";
 import { technical } from "./technical";
 import { bindTest, type TestContext, testPage } from "./test";
 import type { Request, Response } from "./worker";
@@ -83,7 +84,10 @@ function load(): Settings {
       const old = stored as { yellowHue?: Record<Mode, number>; homes?: Record<string, number>; start?: number };
       const yellow = old.homes?.yellow ?? old.yellowHue?.light ?? old.start;
       if (yellow !== undefined && stored.anchor === undefined) settings.anchor = yellow;
-      for (const gone of ["yellowHue", "homes", "pull", "reference", "start"]) delete (settings as Record<string, unknown>)[gone];
+      // Settings saved before one guide at a time list several; the first is kept.
+      const shown = (stored as { guides?: string[] }).guides;
+      if (shown?.length && stored.guide === undefined) settings.guide = shown[0]!;
+      for (const gone of ["yellowHue", "homes", "pull", "reference", "start", "guides"]) delete (settings as Record<string, unknown>)[gone];
       // Settings saved before the identity tier was per mode hold one number.
       const identity = settings.identityTier as Settings["identityTier"] | number;
       if (typeof identity === "number") settings.identityTier = { light: identity, dark: identity };
@@ -239,11 +243,23 @@ function uniform(): GamutPalette | null {
 }
 
 /**
+ * The palette on screen with nothing placed and no curve: the first step of the strip.
+ *
+ * @returns  The palette, or null while it solves.
+ */
+function plain(): GamutPalette | null {
+  const placed = Object.keys(state.settings.placed).length > 0;
+  if (!curved()) return uniform();
+  return placed ? variant({ ...flat(), placed: {} }) : uncurved();
+}
+
+/**
  * Asks for the variants Settings compares with.
  */
 function askVariants(): void {
   uncurved();
   uniform();
+  plain();
 }
 
 const bands = new Map<string, CurveView["band"]>();
@@ -279,7 +295,7 @@ function curveView(mode: Mode): CurveView {
   const dots = (palette?.colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
-  return { mode, points: s.curve[mode], dots, band, guides: guides(s) };
+  return { mode, points: s.curve[mode], dots, band, guide: s.guide, guides: guides(s) };
 }
 
 /**
@@ -318,8 +334,7 @@ function huesView(): HuesView {
         anchor: c.key === anchored(),
       };
     });
-  const systems = SYSTEMS.map((sys) => ({ id: sys.id, name: sys.name, shown: s.guides.includes(sys.id), source: sys.source }));
-  return { rows, band: curveView(mode).band, guides: guides(s), systems, ring: palette?.ring[tier] ?? [] };
+  return { rows, band: curveView(mode).band, guide: s.guide, guides: guides(s), ring: palette?.ring[tier] ?? [] };
 }
 
 /**
@@ -351,6 +366,12 @@ bindHues(
     }
     solve(150);
   },
+);
+
+bindGuides(
+  (id) => guides(state.settings, id),
+  () => state.settings.guide,
+  (id) => write("guide", id),
 );
 
 bindCurves(curveView, (mode, points) => {
@@ -817,12 +838,6 @@ function tune(): string {
       ${s.brown === null ? "" : number("brown", "Brown share", [0.1, 1, 0.05], true)}
     </section>
     <section class="group">
-      <h2>Curve</h2>
-      <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Its points add up.</p>
-      <p><a href="#curve-test" class="button">Measure it with the blind curve test</a></p>
-      ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
-    </section>
-    <section class="group">
       <h2>Hues</h2>
       ${number("hues", "How many hues", [4, 16, 1])}
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
@@ -837,8 +852,13 @@ function tune(): string {
         <input type="range" data-anchor-hue min="0" max="359" step="1" value="${String(Math.round(anchorHue(s)))}" aria-label="Anchor hue">
         <input id="set-anchor-hue" type="number" data-anchor-hue min="0" max="359" step="1" value="${String(Math.round(anchorHue(s)))}">
       </label>
-      ${guideSwitches(huesView())}
       ${huesEditor(huesView())}
+    </section>
+    <section class="group">
+      <h2>Curve</h2>
+      <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Its points add up.</p>
+      <p><a href="#curve-test" class="button">Measure it with the blind curve test</a></p>
+      ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
     </section>
     <section class="group">
       <h2>Tiers</h2>
@@ -870,33 +890,45 @@ function tune(): string {
     </section>`;
 }
 
-const lastWithout = new Map<Mode, readonly Color[]>();
+/** The rows of the strip: each step of the palette, added one at a time. */
+const STEPS = [
+  { name: "Uniform", title: "The uniform lineup: nothing placed, no curve" },
+  { name: "+ Hue", title: "With colors placed by hand" },
+  { name: "+ Curve", title: "With the curve too: the palette in use" },
+] as const;
+
+/** The last solve of each step, kept until the next arrives so nothing jumps. */
+const lastSteps = new Map<string, readonly Color[]>();
 
 /**
- * Draws a mode's palette without and with the curve, each color as a swatch whose top half is
- * without and bottom half with, so the two touch. Colors the curve changes are marked with how
- * much it adds.
+ * Draws a mode's palette step by step, each color as a swatch with one band per step, so they
+ * touch. Colors a step changes are marked with how much: degrees of hue, colorfulness added.
  *
  * @param el    Where to draw.
  * @param mode  The mode.
  */
 function drawComparison(el: Element, mode: Mode): void {
   const tier = state.settings.identityTier[mode];
-  const withCurve = current()?.[mode].colors ?? [];
-  // The last palette without the curve stays until the new one arrives, so nothing jumps.
-  const solved = uncurved()?.[mode].colors;
-  if (solved) lastWithout.set(mode, solved);
-  const without = lastWithout.get(mode) ?? withCurve;
-  const items = withCurve.map((c) => {
-    const after = c.tiers[tier]?.default;
-    if (!after) return "";
-    const before = without.find((b) => b.key === c.key)?.tiers[tier]?.default ?? after;
-    const added = c.key === "brown" ? 0 : Math.round(boost(state.settings, mode, after.hue));
-    const delta = added ? `${added > 0 ? "+" : ""}${String(added)}` : "";
-    return `<span class="strip-item${added ? " changed" : ""}" style="--b:${before.color};--c:${after.color}" title="${label(c.key)}: ${before.color} → ${after.color}">
-      <span class="fill before"></span><span class="fill after"></span><span class="mono"><span class="name">${label(c.key)}</span> ${delta}</span></span>`;
+  const now = current()?.[mode].colors ?? [];
+  const steps = [plain(), uncurved()].map((palette, i) => {
+    const solved = palette?.[mode].colors;
+    if (solved) lastSteps.set(`${mode}|${String(i)}`, solved);
+    return lastSteps.get(`${mode}|${String(i)}`) ?? now;
   });
-  el.innerHTML = `<span class="strip-labels"><span>Without curve</span><span>With curve</span></span><div class="strip-items">${items.join("")}</div>`;
+  const items = now.map((c) => {
+    const found = [...steps, now].map((colors) => colors.find((b) => b.key === c.key)?.tiers[tier]?.default ?? c.tiers[tier]?.default);
+    if (found.some((s) => !s)) return "";
+    const swatches = found as Swatch[];
+    const [first, hued, last] = swatches as [Swatch, Swatch, Swatch];
+    const turned = Math.round((((hued.hue - first.hue + 540) % 360) - 180));
+    const added = c.key === "brown" ? 0 : Math.round(boost(state.settings, mode, last.hue));
+    const marks = [turned ? `${turned > 0 ? "+" : ""}${String(turned)}°` : "", added ? `${added > 0 ? "+" : ""}${String(added)}` : ""].filter(Boolean);
+    const fills = swatches.map((s) => `<span class="fill" style="--f:${s.color}"></span>`).join("");
+    return `<span class="strip-item${marks.length ? " changed" : ""}" style="--c:${last.color}" title="${label(c.key)}: ${swatches.map((s) => s.color).join(" → ")}">
+      ${fills}<span class="mono"><span class="name">${label(c.key)}</span> ${marks.join(" ")}</span></span>`;
+  });
+  const names = STEPS.map((step) => `<span title="${step.title}">${step.name}</span>`).join("");
+  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div>`;
 }
 
 /**
@@ -918,7 +950,6 @@ function updateTune(): void {
     const view = huesView();
     layers.innerHTML = huesLayers(view);
     document.querySelector(".hues-readout")!.textContent = huesReadout(view);
-    document.querySelector(".hues-table tbody")!.innerHTML = huesTable(view);
     const values = document.querySelector(".hues-values")!;
     if (!values.contains(document.activeElement)) values.innerHTML = huesPanel(view);
   }
@@ -1128,12 +1159,6 @@ document.addEventListener("input", (event) => {
       if (!checked.includes(state.settings.identityTier[m]))
         write(`identityTier.${m}`, checked.includes(CONFIG.identityTier[m]) ? CONFIG.identityTier[m] : checked[0]);
     solve(150);
-    return;
-  }
-  if (el.dataset.guide) {
-    const shown = [...document.querySelectorAll<HTMLInputElement>("[data-guide]")].filter((c) => c.checked).map((c) => c.dataset.guide!);
-    write("guides", shown);
-    render();
     return;
   }
   if (el.dataset.anchor === "from") {

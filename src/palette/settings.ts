@@ -91,8 +91,8 @@ export interface Settings {
    */
   readonly placed: Readonly<Record<string, number>>;
 
-  /** Which reference systems' hues are drawn as guides (see references.ts). */
-  readonly guides: readonly string[];
+  /** The reference system whose hues are drawn as guides (see references.ts). */
+  readonly guide: string;
 }
 
 /* >----------------------------------------< Defaults >----------------------------------------< */
@@ -116,7 +116,7 @@ export const DEFAULTS: Settings = {
   hueWindow: { identity: 20, tier: 6 },
   anchor: "ncs",
   placed: {},
-  guides: ["cam16"],
+  guide: "cam16",
 };
 
 /** The eight hues' names, in hue order. */

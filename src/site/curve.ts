@@ -10,7 +10,7 @@
 
 import type { CurvePoint, Mode } from "../palette/settings";
 import { boost } from "../palette/solve";
-import { band, type Guide, guideLayer, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
+import { band, INSET, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -23,7 +23,8 @@ export interface CurveView {
   /** Colors around the circle, painted behind the curve. */
   readonly band: readonly { readonly hue: number; readonly color: string }[];
 
-  /** The shown reference systems' hues, drawn as guides. */
+  /** The chosen reference system and its guides. */
+  readonly guide: string;
   readonly guides: readonly Guide[];
 }
 
@@ -132,17 +133,18 @@ export function curveEditor(view: CurveView, drawField: Field): string {
     (m) => `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>
       <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${m > 0 ? "+" : ""}${String(m)}</text>`,
   );
-  const { svg: guides, top } = guideLayer(view.guides, HEIGHT);
-  return `<div class="graph-editor curve-editor" data-curve="${mode}">
+  return `<div class="graph-editor curve-editor" data-curve="${mode}" style="--graph-inset:${INSET}">
+    ${guidePicker(view.guide)}
     <div class="graph-values curve-values">${valuesPanel(view)}</div>
-    <svg viewBox="${viewBox(top, HEIGHT)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
+    <svg viewBox="${viewBox(HEIGHT)}" data-height="${String(HEIGHT)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
       ${band(`band-${mode}`, bandStops(view), HEIGHT)}
-      ${levels.join("")}${guides}
+      ${levels.join("")}<g class="guide-layer">${guideLayer(view.guides, HEIGHT)}</g>
       <line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE)}" y2="${String(MIDDLE)}" class="zero"></line>
       ${hueScale(HEIGHT)}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
     <p class="graph-caption soft">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
+    <p class="graph-caption soft guide-source">${guideSource(view.guide)}</p>
   </div>`;
 }
 

@@ -2,8 +2,8 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< REFERENCES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | Reference systems: where a body of color science puts its hues, drawn as guides on the hue       |
-| graphs (pure hues solid, the rest dashed). Each system's hues are CAM16 names or measured        |
-| colors; any number of them can be shown at once.                                                 |
+| graphs (pure hues solid, the rest dashed), one system at a time. Each system's hues are CAM16    |
+| names or measured colors.                                                                        |
 \*------------------------------------------------------------------------------------------------*/
 
 import { hueOf, makeModel } from "./model";
@@ -161,20 +161,20 @@ export function hueAt(settings: Pick<Settings, "bases" | "rooms">, at: string): 
 }
 
 /**
- * The guides of every system the settings show, as hues.
+ * A system's guides as hues.
  *
- * @param settings  The settings.
+ * @param settings  The bases and rooms.
+ * @param id        The system; the settings' chosen one when left out.
  * @returns         Each guide's system, label, hue and whether it's a pure hue.
  */
-export function guides(settings: Pick<Settings, "bases" | "rooms" | "guides">) {
-  return SYSTEMS.filter((s) => settings.guides.includes(s.id)).flatMap((s) =>
-    s.guides.map((g) => ({
-      system: s.id,
-      label: g.label,
-      hue: hueAt(settings, g.at),
-      unique: g.unique,
-    })),
-  );
+export function guides(settings: Pick<Settings, "bases" | "rooms" | "guide">, id = settings.guide) {
+  const system = SYSTEMS.find((s) => s.id === id) ?? SYSTEMS[0]!;
+  return system.guides.map((g) => ({
+    system: system.id,
+    label: g.label,
+    hue: hueAt(settings, g.at),
+    unique: g.unique,
+  }));
 }
 
 /**

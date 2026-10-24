@@ -170,7 +170,7 @@
   .graph-values > p { margin: 0; }
   .graph-editor svg { width: 100%; display: block; overflow: visible; touch-action: none; user-select: none; -webkit-user-select: none; }
   .graph-band { opacity: 0.28; }
-  .graph-caption { grid-column: 2; margin: 0; font-size: 0.8125rem; }
+  .graph-caption { grid-column: 2; margin: 0 0 0 var(--graph-inset, 0); font-size: 0.8125rem; }
   .graph-editor .grid { stroke: var(--line); }
   .graph-editor .axis { fill: var(--soft); font: 500 8px var(--sans); }
   .graph-editor .row-label { fill: var(--fg); font-weight: 600; }
@@ -178,13 +178,16 @@
   .graph-editor .mark { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1; }
   .graph-editor .hit { fill: transparent; }
   .guide { stroke: var(--fg); stroke-opacity: 0.22; stroke-width: 1; }
-  .guide.half { stroke-opacity: 0.12; }
-  .guide-munsell { stroke-dasharray: 1 2; }
-  .guide-ncs { stroke-dasharray: 5 3; }
-  .guide-unique { stroke-dasharray: 5 2 1 2; }
-  .guide-focal { stroke-dasharray: 0.5 3; stroke-linecap: round; stroke-width: 1.5; }
-  .guide-switch svg { width: 1.125rem; height: 0.375rem; }
-  .guide-switch .guide { stroke-opacity: 0.8; stroke-width: 1.5; }
+  .guide.half { stroke-opacity: 0.12; stroke-dasharray: 3 3; }
+  .graph-editor .guide-label { fill: var(--fg); }
+  .graph-editor .guide-degree { font-size: 7px; }
+  .guide-picker { grid-column: 2; justify-self: start; flex-wrap: wrap; margin-left: var(--graph-inset, 0); }
+  .guide-source { max-width: 65ch; }
+  .guide-source .source { display: block; margin-top: 0.125rem; font-style: italic; }
+  .hue-point.uniform .dot-fill { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1; }
+  .hue-point.uniform { cursor: pointer; }
+  .hue-point.uniform.selected .dot-fill { stroke: var(--fg); stroke-width: 2; }
+  .hue-note { margin: 0; font-size: 0.8125rem; }
   .curve-editor svg { cursor: crosshair; }
   .curve-editor .zero { stroke: var(--soft); stroke-opacity: 0.6; }
   .curve-point { cursor: grab; outline: none; }
@@ -206,19 +209,14 @@
   .hue-facts div { display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); gap: 0.5rem; }
   .hue-facts dt { color: var(--soft); }
   .hue-facts dd { margin: 0; }
-  .guide-switches { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; font-size: 0.875rem; }
-  .guide-switch { display: inline-flex; gap: 0.375rem; align-items: center; }
-  table.hues-table { min-width: 0; width: auto; }
-  .hues-table td, .hues-table th { padding-right: 1.25rem; }
-  .guide-sources { margin: 0; padding-left: 1.25rem; font-size: 0.8125rem; display: grid; gap: 0.25rem; max-width: 65ch; }
   .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 9rem 13rem; }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr)); gap: 0.5rem; }
-  .strip-labels { display: grid; grid-template-rows: 1.25rem 1.25rem; align-items: center; font-size: 0.75rem; color: var(--soft); text-align: right; }
+  .strip-labels { display: grid; grid-template-rows: repeat(3, 1rem); align-items: center; font-size: 0.75rem; color: var(--soft); text-align: right; }
   .strip-item.changed .mono { font-weight: 700; }
   .strip-item { display: grid; gap: 0; }
-  .strip-item .fill { height: 1.25rem; margin: 0; border-radius: 0; }
-  .strip-item .before { background: var(--b); border-radius: 0.5rem 0.5rem 0 0; }
-  .strip-item .after { border-radius: 0 0 0.5rem 0.5rem; margin-bottom: 0.25rem; }
+  .strip-item .fill { height: 1rem; margin: 0; border-radius: 0; background: var(--f); }
+  .strip-item .fill:first-child { border-radius: 0.5rem 0.5rem 0 0; }
+  .strip-item .fill:nth-last-child(2) { border-radius: 0 0 0.5rem 0.5rem; margin-bottom: 0.25rem; }
   .strip-item .mono { font-size: 0.6875rem; color: var(--c); font-weight: 500; }
 
   /* How it works */
@@ -293,7 +291,8 @@
     .graph-editor { grid-template-columns: minmax(0, 1fr); }
     .graph-values { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
     .graph-values > p, .graph-values > dl { grid-column: 1 / -1; }
-    .graph-caption { grid-column: 1; }
+    .graph-caption, .guide-picker { grid-column: 1; }
+    .graph-values { order: -1; }
     .graph-values .field, .graph-values .field:not(:has(input[type="range"])), .graph-values .graph-check { grid-template-columns: minmax(0, 1fr); gap: 0.25rem; }
     .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 7rem minmax(0, 1fr); }
     /* Phones: name, status and the menu button on one line, the views in a dropdown, the switches below. */
@@ -326,8 +325,8 @@
     .strip { gap: 0.25rem; padding-block: 0.5rem; }
     .strip-items { grid-template-columns: repeat(auto-fit, minmax(1.75rem, 1fr)); gap: 0.25rem; }
     .strip { gap: 0.5rem; }
-    .strip-labels { grid-template-rows: 1rem 1rem; font-size: 0.625rem; }
-    .strip-item .fill { height: 1rem; }
+    .strip-labels { grid-template-rows: repeat(3, 0.75rem); font-size: 0.625rem; }
+    .strip-item .fill { height: 0.75rem; }
     .strip-item .name { display: none; }
     .strip-item .mono { font-size: 0.625rem; min-height: 0.8rem; }
   }
@@ -362,6 +361,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=1cc3899f53"></script>
+<script type="module" src="app.js?v=f8e8ff63fa"></script>
 </body>
 </html>
