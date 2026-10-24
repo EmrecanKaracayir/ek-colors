@@ -144,6 +144,7 @@ curve(h) = Σ_i  [ d_i(h) &lt; w_i ]  ·  a_i · (1 + cos(π · d_i(h) / w_i)) /
       <p>CAM16's unique hues and their eccentricity weights (the hue-quadrature table): R 20.14° (e 0.8), Y 90° (0.7), G 164.25° (1.0), B 237.53° (1.2), and R again at 380.14° (0.8). Between two unique hues, a hue's share of the next one is:</p>
 <pre class="formula">p(h) = ((h − h_i)/e_i) / ((h − h_i)/e_i + (h_(i+1) − h)/e_(i+1))</pre>
       <p>A name like "R 33 B" (33% toward the other hue, from B's side) is turned back into an angle by bisecting p(h) on that segment. The same formula names every swatch ("Y 11 G").</p>
+      <p>Under another reference system (Munsell, NCS, unique hues, focal colors), a home is a measured color instead of a name: its D65 XYZ (Munsell and WCS chips adapted from illuminant C by Bradford, NCS from its sRGB approximations) is taken into CAM16 in each mode's viewing conditions, and the home is the circular mean of the light and dark hues. A color the system doesn't define keeps its CAM16 home. Under <em>Nearest</em>, every system's home is a candidate and the pull (step 7) goes toward the one closest to the spaced hue.</p>
       <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Name</th><th>Home by name</th><th>Your home</th></tr></thead><tbody>${starts}</tbody></table></div>
     </section>
 

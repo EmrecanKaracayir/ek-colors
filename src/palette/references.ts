@@ -94,6 +94,63 @@ export const SYSTEMS: readonly ReferenceSystem[] = [
       unique: label.length === 2,
     })),
   },
+  {
+    id: "ncs",
+    name: "NCS",
+    summary:
+      "The Natural Color System's four elementary hues, as painters and architects use them: the yellow, red, blue and green with no trace of their neighbors. Its mixes fall back to CAM16.",
+    source:
+      "NCS Colour AB; screen approximations of NCS 0580-Y, S 1080-R, 2060-B and 2060-G from its NCS Navigator, as listed on Wikipedia. The measured values are in the paid standard SS 19104.",
+    homes: { yellow: "#FFD300", red: "#C40233", blue: "#0087BD", green: "#009F6B" },
+    guides: [
+      { label: "Y", at: "#FFD300", unique: true },
+      { label: "R", at: "#C40233", unique: true },
+      { label: "B", at: "#0087BD", unique: true },
+      { label: "G", at: "#009F6B", unique: true },
+    ],
+  },
+  {
+    id: "unique",
+    name: "Unique hues",
+    summary:
+      "Where observers in lab studies set pure red, yellow, green and blue, averaged. Unique green varies the most between people. Other colors fall back to CAM16.",
+    source:
+      "Kuehni, Determination of unique hues using Munsell color chips, Color Research & Application, 2001 (mean chips 3R, 3.5Y, 2.5BG, 2.75PB), as reported by Wright, Prime colors and the hues; converted at Munsell value 5, chroma 10.",
+    homes: {
+      red: "color(xyz-d65 0.27986 0.19176 0.13411)",
+      yellow: "color(xyz-d65 0.19312 0.19324 0.01482)",
+      green: "color(xyz-d65 0.10069 0.19372 0.21758)",
+      blue: "color(xyz-d65 0.17438 0.19184 0.50820)",
+    },
+    guides: [
+      { label: "R", at: "color(xyz-d65 0.27986 0.19176 0.13411)", unique: true },
+      { label: "Y", at: "color(xyz-d65 0.19312 0.19324 0.01482)", unique: true },
+      { label: "G", at: "color(xyz-d65 0.10069 0.19372 0.21758)", unique: true },
+      { label: "B", at: "color(xyz-d65 0.17438 0.19184 0.50820)", unique: true },
+    ],
+  },
+  {
+    id: "focal",
+    name: "Focal colors",
+    summary:
+      "The best examples of red, yellow, green, blue and purple chosen by speakers of over a hundred languages in the World Color Survey. Other colors fall back to CAM16.",
+    source:
+      "World Color Survey chips G1 (2.5R 4/14), C9 (2.5Y 8/16), F17 (2.5G 5/12), F29 (2.5PB 5/12) and H34 (5P 3/10), CIELAB under illuminant C; focal hues after MacLaury 1997 and Regier, Kay & Cook, PNAS 2005.",
+    homes: {
+      red: "color(xyz-d65 0.22536 0.11883 0.07142)",
+      yellow: "color(xyz-d65 0.59992 0.59263 0.02931)",
+      green: "color(xyz-d65 0.08950 0.19929 0.09208)",
+      blue: "color(xyz-d65 0.17627 0.19649 0.60571)",
+      purple: "color(xyz-d65 0.10249 0.06463 0.19475)",
+    },
+    guides: [
+      { label: "Red", at: "color(xyz-d65 0.22536 0.11883 0.07142)", unique: true },
+      { label: "Yellow", at: "color(xyz-d65 0.59992 0.59263 0.02931)", unique: true },
+      { label: "Green", at: "color(xyz-d65 0.08950 0.19929 0.09208)", unique: true },
+      { label: "Blue", at: "color(xyz-d65 0.17627 0.19649 0.60571)", unique: true },
+      { label: "Purple", at: "color(xyz-d65 0.10249 0.06463 0.19475)", unique: false },
+    ],
+  },
 ];
 
 /** Not a system: each color is pulled toward whichever system's home is closest to it. */

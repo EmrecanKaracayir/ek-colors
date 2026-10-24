@@ -43,7 +43,9 @@ WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
    red, orange halfway to yellow…), its home, the same in both modes. Yellow stays fixed at NCS yellow,
    a few degrees toward green from CAM16's pure yellow; every other hue moves within its name until
    neighbors are equally different in CAM16-UCS, then is pulled back toward its home by at most 2,
-   about the smallest difference people see side by side.
+   about the smallest difference people see side by side. Homes can come from CAM16 (default),
+   Munsell, NCS, unique-hue experiments or the World Color Survey's focal colors, or the nearest of
+   them for each color.
 
 ## Use
 
