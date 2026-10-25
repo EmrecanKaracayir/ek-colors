@@ -13,11 +13,12 @@ import { composition, makeModel, type Model, parts } from "../palette/model";
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
 import { boost, bounds, type Color, extraKeys, hueKeys, lineup, neighbors, PAGES, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
-import { bandStops, bindCurves, curveEditor, curveLayers, curveReadout, type CurveView } from "./curve";
+import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
+import { copyText, flash, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
 import { bendMeter, bindGuides, CIRCLE, circleGuides, escape, evenness, guidePicker, evenText, inGaps, signed, THRESHOLDS, visibility, zone, zoneTable } from "./graph";
 import { popButton, popSource } from "./popover";
-import { bindHues, huesEditor, huesLayers, huesPanel, huesReadout, type HuesView } from "./hues";
+import { bindHues, huesEditor, type HuesView, refreshHues } from "./hues";
 import { references } from "./sources";
 import { technical } from "./technical";
 import { bindHueTest, type HueTestContext, hueTestPage } from "./hue-test";
@@ -357,9 +358,14 @@ function turn(mode: Mode): number | null {
  *
  * @param mode  The mode.
  * @returns     Per color: its hue, colorfulness and color on the identity tier; null while the turn
- *              is found. The ring is the solved one's, or null.
+ *              is found. The ring is the solved one's, or null, with its keys in its own order: a turn
+ *              past 0° changes which color comes first.
  */
-function turned(mode: Mode): { colors: Record<string, { hue: number; colorfulness: number; color: string }>; ring: readonly number[] | null } | null {
+function turned(mode: Mode): {
+  colors: Record<string, { hue: number; colorfulness: number; color: string }>;
+  ring: readonly number[] | null;
+  keys: readonly string[] | null;
+} | null {
   const angle = turn(mode);
   const even = plain()?.[mode];
   if (angle === null || !even) return null;
@@ -380,7 +386,8 @@ function turned(mode: Mode): { colors: Record<string, { hue: number; colorfulnes
       }
     }),
   );
-  return { colors, ring: solved?.ring[tier] ?? null };
+  const ring = solved?.ring[tier] ?? null;
+  return { colors, ring, keys: solved && ring ? solved.colors.slice(0, ring.length).map((c) => c.key) : null };
 }
 
 /**
@@ -563,7 +570,7 @@ function syncAnchor(): void {
   const from = document.querySelector<HTMLSelectElement>("#set-anchor");
   if (from) from.value = typeof state.settings.anchor === "number" ? "hand" : state.settings.anchor;
   const hue = String(Math.round(anchorHue(state.settings)));
-  for (const el of document.querySelectorAll<HTMLInputElement>("[data-anchor-hue]")) el.value = hue;
+  for (const el of document.querySelectorAll<HTMLInputElement>("[data-anchor-hue]")) if (el !== document.activeElement) el.value = hue;
 }
 
 /**
@@ -1331,7 +1338,8 @@ function write(path: string, value: unknown): void {
   const next = structuredClone(state.settings) as unknown as Record<string, unknown>;
   const keys = path.split(".");
   let o = next;
-  for (const k of keys.slice(0, -1)) o = (o[k] ??= {}) as Record<string, unknown>;
+  // A number in the path is an index into a list; a missing step is made as a list or an object to match.
+  keys.slice(0, -1).forEach((k, i) => (o = (o[k] ??= /^\d+$/.test(keys[i + 1]!) ? [] : {}) as Record<string, unknown>));
   o[keys.at(-1)!] = value;
   state.settings = next as unknown as Settings;
   save();
@@ -1420,11 +1428,11 @@ function tune(): string {
     <section class="group">
       <h2>Tiers</h2>
       <p class="soft">The APCA contrasts every color gets. The identity tier stands for the hue and sets every tier's starting hues.</p>
-      <div class="checks">${[15, 30, 45, 60, 75, 90]
+      <div class="checks">${Object.keys(ROLES)
+        .map(Number)
         .map((t) => `<label for="tier-${String(t)}"><input id="tier-${String(t)}" type="checkbox" data-tier="${String(t)}" ${s.tiers.includes(t) ? "checked" : ""}> Lc ${String(t)}</label>`)
         .join("")}</div>
-      ${(["light", "dark"] as const)
-        .map(
+      ${MODES.map(
           (m) => `<label class="field" for="set-identity-${m}"><span>Identity, ${m}</span><select id="set-identity-${m}" data-set="identityTier.${m}">${s.tiers
             .map((t) => `<option value="${String(t)}" ${t === s.identityTier[m] ? "selected" : ""}>Lc ${String(t)}</option>`)
             .join("")}</select></label>`,
@@ -1545,7 +1553,7 @@ function drawComparison(el: Element, mode: Mode): void {
     return { gaps, keys: (p?.colors ?? []).slice(0, gaps.length).map((c) => c.key) };
   };
   const evenRing = ringOf(palettes[0]);
-  const rings: [Ring, Ring, Ring, Ring] = [evenRing, twist?.ring ? { gaps: twist.ring, keys: evenRing.keys } : evenRing, ringOf(palettes[1]), ringOf(palettes[2])];
+  const rings: [Ring, Ring, Ring, Ring] = [evenRing, twist?.ring ? { gaps: twist.ring, keys: twist.keys ?? evenRing.keys } : evenRing, ringOf(palettes[1]), ringOf(palettes[2])];
   const colors: Change[] = [];
   const items = now.map((c) => {
     if (c.extra) return "";
@@ -1758,8 +1766,8 @@ popSource("change", (key) => {
     <p class="pop-lead">Bends <strong>${inGaps(c.bend[3] / gap) || "nothing"}</strong> from the turned lineup: ${visibility(c.bend[3])}.</p>
     ${c.bend[3] >= 0.05 ? splitBar(c.splits[3]) : ""}
     <dl class="pop-facts">
-      <div><dt>+H</dt><dd>${inGaps(c.bend[2] / gap) || "no bend"}${c.turned ? ` · ${c.turned > 0 ? "+" : ""}${String(c.turned)}° from turned` : ""}</dd></div>
-      <div><dt>+M</dt><dd>${inGaps(c.bend[3] / gap) || "no bend"} in all${c.added ? ` · ${c.added > 0 ? "+" : ""}${String(c.added)} M, ${percent(c.colorful[3])} of the target` : ""}</dd></div>
+      <div><dt>+H</dt><dd>${inGaps(c.bend[2] / gap) || "no bend"}${c.turned ? ` · ${turnText(c.turned)} from turned` : ""}</dd></div>
+      <div><dt>+M</dt><dd>${inGaps(c.bend[3] / gap) || "no bend"} in all${c.added ? ` · ${signed(c.added)} M, ${percent(c.colorful[3])} of the target` : ""}</dd></div>
       <div><dt>Uniform</dt><dd>${inGaps(c.moved / gap) || "no change"} from the lineup at the anchor, turn ${turnText(angle)} included</dd></div>
     </dl>
     <p class="pop-how">${c.name} in the turned lineup (the uniform lineup turned ${turnText(angle)}, still uniform) is compared with ${c.name} in use, on Lc ${String(tier)}, as CAM16-UCS ΔE (${c.bend[3].toFixed(1)}), then divided by the even gap (${gap.toFixed(1)}). The bar shows the bend's hue, colorfulness and lightness parts.</p>`;
@@ -1863,7 +1871,8 @@ document.addEventListener("pointerout", (event) => {
   showMetrics(null);
 });
 
-// Clicking a row's name pins it, clicking it again clears it; while pinned, ↑ and ↓ move the pin.
+// Clicking a row's name pins it, clicking it again clears it; while a name has the focus, ↑ and ↓
+// move the pin.
 document.addEventListener("click", (event) => {
   const name = (event.target as Element).closest<HTMLElement>("#palette-strip .strip-labels [data-row]");
   if (!name) return;
@@ -1872,8 +1881,8 @@ document.addEventListener("click", (event) => {
   showRow(pinned);
 });
 document.addEventListener("keydown", (event) => {
-  if (pinned === null || state.view !== "tune" || !(event.key === "ArrowUp" || event.key === "ArrowDown")) return;
-  if ((event.target as Element).closest?.("input, select, textarea, svg")) return;
+  if (pinned === null || !(event.key === "ArrowUp" || event.key === "ArrowDown")) return;
+  if (!(event.target as Element).closest?.("#palette-strip .strip-labels")) return;
   event.preventDefault();
   pinned = Math.min(STEPS.length - 1, Math.max(0, pinned + (event.key === "ArrowUp" ? -1 : 1)));
   showRow(pinned);
@@ -1891,7 +1900,7 @@ let barHeight = 0;
 function watchDock(): void {
   dock?.disconnect();
   const strip = document.querySelector("#palette-strip");
-  if (!strip) return;
+  if (!strip || state.view !== "tune") return;
   dock = new IntersectionObserver(
     ([entry]) => strip.classList.toggle("docked", entry!.intersectionRatio < 1 && entry!.boundingClientRect.top < entry!.rootBounds!.top),
     // The page's own viewport, not the outer page's when it's shown in a frame, which would ignore
@@ -1902,7 +1911,7 @@ function watchDock(): void {
 }
 
 /**
- * Draws the strip at the top of Settings.
+ * Draws the strip, at the top of Settings and in How it works.
  */
 function updateStrip(): void {
   askVariants();
@@ -1911,7 +1920,8 @@ function updateStrip(): void {
 }
 
 /**
- * Refreshes the strip and the curve editors without redrawing the controls.
+ * Refreshes what Settings shows from the palette without redrawing its controls: the strip, the
+ * export, the extra colors' titles, the hue graph and the curve editor.
  */
 function updateTune(): void {
   updateStrip();
@@ -1920,22 +1930,8 @@ function updateTune(): void {
     const i = Number(title.closest<HTMLElement>("[data-extra]")!.dataset.extra);
     title.querySelector(".extra-name")!.outerHTML = extraTitle(i);
   }
-  const layers = document.querySelector(".hues-layers");
-  if (layers) {
-    const view = huesView();
-    layers.innerHTML = huesLayers(view);
-    document.querySelector(".hues-readout")!.textContent = huesReadout(view);
-    const values = document.querySelector(".hues-values")!;
-    if (!values.contains(document.activeElement)) values.innerHTML = huesPanel(view);
-  }
-  for (const m of ["light", "dark"] as const) {
-    const editor = document.querySelector(`[data-curve="${m}"]`);
-    if (!editor) continue;
-    const view = curveView(m);
-    editor.querySelector(".curve-layers")!.innerHTML = curveLayers(view);
-    editor.querySelector("linearGradient")!.innerHTML = bandStops(view);
-    editor.querySelector(".curve-readout")!.textContent = curveReadout(view);
-  }
+  if (document.querySelector(".hues-editor")) refreshHues(huesView());
+  for (const m of MODES) refreshCurve(curveView(m));
 }
 
 /* >-----------------------------------------< Export >-----------------------------------------< */
@@ -2022,9 +2018,9 @@ function render(): void {
   $<HTMLElement>("#variant").hidden = view !== "tiers" && view !== "compare";
   $<HTMLElement>("#edits").hidden = !followsEdits(view);
   for (const b of document.querySelectorAll<HTMLElement>("[data-edit]")) b.setAttribute("aria-pressed", String(state.edits[b.dataset.edit as "h" | "m"]));
-  const main = $<HTMLElement>("main");
   const first = colors()[0]?.key ?? "red";
-  main.innerHTML =
+  refill(
+    $("main"),
     view === "overview" ? overview()
     : view === "tiers" ? tiers()
     : view === "compare" ? compare()
@@ -2034,7 +2030,8 @@ function render(): void {
     : view === "algorithm" ? technical(context())
     : view === "curve-test" ? testPage(testContext())
     : view === "hue-test" ? hueTestPage(hueTestContext())
-    : color(view === "colors" ? first : view);
+    : color(view === "colors" ? first : view),
+  );
   if (view === "tune") updateTune();
   if (view === "how") updateStrip();
   fitTables();
@@ -2148,7 +2145,12 @@ document.addEventListener("click", (event) => {
   }
   if (mode) state.mode = mode as Mode;
   if (variant) state.variant = variant as Variant;
-  if (format) state.format = format as Format;
+  if (format) {
+    // Only the export changes: its text and which format is pressed.
+    state.format = format as Format;
+    for (const b of document.querySelectorAll<HTMLElement>("[data-format]")) b.setAttribute("aria-pressed", String(b.dataset.format === format));
+    return updateExport();
+  }
   if (action === "reset") {
     state.settings = structuredClone(CONFIG);
     save();
@@ -2156,42 +2158,34 @@ document.addEventListener("click", (event) => {
   }
   if (action === "copy") {
     const area = $<HTMLTextAreaElement>("#export-text");
-    navigator.clipboard.writeText(area.value).then(
-      () => ($("#export-copied").textContent = "Copied"),
-      () => {
-        area.select();
-        $("#export-copied").textContent = "Selected; copy it with the keyboard";
-      },
-    );
+    copyText(area.value, (copied) => {
+      if (!copied) area.select();
+      flash($("#export-copied"), copied ? "Copied" : "Selected; copy it with the keyboard");
+    });
     return;
   }
   if (action === "copy-value") {
     // The value reads "Copied" for a moment, then shows itself again.
     const value = el.dataset.value!;
-    const say = (text: string) => {
-      el.textContent = text;
-      setTimeout(() => (el.textContent = value), 1500);
-    };
-    navigator.clipboard.writeText(value).then(
-      () => say("Copied"),
-      () => say("Copying isn't allowed here"),
-    );
+    copyText(value, (copied) => {
+      el.textContent = copied ? "Copied" : "Copying isn't allowed here";
+      window.setTimeout(() => (el.textContent = value), 1500);
+    });
     return;
   }
   if (action === "copy-settings") {
-    navigator.clipboard.writeText(JSON.stringify(state.settings, null, 2)).then(
-      () => ($("#copied").textContent = "Settings copied"),
-      () => ($("#copied").textContent = "Copying isn't allowed here; use Export below, as JSON"),
-    );
+    copyText(JSON.stringify(state.settings, null, 2), (copied) => flash($("#copied"), copied ? "Settings copied" : "Copying isn't allowed here; use Export below, as JSON"));
     return;
   }
   if (action === "equal") {
     write("equalTiers", (el as HTMLInputElement).checked);
-    solve();
+    return solve();
   }
   if (action === "add-extra") {
-    const n = state.settings.extras.length;
-    write("extras", [...state.settings.extras, { name: `Extra ${String(n + 1)}`, hue: 0, share: 0.6 }]);
+    const names = new Set(state.settings.extras.map((e) => e.name));
+    let n = state.settings.extras.length + 1;
+    while (names.has(`Extra ${String(n)}`)) n++;
+    write("extras", [...state.settings.extras, { name: `Extra ${String(n)}`, hue: 0, share: 0.6 }]);
     solve();
   }
   if (action === "remove-extra") {
@@ -2208,9 +2202,11 @@ document.addEventListener("input", (event) => {
     const checked = [...document.querySelectorAll<HTMLInputElement>("[data-tier]")].filter((c) => c.checked).map((c) => Number(c.dataset.tier));
     if (!checked.length) return void (el.checked = true);
     write("tiers", checked);
-    for (const m of ["light", "dark"] as const)
+    for (const m of MODES)
       if (!checked.includes(state.settings.identityTier[m]))
         write(`identityTier.${m}`, checked.includes(CONFIG.identityTier[m]) ? CONFIG.identityTier[m] : checked[0]);
+    // The identity choices list the tiers, so they're drawn again.
+    render();
     solve(150);
     return;
   }
@@ -2225,7 +2221,7 @@ document.addEventListener("input", (event) => {
     return;
   }
   if (el.hasAttribute("data-anchor-hue")) {
-    if (el.value === "" || Number.isNaN(Number(el.value))) return;
+    if (el.value === "" || !el.checkValidity()) return;
     write("anchor", allowed(anchored(), Number(el.value)));
     syncAnchor();
     updateTune();
@@ -2239,10 +2235,13 @@ document.addEventListener("input", (event) => {
     write(path, el.value.toUpperCase());
     document.documentElement.style.setProperty(`--base-${path.split(".")[1]!}`, el.value);
   } else {
-    if (el.value === "" || Number.isNaN(Number(el.value))) return;
+    // A value outside its field's range or step waits: it may be half typed.
+    if (el.value === "" || !el.checkValidity()) return;
     write(path, Number(el.value));
     for (const twin of document.querySelectorAll<HTMLInputElement>(`[data-set="${path}"]`)) if (twin !== el) twin.value = el.value;
   }
+  // A system's yellow is measured in the rooms, on the bases, so its hue can move with them.
+  if (path.startsWith("bases.") || path.startsWith("rooms.")) syncAnchor();
   if (path.startsWith("curve.") || path.startsWith("extras.")) updateTune();
   solve(150);
 });
@@ -2286,10 +2285,14 @@ const openMenu = (open: boolean) => {
 };
 toggle.addEventListener("click", () => openMenu(toggle.getAttribute("aria-expanded") !== "true"));
 document.addEventListener("click", (event) => {
-  if (!(event.target as Element).closest("#menu-toggle, #views")) openMenu(false);
+  // A view chosen closes it, the one already open too, as does a tap outside.
+  const target = event.target as Element;
+  if (!target.closest("#menu-toggle, #views") || target.closest("#views a")) openMenu(false);
 });
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") openMenu(false);
+  if (event.key !== "Escape" || toggle.getAttribute("aria-expanded") !== "true") return;
+  openMenu(false);
+  toggle.focus();
 });
 addEventListener("hashchange", () => openMenu(false));
 

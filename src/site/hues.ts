@@ -8,7 +8,8 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import type { Guide } from "../palette/references";
-import { composition } from "../palette/model";
+import { composition, hueTurn, wrapHue } from "../palette/model";
+import { refill } from "./dom";
 import { band, evenText, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on every row. */
@@ -74,7 +75,6 @@ const HEIGHT = 116;
 const ROWS: Readonly<Record<Row, number>> = { uniform: 26, turned: 60, current: 94 };
 const NAMES: Readonly<Record<Row, string>> = { uniform: "Uniform", turned: "Turned", current: "Current" };
 
-const wrap = (hue: number) => ((hue % 360) + 360) % 360;
 const degrees = (hue: number) => `${hue.toFixed(1)}°`;
 
 /** The color whose values are shown beside the graph, and on which row. */
@@ -134,7 +134,7 @@ export function huesPanel(view: HuesView): string {
   const r = view.rows.find((row) => row.key === selected.key) ?? view.rows.find((row) => row.anchor);
   if (!r) return `<p class="soft">Solving…</p>`;
   selected = { key: r.key, row: r.key === selected.key ? selected.row : "current" };
-  const off = r.turned ? `${signed((((r.current.hue - r.turned.hue + 540) % 360) - 180))}°` : "…";
+  const off = r.turned ? `${signed(hueTurn(r.turned.hue, r.current.hue))}°` : "…";
   if (selected.row !== "current") {
     const spot = (selected.row === "uniform" ? r.uniform : r.turned) ?? r.current;
     const note =
@@ -200,6 +200,24 @@ export function huesEditor(view: HuesView): string {
   </div>`;
 }
 
+/**
+ * Draws the graph's moving parts again: its points, its band, its readout and the selected color's
+ * values. The values aren't redrawn while one is being typed, unless a different color is chosen.
+ * Focus stays where it was.
+ *
+ * @param view   What to show.
+ * @param panel  Whether the values must be redrawn even while focused.
+ */
+export function refreshHues(view: HuesView, panel = false): void {
+  const editor = document.querySelector(".hues-editor");
+  if (!editor) return;
+  refill(editor.querySelector(".hues-layers")!, huesLayers(view));
+  editor.querySelector("linearGradient")!.innerHTML = stops(view.band);
+  editor.querySelector(".hues-readout")!.innerHTML = huesReadout(view);
+  const values = editor.querySelector(".hues-values")!;
+  if (panel || !values.contains(document.activeElement)) refill(values, huesPanel(view));
+}
+
 /* >----------------------------------------< Dragging >----------------------------------------< */
 
 /**
@@ -213,13 +231,7 @@ export function bindHues(get: () => HuesView, place: (key: string, hue: number) 
   let drag: { key: string; svg: SVGSVGElement } | null = null;
   let lastPress = { time: 0, key: "" };
 
-  const redraw = (panel = false) => {
-    const view = get();
-    const layers = document.querySelector(".hues-layers");
-    if (layers) layers.innerHTML = huesLayers(view);
-    const values = document.querySelector(".hues-values");
-    if (values && (panel || !values.contains(document.activeElement))) values.innerHTML = huesPanel(view);
-  };
+  const redraw = (panel = false) => refreshHues(get(), panel);
 
   document.addEventListener("pointerdown", (event) => {
     const point = (event.target as Element).closest<SVGElement>("[data-hue-point]");
@@ -255,7 +267,7 @@ export function bindHues(get: () => HuesView, place: (key: string, hue: number) 
     const el = event.target as HTMLInputElement;
     if (el.matches("[data-hue-at]")) {
       if (el.value === "" || Number.isNaN(Number(el.value))) return;
-      place(selected.key, wrap(Math.round(Number(el.value))));
+      place(selected.key, wrapHue(Math.round(Number(el.value))));
       redraw();
       // The panel isn't redrawn while its field is being typed in, so it's marked placed here.
       const box = document.querySelector<HTMLInputElement>("[data-hue-placed]");
@@ -286,8 +298,7 @@ export function bindHues(get: () => HuesView, place: (key: string, hue: number) 
     const color = get().rows.find((r) => r.key === key);
     if (!color) return;
     selected = { key, row };
-    place(key, wrap(Math.round(color.current.hue) + (event.key === "ArrowLeft" ? -1 : 1) * (event.shiftKey ? 10 : 1)));
+    place(key, wrapHue(Math.round(color.current.hue) + (event.key === "ArrowLeft" ? -1 : 1) * (event.shiftKey ? 10 : 1)));
     redraw(true);
-    document.querySelector<SVGElement>(`[data-hue-point="${key}"][data-row="current"]`)?.focus();
   });
 }

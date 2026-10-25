@@ -77,11 +77,12 @@ function place(): void {
  * @param id  Its id.
  */
 function show(id: string): void {
-  const source = sources.get(id.split(":")[0]!);
-  if (!source) return;
+  const html = sources.get(id.split(":")[0]!)?.(id.slice(id.indexOf(":") + 1));
+  // Nothing to say, as for a color that's just been removed: it stays closed.
+  if (!html) return;
   trigger()?.setAttribute("aria-expanded", "false");
   open = id;
-  panel.innerHTML = source(id.slice(id.indexOf(":") + 1));
+  panel.innerHTML = html;
   panel.setAttribute("aria-label", trigger()?.getAttribute("aria-label") ?? "Details");
   panel.hidden = false;
   trigger()?.setAttribute("aria-expanded", "true");

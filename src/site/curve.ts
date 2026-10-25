@@ -10,7 +10,9 @@
 
 import type { CurvePoint, Mode } from "../palette/settings";
 import type { Guide } from "../palette/references";
+import { hueTurn, wrapHue } from "../palette/model";
 import { boost } from "../palette/solve";
+import { refill } from "./dom";
 import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
@@ -38,21 +40,17 @@ export interface CurveView {
 /** Draws a number field bound to a setting. */
 type Field = (path: string, title: string, range: readonly [number, number, number]) => string;
 
-/** The amount runs from −LIMIT to +LIMIT; the width from MIN_WIDTH to 180°. */
+/** The amount runs from −LIMIT to +LIMIT, its scale marked every STEP; the width runs from MIN_WIDTH to 180°. */
 const LIMIT = 24;
-
-/** The amount scale's step. */
 const STEP = 8;
 const MIN_WIDTH = 10;
-
 
 /** Drawing space: hue across, amount up, zero in the middle. */
 const HEIGHT = 120;
 const MIDDLE = HEIGHT / 2;
 const SCALE = (HEIGHT / 2 - 8) / LIMIT;
 
-const wrap = (hue: number) => ((hue % 360) + 360) % 360;
-const away = (a: number, b: number) => Math.abs(((((a - b) % 360) + 540) % 360) - 180);
+const away = (a: number, b: number) => Math.abs(hueTurn(b, a));
 const clamp = (x: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, x));
 
 /** Which point each mode's editor has selected. */
@@ -80,8 +78,8 @@ export function curveLayers(view: CurveView): string {
   const edges = !chosen
     ? []
     : chosen.width >= 180
-      ? [wrap(chosen.center + 180)]
-      : [wrap(chosen.center - chosen.width), wrap(chosen.center + chosen.width)];
+      ? [wrapHue(chosen.center + 180)]
+      : [wrapHue(chosen.center - chosen.width), wrapHue(chosen.center + chosen.width)];
   const handles = edges.map(
     (x) => `<g data-drag="edge" class="curve-edge">
       <rect x="${(x - 8).toFixed(1)}" y="${String(MIDDLE - 16)}" width="16" height="32" class="hit"></rect>
@@ -93,7 +91,7 @@ export function curveLayers(view: CurveView): string {
   );
   const nodes = points.map((p, i) => {
     const y = (MIDDLE - p.amount * SCALE).toFixed(1);
-    return `<g data-drag="point" data-index="${String(i)}" class="curve-point${i === selected[mode] ? " selected" : ""}${p.off ? " off" : ""}" tabindex="0" role="slider" aria-label="Point ${String(i + 1)}${p.off ? ", switched off" : ""}: hue ${String(p.center)}°, amount ${String(p.amount)}, width ${String(p.width)}°" aria-valuenow="${String(p.amount)}">
+    return `<g data-drag="point" data-index="${String(i)}" class="curve-point${i === selected[mode] ? " selected" : ""}${p.off ? " off" : ""}" tabindex="0" role="slider" aria-label="Point ${String(i + 1)}${p.off ? ", switched off" : ""}: hue ${String(p.center)}°, width ${String(p.width)}°" aria-valuemin="${String(-LIMIT)}" aria-valuemax="${String(LIMIT)}" aria-valuenow="${String(p.amount)}" aria-valuetext="${p.amount > 0 ? "+" : p.amount < 0 ? "−" : ""}${String(Math.abs(p.amount))} M">
       <circle cx="${String(p.center)}" cy="${y}" r="16" class="hit"></circle>
       <circle cx="${String(p.center)}" cy="${y}" r="${i === selected[mode] ? "7" : "5.5"}"></circle>
     </g>`;
@@ -137,13 +135,27 @@ export function curveReadout(view: CurveView): string {
 }
 
 /**
- * The colors painted behind the curve, as gradient stops.
+ * Draws one mode's editor's moving parts again: the curve and its points, the band behind it, its
+ * readout, and the selected point's values, the panel whole or, while a value is being typed, the
+ * other values. Focus stays where it was.
  *
- * @param view  What to show.
- * @returns     SVG stops.
+ * @param view   What to show.
+ * @param panel  Whether the values beside the graph need drawing again (a different point).
  */
-export function bandStops(view: CurveView): string {
-  return stops(view.band);
+export function refreshCurve(view: CurveView, panel = false): void {
+  const { mode, points } = view;
+  const editor = document.querySelector(`[data-curve="${mode}"]`);
+  if (!editor) return;
+  refill(editor.querySelector(".curve-layers")!, curveLayers(view));
+  editor.querySelector("linearGradient")!.innerHTML = stops(view.band);
+  editor.querySelector(".curve-readout")!.innerHTML = curveReadout(view);
+  if (panel) return refill(editor.querySelector(".curve-values")!, valuesPanel(view));
+  const chosen = points[selected[mode]];
+  if (!chosen) return;
+  for (const key of ["amount", "center", "width"] as const) {
+    const input = editor.querySelector<HTMLInputElement>(`[data-set="curve.${mode}.${String(selected[mode])}.${key}"]`);
+    if (input && input !== document.activeElement) input.value = String(chosen[key]);
+  }
 }
 
 /**
@@ -165,14 +177,14 @@ export function curveEditor(view: CurveView, drawField: Field): string {
     ${guidePicker(view.guide, `curve-${view.mode}`)}
     <div class="graph-values curve-values">${valuesPanel(view)}</div>
     <svg viewBox="${viewBox(HEIGHT)}" data-height="${String(HEIGHT)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
-      ${band(`band-${mode}`, bandStops(view), HEIGHT)}
+      ${band(`band-${mode}`, stops(view.band), HEIGHT)}
       ${levels.join("")}<g class="guide-layer">${guideLayer(view.guides, HEIGHT)}</g>
       <line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE)}" y2="${String(MIDDLE)}" class="zero"></line>
       ${hueScale(HEIGHT)}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
     <p class="graph-caption readout curve-readout">${curveReadout(view)}</p>
-    <p class="graph-caption hint">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
+    <p class="graph-caption hint">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width. With a point focused, the arrow keys move it (with Shift, by 10° across), and [ and ] narrow and widen it.</p>
   </div>`;
 }
 
@@ -204,19 +216,9 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
    */
   const apply = (mode: Mode, points: CurvePoint[], panel = false) => {
     set(mode, points);
-    const editor = document.querySelector(`[data-curve="${mode}"]`);
-    if (!editor) return;
-    const view = get(mode);
-    editor.querySelector(".curve-layers")!.innerHTML = curveLayers(view);
-    if (panel) editor.querySelector(".curve-values")!.innerHTML = valuesPanel(view);
-    const chosen = points[selected[mode]];
-    if (!chosen || panel) return;
-    for (const key of ["amount", "center", "width"] as const) {
-      const input = editor.querySelector<HTMLInputElement>(`[data-set="curve.${mode}.${String(selected[mode])}.${key}"]`);
-      if (input && input !== document.activeElement) input.value = String(chosen[key]);
-    }
+    refreshCurve(get(mode), panel);
   };
-  const change = (mode: Mode, update: (p: CurvePoint) => CurvePoint) => {
+  const change = (mode: Mode, update: (p: CurvePoint) => CurvePoint, panel = false) => {
     const points = [...get(mode).points];
     const i = selected[mode];
     if (!points[i]) return;
@@ -224,7 +226,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     // A press without movement changes nothing, so the point isn't redrawn under the pointer.
     if (next.amount === points[i].amount && next.center === points[i].center && next.width === points[i].width) return;
     points[i] = next;
-    apply(mode, points);
+    apply(mode, points, panel);
   };
   const remove = (mode: Mode, index: number) => {
     const points = [...get(mode).points];
@@ -306,7 +308,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
       const editor = editorOf(event.target);
       if (!event.altKey || !editor || !(event.target as Element).closest("svg")) return;
       event.preventDefault();
-      // About a degree per notch of a mouse wheel; a trackpad's many small steps add up as finely.
+      // A degree per 40 pixels scrolled: a few per mouse-wheel notch; a trackpad's many small steps add up as finely.
       wheel -= (event.deltaMode === 0 ? event.deltaY : event.deltaY * 40) / 40;
       const steps = Math.trunc(wheel);
       if (!steps) return;
@@ -317,10 +319,10 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   );
 
   document.addEventListener("keydown", (event) => {
-    // Backspace and Delete remove the selected point of the focused editor, or the one last pressed
-    // in, unless typing.
+    // Backspace and Delete remove the selected point of the focused editor, or, with nothing
+    // focused, of the one last pressed in.
     const typing = (event.target as Element).closest?.("input, select, textarea");
-    const target = (editorOf(event.target)?.dataset.curve as Mode | undefined) ?? active;
+    const target = (editorOf(event.target)?.dataset.curve as Mode | undefined) ?? (event.target === document.body ? active : null);
     if ((event.key === "Backspace" || event.key === "Delete") && target && !typing && get(target).points.length) {
       event.preventDefault();
       return remove(target, selected[target]);
@@ -329,11 +331,13 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     const node = (event.target as Element).closest?.<SVGElement>('[data-drag="point"]');
     if (!editor || !node) return;
     const mode = editor.dataset.curve as Mode;
-    selected[mode] = Number(node.dataset.index);
+    const index = Number(node.dataset.index);
+    const other = index !== selected[mode];
+    selected[mode] = index;
     const step = event.shiftKey ? 10 : 1;
     const moves: Record<string, (p: CurvePoint) => CurvePoint> = {
-      ArrowLeft: (p) => ({ ...p, center: wrap(p.center - step) }),
-      ArrowRight: (p) => ({ ...p, center: wrap(p.center + step) }),
+      ArrowLeft: (p) => ({ ...p, center: wrapHue(p.center - step) }),
+      ArrowRight: (p) => ({ ...p, center: wrapHue(p.center + step) }),
       ArrowUp: (p) => ({ ...p, amount: clamp(p.amount + 1, -LIMIT, LIMIT) }),
       ArrowDown: (p) => ({ ...p, amount: clamp(p.amount - 1, -LIMIT, LIMIT) }),
       "[": (p) => ({ ...p, width: clamp(p.width - 5, MIN_WIDTH, 180) }),
@@ -342,8 +346,6 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     const move = moves[event.key];
     if (!move) return;
     event.preventDefault();
-    change(mode, move);
-    // The point is drawn anew, so focus goes back to it.
-    editor.querySelector<SVGElement>(`[data-drag="point"][data-index="${String(selected[mode])}"]`)?.focus();
+    change(mode, move, other);
   });
 }
