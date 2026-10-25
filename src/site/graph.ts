@@ -97,6 +97,63 @@ export function evenText(ring: readonly number[], names: readonly string[], even
   return `Closest: ${pair(low)}, ${off(ring[low]!)} (${ring[low]!.toFixed(1)} ΔE): ${evenness(Math.max(0, 1 - ring[low]! / even))}. Widest: ${pair(high)}, ${off(ring[high]!)} (${ring[high]!.toFixed(1)} ΔE). Even gap: ${even.toFixed(1)}.`;
 }
 
+/** How far a palette bends from the nearest uniform one, in zones: Bend up to each limit (gaps). */
+export const ZONES = [
+  { upTo: 0.1, name: "Uniform", note: "No difference from the uniform palette anyone could see, even side by side." },
+  { upTo: 0.25, name: "Tuned", note: "A typical color differs by about a just-visible step side by side: still the uniform palette, adjusted." },
+  { upTo: 0.5, name: "Reshaped", note: "Colors differ clearly side by side: deliberate design choices on top of the uniform palette." },
+  { upTo: 1, name: "Departed", note: "A typical color is a different shade of its uniform one; the uniformity no longer quite holds." },
+  { upTo: Infinity, name: "Different palette", note: "Colors moved more than a whole gap: a palette of its own, not a tuned uniform one." },
+] as const;
+
+/**
+ * The zone a bend falls in.
+ *
+ * @param bend  Gaps.
+ * @returns     The zone.
+ */
+export function zone(bend: number): (typeof ZONES)[number] {
+  return ZONES.find((z) => bend < z.upTo) ?? ZONES[ZONES.length - 1]!;
+}
+
+/** Where the meter puts a bend: a square-root scale up to 1.5 gaps, so the small zones get room. */
+const along = (bend: number) => Math.sqrt(Math.min(bend, 1.5) / 1.5) * 100;
+
+/**
+ * A bend on a bar of its zones, with a mark where it falls.
+ *
+ * @param bend   Gaps.
+ * @param large  Whether it's the large one, with the zones named under it.
+ * @returns      HTML.
+ */
+export function bendMeter(bend: number, large = false): string {
+  const edges = [0, ...ZONES.map((z) => along(z.upTo))];
+  const parts = ZONES.map((z, i) => `<span style="flex-basis:${(edges[i + 1]! - edges[i]!).toFixed(2)}%"></span>`).join("");
+  const names = large
+    ? `<span class="meter-names">${ZONES.map((z, i) => `<span style="left:${((edges[i]! + edges[i + 1]!) / 2).toFixed(2)}%">${z.name}</span>`).join("")}</span>`
+    : "";
+  return `<span class="bend-meter${large ? " large" : ""}" role="img" aria-label="Bend ${bend.toFixed(2)} gap: ${zone(bend).name}"><span class="meter-zones">${parts}</span><span class="meter-mark" style="left:${along(bend).toFixed(2)}%"></span>${names}</span>`;
+}
+
+/**
+ * The zones as a table, with where their limits come from.
+ *
+ * @returns  HTML.
+ */
+export function zoneTable(): string {
+  const rows = ZONES.map((z, i) => {
+    const from = i === 0 ? "under" : `${String(ZONES[i - 1]!.upTo)} to`;
+    return `<div><dt>${z.name}</dt><dd><span class="mono">${z.upTo === Infinity ? `over ${String(ZONES[i - 1]!.upTo)}` : `${from} ${String(z.upTo)}`}</span> ${z.note}</dd></div>`;
+  });
+  return `<dl class="pop-facts zones">${rows.join("")}</dl>${THRESHOLDS}`;
+}
+
+/** Where the zones' and evenness limits come from. */
+export const THRESHOLDS = `<details class="pop-sources"><summary>Where these thresholds come from</summary>
+  <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About 1 is the smallest difference careful observers notice under ideal conditions; about 2 is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). The palette's own gap between neighbors, about 10 ΔE, is what it treats as a different color.</p>
+  <p>The zones put Bend on that scale, in gaps: under 0.1 (about 1 ΔE) nothing is visible; up to 0.25 (about 2.5 ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: 10% of a gap is about 1 ΔE, hard to notice; 25% is about 2.5 ΔE, a visible imbalance between pairs of neighbors.</p>
+  <p>The ΔE figures come from color science; the zone limits are judgment built on them, not results of a study. Eyes and screens differ.</p></details>`;
+
 /* >----------------------------------------< Drawing >-----------------------------------------< */
 
 /** Room above the data, and below it for the hue scale and the guides' labels and degrees. */

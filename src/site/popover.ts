@@ -55,7 +55,7 @@ function trigger(): HTMLElement | null {
 }
 
 /**
- * Puts the popover under its button, or above when there's no room below, inside the window.
+ * Puts the popover under its button, or above when there's no room below; always inside the window.
  */
 function place(): void {
   const button = trigger();
@@ -65,7 +65,9 @@ function place(): void {
   const margin = 8;
   const left = Math.min(Math.max(margin, at.left + at.width / 2 - width / 2), innerWidth - width - margin);
   const below = at.bottom + 6;
-  const top = below + height > innerHeight - margin && at.top - 6 - height > margin ? at.top - 6 - height : below;
+  const above = at.top - 6 - height;
+  // Below when it fits, else above when that fits, else as low as stays inside the window.
+  const top = below + height <= innerHeight - margin ? below : above >= margin ? above : Math.max(margin, innerHeight - height - margin);
   panel.style.transform = `translate(${String(Math.round(left))}px, ${String(Math.round(top))}px)`;
 }
 

@@ -8,7 +8,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { composition } from "../palette/model";
-import { band, evenText, INSETS, signed, type Guide, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
+import { band, evenText, INSETS, signed, zone, type Guide, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on every row. */
 export interface HueRow {
@@ -42,6 +42,9 @@ export interface HuesView {
   /** The turn that brings the uniform lineup nearest the current one, and how bent the current one is from it (gaps, root mean square); null while they solve. */
   readonly turn: number | null;
   readonly bend: number | null;
+
+  /** What the bend is made of: hue and colorfulness shares, or null while it solves. */
+  readonly split: { readonly hue: number; readonly colorfulness: number } | null;
   readonly band: readonly { readonly hue: number; readonly color: string }[];
 
   /** The chosen reference system and its guides. */
@@ -169,7 +172,8 @@ export function huesReadout(view: HuesView): string {
   const cost = view.cost;
   if (!cost) return "Solving…";
   const names = cost.keys.map((key) => view.rows.find((r) => r.key === key)?.label ?? "");
-  const turn = view.turn === null || view.bend === null ? "" : `Turned ${signed(view.turn)}°, bend ${view.bend.toFixed(2)} gap. `;
+  const made = view.split ? ` (hue ${String(Math.round(view.split.hue * 100))}%${view.split.colorfulness >= 0.005 ? `, colorfulness ${String(Math.round(view.split.colorfulness * 100))}%` : ""})` : "";
+  const turn = view.turn === null || view.bend === null ? "" : `${zone(view.bend).name}: bend ${view.bend.toFixed(2)} gap${view.bend >= 0.005 ? made : ""}, turned ${signed(view.turn)}°. `;
   return turn + evenText(cost.ring, names, cost.uniform);
 }
 

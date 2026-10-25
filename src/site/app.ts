@@ -14,7 +14,7 @@ import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode,
 import { boost, bounds, type Color, lineup, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, curveReadout, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
-import { bindGuides, evenText, inGaps, visibility } from "./graph";
+import { bendMeter, bindGuides, evenness, evenText, inGaps, THRESHOLDS, visibility, zone, zoneTable } from "./graph";
 import { popButton, popSource } from "./popover";
 import { bindHues, huesEditor, huesLayers, huesPanel, huesReadout, type HuesView } from "./hues";
 import { technical } from "./technical";
@@ -489,7 +489,17 @@ function huesView(): HuesView {
   const gaps = { uniform: gapsOf(even, tier), current: gapsOf(palette, tier) };
   const bends = rows.flatMap((r) => (r.bend === null ? [] : [r.bend]));
   const bend = twist && bends.length ? Math.sqrt(bends.reduce((sum, b) => sum + b ** 2, 0) / bends.length) : null;
-  return { rows, gaps, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend };
+  // What the bend is made of: each color's shares, weighted by its share of the sum of squares.
+  let [weight, hue, colorful] = [0, 0, 0];
+  for (const r of rows) {
+    const spot = twist?.colors[r.key];
+    if (!spot || r.bend === null) continue;
+    const w = ((r.bend * gap) / 1.41) ** (2 / 0.63);
+    const split = parts(model().cam(mode, spot.color), model().cam(mode, r.current.color));
+    [weight, hue, colorful] = [weight + w, hue + w * split.hue, colorful + w * split.colorfulness];
+  }
+  const split = weight ? { hue: hue / weight, colorfulness: colorful / weight } : null;
+  return { rows, gaps, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend, split };
 }
 
 /**
@@ -1112,8 +1122,10 @@ interface Change {
   /** Per row, its colorfulness against the row's target, as a share (0.25 is 25% over). */
   readonly colorful: readonly [number, number, number, number];
 
-  /** What its bend in use is made of, and the edits behind it: degrees placed, colorfulness added. */
-  readonly split: ReturnType<typeof parts>;
+  /** Per row, what its bend is made of: hue, colorfulness and lightness shares. */
+  readonly splits: readonly [Split, Split, Split, Split];
+
+  /** The edits behind it: degrees placed, colorfulness added. */
   readonly turned: number;
   readonly added: number;
 }
@@ -1123,6 +1135,9 @@ interface Ring {
   readonly gaps: readonly number[];
   readonly keys: readonly string[];
 }
+
+/** A difference's hue, colorfulness and lightness shares. */
+type Split = ReturnType<typeof parts>;
 
 /** Rows: the uniform lineup, turned, with placed hues, with colorfulness per hue. */
 type Row = 0 | 1 | 2 | 3;
@@ -1186,7 +1201,7 @@ function drawComparison(el: Element, mode: Mode): void {
       bend: [from(first.color), 0, from(hued.color), from(last.color)],
       moved: model().distance(mode, first.color, last.color),
       colorful: [first.colorfulness / targets[0] - 1, turnedOne.colorfulness / targets[1] - 1, hued.colorfulness / targets[2] - 1, last.colorfulness / targets[3] - 1],
-      split: parts(model().cam(mode, turnedOne.color), model().cam(mode, last.color)),
+      splits: [first, turnedOne, hued, last].map((sw) => parts(model().cam(mode, turnedOne.color), model().cam(mode, sw.color))) as unknown as [Split, Split, Split, Split],
       turned: Math.round((((hued.hue - turnedOne.hue + 540) % 360) - 180)),
       added: Math.round(boost(state.settings, mode, last.hue)),
     };
@@ -1231,6 +1246,22 @@ function averageBend(row: Row): number {
   const { colors, gap } = changes;
   if (!colors.length) return 0;
   return Math.sqrt(colors.reduce((sum, c) => sum + (c.bend[row] / gap) ** 2, 0) / colors.length);
+}
+
+/**
+ * What a row's bend is made of, over every color: each color's shares weighted by how much it
+ * bends (its share of the whole sum of squares, in CAM16-UCS's plain distance).
+ *
+ * @param row  The row.
+ * @returns    Hue, colorfulness and lightness shares.
+ */
+function bendSplit(row: Row): Split {
+  let [weight, hue, colorfulness, lightness] = [0, 0, 0, 0];
+  for (const c of changes.colors) {
+    const w = (c.bend[row] / 1.41) ** (2 / 0.63);
+    [weight, hue, colorfulness, lightness] = [weight + w, hue + w * c.splits[row].hue, colorfulness + w * c.splits[row].colorfulness, lightness + w * c.splits[row].lightness];
+  }
+  return weight ? { hue: hue / weight, colorfulness: colorfulness / weight, lightness: lightness / weight } : { hue: 0, colorfulness: 0, lightness: 0 };
 }
 
 /**
@@ -1288,9 +1319,11 @@ function metrics(): string {
     popButton("metric:even:head", "Even", "What Even means", "metric head even"),
     popButton("metric:colorful:head", "M", "What M means", "metric head colorful"),
   ];
+  // Below, the palette's bend on its zones; or the color pointed at, on the same scale.
+  const bend = color ? color.bend[3] / changes.gap : averageBend(3);
   const scope = color
-    ? `<span class="metric-scope"><span class="dot" style="--c:${color.color}"></span><span class="scope-text"> ${color.name}</span></span>`
-    : popButton("metric:scope", `<span class="scope-text">All colors </span>ⓘ`, "How to read the strip", "metric-scope");
+    ? `<span class="metric-scope">${bendMeter(bend)}<span class="scope-text"><span class="dot" style="--c:${color.color}"></span> ${color.name}</span></span>`
+    : popButton("metric:verdict", `${bendMeter(bend)}<span class="scope-text">${zone(bend).name} ⓘ</span>`, `Bend ${bend.toFixed(2)} gap: ${zone(bend).name}. What it means`, "metric-scope");
   return heads.join("") + cells.join("") + scope;
 }
 
@@ -1339,7 +1372,7 @@ popSource("change", (key) => {
   const { gap, tier, turn: angle } = changes;
   return `<h3><span class="dot" style="--c:${c.color}"></span> ${c.name}</h3>
     <p class="pop-lead">Bends <strong>${inGaps(c.bend[3] / gap) || "nothing"}</strong> from the turned lineup: ${visibility(c.bend[3])}.</p>
-    ${c.bend[3] >= 0.05 ? splitBar(c.split) : ""}
+    ${c.bend[3] >= 0.05 ? splitBar(c.splits[3]) : ""}
     <dl class="pop-facts">
       <div><dt>+H</dt><dd>${inGaps(c.bend[2] / gap) || "no bend"}${c.turned ? ` · ${c.turned > 0 ? "+" : ""}${String(c.turned)}° from turned` : ""}</dd></div>
       <div><dt>+M</dt><dd>${inGaps(c.bend[3] / gap) || "no bend"} in all${c.added ? ` · ${c.added > 0 ? "+" : ""}${String(c.added)} M, ${percent(c.colorful[3])} of the target` : ""}</dd></div>
@@ -1351,25 +1384,38 @@ popSource("change", (key) => {
 popSource("metric", (which) => {
   const { gap, targets, turn: angle } = changes;
   const [kind, which2] = which.split(":") as [string, string | undefined];
-  if (kind === "scope")
-    return `<h3>Reading the strip</h3>
-      <p>Rows: <strong>Uniform</strong> is the scientific lineup for these settings at your anchor; <strong>Turned</strong> is that lineup turned ${turnText(angle)} to best match your placed hues, still perfectly uniform; <strong>+H</strong> adds your placed hues; <strong>+M</strong> adds colorfulness per hue, the palette in use.</p>
-      <p>Beside them, per row: <strong>Bend</strong>, how far the colors are from the turned lineup; <strong>Even</strong>, how evenly spaced neighbors are; <strong>M</strong>, how equally colorful the colors are. Point at a swatch to see them for that color.</p>
-      <p class="pop-how">Bends are in gaps: one gap is the even distance between neighbors, ${gap.toFixed(1)} ΔE here. Under 0.2 can't be seen side by side, 0.2 to 0.5 is visible side by side, 0.5 to 1 a different shade, over 1 a different color. Click a row's name to keep it shown; ↑ and ↓ then switch rows.</p>`;
+  if (kind === "verdict") {
+    const bend = averageBend(3);
+    const split = bendSplit(3);
+    const evenOff = Math.max(0, ...offsets(3).map((o) => Math.abs(o.off)));
+    const vivid = [...changes.colors].sort((a, b) => Math.abs(b.colorful[3]) - Math.abs(a.colorful[3]))[0];
+    return `<h3>${zone(bend).name}: bend ${bend.toFixed(2)} gap</h3>
+      ${bendMeter(bend, true)}
+      <p>${zone(bend).note}</p>
+      ${bend >= 0.005 ? splitBar(split) : ""}
+      <dl class="pop-facts">
+        <div><dt>Even</dt><dd>±${String(Math.round(evenOff * 100))}%: ${evenness(evenOff)}</dd></div>
+        <div><dt>M</dt><dd>${vivid && Math.abs(vivid.colorful[3]) >= 0.005 ? `${percent(vivid.colorful[3])} (${vivid.name})` : "equal"}</dd></div>
+        <div><dt>Turned</dt><dd>${turnText(angle)}, which costs nothing</dd></div>
+      </dl>
+      <p class="pop-how">You're on safe ground while Bend stays within Tuned or Reshaped and Even under 10%: deliberate adjustments, with every pair of neighbors still about equally easy to tell apart. It gets risky when Even passes 25% (two colors getting confusable) or Bend passes 0.5, where the palette is no longer honestly uniform.</p>
+      ${zoneTable()}`;
+  }
   const heads: Record<string, string> = {
-    bend: `<h3>Bend</h3><p>How far the colors are from the nearest uniform lineup. Turning the whole lineup keeps it uniform, so the uniform lineup is first turned to best match your placed hues (${turnText(angle)}); what's left is the bend. Each color's difference, in gaps, averaged as a root mean square, so one large difference isn't hidden among small ones.</p><p class="pop-how">One gap is ${gap.toFixed(1)} ΔE. Under 0.2 can't be seen side by side, 0.2 to 0.5 is visible side by side, 0.5 to 1 a different shade, over 1 a different color.</p>`,
-    even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under 10% is fine, 10 to 25% worth watching, over 25% two colors are getting confusable (or, over even, a hole in the palette).</p>`,
+    bend: `<h3>Bend</h3><p>How far the colors are from the nearest uniform lineup. Turning the whole lineup keeps it uniform, so the uniform lineup is first turned to best match your placed hues (${turnText(angle)}); what's left is the bend. Each color's difference, in gaps (one gap is ${gap.toFixed(1)} ΔE), averaged as a root mean square, so one large difference isn't hidden among small ones.</p>${zoneTable()}<p class="pop-how">Rows: Uniform is the lineup at your anchor; Turned is it turned to match; +H adds placed hues; +M adds colorfulness per hue. Point at a swatch for that color; click a row's name to keep it shown, then ↑ and ↓ switch rows.</p>`,
+    even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under 10% is fine, 10 to 25% worth watching, over 25% two colors are getting confusable (or, over even, a hole in the palette).</p>${THRESHOLDS}`,
     colorful: `<h3>M</h3><p>How equally colorful the colors are: the color furthest from the target colorfulness (M ${targets[3].toFixed(1)} on this tier), as a share of it. The uniform lineup makes every color equally colorful; colorfulness per hue changes that on purpose, so this says how far you've pushed.</p>`,
   };
   if (which2 === "head") return heads[kind] ?? "";
   const row = Number(which2) as Row;
   const title = `${STEPS[row].name}: ${{ bend: "bend", even: "evenness", colorful: "colorfulness" }[kind] ?? ""}`;
   if (kind === "bend") {
+    const split = bendSplit(row);
     const list = [...changes.colors]
       .toSorted((a, b) => b.bend[row] - a.bend[row])
       .map((c) => `<div><dt><span class="dot" style="--c:${c.color}"></span> ${c.name}</dt><dd>${(c.bend[row] / gap).toFixed(2)} gap</dd></div>`)
       .join("");
-    return `<h3>${title}</h3><p class="pop-lead">Average ${averageBend(row).toFixed(2)} gap from the turned lineup.</p><dl class="pop-facts">${list}</dl>`;
+    return `<h3>${title}</h3><p class="pop-lead">Average ${averageBend(row).toFixed(2)} gap from the turned lineup: ${zone(averageBend(row)).name}.</p>${bendMeter(averageBend(row), true)}${averageBend(row) >= 0.005 ? splitBar(split) : ""}<dl class="pop-facts">${list}</dl>`;
   }
   if (kind === "even") {
     const ring = changes.rings[row];

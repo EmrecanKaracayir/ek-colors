@@ -222,13 +222,15 @@
   .strip.docked { border-bottom-color: var(--line); }
   .strip-metrics { display: grid; grid-template-columns: repeat(3, 5ch); width: calc(15ch + 1.5rem); grid-template-rows: repeat(4, 1rem) auto; column-gap: 0.75rem; align-items: center; justify-items: end; font-size: 0.6875rem; }
   .strip-metrics .head { color: var(--soft); }
-  .strip-metrics .metric-scope { grid-column: 1 / -1; justify-self: end; margin-top: 0.25rem; color: var(--soft); display: inline-flex; gap: 0.3rem; align-items: center; max-width: 100%; white-space: nowrap; overflow: hidden; }
+  .strip-metrics .metric-scope { grid-column: 1 / -1; justify-self: stretch; margin-top: 0.375rem; color: var(--soft); display: flex; gap: 0.4rem; align-items: center; white-space: nowrap; overflow: hidden; }
+  .strip-metrics .metric-scope .bend-meter { flex: 1; }
+  .strip-metrics .scope-text { display: inline-flex; gap: 0.3rem; align-items: center; }
   .strip-metrics .dot { width: 0.5rem; height: 0.5rem; }
   .pop-trigger.metric, .pop-trigger.metric-scope { font: inherit; color: inherit; background: none; border: 0; border-radius: 0.25rem; padding: 0; cursor: pointer; }
   .pop-trigger.metric:hover, .pop-trigger.metric-scope:hover { text-decoration: underline; text-underline-offset: 0.15em; }
   .pop-trigger.strip-gap, .pop-trigger.strip-step { font: inherit; background: none; border: 0; border-radius: 0.25rem; padding: 0; text-align: left; cursor: pointer; }
   .pop-trigger.strip-gap:hover, .pop-trigger.strip-step:hover, .pop-trigger[aria-expanded="true"] { text-decoration: underline; text-underline-offset: 0.15em; }
-  #popover { position: fixed; top: 0; left: 0; z-index: 20; width: min(22rem, calc(100vw - 1rem)); display: grid; gap: 0.5rem; padding: 0.875rem 1rem; border-radius: 0.75rem; background: var(--bg); color: var(--fg); box-shadow: 0 0 0 1px var(--line), 0 0.75rem 2rem rgb(0 0 0 / 0.22); font-size: 0.8125rem; line-height: 1.45; }
+  #popover { position: fixed; top: 0; left: 0; z-index: 20; width: min(24rem, calc(100vw - 1rem)); max-height: min(34rem, calc(100vh - 1rem)); overflow-y: auto; overscroll-behavior: contain; display: grid; gap: 0.5rem; padding: 0.875rem 1rem; border-radius: 0.75rem; background: var(--bg); color: var(--fg); box-shadow: 0 0 0 1px var(--line), 0 0.75rem 2rem rgb(0 0 0 / 0.22); font-size: 0.8125rem; line-height: 1.45; }
   #popover h3 { margin: 0; font-size: 0.9375rem; display: flex; gap: 0.375rem; align-items: center; }
   #popover p { margin: 0; }
   #popover .pop-how { color: var(--soft); font-size: 0.75rem; }
@@ -240,6 +242,25 @@
   .pop-split .hue, .pop-legend .hue { background: var(--fg); }
   .pop-split .colorfulness, .pop-legend .colorfulness { background: var(--soft); }
   .pop-split .lightness, .pop-legend .lightness { background: var(--line); }
+  .bend-meter { position: relative; display: block; height: 0.3125rem; min-width: 2rem; }
+  .bend-meter.large { height: 0.5rem; margin-bottom: 1.25rem; }
+  .meter-zones { display: flex; gap: 1px; height: 100%; border-radius: 999px; overflow: hidden; }
+  .meter-zones span:nth-child(1) { background: color-mix(in oklch, var(--fg) 10%, transparent); }
+  .meter-zones span:nth-child(2) { background: color-mix(in oklch, var(--fg) 20%, transparent); }
+  .meter-zones span:nth-child(3) { background: color-mix(in oklch, var(--fg) 32%, transparent); }
+  .meter-zones span:nth-child(4) { background: color-mix(in oklch, var(--fg) 46%, transparent); }
+  .meter-zones span:nth-child(5) { background: color-mix(in oklch, var(--fg) 62%, transparent); }
+  .meter-mark { position: absolute; top: -0.1875rem; bottom: -0.1875rem; width: 2px; margin-left: -1px; border-radius: 1px; background: var(--fg); box-shadow: 0 0 0 1px var(--bg); }
+  .meter-names { position: absolute; top: 100%; left: 0; right: 0; height: 1rem; margin-top: 0.25rem; font-size: 0.625rem; color: var(--soft); }
+  .meter-names span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .meter-names span:first-child { transform: none; left: 0 !important; }
+  .meter-names span:last-child { transform: none; left: auto !important; right: 0; }
+  .pop-facts.zones dd { font-family: inherit; font-size: 0.75rem; }
+  .pop-facts.zones dt { align-self: start; color: var(--fg); }
+  .pop-facts.zones dd .mono { display: block; color: var(--soft); }
+  .pop-sources { font-size: 0.75rem; color: var(--soft); display: grid; gap: 0.375rem; }
+  .pop-sources summary { cursor: pointer; color: var(--fg); }
+  .pop-sources p { margin: 0; }
   .pop-legend { display: flex; flex-wrap: wrap; gap: 0.25rem 0.875rem; font-size: 0.75rem; color: var(--soft); }
   .pop-legend i { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 50%; margin-right: 0.3rem; vertical-align: 0.05em; box-shadow: inset 0 0 0 1px var(--line); }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr)); gap: 0.5rem; }
@@ -410,6 +431,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=dc61e21ad3"></script>
+<script type="module" src="app.js?v=1ead7e4a03"></script>
 </body>
 </html>
