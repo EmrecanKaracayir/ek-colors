@@ -11,10 +11,11 @@ import { toCsv, toJson, toMarkdown } from "../palette/formats";
 import { apca, makeModel, type Model, parts, wcag, wcagLevel } from "../palette/model";
 import { anchorHue, guides, SYSTEMS } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
-import { boost, type Color, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { boost, bounds, type Color, lineup, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, curveReadout, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
-import { bindGuides, evenness, inGaps, visibility } from "./graph";
+import { bindGuides, evenText, inGaps, visibility } from "./graph";
+import { popButton, popSource } from "./popover";
 import { bindHues, huesEditor, huesLayers, huesPanel, huesReadout, type HuesView } from "./hues";
 import { technical } from "./technical";
 import { bindHueTest, type HueTestContext, hueTestPage } from "./hue-test";
@@ -254,6 +255,80 @@ function plain(): GamutPalette | null {
   return placed ? variant({ ...flat(), placed: {} }) : uncurved();
 }
 
+/** The turn found for each palette, searched once per settings, gamut tier and mode. */
+const turns = new Map<string, number>();
+
+/**
+ * The turn that brings the uniform lineup nearest the palette with placed hues (without
+ * colorfulness per hue): every hue of the lineup turned by the same angle. Turning is a rotation
+ * in CAM16-UCS, so each angle from −30° to 30° is tried in tenths of a degree without solving; the
+ * one with the smallest root-mean-square difference wins.
+ *
+ * @param mode  The mode.
+ * @returns     Degrees, or null while either palette solves.
+ */
+function turn(mode: Mode): number | null {
+  const s = state.settings;
+  const tier = s.identityTier[mode];
+  const [even, hued] = [plain()?.[mode], uncurved()?.[mode]];
+  if (!even || !hued) return null;
+  const key = JSON.stringify([s.bases, s.rooms, s.colorfulness, s.equalTiers, s.hues, s.tiers, s.identityTier, s.hueWindow, s.anchor, s.placed, state.gamut, mode]);
+  const known = turns.get(key);
+  if (known !== undefined) return known;
+  const pairs = even.colors.flatMap((c) => {
+    const [u, h] = [c.tiers[tier]?.default, hued.colors.find((x) => x.key === c.key)?.tiers[tier]?.default];
+    return c.key !== "brown" && u && h ? [[model().cam(mode, u.color), model().cam(mode, h.color)] as const] : [];
+  });
+  const off = (degrees: number) => {
+    const [cos, sin] = [Math.cos((degrees * Math.PI) / 180), Math.sin((degrees * Math.PI) / 180)];
+    const sum = pairs.reduce((total, [u, h]) => {
+      const [a, b] = [u.astar * cos - u.bstar * sin, u.astar * sin + u.bstar * cos];
+      const distance = 1.41 * Math.hypot(u.jstar - h.jstar, a - h.astar, b - h.bstar) ** 0.63;
+      return total + distance ** 2;
+    }, 0);
+    return Math.sqrt(sum / pairs.length);
+  };
+  let [best, score] = [0, off(0)];
+  for (let tenths = -300; tenths <= 300; tenths++) {
+    const value = off(tenths / 10);
+    if (value < score - 1e-9) [best, score] = [tenths / 10, value];
+  }
+  turns.set(key, best);
+  return best;
+}
+
+/**
+ * The uniform lineup turned to best match the palette with placed hues: solved, or while that
+ * solves, the uniform colors with their hues turned.
+ *
+ * @param mode  The mode.
+ * @returns     Per color: its hue, colorfulness and color on the identity tier; null while the turn
+ *              is found. The ring is the solved one's, or null.
+ */
+function turned(mode: Mode): { colors: Record<string, { hue: number; colorfulness: number; color: string }>; ring: readonly number[] | null } | null {
+  const angle = turn(mode);
+  const even = plain()?.[mode];
+  if (angle === null || !even) return null;
+  const s = state.settings;
+  const tier = s.identityTier[mode];
+  const solved = angle === 0 ? even : variant({ ...flat(), placed: {}, anchor: Math.round((anchorHue(s) + angle) * 10) / 10 })?.[mode];
+  const colors = Object.fromEntries(
+    even.colors.flatMap((c) => {
+      const exact = solved?.colors.find((x) => x.key === c.key)?.tiers[tier]?.default;
+      if (exact) return [[c.key, { hue: exact.hue, colorfulness: exact.colorfulness, color: exact.color }]];
+      const u = c.tiers[tier]?.default;
+      if (!u) return [];
+      const hue = (((u.hue + angle) % 360) + 360) % 360;
+      try {
+        return [[c.key, { hue, colorfulness: u.colorfulness, color: strongest(model(), s.bases[mode], mode, hue, u.colorfulness, tier) }]];
+      } catch {
+        return [];
+      }
+    }),
+  );
+  return { colors, ring: solved?.ring[tier] ?? null };
+}
+
 /**
  * Asks for the variants Settings compares with.
  */
@@ -261,6 +336,7 @@ function askVariants(): void {
   uncurved();
   uniform();
   plain();
+  turned(state.mode);
 }
 
 const bands = new Map<string, CurveView["band"]>();
@@ -389,22 +465,31 @@ function huesView(): HuesView {
   const tier = s.identityTier[mode];
   const palette = uncurved()?.[mode] ?? current()?.[mode];
   const even = plain()?.[mode];
+  // Placed colors where the lineup holds them, in order.
+  const line = lineup(s);
+  const held = Object.fromEntries(line.keys.map((key, k) => [key, line.hues[k]! % 360]));
+  const twist = turned(mode);
+  const gap = evenGaps.get(mode) ?? 9;
   const rows = (palette?.colors ?? [])
     .filter((c) => c.key !== "brown")
     .map((c) => {
       const now = c.tiers[tier]!.default;
-      const set = c.key === anchored() ? anchorHue(s) : s.placed[c.key];
+      const set = c.key === anchored() ? anchorHue(s) : s.placed[c.key] === undefined ? undefined : held[c.key];
       return {
         key: c.key,
         label: label(c.key),
         uniform: even?.colors.find((e) => e.key === c.key)?.tiers[tier]?.default ?? null,
+        turned: twist?.colors[c.key] ?? null,
+        bend: twist?.colors[c.key] ? model().distance(mode, twist.colors[c.key]!.color, now.color) / gap : null,
         current: { hue: set ?? now.hue, color: now.color },
         placed: s.placed[c.key] !== undefined,
         anchor: c.key === anchored(),
       };
     });
   const gaps = { uniform: gapsOf(even, tier), current: gapsOf(palette, tier) };
-  return { rows, gaps, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode) };
+  const bends = rows.flatMap((r) => (r.bend === null ? [] : [r.bend]));
+  const bend = twist && bends.length ? Math.sqrt(bends.reduce((sum, b) => sum + b ** 2, 0) / bends.length) : null;
+  return { rows, gaps, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend };
 }
 
 /**
@@ -417,9 +502,26 @@ function syncAnchor(): void {
   for (const el of document.querySelectorAll<HTMLInputElement>("[data-anchor-hue]")) el.value = hue;
 }
 
+/**
+ * The hue a color may be placed at, nearest the one asked for: held between its neighbors, so the
+ * lineup keeps its order.
+ *
+ * @param key  The color.
+ * @param hue  The hue asked for.
+ * @returns    The hue allowed (degrees, 0–360).
+ */
+function allowed(key: string, hue: number): number {
+  const [low, high] = bounds(state.settings, key);
+  const middle = (low + high) / 2;
+  const near = middle + ((((hue - middle) % 360) + 540) % 360) - 180;
+  const held = ((Math.min(high, Math.max(low, near)) % 360) + 360) % 360;
+  return Math.round(held * 10) / 10;
+}
+
 bindHues(
   huesView,
-  (key, hue) => {
+  (key, wanted) => {
+    const hue = allowed(key, wanted);
     if (key === anchored()) {
       write("anchor", hue);
       syncAnchor();
@@ -984,6 +1086,7 @@ function tune(): string {
 /** The rows of the strip: each step of the palette, added one at a time. */
 const STEPS = [
   { name: "Uniform", title: "Uniform: these settings with nothing placed and colorfulness the same for every hue" },
+  { name: "Turned", title: "Turned: the uniform lineup turned to best match your placed hues, still uniform" },
   { name: "+H", title: "+H: with colors placed by hand" },
   { name: "+M", title: "+M: with colorfulness per hue too, the palette in use" },
 ] as const;
@@ -991,24 +1094,56 @@ const STEPS = [
 /** The even gap between neighbors of the uniform lineup, per mode, kept until the next solve. */
 const evenGaps = new Map<Mode, number>();
 
-/**
- * What a change is made of, in words.
- *
- * @param split  Its parts' shares.
- * @returns      E.g. "hue 83%, colorfulness 17%, lightness 0%".
- */
-function shares(split: ReturnType<typeof parts>): string {
-  const percent = (x: number) => `${String(Math.round(x * 100))}%`;
-  return `hue ${percent(split.hue)}, colorfulness ${percent(split.colorfulness)}, lightness ${percent(split.lightness)}`;
-}
-
 /** The last solve of each step, kept until the next arrives so nothing jumps. */
 const lastSteps = new Map<string, readonly Color[]>();
 
+/** One color across the strip's rows: Uniform, Turned, +H, +M. */
+interface Change {
+  readonly key: string;
+  readonly name: string;
+  readonly color: string;
+
+  /** Per row, ΔE from its turned version: how far that row bends it. */
+  readonly bend: readonly [number, number, number, number];
+
+  /** ΔE from the uniform lineup to the palette in use, turn included. */
+  readonly moved: number;
+
+  /** Per row, its colorfulness against the row's target, as a share (0.25 is 25% over). */
+  readonly colorful: readonly [number, number, number, number];
+
+  /** What its bend in use is made of, and the edits behind it: degrees placed, colorfulness added. */
+  readonly split: ReturnType<typeof parts>;
+  readonly turned: number;
+  readonly added: number;
+}
+
+/** One row's neighbor gaps, in ring order: gap i is between keys i and i + 1. */
+interface Ring {
+  readonly gaps: readonly number[];
+  readonly keys: readonly string[];
+}
+
+/** Rows: the uniform lineup, turned, with placed hues, with colorfulness per hue. */
+type Row = 0 | 1 | 2 | 3;
+
+/** What the strip shows, kept for its column and popovers. */
+let changes: {
+  readonly tier: number;
+  readonly gap: number;
+  readonly turn: number;
+  readonly colors: readonly Change[];
+  readonly rings: readonly [Ring, Ring, Ring, Ring];
+  readonly targets: readonly [number, number, number, number];
+} = { tier: 0, gap: 9, turn: 0, colors: [], rings: [0, 1, 2, 3].map(() => ({ gaps: [], keys: [] })) as unknown as [Ring, Ring, Ring, Ring], targets: [0, 0, 0, 0] };
+
+/** The color the column shows instead of the whole palette, while a swatch is pointed at. */
+let focusKey: string | null = null;
+
 /**
- * Draws a mode's palette step by step, each color as a swatch with one band per step, so they
- * touch. Colors a step changes are marked with how much: degrees of hue, colorfulness added. The
- * last column says how far each step moved the most-moved color, and both together.
+ * Draws a mode's palette row by row, each color as a swatch with one band per row, so they touch.
+ * Under each, how far it bends from the turned lineup, in gaps; beside them, per row, how bent the
+ * palette is, how even and how equally colorful. Each opens its details.
  *
  * @param el    Where to draw.
  * @param mode  The mode.
@@ -1016,55 +1151,239 @@ const lastSteps = new Map<string, readonly Color[]>();
 function drawComparison(el: Element, mode: Mode): void {
   const tier = state.settings.identityTier[mode];
   const now = current()?.[mode].colors ?? [];
-  const steps = [plain(), uncurved()].map((palette, i) => {
-    const solved = palette?.[mode].colors;
-    if (solved) lastSteps.set(`${mode}|${String(i)}`, solved);
+  const palettes = [plain()?.[mode], uncurved()?.[mode], current()?.[mode]];
+  const steps = palettes.slice(0, 2).map((palette, i) => {
+    if (palette) lastSteps.set(`${mode}|${String(i)}`, palette.colors);
     return lastSteps.get(`${mode}|${String(i)}`) ?? now;
   });
   // The palette's own scale: the even gap between neighbors in the uniform lineup.
-  const ring = plain()?.[mode].ring[tier];
-  if (ring?.length) evenGaps.set(mode, ring.reduce((x, y) => x + y, 0) / ring.length);
+  const uniformRing = palettes[0]?.ring[tier];
+  if (uniformRing?.length) evenGaps.set(mode, uniformRing.reduce((x, y) => x + y, 0) / uniformRing.length);
   const gap = evenGaps.get(mode) ?? 9;
-  const most = { name: "", moved: -1, split: { lightness: 0, colorfulness: 0, hue: 0 } };
+  const twist = turned(mode);
+  const angle = turn(mode) ?? 0;
+  const target = (p: ModePalette | undefined) => p?.targets[tier] ?? state.settings.colorfulness;
+  const targets: [number, number, number, number] = [target(palettes[0]), target(palettes[0]), target(palettes[1]), target(palettes[2])];
+  const ringOf = (p: ModePalette | undefined): Ring => {
+    const gaps = p?.ring[tier] ?? [];
+    return { gaps, keys: (p?.colors ?? []).slice(0, gaps.length).map((c) => c.key) };
+  };
+  const evenRing = ringOf(palettes[0]);
+  const rings: [Ring, Ring, Ring, Ring] = [evenRing, twist?.ring ? { gaps: twist.ring, keys: evenRing.keys } : evenRing, ringOf(palettes[1]), ringOf(palettes[2])];
+  const colors: Change[] = [];
   const items = now.map((c) => {
     if (c.key === "brown") return "";
-    const found = [...steps, now].map((colors) => colors.find((b) => b.key === c.key)?.tiers[tier]?.default ?? c.tiers[tier]?.default);
-    if (found.some((s) => !s)) return "";
-    const swatches = found as Swatch[];
-    const [first, hued, last] = swatches as [Swatch, Swatch, Swatch];
-    // How far it moved from the uniform lineup, and what that change is made of.
-    const moved = model().distance(mode, first.color, last.color);
-    const split = parts(model().cam(mode, first.color), model().cam(mode, last.color));
-    if (moved > most.moved) Object.assign(most, { name: label(c.key), moved, split });
-    const turned = Math.round((((hued.hue - first.hue + 540) % 360) - 180));
-    const added = Math.round(boost(state.settings, mode, last.hue));
-    const edits = [turned ? `placed ${turned > 0 ? "+" : ""}${String(turned)}°` : "", added ? `colorfulness ${added > 0 ? "+" : ""}${String(added)} M` : ""].filter(Boolean);
-    const title = `${label(c.key)} moved ${moved.toFixed(1)} ΔE from the uniform lineup: ${inGaps(moved / gap) || "nothing"}, ${visibility(moved)}. Made of ${shares(split)}.${edits.length ? ` Edits: ${edits.join(", ")}.` : ""}`;
-    const fills = swatches.map((s, i) => `<span class="fill" data-row="${String(i)}" style="--f:${s.color}"></span>`).join("");
-    const rows = swatches.map((s, i) => `--f${String(i)}:${s.color}`).join(";");
-    return `<span class="strip-item${moved >= 2 ? " changed" : ""}" style="--c:${last.color};${rows}" title="${title}">
-      ${fills}<span class="cover" aria-hidden="true"></span><span class="mono"><span class="name">${label(c.key)}</span> ${inGaps(moved / gap).replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`)}</span></span>`;
+    const found = [...steps, now].map((list) => list.find((b) => b.key === c.key)?.tiers[tier]?.default ?? c.tiers[tier]?.default);
+    if (found.some((x) => !x)) return "";
+    const [first, hued, last] = found as [Swatch, Swatch, Swatch];
+    const turnedOne = twist?.colors[c.key] ?? first;
+    const swatches = [first, turnedOne, hued, last];
+    const from = (color: string) => model().distance(mode, turnedOne.color, color);
+    const change: Change = {
+      key: c.key,
+      name: label(c.key),
+      color: last.color,
+      bend: [from(first.color), 0, from(hued.color), from(last.color)],
+      moved: model().distance(mode, first.color, last.color),
+      colorful: [first.colorfulness / targets[0] - 1, turnedOne.colorfulness / targets[1] - 1, hued.colorfulness / targets[2] - 1, last.colorfulness / targets[3] - 1],
+      split: parts(model().cam(mode, turnedOne.color), model().cam(mode, last.color)),
+      turned: Math.round((((hued.hue - turnedOne.hue + 540) % 360) - 180)),
+      added: Math.round(boost(state.settings, mode, last.hue)),
+    };
+    colors.push(change);
+    const fills = swatches.map((sw, i) => `<span class="fill" data-row="${String(i)}" style="--f:${sw.color}"></span>`).join("");
+    const rows = swatches.map((sw, i) => `--f${String(i)}:${sw.color}`).join(";");
+    const amount = inGaps(change.bend[3] / gap).replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`);
+    return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
+      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name">${change.name}</span> ${amount}`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
   });
-  // The closest neighbors in the palette in use, against the even gap.
-  const final = current()?.[mode];
-  const finalRing = final?.ring[tier] ?? [];
-  const closest = finalRing.indexOf(Math.min(...finalRing));
-  const pair = closest < 0 ? null : [final!.colors[closest]!.key, final!.colors[(closest + 1) % finalRing.length]!.key];
-  const closer = closest < 0 ? 0 : 1 - finalRing[closest]! / gap;
-  const summary =
-    most.moved >= 0
-      ? `Most moved: <strong>${most.name}</strong>, ${inGaps(most.moved / gap) || "nothing"} (${shares(most.split)}).${
-        pair ? ` Evenness in use: ${label(pair[0]!)}–${label(pair[1]!)} ${closer > 0.005 ? `${String(Math.round(closer * 100))}% closer than even` : "as even as the rest"}, ${evenness(closer)}.` : ""
-      }`
-    : "";
-  const legend = `ΔE is how different two colors look (CAM16-UCS). The palette keeps neighbors one gap apart, ${gap.toFixed(1)} ΔE here, so moves are measured in gaps. Under 2 ΔE can't be seen side by side, 2 to 5 is visible side by side, 5 to 10 is a different shade, over 10 a different color. Evenness: under 10% closer than even is fine, 10 to 25% worth watching, over 25% getting confusable.`;
-  const names = STEPS.map(
-    (step, i) => `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" title="${step.title}. Click to keep it shown; ↑ and ↓ then switch rows.">${step.name}</button>`,
-  ).join("");
-  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div>
-    <p class="strip-summary soft" title="${legend}">${summary}</p>`;
+  changes = { tier, gap, turn: angle, colors, rings, targets };
+  if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
+  const names = STEPS.map((step, i) => {
+    const text = i === 1 ? `${step.name} ${angle > 0 ? "+" : angle < 0 ? "−" : ""}${Math.abs(angle).toFixed(1)}°` : step.name;
+    return `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" aria-label="${step.title}">${text}</button>`;
+  }).join("");
+  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div><div class="strip-metrics mono">${metrics()}</div>`;
   if (pinned !== null && !el.classList.contains("focused")) showRow(pinned);
 }
+
+/* >----------------------------------------< Metrics >-----------------------------------------< */
+
+/**
+ * A share as a signed percentage.
+ *
+ * @param share  E.g. 0.25.
+ * @returns      E.g. "+25%", "−8%", "0%".
+ */
+function percent(share: number): string {
+  const value = Math.round(share * 100);
+  return value === 0 ? "0%" : `${value > 0 ? "+" : "−"}${String(Math.abs(value))}%`;
+}
+
+/**
+ * How bent a row's palette is: each color's difference from its turned version, in gaps, averaged
+ * as a root mean square, so one large difference isn't hidden among small ones.
+ *
+ * @param row  The row.
+ * @returns    Gaps.
+ */
+function averageBend(row: Row): number {
+  const { colors, gap } = changes;
+  if (!colors.length) return 0;
+  return Math.sqrt(colors.reduce((sum, c) => sum + (c.bend[row] / gap) ** 2, 0) / colors.length);
+}
+
+/**
+ * A row's neighbor gaps against the even gap, as shares (−0.08 is 8% closer).
+ *
+ * @param row  The row.
+ * @returns    Each pair's names and how far off even it is.
+ */
+function offsets(row: Row): { pair: string; keys: [string, string]; off: number }[] {
+  const { rings, gap } = changes;
+  const ring = rings[row];
+  return ring.gaps.map((g, i) => {
+    const keys: [string, string] = [ring.keys[i]!, ring.keys[(i + 1) % ring.keys.length]!];
+    return { pair: `${label(keys[0])}–${label(keys[1])}`, keys, off: g / gap - 1 };
+  });
+}
+
+/**
+ * The value furthest from zero.
+ *
+ * @param values  Shares.
+ * @returns       The one with the largest size, or 0.
+ */
+function furthest(values: readonly number[]): number {
+  return values.reduce((a, b) => (Math.abs(b) > Math.abs(a) ? b : a), 0);
+}
+
+/**
+ * The column beside the strip: per row from Turned on, how bent the palette is, how even and how
+ * equally colorful; or, while a swatch is pointed at, the same for that color.
+ *
+ * @returns  HTML.
+ */
+function metrics(): string {
+  const color = focusKey ? changes.colors.find((c) => c.key === focusKey) : undefined;
+  const rows: Row[] = [1, 2, 3];
+  const cells = rows.flatMap((row) => {
+    if (color) {
+      const mine = offsets(row).filter((o) => o.keys.includes(color.key)).map((o) => o.off);
+      return [
+        `<span class="metric">${(color.bend[row] / changes.gap).toFixed(2)}</span>`,
+        `<span class="metric even">${percent(furthest(mine))}</span>`,
+        `<span class="metric colorful">${percent(color.colorful[row])}</span>`,
+      ];
+    }
+    const even = Math.max(0, ...offsets(row).map((o) => Math.abs(o.off)));
+    return [
+      popButton(`metric:bend:${String(row)}`, averageBend(row).toFixed(2), `How bent ${STEPS[row].name} is`, "metric"),
+      popButton(`metric:even:${String(row)}`, `±${String(Math.round(even * 100))}%`, `How even ${STEPS[row].name} is`, "metric even"),
+      popButton(`metric:colorful:${String(row)}`, percent(furthest(changes.colors.map((c) => c.colorful[row]))), `How equally colorful ${STEPS[row].name} is`, "metric colorful"),
+    ];
+  });
+  const heads = [
+    popButton("metric:bend:head", "Bend", "What Bend means", "metric head"),
+    popButton("metric:even:head", "Even", "What Even means", "metric head even"),
+    popButton("metric:colorful:head", "M", "What M means", "metric head colorful"),
+  ];
+  const scope = color
+    ? `<span class="metric-scope"><span class="dot" style="--c:${color.color}"></span><span class="scope-text"> ${color.name}</span></span>`
+    : popButton("metric:scope", `<span class="scope-text">All colors </span>ⓘ`, "How to read the strip", "metric-scope");
+  return heads.join("") + cells.join("") + scope;
+}
+
+/**
+ * Shows the column for one color, or for the whole palette.
+ *
+ * @param key  The color, or null.
+ */
+function showMetrics(key: string | null): void {
+  if (key === focusKey) return;
+  focusKey = key;
+  const column = document.querySelector("#tune-preview .strip-metrics");
+  if (column) column.innerHTML = metrics();
+}
+
+/**
+ * A change split into hue, colorfulness and lightness, as a bar with its shares.
+ *
+ * @param split  The shares.
+ * @returns      HTML.
+ */
+function splitBar(split: ReturnType<typeof parts>): string {
+  const whole = (x: number) => `${String(Math.round(x * 100))}%`;
+  const kinds = [
+    ["hue", "Hue", split.hue],
+    ["colorfulness", "Colorfulness", split.colorfulness],
+    ["lightness", "Lightness", split.lightness],
+  ] as const;
+  return `<div class="pop-split" aria-hidden="true">${kinds.map(([kind, , share]) => `<span class="${kind}" style="flex-grow:${share.toFixed(4)}"></span>`).join("")}</div>
+    <p class="pop-legend">${kinds.map(([kind, name, share]) => `<span><i class="${kind}"></i>${name} ${whole(share)}</span>`).join("")}</p>`;
+}
+
+/**
+ * A turn in degrees, signed.
+ *
+ * @param degrees  The turn.
+ * @returns        E.g. "+8.3°".
+ */
+function turnText(degrees: number): string {
+  return `${degrees > 0 ? "+" : degrees < 0 ? "−" : ""}${Math.abs(degrees).toFixed(1)}°`;
+}
+
+popSource("change", (key) => {
+  const c = changes.colors.find((x) => x.key === key);
+  if (!c) return "";
+  const { gap, tier, turn: angle } = changes;
+  return `<h3><span class="dot" style="--c:${c.color}"></span> ${c.name}</h3>
+    <p class="pop-lead">Bends <strong>${inGaps(c.bend[3] / gap) || "nothing"}</strong> from the turned lineup: ${visibility(c.bend[3])}.</p>
+    ${c.bend[3] >= 0.05 ? splitBar(c.split) : ""}
+    <dl class="pop-facts">
+      <div><dt>+H</dt><dd>${inGaps(c.bend[2] / gap) || "no bend"}${c.turned ? ` · ${c.turned > 0 ? "+" : ""}${String(c.turned)}° from turned` : ""}</dd></div>
+      <div><dt>+M</dt><dd>${inGaps(c.bend[3] / gap) || "no bend"} in all${c.added ? ` · ${c.added > 0 ? "+" : ""}${String(c.added)} M, ${percent(c.colorful[3])} of the target` : ""}</dd></div>
+      <div><dt>Uniform</dt><dd>${inGaps(c.moved / gap) || "no change"} from the lineup at your anchor, turn ${turnText(angle)} included</dd></div>
+    </dl>
+    <p class="pop-how">${c.name} in the turned lineup (the uniform lineup turned ${turnText(angle)}, still uniform) is compared with ${c.name} in use, on Lc ${String(tier)}, as CAM16-UCS ΔE (${c.bend[3].toFixed(1)}), then divided by the even gap (${gap.toFixed(1)}). The bar shows the bend's hue, colorfulness and lightness parts.</p>`;
+});
+
+popSource("metric", (which) => {
+  const { gap, targets, turn: angle } = changes;
+  const [kind, which2] = which.split(":") as [string, string | undefined];
+  if (kind === "scope")
+    return `<h3>Reading the strip</h3>
+      <p>Rows: <strong>Uniform</strong> is the scientific lineup for these settings at your anchor; <strong>Turned</strong> is that lineup turned ${turnText(angle)} to best match your placed hues, still perfectly uniform; <strong>+H</strong> adds your placed hues; <strong>+M</strong> adds colorfulness per hue, the palette in use.</p>
+      <p>Beside them, per row: <strong>Bend</strong>, how far the colors are from the turned lineup; <strong>Even</strong>, how evenly spaced neighbors are; <strong>M</strong>, how equally colorful the colors are. Point at a swatch to see them for that color.</p>
+      <p class="pop-how">Bends are in gaps: one gap is the even distance between neighbors, ${gap.toFixed(1)} ΔE here. Under 0.2 can't be seen side by side, 0.2 to 0.5 is visible side by side, 0.5 to 1 a different shade, over 1 a different color. Click a row's name to keep it shown; ↑ and ↓ then switch rows.</p>`;
+  const heads: Record<string, string> = {
+    bend: `<h3>Bend</h3><p>How far the colors are from the nearest uniform lineup. Turning the whole lineup keeps it uniform, so the uniform lineup is first turned to best match your placed hues (${turnText(angle)}); what's left is the bend. Each color's difference, in gaps, averaged as a root mean square, so one large difference isn't hidden among small ones.</p><p class="pop-how">One gap is ${gap.toFixed(1)} ΔE. Under 0.2 can't be seen side by side, 0.2 to 0.5 is visible side by side, 0.5 to 1 a different shade, over 1 a different color.</p>`,
+    even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under 10% is fine, 10 to 25% worth watching, over 25% two colors are getting confusable (or, over even, a hole in the palette).</p>`,
+    colorful: `<h3>M</h3><p>How equally colorful the colors are: the color furthest from the target colorfulness (M ${targets[3].toFixed(1)} on this tier), as a share of it. The uniform lineup makes every color equally colorful; colorfulness per hue changes that on purpose, so this says how far you've pushed.</p>`,
+  };
+  if (which2 === "head") return heads[kind] ?? "";
+  const row = Number(which2) as Row;
+  const title = `${STEPS[row].name}: ${{ bend: "bend", even: "evenness", colorful: "colorfulness" }[kind] ?? ""}`;
+  if (kind === "bend") {
+    const list = [...changes.colors]
+      .toSorted((a, b) => b.bend[row] - a.bend[row])
+      .map((c) => `<div><dt><span class="dot" style="--c:${c.color}"></span> ${c.name}</dt><dd>${(c.bend[row] / gap).toFixed(2)} gap</dd></div>`)
+      .join("");
+    return `<h3>${title}</h3><p class="pop-lead">Average ${averageBend(row).toFixed(2)} gap from the turned lineup.</p><dl class="pop-facts">${list}</dl>`;
+  }
+  if (kind === "even") {
+    const ring = changes.rings[row];
+    const list = offsets(row)
+      .map((o) => `<div><dt>${o.pair}</dt><dd>${percent(o.off)}</dd></div>`)
+      .join("");
+    return `<h3>${title}</h3><p class="pop-lead">${evenText(ring.gaps, ring.keys.map(label), gap)}</p><dl class="pop-facts">${list}</dl>`;
+  }
+  const list = [...changes.colors]
+    .toSorted((a, b) => Math.abs(b.colorful[row]) - Math.abs(a.colorful[row]))
+    .map((c) => `<div><dt><span class="dot" style="--c:${c.color}"></span> ${c.name}</dt><dd>${percent(c.colorful[row])}</dd></div>`)
+    .join("");
+  return `<h3>${title}</h3><p class="pop-lead">Against the target M ${targets[row].toFixed(1)}.</p><dl class="pop-facts">${list}</dl>`;
+});
 
 /** The strip row pinned by clicking its name, for comparing one step with another. */
 let pinned: number | null = null;
@@ -1078,21 +1397,40 @@ let pinned: number | null = null;
 function showRow(row: number | null): void {
   const strip = document.querySelector<HTMLElement>("#tune-preview");
   if (!strip) return;
-  if (row !== null) strip.dataset.row = String(row);
+  if (row !== null) strip.dataset.shown = String(row);
   strip.classList.toggle("focused", row !== null);
   for (const b of strip.querySelectorAll<HTMLElement>(".strip-labels [data-row]")) b.setAttribute("aria-pressed", String(Number(b.dataset.row) === pinned));
 }
 
-// Pointing at a row shows it; leaving shows the pinned row again, if any.
+/** How long the pointer rests on a swatch's band before that row shows, so passing over one doesn't. */
+const SETTLE = 150;
+
+let settling = 0;
+let swatching = 0;
+
+// Pointing at a row shows it: a row's name at once, a swatch's band once the pointer rests on it.
+// Leaving shows the pinned row again, if any.
 document.addEventListener("pointerover", (event) => {
   const strip = document.querySelector("#tune-preview");
   if (!strip?.contains(event.target as Node)) return;
-  const row = (event.target as Element).closest<HTMLElement>("[data-row]")?.dataset.row;
-  showRow(row === undefined ? pinned : Number(row));
+  clearTimeout(settling);
+  // The column follows the swatch pointed at, once the pointer rests there; elsewhere, the palette.
+  clearTimeout(swatching);
+  const swatch = (event.target as Element).closest<HTMLElement>(".strip-item[data-key]");
+  if (!(event.target as Element).closest(".strip-metrics")) swatching = window.setTimeout(() => showMetrics(swatch?.dataset.key ?? null), SETTLE);
+  const target = (event.target as Element).closest<HTMLElement>("[data-row]");
+  if (!target) return showRow(pinned);
+  const row = Number(target.dataset.row);
+  if (target.closest(".strip-labels")) return showRow(row);
+  settling = window.setTimeout(() => showRow(row), SETTLE);
 });
 document.addEventListener("pointerout", (event) => {
   const strip = document.querySelector("#tune-preview");
-  if (strip?.contains(event.target as Node) && !strip.contains(event.relatedTarget as Node | null)) showRow(pinned);
+  if (!strip?.contains(event.target as Node) || strip.contains(event.relatedTarget as Node | null)) return;
+  clearTimeout(settling);
+  clearTimeout(swatching);
+  showRow(pinned);
+  showMetrics(null);
 });
 
 // Clicking a row's name pins it, clicking it again clears it; while pinned, ↑ and ↓ move the pin.
@@ -1367,7 +1705,10 @@ document.addEventListener("input", (event) => {
     return;
   }
   if (el.dataset.anchor === "from") {
-    write("anchor", el.value === "hand" ? Math.round(anchorHue(state.settings)) : el.value);
+    // A system's yellow that would carry colors past placed ones is held back, as set by hand.
+    const wanted = el.value === "hand" ? anchorHue(state.settings) : anchorHue({ ...state.settings, anchor: el.value });
+    const hue = allowed(anchored(), wanted);
+    write("anchor", el.value !== "hand" && Math.abs(hue - wanted) < 0.05 ? el.value : Math.round(hue * 10) / 10);
     syncAnchor();
     updateTune();
     solve();
@@ -1375,7 +1716,7 @@ document.addEventListener("input", (event) => {
   }
   if (el.hasAttribute("data-anchor-hue")) {
     if (el.value === "" || Number.isNaN(Number(el.value))) return;
-    write("anchor", ((Number(el.value) % 360) + 360) % 360);
+    write("anchor", allowed(anchored(), Number(el.value)));
     syncAnchor();
     updateTune();
     solve(150);

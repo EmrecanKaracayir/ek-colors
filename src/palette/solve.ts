@@ -167,6 +167,9 @@ interface Spacing {
   readonly fixed: readonly number[];
   readonly window: number;
 
+  /** How close neighbors may come, in degrees: no color passes another. */
+  readonly sep: number;
+
   /** The colorfulness a hue aims at. */
   readonly target: (hue: number) => number;
 }
@@ -174,12 +177,13 @@ interface Spacing {
 /**
  * Hues moved, each within a window of its start, until neighbors are equally different.
  *
- * Placed colors stay where they are.
+ * Placed colors stay where they are, and no color comes closer than `sep` to a neighbor, so the
+ * lineup keeps its order.
  *
  * @param spacing  What to space, where, and how far hues may move.
  * @returns        The hues, their colors and the neighbor distances.
  */
-function space({ model, base, mode, tier, start, fixed, window, target }: Spacing) {
+function space({ model, base, mode, tier, start, fixed, window, sep, target }: Spacing) {
   const ring = (cs: readonly string[]) =>
     cs.map((c, i) => model.distance(mode, c, cs[(i + 1) % cs.length]!));
   const hues = [...start];
@@ -192,6 +196,12 @@ function space({ model, base, mode, tier, start, fixed, window, target }: Spacin
       for (const step of [-3, 3, -1, 1]) {
         const hue = hues[i]! + step;
         if (Math.abs(hue - start[i]!) > window) continue;
+        const [before, after] = [
+          hues[(i - 1 + hues.length) % hues.length]!,
+          hues[(i + 1) % hues.length]!,
+        ];
+        if ((((hue - before) % 360) + 360) % 360 < sep || (((after - hue) % 360) + 360) % 360 < sep)
+          continue;
         const trial = [...colors];
         trial[i] = strongest(model, base, mode, hue, target(hue), tier);
         const score = spread(ring(trial));
@@ -206,34 +216,90 @@ function space({ model, base, mode, tier, start, fixed, window, target }: Spacin
 
 /* >----------------------------------------< Palette >-----------------------------------------< */
 
+/** How close neighbors may come, as a share of the even step between them. */
+export const CLOSEST = 0.25;
+
 /**
- * The hues both modes start from, in hue order, and which of them stay put.
- *
- * The circle is divided evenly by the number of hues, beginning at the anchor with the first color
- * (yellow, with eight, then green, mint, blue, purple, pink, red, orange). The first color stays on
- * the anchor, so the lineup can't rotate; a placed color starts, and stays, where it was placed.
+ * The lineup: every color in order around the circle from the anchor (yellow, with eight, then
+ * green, mint, blue, purple, pink, red, orange), with the hue it starts from, unwrapped so they rise
+ * from the anchor. A color starts where it's placed, or else where the circle divided evenly puts
+ * it. Placed colors are kept in order: each stays at least a quarter of the even step from the
+ * colors beside it.
  *
  * @param settings  The settings.
- * @returns         The keys, starting hues and the indexes of the colors that stay put.
+ * @returns         The keys, their hues (rising from the anchor), which stay put, and the closest
+ *                  neighbors may come.
  */
-function seeds(settings: Settings) {
+export function lineup(settings: Pick<Settings, "hues" | "placed" | "anchor" | "bases" | "rooms">) {
   const n = settings.hues;
   const first = NAMES.indexOf("yellow");
   const keys = Array.from({ length: n }, (_, k) =>
     n === NAMES.length ? NAMES[(first + k) % n]! : `hue-${String(k + 1)}`,
   );
   const anchor = anchorHue(settings);
-  const start = keys.map(
-    (key, k) => (k === 0 ? undefined : settings.placed[key]) ?? (anchor + (k * 360) / n) % 360,
-  );
-  const order = start.map((h, k) => [h, k] as const).toSorted((a, b) => a[0] - b[0]);
-  const sorted = order.map(([, k]) => keys[k]!);
+  const step = 360 / n;
+  const sep = step * CLOSEST;
+  const held = keys.map((key, k) => k === 0 || settings.placed[key] !== undefined);
+  const hues = keys.map((key, k) => {
+    const placed = k === 0 ? undefined : settings.placed[key];
+    return placed === undefined
+      ? anchor + k * step
+      : anchor + ((((placed - anchor) % 360) + 360) % 360);
+  });
+  // A placed color that passed the next one is brought back before it; then one that fell behind
+  // the color before it is brought up.
+  for (let k = n - 1; k >= 1; k--)
+    if (held[k]) hues[k] = Math.min(hues[k]!, (k === n - 1 ? anchor + 360 : hues[k + 1]!) - sep);
+  for (let k = 1; k < n; k++) if (held[k]) hues[k] = Math.max(hues[k]!, hues[k - 1]! + sep);
+  return { keys, hues, held, sep };
+}
+
+/**
+ * Where a held color may go without passing a neighbor: a placed color between the colors beside
+ * it; the anchor as far as the colors it carries can go without passing a placed one.
+ *
+ * @param settings  The settings.
+ * @param key       The color.
+ * @returns         The lowest and highest hue, unwrapped (high may pass 360).
+ */
+export function bounds(
+  settings: Pick<Settings, "hues" | "placed" | "anchor" | "bases" | "rooms">,
+  key: string,
+): [number, number] {
+  const { keys, hues, held, sep } = lineup(settings);
+  const n = keys.length;
+  const k = keys.indexOf(key);
+  if (k > 0) return [hues[k - 1]! + sep, (k === n - 1 ? hues[0]! + 360 : hues[k + 1]!) - sep];
+  // The anchor carries every color that isn't placed; each must stay between the placed ones.
+  const placed = hues.flatMap((h, j) => (j > 0 && held[j] ? [h] : []));
+  if (!placed.length) return [hues[0]! - 180, hues[0]! + 180];
+  let [low, high] = [-Infinity, Infinity];
+  for (let j = 0; j < n; j++) {
+    if (j > 0 && held[j]) continue;
+    const below = Math.max(...placed.filter((h) => h < hues[j]!), Math.max(...placed) - 360);
+    const above = Math.min(...placed.filter((h) => h > hues[j]!), Math.min(...placed) + 360);
+    low = Math.max(low, below + sep - hues[j]!);
+    high = Math.min(high, above - sep - hues[j]!);
+  }
+  return [hues[0]! + low, hues[0]! + high];
+}
+
+/**
+ * The hues both modes start from, in hue order, and which of them stay put: the lineup, wrapped
+ * onto the circle. The anchor and placed colors stay; the rest are spaced.
+ *
+ * @param settings  The settings.
+ * @returns         The keys, starting hues, the indexes of the colors that stay put, and the closest
+ *                  neighbors may come.
+ */
+function seeds(settings: Settings) {
+  const { keys, hues, held, sep } = lineup(settings);
+  const order = hues.map((h, k) => [h % 360, k] as const).toSorted((a, b) => a[0] - b[0]);
   return {
-    keys: sorted,
+    keys: order.map(([, k]) => keys[k]!),
     start: order.map(([h]) => h),
-    fixed: order.flatMap(([, k], i) =>
-      k === 0 || settings.placed[keys[k]!] !== undefined ? [i] : [],
-    ),
+    fixed: order.flatMap(([, k], i) => (held[k] ? [i] : [])),
+    sep,
   };
 }
 
@@ -279,7 +345,7 @@ function swatch(model: Model, base: string, mode: Mode, color: string, target: n
  */
 function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const base = settings.bases[mode];
-  const { keys, start, fixed } = seeds(settings);
+  const { keys, start, fixed, sep } = seeds(settings);
   const window =
     settings.hues === NAMES.length
       ? settings.hueWindow.identity
@@ -297,7 +363,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const solveTier = (tier: number, hues: readonly number[], window: number) => {
     const { target, limit } = ceiling(tier, hues);
     const aim = (hue: number) => target + boost(settings, mode, hue);
-    const spaced = space({ model, base, mode, fixed, tier, start: hues, window, target: aim });
+    const spaced = space({ model, base, mode, fixed, tier, start: hues, window, sep, target: aim });
     return { target, limit, targets: spaced.hues.map(aim), ...spaced };
   };
 

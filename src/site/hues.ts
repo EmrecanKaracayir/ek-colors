@@ -8,14 +8,18 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { composition } from "../palette/model";
-import { band, evenness, INSETS, signed, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, stops, viewBox } from "./graph";
+import { band, evenText, INSETS, signed, type Guide, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
-/** One color, on both rows. */
+/** One color, on every row. */
 export interface HueRow {
   readonly key: string;
   readonly label: string;
   readonly uniform: { readonly hue: number; readonly color: string } | null;
+  readonly turned: { readonly hue: number; readonly color: string } | null;
   readonly current: { readonly hue: number; readonly color: string };
+
+  /** How far the current color is from the turned one, in gaps, or null while it solves. */
+  readonly bend: number | null;
 
   /** Whether it's placed by hand, or the anchor, which the lineup is divided from. */
   readonly placed: boolean;
@@ -32,8 +36,12 @@ export interface HueGap {
 export interface HuesView {
   readonly rows: readonly HueRow[];
 
-  /** The gaps between neighbors on each row (CAM16-UCS ΔE). */
-  readonly gaps: Readonly<Record<Row, readonly HueGap[]>>;
+  /** The gaps between neighbors on the uniform and current rows (CAM16-UCS ΔE). */
+  readonly gaps: Readonly<Record<"uniform" | "current", readonly HueGap[]>>;
+
+  /** The turn that brings the uniform lineup nearest the current one, and how bent the current one is from it (gaps, root mean square); null while they solve. */
+  readonly turn: number | null;
+  readonly bend: number | null;
   readonly band: readonly { readonly hue: number; readonly color: string }[];
 
   /** The chosen reference system and its guides. */
@@ -55,11 +63,12 @@ export interface HuesView {
   } | null;
 }
 
-export type Row = "uniform" | "current";
+export type Row = "uniform" | "turned" | "current";
 
-/** Drawing space: hue across, the two rows down. */
-const HEIGHT = 96;
-const ROWS: Readonly<Record<Row, number>> = { uniform: 28, current: 68 };
+/** Drawing space: hue across, the rows down. */
+const HEIGHT = 116;
+const ROWS: Readonly<Record<Row, number>> = { uniform: 26, turned: 60, current: 94 };
+const NAMES: Readonly<Record<Row, string>> = { uniform: "Uniform", turned: "Turned", current: "Current" };
 
 const wrap = (hue: number) => ((hue % 360) + 360) % 360;
 const degrees = (hue: number) => `${hue.toFixed(1)}°`;
@@ -70,7 +79,7 @@ let selected: { key: string; row: Row } = { key: "", row: "current" };
 /* >----------------------------------------< Drawing >-----------------------------------------< */
 
 /**
- * The parts that move: each color on both rows, joined by a line, and the gaps between neighbors.
+ * The parts that move: each color on every row, joined by a line, and the gaps between neighbors.
  *
  * @param view  What to show.
  * @returns     SVG.
@@ -79,7 +88,7 @@ export function huesLayers(view: HuesView): string {
   const on = (key: string, row: Row) => selected.key === key && selected.row === row;
   // The gaps: above the uniform row, below the current one; each row's shortest and longest bold,
   // unless they're all the same.
-  const gaps = (Object.entries(view.gaps) as [Row, readonly HueGap[]][]).flatMap(([row, list]) => {
+  const gaps = (Object.entries(view.gaps) as ["uniform" | "current", readonly HueGap[]][]).flatMap(([row, list]) => {
     const values = list.map((g) => Math.round(g.gap * 10));
     const [low, high] = [Math.min(...values), Math.max(...values)];
     return list.map((g, i) => {
@@ -90,12 +99,15 @@ export function huesLayers(view: HuesView): string {
   return gaps.join("") + view.rows
     .map((r) => {
       const uniform = r.uniform ?? r.current;
-      const [u, c] = [uniform.hue.toFixed(1), r.current.hue.toFixed(1)];
-      const link = `<line x1="${u}" y1="${String(ROWS.uniform)}" x2="${c}" y2="${String(ROWS.current)}" class="hue-path"></line>`;
-      const even = `<g data-hue-point="${r.key}" data-row="uniform" class="hue-point uniform${on(r.key, "uniform") ? " selected" : ""}" tabindex="0" role="button" aria-label="${r.label} in the uniform lineup: ${uniform.hue.toFixed(0)}°">
-        <circle cx="${u}" cy="${String(ROWS.uniform)}" r="12" class="hit"></circle>
-        <circle cx="${u}" cy="${String(ROWS.uniform)}" r="${on(r.key, "uniform") ? "6.5" : "5"}" style="fill:${uniform.color}" class="dot-fill"></circle>
+      const turned = r.turned ?? uniform;
+      const [u, t, c] = [uniform.hue.toFixed(1), turned.hue.toFixed(1), r.current.hue.toFixed(1)];
+      const link = `<polyline points="${u},${String(ROWS.uniform)} ${t},${String(ROWS.turned)} ${c},${String(ROWS.current)}" class="hue-path"></polyline>`;
+      // The uniform and turned rows can be selected to read their values, not moved.
+      const fixed = (row: "uniform" | "turned", spot: { hue: number; color: string }, what: string) => `<g data-hue-point="${r.key}" data-row="${row}" class="hue-point uniform${on(r.key, row) ? " selected" : ""}" tabindex="0" role="button" aria-label="${r.label} ${what}: ${spot.hue.toFixed(0)}°">
+        <circle cx="${spot.hue.toFixed(1)}" cy="${String(ROWS[row])}" r="12" class="hit"></circle>
+        <circle cx="${spot.hue.toFixed(1)}" cy="${String(ROWS[row])}" r="${on(r.key, row) ? "6.5" : "5"}" style="fill:${spot.color}" class="dot-fill"></circle>
       </g>`;
+      const even = fixed("uniform", uniform, "in the uniform lineup") + fixed("turned", turned, "in the turned lineup");
       const note = r.anchor ? ", the anchor" : r.placed ? ", placed" : "";
       const point = `<g data-hue-point="${r.key}" data-row="current" class="hue-point current${on(r.key, "current") ? " selected" : ""}" tabindex="0" role="slider" aria-label="${r.label}: ${r.current.hue.toFixed(0)}°${note}" aria-valuenow="${r.current.hue.toFixed(0)}">
         <circle cx="${c}" cy="${String(ROWS.current)}" r="14" class="hit"></circle>
@@ -118,15 +130,20 @@ export function huesPanel(view: HuesView): string {
   const r = view.rows.find((row) => row.key === selected.key) ?? view.rows.find((row) => row.anchor);
   if (!r) return `<p class="soft">Solving…</p>`;
   selected = { key: r.key, row: r.key === selected.key ? selected.row : "current" };
-  const moved = r.uniform ? `${signed((((r.current.hue - r.uniform.hue + 540) % 360) - 180))}°` : "…";
-  if (selected.row === "uniform") {
-    return `<p class="hue-name"><span class="dot" style="--c:${(r.uniform ?? r.current).color}"></span> ${r.label} <span class="soft">uniform</span></p>
+  const off = r.turned ? `${signed((((r.current.hue - r.turned.hue + 540) % 360) - 180))}°` : "…";
+  if (selected.row !== "current") {
+    const spot = (selected.row === "uniform" ? r.uniform : r.turned) ?? r.current;
+    const note =
+      selected.row === "uniform"
+        ? "Evenly different, with nothing placed. It follows the anchor and can't be moved."
+        : `The uniform lineup turned ${view.turn === null ? "…" : `${signed(view.turn)}°`} to best match your placed hues: still evenly different. It can't be moved.`;
+    return `<p class="hue-name"><span class="dot" style="--c:${spot.color}"></span> ${r.label} <span class="soft">${selected.row}</span></p>
       <dl class="hue-facts">
-        <div><dt>Hue</dt><dd class="mono">${r.uniform ? degrees(r.uniform.hue) : "…"}</dd></div>
-        <div><dt>Name</dt><dd class="mono">${r.uniform ? composition(r.uniform.hue) : "…"}</dd></div>
+        <div><dt>Hue</dt><dd class="mono">${degrees(spot.hue)}</dd></div>
+        <div><dt>Name</dt><dd class="mono">${composition(spot.hue)}</dd></div>
         <div><dt>Current</dt><dd class="mono">${degrees(r.current.hue)}</dd></div>
       </dl>
-      <p class="soft hue-note">Evenly different, with nothing placed. It follows the anchor and can't be moved.</p>`;
+      <p class="soft hue-note">${note}</p>`;
   }
   const gaps = view.cost?.gaps[r.key];
   const state = r.anchor ? "the anchor" : r.placed ? "placed" : "spaced";
@@ -135,9 +152,10 @@ export function huesPanel(view: HuesView): string {
     ${r.anchor ? "" : `<label class="field graph-check" for="hue-placed"><span>Placed</span><input id="hue-placed" type="checkbox" data-hue-placed ${r.placed ? "checked" : ""}></label>`}
     <dl class="hue-facts">
       <div><dt>Name</dt><dd class="mono">${composition(r.current.hue)}</dd></div>
-      <div><dt>Uniform</dt><dd class="mono">${r.uniform ? degrees(r.uniform.hue) : "…"}</dd></div>
-      <div><dt>Moved</dt><dd class="mono">${moved}</dd></div>
-      <div><dt>Gaps</dt><dd class="mono" title="Its gaps to the neighbors before and after it, against the uniform gap (ΔE)">${gaps ? `${signed(gaps[0])} / ${signed(gaps[1])}` : "…"}</dd></div>
+      <div><dt>Turned</dt><dd class="mono">${r.turned ? degrees(r.turned.hue) : "…"}</dd></div>
+      <div><dt>Off by</dt><dd class="mono">${off}</dd></div>
+      <div><dt>Bend</dt><dd class="mono">${r.bend === null ? "…" : `${r.bend.toFixed(2)} gap`}</dd></div>
+      <div><dt>Gaps</dt><dd class="mono">${gaps ? `${signed(gaps[0])} / ${signed(gaps[1])}` : "…"}</dd></div>
     </dl>`;
 }
 
@@ -150,13 +168,9 @@ export function huesPanel(view: HuesView): string {
 export function huesReadout(view: HuesView): string {
   const cost = view.cost;
   if (!cost) return "Solving…";
-  const i = cost.ring.indexOf(Math.min(...cost.ring));
-  const name = (key: string | undefined) => view.rows.find((r) => r.key === key)?.label ?? "";
-  const closer = 1 - cost.ring[i]! / cost.uniform;
-  const pair = `${name(cost.keys[i])}–${name(cost.keys[(i + 1) % cost.keys.length])}`;
-  return closer > 0.005
-    ? `Evenness from placing alone, before colorfulness per hue: the closest pair, ${pair}, is ${cost.ring[i]!.toFixed(1)} ΔE apart, ${String(Math.round(closer * 100))}% closer than the even gap of ${cost.uniform.toFixed(1)}: ${evenness(closer)}.`
-    : `Evenness from placing alone: every pair is as far apart as the even gap of ${cost.uniform.toFixed(1)} ΔE.`;
+  const names = cost.keys.map((key) => view.rows.find((r) => r.key === key)?.label ?? "");
+  const turn = view.turn === null || view.bend === null ? "" : `Turned ${signed(view.turn)}°, bend ${view.bend.toFixed(2)} gap. `;
+  return turn + evenText(cost.ring, names, cost.uniform);
 }
 
 /**
@@ -167,7 +181,7 @@ export function huesReadout(view: HuesView): string {
  */
 export function huesEditor(view: HuesView): string {
   const labels = (Object.entries(ROWS) as [Row, number][]).map(
-    ([row, y]) => `<text x="-18" y="${String(y + 3)}" class="axis row-label" text-anchor="end">${row === "uniform" ? "Uniform" : "Current"}</text>`,
+    ([row, y]) => `<text x="-18" y="${String(y + 3)}" class="axis row-label" text-anchor="end">${NAMES[row]}</text>`,
   );
   return `<div class="graph-editor hues-editor" style="${INSETS}">
     ${guidePicker(view.guide)}
@@ -176,9 +190,8 @@ export function huesEditor(view: HuesView): string {
       ${band("hues-band", stops(view.band), HEIGHT)}<g class="guide-layer">${guideLayer(view.guides, HEIGHT)}</g>${labels.join("")}${hueScale(HEIGHT)}
       <g class="hues-layers">${huesLayers(view)}</g>
     </svg>
-    <p class="graph-caption soft">Uniform is the lineup evenly different by perception, with nothing placed; Current is the one in use. Click a color on either row to see its values. Drag it on the Current row to place it there, and the others re-space around it; double-click it to let it go. Dragging the anchor moves the whole lineup. Arrow keys move the selected color by 1°, with Shift by 10°. A dot in the middle marks a color that stays put.</p>
-    <p class="graph-caption soft hues-readout">${huesReadout(view)}</p>
-    <p class="graph-caption soft guide-source">${guideSource(view.guide)}</p>
+    <p class="graph-caption readout hues-readout">${huesReadout(view)}</p>
+    <p class="graph-caption hint">These rows leave out colorfulness per hue, so they show placing alone: Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match your placed hues, still evenly different; Current has your placed hues. Bend is how far Current is from Turned. Click a color on either row to see its values. Drag it on the Current row to place it there, and the others re-space around it; double-click it to let it go. Dragging the anchor moves the whole lineup. Arrow keys move the selected color by 1°, with Shift by 10°. A dot in the middle marks a color that stays put.</p>
   </div>`;
 }
 
@@ -211,7 +224,7 @@ export function bindHues(get: () => HuesView, place: (key: string, hue: number) 
     const key = point.dataset.huePoint!;
     const row = point.dataset.row as Row;
     selected = { key, row };
-    if (row === "uniform") return redraw(true);
+    if (row !== "current") return redraw(true);
     // Double-clicks are told apart here: the first click redraws the point.
     const twice = event.timeStamp - lastPress.time < 400 && lastPress.key === key;
     lastPress = twice ? { time: 0, key: "" } : { time: event.timeStamp, key };

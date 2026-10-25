@@ -1,0 +1,127 @@
+/*------------------------------------------------------------------------------------------------*\
+| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< POPOVER >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
+|*------------------------------------------------------------------------------------------------*|
+| One popover for details and explanations: a button with data-pop opens it next to itself, with   |
+| content from the source its id starts with, written when it opens. Clicking the button again,    |
+| clicking elsewhere or pressing Escape closes it; it follows its button while the page scrolls.   |
+\*------------------------------------------------------------------------------------------------*/
+
+/** Writes a popover's content for the rest of its id. */
+type Source = (rest: string) => string;
+
+const sources = new Map<string, Source>();
+
+/** The open popover's id, if any. */
+let open: string | null = null;
+
+/**
+ * Lets popovers whose id starts with `prefix:` take their content from `source`.
+ *
+ * @param prefix  The id's first part.
+ * @param source  Writes the content (HTML) for the rest of the id.
+ */
+export function popSource(prefix: string, source: Source): void {
+  sources.set(prefix, source);
+}
+
+/**
+ * A button that opens a popover.
+ *
+ * @param id     The popover's id, "prefix:rest".
+ * @param label  The button's content (HTML).
+ * @param name   What the button is for, for screen readers.
+ * @param kind   Extra classes.
+ * @returns      HTML.
+ */
+export function popButton(id: string, label: string, name: string, kind = ""): string {
+  return `<button type="button" class="pop-trigger ${kind}" data-pop="${id}" aria-haspopup="dialog" aria-expanded="${String(open === id)}" aria-label="${name}">${label}</button>`;
+}
+
+/* >----------------------------------------< Placing >-----------------------------------------< */
+
+const panel = document.createElement("div");
+panel.id = "popover";
+panel.setAttribute("role", "dialog");
+panel.hidden = true;
+document.body.append(panel);
+
+/**
+ * The button the open popover belongs to; buttons are drawn anew, so it's looked up each time.
+ *
+ * @returns  The button, or null.
+ */
+function trigger(): HTMLElement | null {
+  return open === null ? null : document.querySelector<HTMLElement>(`[data-pop="${CSS.escape(open)}"]`);
+}
+
+/**
+ * Puts the popover under its button, or above when there's no room below, inside the window.
+ */
+function place(): void {
+  const button = trigger();
+  if (!button) return close();
+  const at = button.getBoundingClientRect();
+  const [width, height] = [panel.offsetWidth, panel.offsetHeight];
+  const margin = 8;
+  const left = Math.min(Math.max(margin, at.left + at.width / 2 - width / 2), innerWidth - width - margin);
+  const below = at.bottom + 6;
+  const top = below + height > innerHeight - margin && at.top - 6 - height > margin ? at.top - 6 - height : below;
+  panel.style.transform = `translate(${String(Math.round(left))}px, ${String(Math.round(top))}px)`;
+}
+
+/**
+ * Opens a popover.
+ *
+ * @param id  Its id.
+ */
+function show(id: string): void {
+  const source = sources.get(id.split(":")[0]!);
+  if (!source) return;
+  trigger()?.setAttribute("aria-expanded", "false");
+  open = id;
+  panel.innerHTML = source(id.slice(id.indexOf(":") + 1));
+  panel.setAttribute("aria-label", trigger()?.getAttribute("aria-label") ?? "Details");
+  panel.hidden = false;
+  trigger()?.setAttribute("aria-expanded", "true");
+  place();
+}
+
+/**
+ * Closes the popover.
+ *
+ * @param focus  Whether its button takes the focus back.
+ */
+function close(focus = false): void {
+  if (open === null) return;
+  const button = trigger();
+  button?.setAttribute("aria-expanded", "false");
+  if (focus) button?.focus();
+  open = null;
+  panel.hidden = true;
+}
+
+/* >-----------------------------------------< Events >-----------------------------------------< */
+
+document.addEventListener("click", (event) => {
+  const button = (event.target as Element).closest<HTMLElement>("[data-pop]");
+  if (button) {
+    const id = button.dataset.pop!;
+    return open === id ? close() : show(id);
+  }
+  if (!panel.contains(event.target as Node)) close();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && open !== null) close(true);
+});
+
+let frame = 0;
+const follow = () => {
+  if (open === null || frame) return;
+  frame = requestAnimationFrame(() => {
+    frame = 0;
+    place();
+  });
+};
+addEventListener("scroll", follow, { passive: true });
+addEventListener("resize", follow);
+addEventListener("hashchange", () => close());

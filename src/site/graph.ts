@@ -7,6 +7,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { SYSTEMS } from "../palette/references";
+import { popButton, popSource } from "./popover";
 
 /** A reference system's hue, drawn as a guide. */
 export interface Guide {
@@ -73,6 +74,27 @@ export function evenness(closer: number): string {
 export function signed(x: number): string {
   if (Math.abs(x) < 0.05) return "0.0";
   return `${x < 0 ? "−" : "+"}${Math.abs(x).toFixed(1)}`;
+}
+
+/**
+ * How even a ring of neighbor gaps is: its closest and widest pair against the even gap, with how
+ * worrying the closest is.
+ *
+ * @param ring   The gaps; gap i is between colors i and i + 1.
+ * @param names  The colors in the ring's order.
+ * @param even   The even gap.
+ * @returns      Text.
+ */
+export function evenText(ring: readonly number[], names: readonly string[], even: number): string {
+  if (!ring.length) return "";
+  const [low, high] = [ring.indexOf(Math.min(...ring)), ring.indexOf(Math.max(...ring))];
+  const pair = (i: number) => `${names[i] ?? ""}–${names[(i + 1) % names.length] ?? ""}`;
+  const off = (d: number) => {
+    const percent = Math.round(Math.abs(1 - d / even) * 100);
+    return percent === 0 ? "even" : `${String(percent)}% ${d < even ? "under" : "over"} even`;
+  };
+  if (off(ring[low]!) === "even" && off(ring[high]!) === "even") return `Every pair is one even gap apart (${even.toFixed(1)} ΔE).`;
+  return `Closest: ${pair(low)}, ${off(ring[low]!)} (${ring[low]!.toFixed(1)} ΔE): ${evenness(Math.max(0, 1 - ring[low]! / even))}. Widest: ${pair(high)}, ${off(ring[high]!)} (${ring[high]!.toFixed(1)} ΔE). Even gap: ${even.toFixed(1)}.`;
 }
 
 /* >----------------------------------------< Drawing >-----------------------------------------< */
@@ -145,14 +167,14 @@ export function guideLayer(guides: readonly Guide[], height: number): string {
 }
 
 /**
- * Where a system's numbers come from, under a graph.
+ * What a system is and where its numbers come from, for the guides' popover.
  *
  * @param id  The system.
  * @returns   HTML.
  */
 export function guideSource(id: string): string {
   const system = SYSTEMS.find((s) => s.id === id) ?? SYSTEMS[0]!;
-  return `<strong>${system.name}.</strong> ${system.summary} <span class="source">${system.source}</span>`;
+  return `<h3>${system.name}</h3><p>${system.summary}</p><p class="pop-how">${system.source}</p><p class="pop-how">Solid lines are pure hues, dashed ones the hues between; each label shows its exact hue. Point at another system above to preview it; click it to keep it.</p>`;
 }
 
 /**
@@ -166,7 +188,7 @@ export function guidePicker(chosen: string): string {
   const buttons = SYSTEMS.map(
     (s) => `<button type="button" data-guide-pick="${s.id}" aria-pressed="${String(s.id === chosen)}">${s.name}</button>`,
   );
-  return `<div class="segmented guide-picker" role="group" aria-label="Guides">${buttons.join("")}</div>`;
+  return `<div class="guide-row"><div class="segmented guide-picker" role="group" aria-label="Guides">${buttons.join("")}</div>${popButton("guide:chosen", "ⓘ", "About these guides", "guide-info")}</div>`;
 }
 
 /**
@@ -182,9 +204,8 @@ export function bindGuides(guidesOf: (id: string) => readonly Guide[], chosen: (
     const svg = editor.querySelector<SVGSVGElement>("svg[data-height]");
     const layer = editor.querySelector(".guide-layer");
     if (svg && layer) layer.innerHTML = guideLayer(guidesOf(id), Number(svg.dataset.height));
-    const source = editor.querySelector(".guide-source");
-    if (source) source.innerHTML = guideSource(id);
   };
+  popSource("guide", () => guideSource(chosen()));
   const button = (target: EventTarget | null) => (target as Element | null)?.closest?.<HTMLElement>("[data-guide-pick]") ?? null;
 
   document.addEventListener("pointerover", (event) => {

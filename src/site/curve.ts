@@ -10,7 +10,7 @@
 
 import type { CurvePoint, Mode } from "../palette/settings";
 import { boost } from "../palette/solve";
-import { band, inGaps, INSETS, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
+import { band, inGaps, INSETS, visibility, type Guide, guideLayer, guidePicker, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -170,9 +170,8 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       ${hueScale(HEIGHT)}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
-    <p class="graph-caption soft">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
-    <p class="graph-caption soft curve-readout">${curveReadout(view)}</p>
-    <p class="graph-caption soft guide-source">${guideSource(view.guide)}</p>
+    <p class="graph-caption readout curve-readout">${curveReadout(view)}</p>
+    <p class="graph-caption hint">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width.</p>
   </div>`;
 }
 
