@@ -2,7 +2,7 @@
   "name": "ek-colors",
   "version": "2.0.0-dev",
   "private": true,
-  "description": "An accessible color palette solved in CAM16: every color exactly on its APCA contrast, equally colorful and evenly spaced, for light and dark.",
+  "description": "Solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly spaced, for light and dark. Ships with EK Palette.",
   "type": "module",
   "scripts": {
     "solve": "tsx src/cli.ts",

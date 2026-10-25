@@ -128,7 +128,7 @@ function start(ctx: HueTestContext): boolean {
   if (!palette || ctx.settings.hues !== NAMES.length) return false;
   const tier = ctx.settings.identityTier[ctx.mode];
   const colors = palette.colors
-    .filter((c) => c.key !== "brown")
+    .filter((c) => !c.extra)
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }))
     .toSorted((a, b) => a.hue - b.hue);
   const signs = colors.map((_, i) => (i % 2 ? 1 : -1)).toSorted(() => Math.random() - 0.5);
@@ -222,11 +222,11 @@ export function hueTestPage(ctx: HueTestContext): string {
   const ready = Boolean(ctx.palette) && named;
   return `<section class="intro">
       <h1>Blind hue test</h1>
-      <p>Measures where each ${mode}-mode color looks most like its name, to place it. One color at a time, without its name: say which of its two neighbors it leans toward, or neither. Up to ${String(CAP * NAMES.length)} colors, fewer once your answers settle; usually about five minutes. Each color's answers close in on the hue where it leans neither way, the middle of its name, with an easy one now and then to check the answers depend on what's shown.</p>
+      <p>Measures where each ${mode}-mode color looks most like its name, to place it. One color at a time, without its name: say which of its two neighbors it leans toward, or neither. Up to ${String(CAP * NAMES.length)} colors, fewer once the answers settle; usually about five minutes. Each color's answers close in on the hue where it leans neither way, the middle of its name, with an easy one now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
-        <li>Turn off True Tone and Night Shift, and use your usual brightness.</li>
+        <li>Turn off True Tone and Night Shift, and use the usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
-        <li>Go with your first impression. If it leans neither way, pick "Neither".</li>
+        <li>Go with the first impression. If it leans neither way, pick "Neither".</li>
       </ul>
       ${named ? "" : `<p class="soft">The test needs the eight named colors; set How many hues to 8.</p>`}
       <p class="row"><button type="button" data-hue-test="start" ${ready ? "" : "disabled"}>${!named ? "Needs eight colors" : ctx.palette ? (done.length ? "Take it again" : "Start") : "Solving the palette…"}</button><a href="#tune">Back to hue</a><span class="soft">Tests ${mode} mode; switch Light and Dark above for the other.</span></p>

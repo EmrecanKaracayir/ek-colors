@@ -3,7 +3,7 @@
 |*------------------------------------------------------------------------------------------------*|
 | Everything a palette is solved from, with EK Colors' defaults: bases, the two viewing rooms, the |
 | colorfulness target and its curve over hue, the yellow anchor per mode, how many hues, the       |
-| APCA tiers and the muted share.                                                                  |
+| APCA tiers, the muted share and any extra colors.                                                |
 \*------------------------------------------------------------------------------------------------*/
 
 /* >-----------------------------------------< Types >------------------------------------------< */
@@ -41,6 +41,18 @@ export interface CurvePoint {
   readonly off?: boolean;
 }
 
+/** A color outside the evenly spaced hues: it stays on its own hue at a share of the colorfulness. */
+export interface Extra {
+  /** What it's called. */
+  readonly name: string;
+
+  /** The CAM16 hue it stays on. */
+  readonly hue: number;
+
+  /** Its colorfulness, as a share of the tier's target. */
+  readonly share: number;
+}
+
 export interface Settings {
   /** The backgrounds colors are read on. */
   readonly bases: Readonly<Record<Mode, string>>;
@@ -72,8 +84,8 @@ export interface Settings {
   /** Muted colorfulness, as a share of the default's. */
   readonly muted: number;
 
-  /** Brown's colorfulness, as a share of the target; null leaves brown out. */
-  readonly brown: number | null;
+  /** Colors added beside the hues, each on its own hue; they aren't spaced. */
+  readonly extras: readonly Extra[];
 
   /** How far a hue may move to even out the spacing: on the identity tier, then per tier. */
   readonly hueWindow: Readonly<{ identity: number; tier: number }>;
@@ -112,7 +124,7 @@ export const DEFAULTS: Settings = {
   tiers: [15, 30, 45, 60, 75, 90],
   identityTier: { light: 60, dark: 45 },
   muted: 0.5,
-  brown: 0.6,
+  extras: [],
   hueWindow: { identity: 20, tier: 6 },
   anchor: "ncs",
   placed: {},
@@ -130,9 +142,6 @@ export const NAMES = [
   "purple",
   "pink",
 ] as const;
-
-/** Brown's hue, by its CAM16 name: a quarter of the way from red to yellow. It isn't spaced. */
-export const BROWN = "R 25 Y";
 
 /* >----------------------------------------< Codemos >-----------------------------------------< */
 

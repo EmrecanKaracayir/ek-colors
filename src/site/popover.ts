@@ -124,6 +124,7 @@ const follow = () => {
     place();
   });
 };
-addEventListener("scroll", follow, { passive: true });
+// Captured, so scrolling a table sideways moves it too.
+addEventListener("scroll", follow, { passive: true, capture: true });
 addEventListener("resize", follow);
 addEventListener("hashchange", () => close());

@@ -6,9 +6,9 @@
 | the yellow anchor.                                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import { apca, composition, hueOf, makeModel, type Model, wcag, wcagLevel } from "./model";
+import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./model";
 import { anchorHue } from "./references";
-import { BROWN, type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings } from "./settings";
+import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings } from "./settings";
 
 export interface Swatch {
   /** The color as CSS: #RRGGBB on the standard tier, color() on wider ones. */
@@ -22,13 +22,17 @@ export interface Swatch {
   readonly wcag: number;
   readonly wcagLevel: ReturnType<typeof wcagLevel>;
 
-  /** Whether the screen held it below its colorfulness target. */
+  /** The colorfulness it aimed at, and whether the screen held it below that. */
+  readonly target: number;
   readonly short: boolean;
 }
 
 export interface Color {
   readonly key: string;
   readonly target: number;
+
+  /** Whether it's an extra color: on its own hue, not spaced with the others. */
+  readonly extra: boolean;
   readonly tiers: Readonly<
     Record<number, { readonly default: Swatch; readonly muted: Swatch | null }>
   >;
@@ -303,6 +307,43 @@ function seeds(settings: Settings) {
   };
 }
 
+/** Words the site's pages use in its address, so no color's key can take one. */
+const TAKEN = [
+  "overview",
+  "tiers",
+  "colors",
+  "compare",
+  "how",
+  "algorithm",
+  "curve-test",
+  "hue-test",
+  "tune",
+  "export",
+  "references",
+];
+
+/**
+ * The extra colors' keys: each name in lowercase words joined by hyphens, numbered when it would
+ * repeat a hue's key, another extra's or a page's.
+ *
+ * @param settings  The settings.
+ * @returns         One key per extra color, in order.
+ */
+export function extraKeys(settings: Settings): string[] {
+  const used = new Set([...TAKEN, ...lineup(settings).keys]);
+  return settings.extras.map((extra) => {
+    const word =
+      extra.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") || "extra";
+    let key = word;
+    for (let n = 2; used.has(key); n++) key = `${word}-${String(n)}`;
+    used.add(key);
+    return key;
+  });
+}
+
 /**
  * A color described for output and display.
  *
@@ -327,6 +368,7 @@ function swatch(model: Model, base: string, mode: Mode, color: string, target: n
     apca: round(apca(color, base)),
     wcag: round(ratio, 2),
     wcagLevel: wcagLevel(ratio),
+    target: round(target),
     short: c.m < target - 1,
   };
 }
@@ -346,6 +388,7 @@ function swatch(model: Model, base: string, mode: Mode, color: string, target: n
 function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const base = settings.bases[mode];
   const { keys, start, fixed, sep } = seeds(settings);
+  const extras = extraKeys(settings);
   const window =
     settings.hues === NAMES.length
       ? settings.hueWindow.identity
@@ -393,20 +436,36 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
       );
       tiers[tier]![key] = { default: def, muted };
     });
-    if (settings.brown !== null) {
-      const target = solved.target * settings.brown;
-      const hue = hueOf(BROWN);
-      tiers[tier]!["brown"] = {
-        default: swatch(model, base, mode, strongest(model, base, mode, hue, target, tier), target),
-        muted: null,
-      };
-    }
+    settings.extras.forEach((extra, i) => {
+      const target = solved.target * extra.share;
+      const def = swatch(
+        model,
+        base,
+        mode,
+        strongest(model, base, mode, extra.hue, target, tier),
+        target,
+      );
+      const quiet = def.colorfulness * settings.muted;
+      const muted = swatch(
+        model,
+        base,
+        mode,
+        strongest(model, base, mode, extra.hue, quiet, tier),
+        quiet,
+      );
+      tiers[tier]![extras[i]!] = { default: def, muted };
+    });
   }
-  const allKeys = settings.brown === null ? keys : [...keys, "brown"];
-  const colors = allKeys.map((key) => ({
-    key,
-    target: key === "brown" ? settings.colorfulness * (settings.brown ?? 0) : settings.colorfulness,
-    tiers: Object.fromEntries(settings.tiers.map((t) => [t, tiers[t]![key]!])),
+  const colors = [
+    ...keys.map((key) => ({ key, target: settings.colorfulness, extra: false })),
+    ...settings.extras.map((e, i) => ({
+      key: extras[i]!,
+      target: settings.colorfulness * e.share,
+      extra: true,
+    })),
+  ].map((c) => ({
+    ...c,
+    tiers: Object.fromEntries(settings.tiers.map((t) => [t, tiers[t]![c.key]!])),
   }));
   return { base, colors, targets, limits, ring };
 }

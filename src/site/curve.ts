@@ -160,7 +160,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
     (m) => `${m ? `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>` : ""}
       <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${String(m)}</text>`,
   );
-  return `<div class="graph-editor curve-editor" data-curve="${mode}" style="${INSETS}">
+  return `<div class="graph-editor guided curve-editor" data-curve="${mode}" style="${INSETS}">
     ${guidePicker(view.guide)}
     <div class="graph-values curve-values">${valuesPanel(view)}</div>
     <svg viewBox="${viewBox(HEIGHT)}" data-height="${String(HEIGHT)}" role="group" aria-label="Colorfulness curve, ${mode} mode">

@@ -139,7 +139,7 @@ export function huesPanel(view: HuesView): string {
     const note =
       selected.row === "uniform"
         ? "Evenly different, with nothing placed. It follows the anchor and can't be moved."
-        : `The uniform lineup turned ${view.turn === null ? "…" : `${signed(view.turn)}°`} to best match your placed hues: still evenly different. It can't be moved.`;
+        : `The uniform lineup turned ${view.turn === null ? "…" : `${signed(view.turn)}°`} to best match the placed hues: still evenly different. It can't be moved.`;
     return `<p class="hue-name"><span class="dot" style="--c:${spot.color}"></span> ${r.label} <span class="soft">${selected.row}</span></p>
       <dl class="hue-facts">
         <div><dt>Hue</dt><dd class="mono">${degrees(spot.hue)}</dd></div>
@@ -187,7 +187,7 @@ export function huesEditor(view: HuesView): string {
   const labels = (Object.entries(ROWS) as [Row, number][]).map(
     ([row, y]) => `<text x="-18" y="${String(y + 3)}" class="axis row-label" text-anchor="end">${NAMES[row]}</text>`,
   );
-  return `<div class="graph-editor hues-editor" style="${INSETS}">
+  return `<div class="graph-editor guided hues-editor" style="${INSETS}">
     ${guidePicker(view.guide)}
     <div class="graph-values hues-values">${huesPanel(view)}</div>
     <svg viewBox="${viewBox(HEIGHT)}" data-height="${String(HEIGHT)}" role="group" aria-label="Where the uniform lineup puts each color, and where the current one does">
@@ -195,7 +195,7 @@ export function huesEditor(view: HuesView): string {
       <g class="hues-layers">${huesLayers(view)}</g>
     </svg>
     <p class="graph-caption readout hues-readout">${huesReadout(view)}</p>
-    <p class="graph-caption hint">These rows leave out colorfulness per hue, so they show placing alone: Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match your placed hues, still evenly different; Current has your placed hues. Bend is how far Current is from Turned. Click a color on either row to see its values. Drag it on the Current row to place it there, and the others re-space around it; double-click it to let it go. Dragging the anchor moves the whole lineup. Arrow keys move the selected color by 1°, with Shift by 10°. A dot in the middle marks a color that stays put.</p>
+    <p class="graph-caption hint">These rows leave out colorfulness per hue, so they show placing alone: Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match the placed hues, still evenly different; Current has the placed hues. Bend is how far Current is from Turned. Click a color on either row to see its values. Drag it on the Current row to place it there, and the others re-space around it; double-click it to let it go. Dragging the anchor moves the whole lineup. Arrow keys move the selected color by 1°, with Shift by 10°. A dot in the middle marks a color that stays put.</p>
   </div>`;
 }
 

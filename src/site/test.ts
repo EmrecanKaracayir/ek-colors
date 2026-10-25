@@ -129,7 +129,7 @@ function start(ctx: TestContext): boolean {
   const palette = ctx.palette?.[ctx.mode];
   if (!palette) return false;
   const tier = ctx.settings.identityTier[ctx.mode];
-  const hues = palette.colors.filter((c) => c.key !== "brown").map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
+  const hues = palette.colors.filter((c) => !c.extra).map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
   const signs = hues.map((_, i) => (i % 2 ? 1 : -1)).toSorted(() => Math.random() - 0.5);
   const base = {
     mode: ctx.mode,
@@ -276,14 +276,14 @@ export function testPage(ctx: TestContext): string {
   if (session && session.mode === ctx.mode) return stage();
   const mode = ctx.label(ctx.mode).toLowerCase();
   const done = runs().filter((r) => r.mode === ctx.mode);
-  const hues = ctx.palette?.[ctx.mode].colors.filter((c) => c.key !== "brown").length ?? 8;
+  const hues = ctx.palette?.[ctx.mode].colors.filter((c) => !c.extra).length ?? 8;
   return `<section class="intro">
       <h1>Blind colorfulness test</h1>
-      <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once your answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
+      <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once the answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
-        <li>Turn off True Tone and Night Shift, and use your usual brightness.</li>
+        <li>Turn off True Tone and Night Shift, and use the usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
-        <li>Go with your first impression. If you truly can't tell, pick "Can't tell".</li>
+        <li>Go with the first impression. If you truly can't tell, pick "Can't tell".</li>
       </ul>
       <p class="row"><button type="button" data-test="start" ${ctx.palette ? "" : "disabled"}>${ctx.palette ? (done.length ? "Take it again" : "Start") : "Solving the palette…"}</button><a href="#tune">Back to colorfulness</a><span class="soft">Tests ${mode} mode; switch Light and Dark above for the other.</span></p>
     </section>

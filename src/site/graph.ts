@@ -66,6 +66,16 @@ export function evenness(closer: number): string {
 }
 
 /**
+ * Text someone typed, safe to put in a page: in its text or in an attribute.
+ *
+ * @param text  E.g. an extra color's name.
+ * @returns     The text with &, <, > and " written as entities.
+ */
+export function escape(text: string): string {
+  return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+/**
  * A difference with its sign.
  *
  * @param x  The difference.
@@ -223,6 +233,31 @@ export function guideLayer(guides: readonly Guide[], height: number): string {
     .join("");
 }
 
+/** The hue circle's radius in its drawing space, where colorfulness 60 sits. */
+export const CIRCLE = 150;
+
+/**
+ * One system's guides on the hue circle: a spoke for each, and past its end the label with its
+ * exact hue on the circle's side of it.
+ *
+ * @param guides  The guides.
+ * @returns       SVG.
+ */
+export function circleGuides(guides: readonly Guide[]): string {
+  const at = (hue: number, r: number) => [r * Math.cos((hue * Math.PI) / 180), -r * Math.sin((hue * Math.PI) / 180)] as const;
+  return guides
+    .map((g) => {
+      const [x, y] = at(g.hue, CIRCLE + 6);
+      const [lx, ly] = at(g.hue, CIRCLE + 28);
+      // The degree sits on the circle's side of the name: below it in the top half, above in the bottom.
+      const dy = ly + (ly < 0 ? 12 : -12);
+      return `<line x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="spoke${g.unique ? "" : " half"}"></line>
+      <text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" class="axis" text-anchor="middle" dominant-baseline="middle">${g.label}</text>
+      <text x="${lx.toFixed(1)}" y="${dy.toFixed(1)}" class="axis guide-degree" text-anchor="middle" dominant-baseline="middle">${g.hue.toFixed(0)}°</text>`;
+    })
+    .join("");
+}
+
 /**
  * What a system is and where its numbers come from, for the guides' popover.
  *
@@ -257,22 +292,25 @@ export function guidePicker(chosen: string): string {
  * @param choose    Chooses a system.
  */
 export function bindGuides(guidesOf: (id: string) => readonly Guide[], chosen: () => string, choose: (id: string) => void): void {
+  // A guided graph is straight (hue across) or round (the hue circle); each draws guides its way.
   const show = (editor: Element, id: string) => {
-    const svg = editor.querySelector<SVGSVGElement>("svg[data-height]");
     const layer = editor.querySelector(".guide-layer");
-    if (svg && layer) layer.innerHTML = guideLayer(guidesOf(id), Number(svg.dataset.height));
+    if (!layer) return;
+    if ((editor as HTMLElement).dataset.guides === "circle") return void (layer.innerHTML = circleGuides(guidesOf(id)));
+    const svg = editor.querySelector<SVGSVGElement>("svg[data-height]");
+    if (svg) layer.innerHTML = guideLayer(guidesOf(id), Number(svg.dataset.height));
   };
   popSource("guide", () => guideSource(chosen()));
   const button = (target: EventTarget | null) => (target as Element | null)?.closest?.<HTMLElement>("[data-guide-pick]") ?? null;
 
   document.addEventListener("pointerover", (event) => {
     const b = button(event.target);
-    const editor = b?.closest(".graph-editor");
+    const editor = b?.closest(".guided");
     if (b && editor && event.pointerType === "mouse") show(editor, b.dataset.guidePick!);
   });
   document.addEventListener("pointerout", (event) => {
     const picker = (event.target as Element).closest?.(".guide-picker");
-    const editor = picker?.closest(".graph-editor");
+    const editor = picker?.closest(".guided");
     if (!picker || !editor || picker.contains(event.relatedTarget as Node | null)) return;
     show(editor, chosen());
   });
@@ -280,7 +318,7 @@ export function bindGuides(guidesOf: (id: string) => readonly Guide[], chosen: (
     const b = button(event.target);
     if (!b) return;
     choose(b.dataset.guidePick!);
-    for (const editor of document.querySelectorAll(".graph-editor")) show(editor, chosen());
+    for (const editor of document.querySelectorAll(".guided")) show(editor, chosen());
     for (const other of document.querySelectorAll<HTMLElement>("[data-guide-pick]"))
       other.setAttribute("aria-pressed", String(other.dataset.guidePick === chosen()));
   });

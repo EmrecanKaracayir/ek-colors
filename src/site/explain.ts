@@ -8,7 +8,8 @@
 import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUTS, type Mode, type Settings } from "../palette/settings";
 import { anchorHue, SYSTEMS } from "../palette/references";
-import { type GamutPalette, strongest } from "../palette/solve";
+import { escape, zoneTable } from "./graph";
+import { boost, type GamutPalette, lineup, strongest } from "../palette/solve";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -57,12 +58,12 @@ function model(settings: Pick<Settings, "bases" | "rooms">, gamut: Gamut): Model
  * The hues of the palette on screen, with their keys and identity colors.
  *
  * @param ctx  What the page shows.
- * @returns    One entry per hue (brown left out).
+ * @returns    One entry per hue (extra colors left out).
  */
 function hues(ctx: Context) {
   const tier = ctx.settings.identityTier[ctx.mode];
   return (ctx.palette?.[ctx.mode].colors ?? [])
-    .filter((c) => c.key !== "brown")
+    .filter((c) => !c.extra)
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
 }
 
@@ -228,7 +229,7 @@ function reach(ctx: Context): string {
     const y = i * row + 6;
     const limit = limited && r === least;
     return `<g class="${limit ? "limiter" : limited ? "follower" : ""}">
-      <text x="0" y="${String(y + 15)}" class="axis label">${ctx.label(r.key)}${limit ? " ▾" : ""}</text>
+      <text x="0" y="${String(y + 15)}" class="axis label">${ctx.label(r.key)}</text>
       ${r.reach
         .map(
           (m, g) =>
@@ -260,7 +261,7 @@ function reach(ctx: Context): string {
  * @returns    HTML.
  */
 function difference(ctx: Context): string {
-  const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => c.key !== "brown");
+  const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => !c.extra);
   if (colors.length < 2) return "Solving…";
   const lc = Number(value("demo-dtier") || ctx.settings.identityTier[ctx.mode]);
   const pick = (id: string, fallback: number) =>
@@ -312,7 +313,111 @@ function spacing(ctx: Context): string {
     .join("");
 }
 
-const DEMOS = { tier, reach, difference } as const;
+/**
+ * The curve demo: one bump of colorfulness over hue, shaped by its controls, with what it does to
+ * each hue on the identity tier. It changes nothing in the palette.
+ *
+ * @param ctx  What the page shows.
+ * @returns    HTML.
+ */
+function bump(ctx: Context): string {
+  const list = hues(ctx);
+  const tierLc = ctx.settings.identityTier[ctx.mode];
+  const target = ctx.palette?.[ctx.mode].targets[tierLc];
+  if (!list.length || target === undefined) return "Solving…";
+  const first = ctx.settings.curve[ctx.mode][0];
+  const read = (id: string, fallback: number) => (value(id) === "" ? fallback : Number(value(id)));
+  const point = { amount: read("demo-amount", first?.amount ?? 6), center: read("demo-center", first?.center ?? 20), width: read("demo-width", first?.width ?? 60) };
+  const added = (hue: number) => boost({ curve: { light: [point], dark: [point] } }, ctx.mode, hue);
+  const [left, width, top, height, most] = [36, 564, 10, 120, 12];
+  const x = (hue: number) => left + (hue / 360) * width;
+  const y = (m: number) => top + height / 2 - (Math.max(-most, Math.min(most, m)) / most) * (height / 2);
+  const line = Array.from({ length: 181 }, (_, i) => `${i ? "L" : "M"}${x(i * 2).toFixed(1)} ${y(added(i * 2)).toFixed(1)}`).join(" ");
+  const grid = [-12, -6, 0, 6, 12].map(
+    (m) => `<line x1="${String(left)}" x2="${String(left + width)}" y1="${y(m).toFixed(1)}" y2="${y(m).toFixed(1)}" class="${m === 0 ? "target" : "grid"}"></line>
+      <text x="${String(left - 6)}" y="${(y(m) + 4).toFixed(1)}" class="axis" text-anchor="end">${m > 0 ? "+" : m < 0 ? "−" : ""}${String(Math.abs(m))}</text>`,
+  );
+  const ticks = [0, 90, 180, 270, 360].map((h) => `<text x="${x(h).toFixed(1)}" y="${String(top + height + 16)}" class="axis" text-anchor="middle">${String(h)}°</text>`);
+  const dots = list.map((h) => `<circle cx="${x(h.hue).toFixed(1)}" cy="${y(added(h.hue)).toFixed(1)}" r="6" style="fill:${h.color}" class="mark"></circle>`);
+  const m = model(ctx.settings, ctx.gamut);
+  const base = ctx.settings.bases[ctx.mode];
+  const swatch = (hue: number, aim: number) => {
+    try {
+      return strongest(m, base, ctx.mode, hue, aim, tierLc);
+    } catch {
+      return "transparent";
+    }
+  };
+  const row = (aim: (hue: number) => number) => `<div class="demo-touch short">${list.map((h) => `<span style="--c:${swatch(h.hue, aim(h.hue))}"></span>`).join("")}</div>`;
+  return `<svg class="chart" viewBox="0 0 ${String(left + width + 12)} ${String(top + height + 24)}" role="img" aria-label="Colorfulness added over hue">
+      ${grid.join("")}${ticks.join("")}<path d="${line}" fill="none" class="curve-line"></path>${dots.join("")}
+    </svg>
+    <div class="swatch-rows"><span class="soft">Without</span>${row(() => target)}<span class="soft">With</span>${row((hue) => target + added(hue))}</div>
+    <p class="soft">Lc ${String(tierLc)}, aiming at M ${target.toFixed(1)}. The colors move only where the bump reaches; this is a sandbox and changes nothing in the palette.</p>`;
+}
+
+/**
+ * The placing chart: where each color would start evenly from the anchor, and where it sits in the
+ * palette, placed colors ringed.
+ *
+ * @param ctx  What the page shows.
+ * @returns    HTML.
+ */
+function placing(ctx: Context): string {
+  const s = ctx.settings;
+  const list = hues(ctx);
+  if (!list.length) return "Solving…";
+  const { keys } = lineup(s);
+  const anchor = anchorHue(s);
+  const [left, width] = [12, 576];
+  const x = (hue: number) => left + ((((hue % 360) + 360) % 360) / 360) * width;
+  const rows = keys.flatMap((key, k) => {
+    const color = list.find((h) => h.key === key);
+    if (!color) return [];
+    const even = anchor + (k * 360) / keys.length;
+    const placed = k > 0 && s.placed[key] !== undefined;
+    return [{ key, color: color.color, even, landed: color.hue, placed, anchor: k === 0 }];
+  });
+  const marks = rows
+    .map((r, i) => {
+      const [from, to] = [x(r.even), x(r.landed)];
+      // Moves that wrap past 0° are drawn the short way, off the edge.
+      const across = Math.abs(to - from) > width / 2 ? (to < from ? to + width : to - width) : to;
+      return `<line x1="${from.toFixed(1)}" y1="34" x2="${across.toFixed(1)}" y2="76" class="grid"></line>
+        <line x1="${from.toFixed(1)}" x2="${from.toFixed(1)}" y1="26" y2="40" class="tick"></line>
+        <circle cx="${to.toFixed(1)}" cy="80" r="7" style="fill:${r.color}" class="${r.placed || r.anchor ? "pinned" : "mark"}"></circle>
+        <text x="${to.toFixed(1)}" y="${String(i % 2 ? 116 : 102)}" class="axis" text-anchor="middle">${ctx.label(r.key)}${r.anchor ? " · anchor" : ""}</text>`;
+    })
+    .join("");
+  const axis = [0, 90, 180, 270, 360].map((h) => `<text x="${x(h === 360 ? 359.99 : h).toFixed(1)}" y="16" class="axis" text-anchor="middle">${String(h)}°</text>`).join("");
+  return `<svg class="chart" viewBox="0 0 600 124" role="img" aria-label="Even starting hues and where each color sits">
+      ${axis}<line x1="${String(left)}" x2="${String(left + width)}" y1="33" y2="33" class="grid"></line>${marks}
+    </svg>
+    <p class="legend-row soft"><span><i class="tick-key"></i>Even start from the anchor</span><span><i class="dot-key"></i>Where it sits</span><span><i class="dot-key pinned"></i>Placed by hand, or the anchor</span></p>`;
+}
+
+/**
+ * The tier ladder: one color on every tier, default and muted, with its contrast and colorfulness.
+ *
+ * @param ctx  What the page shows.
+ * @returns    HTML.
+ */
+function ladder(ctx: Context): string {
+  const colors = ctx.palette?.[ctx.mode].colors ?? [];
+  if (!colors.length) return "Solving…";
+  const c = colors.find((x) => x.key === value("demo-color")) ?? colors[0]!;
+  const tiers = ctx.settings.tiers;
+  const cells = (variant: "default" | "muted") =>
+    tiers
+      .map((t) => {
+        const s = c.tiers[t]![variant];
+        return s ? `<span class="ladder-cell"><span class="ladder-swatch" style="--c:${s.color}"></span><span class="mono">Lc ${String(t)}</span><span class="mono soft">M ${s.colorfulness.toFixed(1)}</span></span>` : `<span></span>`;
+      })
+      .join("");
+  return `<div class="ladder" style="--n:${String(tiers.length)}"><span class="soft">Default</span>${cells("default")}<span class="soft">Muted</span>${cells("muted")}</div>`;
+}
+
+const DEMOS = { tier, reach, difference, bump, ladder } as const;
 
 /**
  * Redraws one demo after its controls change.
@@ -336,22 +441,23 @@ export function updateDemo(ctx: Context, name: string): void {
 export function explain(ctx: Context): string {
   const s = ctx.settings;
   const count = hues(ctx).length;
-  const seen = s.rooms[ctx.mode];
-  const swatches = count * s.tiers.length * 2 * 2 * GAMUTS.length;
+  const extras = s.extras.length;
+  const swatches = (count + extras) * s.tiers.length * 2 * 2 * GAMUTS.length;
+  const anchor = typeof s.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === s.anchor)?.name ?? ""} yellow`;
   return `<section class="intro">
       <h1>How it works</h1>
-      <p>EK Colors isn't picked by eye. A small program solves it from a handful of rules, so every color can be explained and solved again when a rule changes. This page walks through those rules one at a time. Every demo runs the same code as the solver.</p>
-      <p class="soft">This is the plain-words version. For every formula, constant and search rule, see <a href="#algorithm">the algorithm</a>.</p>
+      <p><strong>EK Colors</strong> solves color palettes instead of picking them by eye. A small program builds a palette from a handful of rules, so every color can be explained, and solved again when a rule changes. It starts from <strong>EK Palette</strong>, the palette it was made for; change the settings and it solves a palette of its own. This page walks through the rules one at a time; every demo runs the same code as the solver.</p>
+      <p class="soft">This is the plain-words version. For every formula, constant and search rule, see <a href="#algorithm">the algorithm</a>; for the research and software it's built on, see <a href="#references">References</a>.</p>
     </section>
 
     <section class="step">
       <h2>What it makes</h2>
-      <p>${String(count)} hues, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen. That's ${String(swatches)} colors, plus brown. They all follow the same rules, so you only have to learn the rules once.</p>
+      <p>${String(count)} hues${extras ? ` and ${String(extras)} extra ${extras === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all. They all follow the same rules, so the rules only have to be learned once.</p>
     </section>
 
     <section class="step">
       <h2>Color depends on the room</h2>
-      <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. You tell it what the eye is looking at and where: the page's base color as the background, and the room's light.</p>
+      <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light.</p>
       <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. Both come from the sRGB standard: its typical room and its reference room. CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
       <div class="demo"><div class="demo-out wide">${room(ctx)}</div></div>
       <p>So the same target needs different screen colors in each mode. Both of these are meant to look equally colorful. The dark-mode one gets more color on the screen, because a dim room makes colors look quieter.</p>
@@ -364,7 +470,7 @@ export function explain(ctx: Context): string {
       <div class="scroll"><table class="roles"><tbody>${s.tiers
         .map((t) => `<tr><th scope="row" class="mono">Lc ${String(t)}</th><td>${ROLES[t] ?? ""}</td></tr>`)
         .join("")}</tbody></table></div>
-      <p>For each hue and tier, the solver searches lightness until the color sits exactly on the tier: never below it, and only as far above as rounding forces. The older WCAG 2 contrast is reported next to every color too, because laws still point to it.</p>
+      <p>For each hue and tier, the solver searches lightness until the color sits exactly on the tier: never below it, and only as far above as rounding forces. The older WCAG 2 contrast is reported beside every color too, because laws still point to it. Its badge says what that ratio allows: AAA and AA pass for text, AA large only for large text and for icons, borders and controls, and below 3:1 for nothing that must be read. Each badge opens its level.</p>
       <div class="demo">
         <div class="demo-controls">
           <label for="demo-hue">Hue <input id="demo-hue" type="range" min="0" max="359" step="1" value="25" data-demo="tier"></label>
@@ -376,8 +482,7 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Equally colorful</h2>
-      <p>Every color aims at the same colorfulness: M ${String(s.colorfulness)}. The screen doesn't always allow it. Near white, a screen can show a strong yellow but only a pale red; near black, the opposite. So on each tier, the target drops to what the least colorful hue can reach, and every color on the tier follows. Nothing stands out by accident.</p>
-      <p>Where a part of the circle still looks weaker to the eye than the model says, a curve adds colorfulness smoothly over hue: a few points, each easing to none on either side. Smooth, so neighbors never jump; the blind colorfulness test in Settings measures where it's needed.</p>
+      <p>Every color aims at the same colorfulness: M ${String(s.colorfulness)}. The screen doesn't always allow it. Near white, a screen can show a strong yellow but only a pale red; near black, the opposite. With <strong>Equal per tier</strong> on, each tier's target drops to what its least colorful hue can reach, and every color on the tier follows, so nothing stands out by accident. Switched off in Settings, each color goes as far as the screen allows instead, and a tier is no longer equally colorful.</p>
       <p>The chart shows how far each hue could go on one tier, on each kind of screen.</p>
       <div class="demo">
         <div class="demo-controls">
@@ -387,12 +492,27 @@ export function explain(ctx: Context): string {
         </div>
         <div id="demo-reach-out" class="demo-out wide">${reach(ctx)}</div>
       </div>
+      <p>Small labels on the cards and tables say what happened to a color. <strong>Sets the tier</strong>, in amber, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, in grey, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, in red, marks a color the screen can't make as colorful as it should be at all. Each one opens why, with the numbers.</p>
+    </section>
+
+    <section class="step">
+      <h2>Colorfulness per hue (M)</h2>
+      <p>The model isn't perfect: some parts of the circle can look weaker or stronger to the eye than CAM16 says. <strong>Colorfulness per hue</strong> adds or takes away colorfulness smoothly over the circle, as a few points that each ease to nothing on either side, so neighbors never jump. Light and dark each have their own curve.</p>
+      <div class="demo">
+        <div class="demo-controls">
+          <label for="demo-amount">Amount <input id="demo-amount" type="range" min="-12" max="12" step="1" value="${String(s.curve[ctx.mode][0]?.amount ?? 6)}" data-demo="bump"></label>
+          <label for="demo-center">Center <input id="demo-center" type="range" min="0" max="359" step="1" value="${String(s.curve[ctx.mode][0]?.center ?? 20)}" data-demo="bump"></label>
+          <label for="demo-width">Width <input id="demo-width" type="range" min="20" max="180" step="5" value="${String(s.curve[ctx.mode][0]?.width ?? 60)}" data-demo="bump"></label>
+        </div>
+        <div id="demo-bump-out" class="demo-out wide">${bump(ctx)}</div>
+      </div>
+      <p>The <strong>blind colorfulness test</strong> in Settings measures where it's needed. It shows two colors at a time, without names, and asks which looks more colorful, moving one of them after every answer until it finds where each hue looks as colorful as the others. Its result can be applied as the curve.</p>
     </section>
 
     <section class="step">
       <h2>Evenly different</h2>
-      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space (CAM16-UCS) where distance matches how different colors look. The hues start evenly apart in angle, eight hues 45° apart. Angles aren't how differences are seen, though, so the solver nudges each one, a few degrees at a time, until the distances around the circle are as even as they can be. That's the uniform lineup. From there, any color can be placed by hand where its name fits best, and the rest re-space around it.</p>
-      <p>Yellow is the anchor, the one hue that never moves. Evening out the differences doesn't say where the lineup sits, since turning all of it around the circle keeps them almost the same, so yellow holds it. It sits at ${anchorHue(s).toFixed(0)}°, ${typeof s.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === s.anchor)?.name ?? ""} yellow`}. Every other hue is spaced from it, so moving yellow moves its neighbors too.</p>
+      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space, CAM16-UCS, where distance matches how different colors look. The hues start evenly apart in angle, ${String(count)} hues ${(360 / count).toFixed(count === 8 ? 0 : 1)}° apart. Angles aren't how differences are seen, though, so the solver nudges each one, a few degrees at a time, until the differences around the circle are as even as they can be. That's the <strong>uniform lineup</strong>.</p>
+      <p>Evening out the differences doesn't say where the lineup sits, since turning all of it around the circle keeps them almost the same. So one hue, yellow, is the <strong>anchor</strong>, and every other hue is spaced from it. It sits at ${anchorHue(s).toFixed(0)}° here, ${anchor}. It can be the yellow of CAM16, Munsell, NCS, unique-hue studies or the World Color Survey's focal colors, or any hue; the same systems can be drawn as guides on the hue graphs, to see where each puts its hues.</p>
       <div class="demo">
         <div class="demo-controls">
           <label for="demo-a">First color <select id="demo-a" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 0 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>
@@ -406,20 +526,31 @@ export function explain(ctx: Context): string {
     </section>
 
     <section class="step">
-      <h2>Reading changes</h2>
-      <p>Placing a hue (H) or changing colorfulness per hue (M) moves colors away from the uniform lineup. Turning the whole lineup together keeps it uniform, though, so changes are measured against the uniform lineup <strong>turned</strong> to best match yours: what's left is the <strong>bend</strong>. How far is measured in ΔE, how different two colors look in CAM16-UCS, and read against the palette's own scale: neighbors sit one gap apart, about 9 to 10 ΔE. The strip at the top of Settings shows each color's bend, in gaps.</p>
-      <div class="scroll"><table class="roles"><thead><tr><th>Bend</th><th>In gaps</th><th>What it means</th></tr></thead><tbody>
-        <tr><td class="mono">under 2 ΔE</td><td class="mono">under 0.2</td><td>Can't be seen even side by side</td></tr>
-        <tr><td class="mono">2 to 5</td><td class="mono">0.2 to 0.5</td><td>Visible side by side, not on its own</td></tr>
-        <tr><td class="mono">5 to 10</td><td class="mono">0.5 to 1</td><td>A different shade, part of the way to its neighbor</td></tr>
-        <tr><td class="mono">over 10</td><td class="mono">over 1</td><td>A different color</td></tr>
-      </tbody></table></div>
-      <p>Bending a color is what placing is for, so bend isn't the risk in itself. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under 10% closer is fine, 10 to 25% is worth watching, and over 25% they're getting confusable. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole. These are rough guides; eyes and screens differ, and they're measured on the tier that stands for each hue.</p>
+      <h2>Placing hues (H)</h2>
+      <p>A name fits some hues better than others: an even red can lean pink, an even blue can lean cyan. So any color can be <strong>placed</strong> by hand where its name fits best, by dragging it on the hue graph in Settings, and the others re-space evenly around it. Colors keep their order around the circle: a placed color stays between its neighbors, at least a quarter of the even step from each.</p>
+      <div class="demo"><div class="demo-out wide">${placing(ctx)}</div></div>
+      <p>The <strong>blind hue test</strong> in Settings measures where each name fits. It shows one color at a time, without its name, and asks whether it leans toward the color before it or the one after it; the hue where it leans neither way is the middle of its name, and a color can be placed there.</p>
     </section>
 
     <section class="step">
-      <h2>Muted and brown</h2>
-      <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.muted * 100))}% of the default's colorfulness: quieter, never weaker in contrast. ${s.brown === null ? "" : `Brown is a warm orange at ${String(Math.round(s.brown * 100))}% colorfulness and has no muted version.`}</p>
+      <h2>Reading changes</h2>
+      <p>Placed hues and colorfulness per hue are edits on top of the uniform lineup. The <strong>H</strong> and <strong>M</strong> switches in the header turn them off and on across the pages, so the palette can be seen with and without them.</p>
+      <p>At the top of Settings, a strip shows the palette a step at a time. <strong>Uniform</strong> is the evenly spaced lineup. <strong>Turned</strong> is the same lineup turned around the circle to best match the placed hues; turning keeps it uniform. <strong>+H</strong> adds the placed hues, and <strong>+M</strong> colorfulness per hue. How far the edits take the palette from the turned lineup is its <strong>bend</strong>, in gaps: one gap is the even difference between neighbors, about 10 ΔE, ΔE being how different two colors look in CAM16-UCS. Here's the strip for this palette; point at a swatch or a row for its numbers, and click a number for what it means.</p>
+      <div class="demo"><div id="palette-strip" class="strip"></div></div>
+      ${zoneTable()}
+      <p>Bending colors is what placing is for, so bend isn't the risk in itself. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under 10% closer is fine, 10 to 25% is worth watching, and over 25% they're getting confusable. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole.</p>
+    </section>
+
+    <section class="step">
+      <h2>Muted and extra colors</h2>
+      <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.muted * 100))}% of the default's colorfulness: quieter, never weaker in contrast. Every tier of one color:</p>
+      <div class="demo">
+        <div class="demo-controls">
+          <label for="demo-color">Color <select id="demo-color" data-demo="ladder">${(ctx.palette?.[ctx.mode].colors ?? []).map((c, i) => `<option value="${c.key}" ${i === 0 ? "selected" : ""}>${ctx.label(c.key)}</option>`).join("")}</select></label>
+        </div>
+        <div id="demo-ladder-out" class="demo-out wide">${ladder(ctx)}</div>
+      </div>
+      <p><strong>Extra colors</strong> sit beside the hues${extras ? `, like ${s.extras.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Extra colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed.</p>
     </section>
 
     <section class="step">
@@ -429,12 +560,7 @@ export function explain(ctx: Context): string {
     </section>
 
     <section class="step">
-      <h2>What it's built with</h2>
-      <dl class="facts-list">
-        <div><dt>CAM16</dt><dd>Google's <a href="https://github.com/material-foundation/material-color-utilities">material-color-utilities</a>: viewing conditions, colorfulness, and distance in CAM16-UCS. Material Design builds its colors on the same model.</dd></div>
-        <div><dt>Contrast and screens</dt><dd><a href="https://colorjs.io">Color.js</a>: APCA, WCAG 2, color spaces for the three kinds of screen, and checking which colors a screen can show.</dd></div>
-        <div><dt>The solver</dt><dd>TypeScript: settings, model, solve and formats. It runs in the browser in a background worker, and on the command line to write JSON, CSV and Markdown.</dd></div>
-        <div><dt>Settings</dt><dd>Everything above is a setting: bases, rooms, number of hues, the anchor, placed hues, target colorfulness and its curve per hue, tiers, muted share. Change one in Settings and watch the palette follow.</dd></div>
-      </dl>
+      <h2>Every rule is a setting</h2>
+      <p>The bases and rooms, the number of hues, the anchor and placed hues, the target colorfulness and its curve per hue, the tiers, the muted share and the extra colors are all settings. Change one in Settings and watch the palette follow; Export, at the end of Settings, gives it as JSON, CSV or Markdown.</p>
     </section>`;
 }

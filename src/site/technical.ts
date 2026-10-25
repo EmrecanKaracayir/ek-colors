@@ -8,10 +8,10 @@
 
 import { argbFromHex, lstarFromArgb, ViewingConditions } from "@material/material-color-utilities";
 
-import { hueOf } from "../palette/model";
 import { anchorHue, SYSTEMS } from "../palette/references";
-import { BROWN, MODES, NAMES } from "../palette/settings";
+import { MODES, NAMES } from "../palette/settings";
 import type { Context } from "./explain";
+import { escape } from "./graph";
 
 /* >-----------------------------------------< Values >-----------------------------------------< */
 
@@ -60,7 +60,7 @@ export function technical(ctx: Context): string {
   const from = typeof s.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === s.anchor)?.name ?? ""} yellow`;
   return `<section class="intro">
       <h1>The algorithm</h1>
-      <p>Every step the solver takes, with its formulas, constants and search rules, in the order it runs. For the same thing in plain words, see <a href="#how">How it works</a>. Numbers in tables use your current settings.</p>
+      <p>Every step the solver takes, with its formulas, constants and search rules, in the order it runs. For the same thing in plain words, see <a href="#how">How it works</a>; the papers, standards and libraries named here are listed under <a href="#references">References</a>. Numbers use the current settings.</p>
     </section>
 
     <section class="step">
@@ -73,7 +73,8 @@ export function technical(ctx: Context): string {
     other tiers:   T ← target ceiling; hues ← space(identity hues, ±6°)
     per tier, per hue: default ← strongest(h, T + curve(h))
                        muted   ← strongest(h, M(default) × muted share)
-    brown per tier:    strongest(hue of "R 25 Y", T × brown share)</pre>
+    per tier, per extra: default ← strongest(its hue, T × its share), muted as above
+variants for the H and M switches: the same solve without placed hues, without the curve, or both (step 9)</pre>
       <p>Every color is produced by one primitive: <code>strongest(h, M, Lc)</code>, the most colorful color of CAM16 hue h, up to colorfulness M, whose APCA contrast against the mode's base is exactly Lc.</p>
     </section>
 
@@ -133,7 +134,11 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
 T(Lc)         = min(M_target, min over hues of reach(h, Lc))   // with equal per tier on
 limit(Lc)     = the hue with the smallest reach, if it's below M_target
 target(h, Lc) = T(Lc) + curve(h)</pre>
-      <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. A swatch is flagged as held back when its measured M &lt; target − 1.</p>
+      <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. Each swatch is labeled from these numbers:</p>
+<pre class="formula">Gamut limit    measured M &lt; target − 1                       // the screen holds it below its own aim
+Sets the tier  the color is limit(Lc)                          // the tier was lowered to its reach
+Lowered        limit(Lc) is another color, and not Gamut limit
+own aim        hue: M_target + curve(h)      extra: M_target × share</pre>
     </section>
 
     <section class="step">
@@ -176,31 +181,52 @@ a*, b* = M*·cos h, M*·sin h
       <p>The identity tier (light Lc ${String(s.identityTier.light)}, dark Lc ${String(s.identityTier.dark)}) is spaced first from the starting hues with a window of ±${String(s.hueWindow.identity)}°. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
       <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least a quarter of the even step from each (${String(Math.round((90 / s.hues) * 100) / 100)}° here), and a spacing step that would bring a color closer than that to a neighbor isn't taken. Dragging the anchor stops before any color it carries would pass a placed one.</p>
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
+<pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
+bend     = √(mean over colors of (ΔE(color, turned color) / gap)²)
+zone     = Uniform &lt; 0.1 · Tuned &lt; 0.25 · Reshaped &lt; 0.5 · Departed &lt; 1 · Different palette
+closer   = 1 − (smallest neighbor ΔE) / gap                     // how much the tightest pair lost
+evenness = fine &lt; 10% · worth watching &lt; 25% · getting confusable</pre>
+      <p>A change between two colors is split into lightness, colorfulness and hue, each as its share of the three added together:</p>
+<pre class="formula">lightness    = ΔJ*²
+colorfulness = ΔM*²
+hue          = (2 · √(M*₁ · M*₂) · sin(Δh / 2))²      // the chord the turn makes around the circle</pre>
     </section>
 
     <section class="step">
-      <h2>8. Muted and brown</h2>
+      <h2>8. Muted and extra colors</h2>
 <pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) × ${String(s.muted)}, Lc)     // same hue, same tier
-brown(Lc)    = strongest(hue of "${BROWN}", T(Lc) × ${String(s.brown ?? 0)}, Lc)   // not spaced, no muted</pre>
+extra(e, Lc) = strongest(hue(e), T(Lc) × share(e), Lc)               // not spaced${s.extras.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
     </section>
 
     <section class="step">
-      <h2>9. Three gamut tiers</h2>
-      <p>Steps 2 to 8 run once per tier, with only the gamut check (step 2) changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one tier to another; each tier's ceilings, hues and colors come from its own solve. On the web, a page serves the widest tier the screen reports through <code>@media (color-gamut: …)</code>.</p>
+      <h2>9. Variants for the H and M switches</h2>
+      <p>The H and M switches in the header, and the rows of the strip in Settings, show the palette without some of its edits. Each variant is a full solve of changed settings, in a second worker so the palette on screen never waits for it:</p>
+<pre class="formula">H on,  M on    the palette as set
+H on,  M off   without the curve                          // "+H" row
+H off, M on    with nothing placed
+H off, M off   without the curve, with nothing placed     // "Uniform" row
+turned         Uniform, solved with the anchor moved by the turn (step 7)   // "Turned" row</pre>
+      <p>Settings, its export and the blind tests always use the palette as set.</p>
     </section>
 
     <section class="step">
-      <h2>10. What's reported per swatch</h2>
+      <h2>10. Three gamut tiers</h2>
+      <p>Steps 2 to 9 run once per tier, with only the gamut check (step 2) changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one tier to another; each tier's ceilings, hues and colors come from its own solve. On the web, a page serves the widest tier the screen reports through <code>@media (color-gamut: …)</code>.</p>
+    </section>
+
+    <section class="step">
+      <h2>11. What's reported per swatch</h2>
 <pre class="formula">CAM16 J, C, M, h        in the mode's viewing conditions
 name                    hue composition, step 6
+labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA · ≥ 4.5 AA · ≥ 3 AA large · else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 34 steps each. A full solve of one gamut tier (two modes, six tiers, nine colors, default and muted, plus spacing) takes about a second in a browser worker.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 34 steps each. A full solve of one gamut tier (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.extras.length)} colors, default and muted, plus spacing) takes about a second in a browser worker.</p>
     </section>
 
     <section class="step">
-      <h2>11. The blind colorfulness test</h2>
+      <h2>12. The blind colorfulness test</h2>
       <p><strong>Pairs.</strong> Per hue, a staircase on Δ, the test color's offset from the palette (start ±8, alternating; bounded to ±16). Each pair shows the test hue at T + Δ against a different, randomly chosen hue at T, on the identity tier, sides random, a 300 ms blank between pairs. Picked as more colorful → Δ −= step; not picked → Δ += step; "can't tell" → no move. The step is 4, then 2 after two reversals, then 1 after four.</p>
       <p><strong>Checks and stopping.</strong> Every third pair for a hue is a check at Δ ± 12, to a random side, which doesn't move the staircase: a real observer answers it easily, a guess doesn't. A hue is done at 16 answers, or sooner once it settles: at least 8 answers, a sure result whose range is within ±5 either way, and log L(μ̂) − log L₀ ≥ 4, stricter than the final 1.92 since it's checked after every answer. Progress is the mean over hues of 1 when done, else answers/16. In simulation a consistent observer averages about 12–13 answers per hue, and random answers almost never settle.</p>
       <p><strong>Equal point.</strong> Each answer is (x, y) with x = measured M<sub>test</sub> − M<sub>other</sub> and y ∈ {1, ½, 0}. Fitted by maximum likelihood to</p>
@@ -214,8 +240,8 @@ unsure if the range reaches ±24, or log L(μ̂) − log L₀ &lt; 1.92</pre>
     </section>
 
     <section class="step">
-      <h2>12. The blind hue test</h2>
-      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, alternating; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 11, with the range within ±5°.</p>
-      <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 11, over μ within ±40° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
+      <h2>13. The blind hue test</h2>
+      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, alternating; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 12, with the range within ±5°.</p>
+      <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 12, over μ within ±40° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
     </section>`;
 }

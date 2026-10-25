@@ -72,7 +72,7 @@ export function toCsv(settings: Settings, palette: Palette): string {
  * @returns         Markdown.
  */
 export function toMarkdown(settings: Settings, palette: Palette): string {
-  const md = ["# EK Colors", ""];
+  const md = ["# Palette, solved with EK Colors", ""];
   for (const gamut of GAMUTS) {
     md.push(`## ${gamut.charAt(0).toUpperCase()}${gamut.slice(1)} gamut`, "");
     for (const mode of MODES) {
