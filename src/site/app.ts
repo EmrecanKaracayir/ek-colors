@@ -1078,6 +1078,8 @@ document.addEventListener("keydown", (event) => {
   event.preventDefault();
   pinned = Math.min(STEPS.length - 1, Math.max(0, pinned + (event.key === "ArrowUp" ? -1 : 1)));
   showRow(pinned);
+  // Focus follows the pin, so the focus ring doesn't stay on the name clicked first.
+  document.querySelector<HTMLElement>(`#tune-preview .strip-labels [data-row="${String(pinned)}"]`)?.focus({ preventScroll: true });
 });
 
 let dock: IntersectionObserver | null = null;
