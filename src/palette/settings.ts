@@ -76,7 +76,7 @@ export interface Extra {
   /** The CAM16 hue it stays on. */
   readonly hue: number;
 
-  /** Its colorfulness, as a share of the tier's target. */
+  /** Its colorfulness, as a share of the tier's target; colorfulness per hue doesn't apply to it. */
   readonly share: number;
 }
 

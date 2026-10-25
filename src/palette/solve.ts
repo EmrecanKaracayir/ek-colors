@@ -112,11 +112,15 @@ function place(
   let hi = 100;
   for (let i = 0; i < 34; i++) {
     const m = (lo + hi) / 2;
+    // A color the screen shows is judged as it's written, so the one found passes as written; one
+    // it can't show is judged by its contrast all the same, since it can be off the screen on either
+    // side of the tier, and being off it says nothing about which way to go.
     const color = model.colorAt(mode, hue, colorfulness, m);
-    const passes = color !== null && apca(color, base) >= tier;
-    // Off-screen counts as too far from the base, so the search moves back towards it.
-    if (dark) passes || color === null ? (hi = m) : (lo = m);
-    else passes || color === null ? (lo = m) : (hi = m);
+    const passes =
+      (color === null ? model.contrastAt(mode, hue, colorfulness, m, base) : apca(color, base)) >=
+      tier;
+    if (dark) passes ? (hi = m) : (lo = m);
+    else passes ? (lo = m) : (hi = m);
   }
   const color = model.colorAt(mode, hue, colorfulness, dark ? hi : lo);
   return color !== null && apca(color, base) >= tier ? color : null;
@@ -459,7 +463,9 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
       ? settings.hueWindow.identity
       : Math.min(settings.hueWindow.identity, 180 / settings.hues);
 
-  // On an equal tier, the target drops to what its least colorful hue can reach.
+  // On an equal tier, the target drops to what its least colorful hue can reach. It's measured
+  // before the curve: a hue the curve asks more of than it can reach there stops at its reach,
+  // rather than every color on the tier dropping to make room for it.
   const ceiling = (tier: number, hues: readonly number[]) => {
     if (!settings.equalTiers) return { target: settings.colorfulness, limit: null };
     const reach = hues.map((h) => model.cam(mode, strongest(model, base, mode, h, 200, tier)).m);

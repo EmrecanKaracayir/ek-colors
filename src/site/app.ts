@@ -995,8 +995,8 @@ function held(tier: number): string {
   if (!p) return "Colorfulness …";
   const limit = p.limits[tier];
   return limit
-    ? `Colorfulness M ${String(p.targets[tier])}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`
-    : `Colorfulness M ${String(p.targets[tier])}, every color reaches it`;
+    ? `Colorfulness M ${(p.targets[tier] ?? 0).toFixed(1)}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`
+    : `Colorfulness M ${(p.targets[tier] ?? 0).toFixed(1)}, every color reaches it`;
 }
 
 /**

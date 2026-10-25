@@ -112,12 +112,12 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
   repeat 34 times:                     // 100 / 2³⁴ ≈ 6·10⁻⁹ in J
     J   ← (lo + hi)/2
     x   ← color(J, M, h)
-    ok  ← x exists and APCA(x, base) ≥ Lc
-    light mode: ok or x missing → lo ← J  else hi ← J   // keep the lightest that passes
-    dark mode:  ok or x missing → hi ← J  else lo ← J   // keep the darkest that passes
+    ok  ← APCA(x, base) ≥ Lc        // x as written; off the screen, by its coordinates past the edge
+    light base: ok → lo ← J  else hi ← J   // keep the lightest that passes
+    dark base:  ok → hi ← J  else lo ← J   // keep the darkest that passes
   x ← color(light ? lo : hi, M, h)
   return x if APCA(x, base) ≥ Lc after rounding, else none</pre>
-      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces, typically a few tenths of an Lc.</p>
+      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces, typically a few tenths of an Lc. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
 <pre class="formula">strongest(h, M_target, Lc):            // colorfulness search
   if place(h, M_target, Lc) exists → return it
   lo, hi ← 0, M_target
@@ -130,10 +130,10 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
     <section class="step">
       <h2>4. Equally colorful: the tier ceiling</h2>
 <pre class="formula">reach(h, Lc)  = M of strongest(h, 200, Lc)               // how far the gamut lets h go
-T(Lc)         = min(M_target, min over hues of reach(h, Lc))   // with equal per tier on
+T(Lc)         = min(M_target, min over hues of reach(h, Lc))   // with equal per tier on; before the curve
 limit(Lc)     = the hue with the smallest reach, if it's below M_target
 target(h, Lc) = T(Lc) + curve(h)</pre>
-      <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. Each swatch is labeled from these numbers:</p>
+      <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. The ceiling is measured before the curve: a hue the curve asks more of than it can reach on a tier stops at its reach (Gamut limit) rather than the whole tier dropping to make room for it. Each swatch is labeled from these numbers:</p>
 <pre class="formula">Gamut limit    measured M &lt; target − 1                       // the screen holds it below its own aim
 Sets the tier  the color is limit(Lc)                          // the tier was lowered to its reach
 Lowered        limit(Lc) is another color, and not Gamut limit

@@ -68,6 +68,18 @@ export interface Model {
   /** The color with a CAM16 lightness, colorfulness and hue, or null when the gamut can't show it. */
   readonly colorAt: (mode: Mode, hue: number, colorfulness: number, j: number) => string | null;
 
+  /**
+   * The APCA contrast against a base of the color with a CAM16 lightness, colorfulness and hue,
+   * even where the gamut can't show it: then by its coordinates past the screen's edge.
+   */
+  readonly contrastAt: (
+    mode: Mode,
+    hue: number,
+    colorfulness: number,
+    j: number,
+    base: string,
+  ) => number;
+
   /** How different two colors look (CAM16-UCS). */
   readonly distance: (mode: Mode, a: string, b: string) => number;
 }
@@ -95,6 +107,8 @@ export function makeModel(
   return {
     cam,
     colorAt: (mode, hue, colorfulness, j) => colorAt(conditions[mode], gamut, hue, colorfulness, j),
+    contrastAt: (mode, hue, colorfulness, j, base) =>
+      Math.abs(contrastAPCA(getColor(base), appearance(conditions[mode], hue, colorfulness, j))),
     distance: (mode, a, b) => cam(mode, a).distance(cam(mode, b)),
   };
 }
@@ -111,6 +125,30 @@ export function darkBase(base: string): boolean {
 }
 
 /* >-----------------------------------------< Colors >-----------------------------------------< */
+
+/**
+ * The color with a CAM16 lightness, colorfulness and hue, as D65 XYZ, whether or not a screen can
+ * show it.
+ *
+ * @param conditions     Where it is seen.
+ * @param hue            CAM16 hue (degrees).
+ * @param colorfulness  CAM16 colorfulness (M).
+ * @param j              CAM16 lightness (0 to 100).
+ * @returns              The color, for Color.js.
+ */
+function appearance(conditions: ViewingConditions, hue: number, colorfulness: number, j: number) {
+  const [x, y, z] = Cam16.fromJchInViewingConditions(
+    j,
+    colorfulness / conditions.fLRoot,
+    hue,
+    conditions,
+  ).xyzInViewingConditions(conditions) as [number, number, number];
+  return {
+    space: XYZ_D65,
+    coords: [x / 100, y / 100, z / 100] as [number, number, number],
+    alpha: 1,
+  };
+}
 
 /**
  * The color with a CAM16 lightness, colorfulness and hue in viewing conditions.
@@ -132,19 +170,8 @@ function colorAt(
   colorfulness: number,
   j: number,
 ): string | null {
-  const chroma = colorfulness / conditions.fLRoot;
-  const [x, y, z] = Cam16.fromJchInViewingConditions(
-    j,
-    chroma,
-    hue,
-    conditions,
-  ).xyzInViewingConditions(conditions) as [number, number, number];
   const space = SPACES[gamut];
-  const color = {
-    space: XYZ_D65,
-    coords: [x / 100, y / 100, z / 100] as [number, number, number],
-    alpha: 1,
-  };
+  const color = appearance(conditions, hue, colorfulness, j);
   if (!inGamut(color, space, { epsilon: 0.0005 })) return null;
   const inSpace = to(color, space);
   if (gamut === "standard")
