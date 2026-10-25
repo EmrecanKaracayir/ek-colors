@@ -2401,6 +2401,13 @@ let dock: IntersectionObserver | null = null;
 let barHeight = 0;
 
 /**
+ * How far down the bar sticks: below the band a phone's browser may keep at the top of the page.
+ *
+ * @returns  Pixels.
+ */
+const barTop = () => parseFloat(getComputedStyle($("header")).top) || 0;
+
+/**
  * Marks the strip at the top of Settings as docked once it sticks under the bar, so it shows a
  * border, and thins on phones. Docked, it sits 1px up under the bar, so it's no longer wholly below
  * it. A margin makes up for the height it loses, so the page below doesn't jump.
@@ -2416,10 +2423,16 @@ function watchDock(): void {
       const before = strip.getBoundingClientRect().height;
       strip.classList.toggle("docked", docked);
       (strip as HTMLElement).style.marginBottom = docked ? `${String(before - strip.getBoundingClientRect().height)}px` : "";
+      // Pinned on a phone, the row gets wider, so its fades and labels are measured again.
+      const row = strip.querySelector<HTMLElement>(".strip-items");
+      if (row) {
+        fadeEdges(row);
+        fitLabels(row);
+      }
     },
     // The page's own viewport, not the outer page's when it's shown in a frame, which would ignore
-    // the margin for the bar.
-    { root: document, rootMargin: `${String(-barHeight)}px 0px 0px 0px`, threshold: 1 },
+    // the margin for the bar. The bar sticks below the band a phone's browser may keep at the top.
+    { root: document, rootMargin: `${String(-(barTop() + barHeight))}px 0px 0px 0px`, threshold: 1 },
   );
   dock.observe(strip);
 }

@@ -1,6 +1,6 @@
 {
   "name": "ek-colors",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "private": true,
   "description": "Solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark. Ships with EK Palette.",
   "type": "module",

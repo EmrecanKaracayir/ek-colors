@@ -7,6 +7,23 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.4] - 2026-10-26
+
+### Changed
+
+- On phones the strip keeps its bend numbers and leaves out the meter and verdict, which overflowed
+  there.
+- Pinned on a phone, the strip's colors take the whole width instead of leaving room for the row
+  names and numbers it hides.
+- Tablets keep the full strip, with its row names, numbers and meter; its compact form is for
+  phones only, below 36rem.
+
+### Fixed
+
+- The bar and the pinned strip cover the side gutters, so nothing scrolls by beside them on phones.
+- In browsers that keep a band above the page, such as X's, the strip now shows it's pinned, and
+  "Skip to content" stays out of sight until it has the focus.
+
 ## [2.2.3] - 2026-10-26
 
 ### Changed
@@ -170,7 +187,8 @@ The first release as EK Colors, the project Codemos palette grew into.
 - Export as JSON, CSV, Markdown or CSS, the CSS with `light-dark()` custom properties per gamut.
 - Settings can be copied, and pasted back in with each field checked, with Undo paste.
 
-[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.3...HEAD
+[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.4...HEAD
+[2.2.4]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.0...v2.2.1
