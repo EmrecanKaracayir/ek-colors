@@ -76,7 +76,7 @@ export function toMarkdown(settings: Settings, palette: Palette): string {
   for (const gamut of GAMUTS) {
     md.push(`## ${GAMUT_NAMES[gamut]} gamut`, "");
     for (const mode of MODES) {
-      md.push(`### ${MODE_NAMES[mode]} · base ${settings.bases[mode]}`, "");
+      md.push(`### ${MODE_NAMES[mode]} • base ${settings.bases[mode]}`, "");
       for (const variant of ["default", "muted"] as const) {
         md.push(
           `#### ${variant === "default" ? "Default" : "Muted"}`,

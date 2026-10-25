@@ -153,7 +153,7 @@ export function progressBar(stairs: readonly Stair[]): string {
   const done = stairs.filter((s) => s.done).length;
   return `<div class="test-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${String(Math.round(share * 100))}">
       <span style="--p:${share.toFixed(4)}"></span></div>
-    <p class="soft">${String(Math.round(share * 100))}% · ${String(done)} of ${String(stairs.length)} colors done</p>`;
+    <p class="soft">${String(Math.round(share * 100))}% • ${String(done)} of ${String(stairs.length)} colors done</p>`;
 }
 
 /**
@@ -372,7 +372,7 @@ function pickOf(event: KeyboardEvent): Pick | null {
  */
 export function runItem(name: string, run: Run<unknown>, i: number, unit: string): string {
   const when = new Date(run.when).toLocaleString();
-  return `<li><span class="mono">${when}</span> · ${String(run.points.length)} ${unit} · ${run.gamut}, Lc ${String(run.tier)}
+  return `<li><span class="mono">${when}</span> • ${String(run.points.length)} ${unit} • ${run.gamut}, Lc ${String(run.tier)}
     <button type="button" data-${name}="copy" data-run="${String(i)}" aria-label="Copy the code of the run from ${when}">Copy code</button>
     <button type="button" data-${name}="remove" data-run="${String(i)}" aria-label="Remove the run from ${when}">Remove</button></li>`;
 }

@@ -832,7 +832,7 @@ const MEANINGS: Readonly<Record<Swatch["wcagLevel"], string>> = {
 
 popSource("wcag", (which) => {
   const [level, ratio] = which.split(":") as [Swatch["wcagLevel"], string];
-  return `<h3 class="level ${levelClass(level)}">WCAG 2 ${LEVELS[level]} · ${ratio}:1</h3>
+  return `<h3 class="level ${levelClass(level)}">WCAG 2 ${LEVELS[level]} • ${ratio}:1</h3>
     <p>${MEANINGS[level]}</p>
     <p class="pop-how">WCAG 2 compares the two colors' luminance as a ratio from 1:1 to 21:1. The palette is built on APCA's Lc instead, which follows how text reads on light and dark backgrounds; WCAG 2 is shown for audits that ask for it.</p>`;
 });
@@ -959,7 +959,7 @@ function card(s: Swatch, title: string, href?: string, at?: Place): string {
     <span class="card-name">${title}${tag}</span>
     ${copyable(s.color)}
     <span class="facts"><span class="mono">Lc ${s.apca.toFixed(1)}</span>${badge(s)}</span>
-    <span class="mono soft">WCAG ${s.wcag.toFixed(2)} · ${m}</span>
+    <span class="mono soft">WCAG ${s.wcag.toFixed(2)} • ${m}</span>
   </div>`;
 }
 
@@ -1081,7 +1081,7 @@ function circle(dots: readonly Dot[]): string {
     const [x, y] = at(d.hue, (Math.min(d.m, max) / max) * R);
     const [cx, cy] = [x.toFixed(1), y.toFixed(1)];
     const r = d.extra ? (d.hollow ? 8 : 10) : d.hollow ? 7 : 9;
-    const paint = `${d.hollow ? `fill="none" stroke="${d.color}" class="ring"` : `fill="${d.color}" class="mark"`} data-name="${d.name}" data-at="${cx} ${cy} ${String(r)}"`;
+    const paint = `${d.hollow ? `fill="none" stroke="${d.color}" class="ring"` : `fill="${d.color}" class="mark"`} data-name="${d.name}" data-values="M ${d.m.toFixed(0)} • ${d.hue.toFixed(0)}°" data-at="${cx} ${cy} ${String(r)}"`;
     if (d.extra)
       return `<rect x="${(x - r / Math.SQRT2).toFixed(1)}" y="${(y - r / Math.SQRT2).toFixed(1)}" width="${(r * Math.SQRT2).toFixed(1)}" height="${(r * Math.SQRT2).toFixed(1)}" rx="${String(r / 4)}" transform="rotate(45 ${cx} ${cy})" ${paint}></rect>`;
     return `<circle cx="${cx}" cy="${cy}" r="${String(r)}" ${paint}></circle>`;
@@ -1094,7 +1094,11 @@ function circle(dots: readonly Dot[]): string {
     ${rings.join("")}<g class="guide-layer">${circleGuides(guides(state.settings))}</g>${marks.join("")}<text class="dot-label" text-anchor="middle"></text></svg>${legend}${table}</figure>`;
 }
 
-// A dot on the hue circle shows its name above it while the pointer is on it.
+/** The distance between a dot label's two lines, in the circle's units. */
+const LABEL_LINE = 14;
+
+// A dot on the hue circle shows its name above it while the pointer is on it, with its colorfulness
+// and hue on a second line.
 document.addEventListener("pointerover", (event) => {
   const dot = (event.target as Element).closest<SVGElement>(".circle [data-name]");
   const svg = (event.target as Element).closest(".circle");
@@ -1103,9 +1107,17 @@ document.addEventListener("pointerover", (event) => {
   if (!dot) return void text.classList.remove("shown");
   const [x, y, r] = dot.dataset.at!.split(" ").map(Number) as [number, number, number];
   // Above the dot, kept inside the circle's box; below it when the dot sits at the top.
-  text.textContent = dot.dataset.name!;
-  text.setAttribute("x", String(Math.min(Math.max(x, -170), 170)));
-  text.setAttribute("y", String(y - r - 8 < -200 ? y + r + 16 : y - r - 8));
+  const cx = String(Math.min(Math.max(x, -170), 170));
+  const top = y - r - 8 - LABEL_LINE < -200 ? y + r + 16 : y - r - 8 - LABEL_LINE;
+  const line = (words: string, at: number, kind: string) => {
+    const span = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+    span.textContent = words;
+    span.setAttribute("x", cx);
+    span.setAttribute("y", String(at));
+    if (kind) span.setAttribute("class", kind);
+    return span;
+  };
+  text.replaceChildren(line(dot.dataset.name!, top, ""), line(dot.dataset.values!, top + LABEL_LINE, "dot-values"));
   text.classList.add("shown");
 });
 document.addEventListener("pointerout", (event) => {
@@ -1135,7 +1147,7 @@ function overview(): string {
       <p>${extras.length ? `${String(hues)} + ${String(extras.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the extra ${extras.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
     </section>
     <section class="glance">
-      <h2>At a glance <span class="soft">· Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>
+      <h2>At a glance <span class="soft">• Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>
       <div class="split">
       <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, c.tiers[tier]!.muted].map((s, i) => ({ hue: s.hue, m: s.colorfulness, color: s.color, extra: c.extra, name: i ? `${label(c.key)}, muted` : label(c.key) }))))}</div>
       <dl class="facts-list">
@@ -1148,7 +1160,7 @@ function overview(): string {
       </div>
     </section>
     <section>
-      <h2>The colors <span class="soft">· Lc ${String(tier)}</span></h2>
+      <h2>The colors <span class="soft">• Lc ${String(tier)}</span></h2>
       <div class="cards">${list.map((c) => card(c.tiers[tier]!.default, label(c.key), c.key, { key: c.key, tier, variant: "default" })).join("")}</div>
       <h3>Muted</h3>
       <div class="cards small">${list.map((c) => card(c.tiers[tier]!.muted, label(c.key), c.key, { key: c.key, tier, variant: "muted" })).join("")}</div>
@@ -1181,11 +1193,11 @@ function tierHeading(tier: number): string {
   const selected = tier === identityOf(settings, mode);
   const suggested = tier === autoIdentity(settings.bases[mode], settings.tiers);
   const pop = `identity:${mode}:${String(tier)}`;
-  const title = `${star(selected ? "selected" : suggested ? "suggested" : "slot")}Lc ${String(tier)} <span class="soft">· ${ROLES[tier] ?? ""}</span>`;
+  const title = `${star(selected ? "selected" : suggested ? "suggested" : "slot")}Lc ${String(tier)} <span class="soft">• ${ROLES[tier] ?? ""}</span>`;
   const pick = selected
     ? popButton(`${pop}:title`, title, `Lc ${String(tier)} is the identity tier, ${identityHow(tier)}: what that means`, "tier-pick chosen", `tier-pick-${String(tier)}`)
     : `<button type="button" class="tier-pick" id="tier-pick-${String(tier)}" data-identity="${suggested ? "auto" : String(tier)}" aria-label="${suggested ? `Lc ${String(tier)} is the suggested identity tier: go back to automatic` : `Make Lc ${String(tier)} the identity tier for ${mode} mode`}">${title}</button>`;
-  const note = selected && suggested ? "Selected · suggested ID" : selected ? "Selected ID" : suggested ? "Suggested ID" : "";
+  const note = selected && suggested ? "Selected • suggested ID" : selected ? "Selected ID" : suggested ? "Suggested ID" : "";
   return `<div class="tier-head"><h2>${pick}</h2>${note ? popButton(`${pop}:note`, note, `${note}: what that means`, "id-note") : ""}</div>`;
 }
 
@@ -1273,7 +1285,7 @@ function tiers(): string {
         const list = colors(tier);
         return `<section>
           ${tierHeading(tier)}
-          <p class="soft">Colorfulness ${held(tier)} · neighbor differences ${range(ring)}</p>
+          <p class="soft">Colorfulness ${held(tier)} • neighbor differences ${range(ring)}</p>
           <div class="cards small">${list.map((c) => card(c.tiers[tier]![variant], label(c.key), c.key, { key: c.key, tier, variant })).join("")}</div>
           ${marksKey(list.map((c) => ({ s: c.tiers[tier]![variant], at: { key: c.key, tier, variant } })))}
         </section>`;
@@ -1372,7 +1384,7 @@ function marksKey(list: readonly Marked[]): string {
     list.some((m) => isLowered(m.s, m.at)) ? `<span class="lowered">↓</span> Lowered` : "",
   ].filter(Boolean);
   // Each mark is a button named in full, so the key is for the eye only.
-  return marks.length ? `<p class="marks-key" aria-hidden="true">${marks.join(" · ")}</p>` : "";
+  return marks.length ? `<p class="marks-key" aria-hidden="true">${marks.join(" • ")}</p>` : "";
 }
 
 /**
@@ -1557,11 +1569,11 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
         : ""
     }
     <section>
-      <h2>Neighbor differences <span class="soft">· CAM16-UCS</span></h2>
+      <h2>Neighbor differences <span class="soft">• CAM16-UCS</span></h2>
       <p class="soft">How different each color looks from the next one around the circle. Even bars mean no two neighbors are easier to confuse than the rest.</p>
       <div class="split even">
-        <div><h3>${other.name} <span class="soft">· ${range(otherRing)}</span></h3>${bars(other, otherRing)}</div>
-        <div><h3>${name} <span class="soft">· ${range(myRing)}</span></h3>${bars(mine, myRing)}</div>
+        <div><h3>${other.name} <span class="soft">• ${range(otherRing)}</span></h3>${bars(other, otherRing)}</div>
+        <div><h3>${name} <span class="soft">• ${range(myRing)}</span></h3>${bars(mine, myRing)}</div>
       </div>
     </section>`;
 }
@@ -1704,7 +1716,7 @@ function extraTitle(i: number): string {
   const key = extraKeys(state.settings)[i]!;
   const tier = identityOf(state.settings, state.mode);
   const color = current()?.[state.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
-  return `<span class="extra-name"><span class="dot" style="--c:${color}"></span>${label(key)}<span class="soft">${extra.hue.toFixed(1)}° · ${composition(extra.hue)}</span></span>`;
+  return `<span class="extra-name"><span class="dot" style="--c:${color}"></span>${label(key)}<span class="soft">${extra.hue.toFixed(1)}° • ${composition(extra.hue)}</span></span>`;
 }
 
 /**
@@ -2116,8 +2128,8 @@ popSource("change", (key) => {
     <p class="pop-lead">Bends <strong>${inGaps(c.bend[3] / gap) || "nothing"}</strong> from the turned lineup: ${visibility(c.bend[3])}.</p>
     ${c.bend[3] >= 0.05 ? splitBar(c.splits[3]) : ""}
     <dl class="pop-facts">
-      <div><dt>+H</dt><dd>${inGaps(c.bend[2] / gap) || "no bend"}${c.turned ? ` · ${turnText(c.turned)} from turned` : ""}</dd></div>
-      <div><dt>+M</dt><dd>${inGaps(c.bend[3] / gap) || "no bend"} in all${c.added ? ` · ${signed(c.added)} M, ${percent(c.colorful[3])} of the target` : ""}</dd></div>
+      <div><dt>+H</dt><dd>${inGaps(c.bend[2] / gap) || "no bend"}${c.turned ? ` • ${turnText(c.turned)} from turned` : ""}</dd></div>
+      <div><dt>+M</dt><dd>${inGaps(c.bend[3] / gap) || "no bend"} in all${c.added ? ` • ${signed(c.added)} M, ${percent(c.colorful[3])} of the target` : ""}</dd></div>
       <div><dt>Uniform</dt><dd>${inGaps(c.moved / gap) || "no change"} from the lineup at the anchor, turn ${turnText(angle)} included</dd></div>
     </dl>
     <p class="pop-how">${c.name} in the turned lineup (the uniform lineup turned ${turnText(angle)}, still uniform) is compared with ${c.name} in use, on Lc ${String(tier)}, as CAM16-UCS ΔE (${c.bend[3].toFixed(1)}), then divided by the even gap (${gap.toFixed(1)}). The bar shows the bend's hue, colorfulness and lightness parts.</p>`;
@@ -2386,7 +2398,7 @@ function about(): string {
       <h2>About</h2>
       <dl class="facts-list">
         <div><dt>Name</dt><dd>EK Colors</dd></div>
-        <div><dt>Version</dt><dd><span class="mono">${project.version}</span>${build ? ` <span class="soft">· build <span class="mono">${build}</span></span>` : ""}</dd></div>
+        <div><dt>Version</dt><dd><span class="mono">${project.version}</span>${build ? ` <span class="soft">• build <span class="mono">${build}</span></span>` : ""}</dd></div>
         <div><dt>Made by</dt><dd>${project.author}, 2026</dd></div>
         <div><dt>License</dt><dd>${project.license}</dd></div>
         <div><dt>Source</dt><dd><a href="${source}">${source.replace(/^https:\/\//, "")}</a></dd></div>
@@ -2414,11 +2426,11 @@ const PAGE_NAMES: Readonly<Record<string, string>> = {
  * The browser's title for a page.
  *
  * @param view  The page, or a color's key.
- * @returns     E.g. "Tiers · EK Colors"; the Overview is just "EK Colors".
+ * @returns     E.g. "Tiers • EK Colors"; the Overview is just "EK Colors".
  */
 function pageTitle(view: string): string {
   const name = PAGE_NAMES[view] ?? label(view);
-  return name ? `${name} · EK Colors` : "EK Colors";
+  return name ? `${name} • EK Colors` : "EK Colors";
 }
 
 /**

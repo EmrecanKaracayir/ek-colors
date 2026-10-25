@@ -176,7 +176,7 @@ function room(ctx: Context): string {
     const m = looks(lux);
     return `<line x1="${x(lux).toFixed(1)}" x2="${x(lux).toFixed(1)}" y1="${String(top)}" y2="${String(top + height)}" class="target"></line>
       <circle cx="${x(lux).toFixed(1)}" cy="${y(m).toFixed(1)}" r="6" style="fill:${first.color}" class="${mode === ctx.mode ? "" : "other"}"></circle>
-      <text x="${(x(lux) + 8).toFixed(1)}" y="${String(top + (mode === "dark" ? 12 : 30))}" class="axis label">${mode === "dark" ? "Dark mode" : "Light mode"} · ${String(lux)} lux</text>`;
+      <text x="${(x(lux) + 8).toFixed(1)}" y="${String(top + (mode === "dark" ? 12 : 30))}" class="axis label">${mode === "dark" ? "Dark mode" : "Light mode"} • ${String(lux)} lux</text>`;
   });
   const named = (["dark", "light"] as const).map((mode) => `M ${looks(ctx.settings.rooms[mode].lux).toFixed(0)} in ${mode} mode's ${String(ctx.settings.rooms[mode].lux)} lux`).join(", ");
   return `<svg class="chart" viewBox="0 0 ${String(left + width + 20)} ${String(top + height + 30)}" role="img" aria-label="How colorful ${ctx.label(first.key).toLowerCase()} looks as the room gets brighter: ${named}" aria-describedby="room-note">
@@ -220,7 +220,7 @@ function modes(ctx: Context): string {
     const cam = m.cam(mode, color);
     return `<figure class="on-base" style="--base:${ctx.settings.bases[mode]};--c:${color};--ink:var(--fg-${mode})">
       <span class="demo-swatch"></span><span class="on-base-sample">Aa</span>
-      <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks M ${cam.m.toFixed(0)} · chroma C ${cam.chroma.toFixed(0)}</span></figcaption>
+      <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks M ${cam.m.toFixed(0)} • chroma C ${cam.chroma.toFixed(0)}</span></figcaption>
     </figure>`;
   });
   return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(first.key)}'s hue at M ${String(target)} on Lc ${String(lc)}, in each mode's room.</p>`;
@@ -248,10 +248,10 @@ function tier(ctx: Context): string {
     <span class="demo-sample" style="color:${color}">Aa Palette</span>
     <dl class="demo-numbers">
       <div><dt>APCA</dt><dd class="mono">Lc ${apca(color, base).toFixed(1)}</dd></div>
-      <div><dt>WCAG 2</dt><dd class="mono">${ratio.toFixed(2)} · ${wcagLevel(ratio)}</dd></div>
+      <div><dt>WCAG 2</dt><dd class="mono">${ratio.toFixed(2)} • ${wcagLevel(ratio)}</dd></div>
       <div><dt>Lightness J</dt><dd class="mono">${cam.j.toFixed(1)}</dd></div>
       <div><dt>Colorfulness M</dt><dd class="mono">${cam.m.toFixed(1)}</dd></div>
-      <div><dt>Hue</dt><dd class="mono">${cam.hue.toFixed(0)}° · ${composition(cam.hue)}</dd></div>
+      <div><dt>Hue</dt><dd class="mono">${cam.hue.toFixed(0)}° • ${composition(cam.hue)}</dd></div>
     </dl>`;
 }
 
@@ -464,7 +464,7 @@ function placing(ctx: Context): string {
       return `<line x1="${from.toFixed(1)}" y1="34" x2="${across.toFixed(1)}" y2="76" class="grid"></line>
         <line x1="${from.toFixed(1)}" x2="${from.toFixed(1)}" y1="26" y2="40" class="tick"></line>
         <circle cx="${to.toFixed(1)}" cy="80" r="7" style="fill:${r.color}" class="${r.placed || r.anchor ? "pinned" : "mark"}"></circle>
-        <text x="${to.toFixed(1)}" y="${String(i % 2 ? 116 : 102)}" class="axis" text-anchor="middle">${ctx.label(r.key)}${r.anchor ? " · anchor" : ""}</text>`;
+        <text x="${to.toFixed(1)}" y="${String(i % 2 ? 116 : 102)}" class="axis" text-anchor="middle">${ctx.label(r.key)}${r.anchor ? " • anchor" : ""}</text>`;
     })
     .join("");
   const axis = [0, 90, 180, 270, 360].map((h) => `<text x="${x(h === 360 ? 359.99 : h).toFixed(1)}" y="16" class="axis" text-anchor="middle">${String(h)}°</text>`).join("");

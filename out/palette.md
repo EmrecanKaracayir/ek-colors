@@ -2,7 +2,7 @@
 
 ## Standard gamut
 
-### Light · base #EBEBEB
+### Light • base #EBEBEB
 
 #### Default
 
@@ -32,7 +32,7 @@
 | pink | `#DCC6D7` WCAG 1.34 | `#CAA7C4` WCAG 1.79 | `#AB8AA6` WCAG 2.55 | `#876D83` WCAG 3.88 | `#604C5D` WCAG 6.55 | `#2E232C` WCAG 12.65 |
 | brown | `#DFC8C1` WCAG 1.34 | `#CDAA9E` WCAG 1.79 | `#AD8D82` WCAG 2.55 | `#897067` WCAG 3.85 | `#624E47` WCAG 6.52 | `#2F2421` WCAG 12.63 |
 
-### Dark · base #181818
+### Dark • base #181818
 
 #### Default
 
@@ -64,7 +64,7 @@
 
 ## Wide gamut
 
-### Light · base #EBEBEB
+### Light • base #EBEBEB
 
 #### Default
 
@@ -94,7 +94,7 @@
 | pink | `color(display-p3 0.8607 0.7767 0.8498)` WCAG 1.34 | `color(display-p3 0.7739 0.6579 0.7674)` WCAG 1.79 | `color(display-p3 0.6652 0.5402 0.6622)` WCAG 2.53 | `color(display-p3 0.5268 0.426 0.5243)` WCAG 3.85 | `color(display-p3 0.373 0.2992 0.3712)` WCAG 6.49 | `color(display-p3 0.1782 0.1386 0.1772)` WCAG 12.58 |
 | brown | `color(display-p3 0.8717 0.7845 0.748)` WCAG 1.34 | `color(display-p3 0.7876 0.6702 0.6194)` WCAG 1.79 | `color(display-p3 0.6782 0.5546 0.5004)` WCAG 2.53 | `color(display-p3 0.5372 0.4377 0.3941)` WCAG 3.85 | `color(display-p3 0.3807 0.3077 0.2757)` WCAG 6.49 | `color(display-p3 0.1824 0.1431 0.1259)` WCAG 12.58 |
 
-### Dark · base #181818
+### Dark • base #181818
 
 #### Default
 
@@ -126,7 +126,7 @@
 
 ## Ultra gamut
 
-### Light · base #EBEBEB
+### Light • base #EBEBEB
 
 #### Default
 
@@ -156,7 +156,7 @@
 | pink | `color(rec2020 0.8529 0.7929 0.8571)` WCAG 1.34 | `color(rec2020 0.766 0.6823 0.7789)` WCAG 1.79 | `color(rec2020 0.6644 0.5698 0.6828)` WCAG 2.53 | `color(rec2020 0.5445 0.455 0.5636)` WCAG 3.85 | `color(rec2020 0.4005 0.335 0.4145)` WCAG 6.50 | `color(rec2020 0.2181 0.1829 0.2256)` WCAG 12.59 |
 | brown | `color(rec2020 0.8582 0.7992 0.761)` WCAG 1.34 | `color(rec2020 0.7721 0.6923 0.639)` WCAG 1.79 | `color(rec2020 0.6702 0.5821 0.5227)` WCAG 2.53 | `color(rec2020 0.549 0.4673 0.4118)` WCAG 3.85 | `color(rec2020 0.4038 0.344 0.3034)` WCAG 6.50 | `color(rec2020 0.2201 0.1877 0.1658)` WCAG 12.59 |
 
-### Dark · base #181818
+### Dark • base #181818
 
 #### Default
 

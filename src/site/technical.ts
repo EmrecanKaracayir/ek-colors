@@ -97,7 +97,7 @@ n      = Y_b / Y_w,   z = 1.48 + √n,   N_bb = N_cb = 0.725 / n^0.2</pre>
       <p>The solver works in CAM16 lightness J, colorfulness M and hue h. Colorfulness depends on the room through F<sub>L</sub>; chroma doesn't:</p>
 <pre class="formula">C = M / F_L^¼
 (J, C, h) → CAM16 inverse in VC[m] → XYZ (D65, 0…100)
-XYZ / 100 → the gamut's RGB space: standard sRGB · wide Display P3 · ultra Rec. 2020
+XYZ / 100 → the gamut's RGB space: standard sRGB • wide Display P3 • ultra Rec. 2020
 in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0005)
               no  → off the screen: the search judges it by its contrast (step 3); a final color must be on it
               yes → standard: 8-bit hex;  wide/ultra: color(…) rounded to 4 decimals</pre>
@@ -122,7 +122,7 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
 <pre class="formula">g(Lc)     = the 8-bit grey nearest the base with APCA(g, base) ≥ Lc
 score(Lc) = (APCA(g, base) / ${String(TEXT_MINIMUM.apca)} + WCAG(g, base) / ${String(TEXT_MINIMUM.wcag)}) / 2     // 1: both just at their minimum for text
 identity  = the tier with score nearest 1, the lower on a tie
-${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textScore(s.bases[m], t).toFixed(2)}`).join(" · ")}   → Lc ${String(autoIdentity(s.bases[m], s.tiers))}${s.identityTier[m] === "auto" ? "" : `, set by hand to Lc ${String(identityOf(s, m))}`}`).join("\n")}</pre>
+${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textScore(s.bases[m], t).toFixed(2)}`).join(" • ")}   → Lc ${String(autoIdentity(s.bases[m], s.tiers))}${s.identityTier[m] === "auto" ? "" : `, set by hand to Lc ${String(identityOf(s, m))}`}`).join("\n")}</pre>
 <pre class="formula">strongest(h, M_target, Lc):            // colorfulness search
   if place(h, M_target, Lc) exists → return it
   lo, hi ← 0, M_target
@@ -187,10 +187,10 @@ a*, b* = M*·cos h, M*·sin h
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
 bend     = √(mean over colors of (ΔE(color, turned color) / gap)²)
-zone     = Uniform &lt; 0.1 · Tuned &lt; 0.25 · Reshaped &lt; 0.5 · Departed &lt; 1 · Different palette
+zone     = Uniform &lt; 0.1 • Tuned &lt; 0.25 • Reshaped &lt; 0.5 • Departed &lt; 1 • Different palette
 even     = max over neighbors of |ΔE(neighbors) / gap − 1|     // the strip's Even: the furthest from even, either way
 closer   = 1 − (smallest neighbor ΔE) / gap                     // how much the tightest pair lost
-evenness = fine &lt; 10% · worth watching &lt; 25% · getting confusable  // of even and of closer</pre>
+evenness = fine &lt; 10% • worth watching &lt; 25% • getting confusable  // of even and of closer</pre>
       <p>A change between two colors is split into lightness, colorfulness and hue, each as its share of the three added together:</p>
 <pre class="formula">lightness    = ΔJ*²
 colorfulness = ΔM*²
@@ -226,7 +226,7 @@ name                    hue composition, step 6
 labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
-WCAG level              ≥ 7 AAA · ≥ 4.5 AA · ≥ 3 AA large · else below</pre>
+WCAG level              ≥ 7 AAA • ≥ 4.5 AA • ≥ 3 AA large • else below</pre>
       <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.extras.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker; the header shows how long the one on screen took.</p>
     </section>
 

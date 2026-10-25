@@ -11,7 +11,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { identityOf, type Palette, type Swatch } from "../src/palette/solve";
+import { identityOf, type Palette } from "../src/palette/solve";
 import type { Settings } from "../src/palette/settings";
 import { iconSvg } from "../src/site/icon";
 
@@ -21,10 +21,7 @@ const { settings, palette } = JSON.parse(readFileSync("out/palette.json", "utf8"
 };
 const dark = palette.standard.dark;
 const tier = identityOf(settings, "dark");
-const colors = Object.fromEntries(
-  dark.colors.map((c) => [c.key, c.tiers[tier]!.default] as [string, Swatch]),
-);
-const hues = dark.colors.filter((c) => !c.extra).map((c) => colors[c.key]!);
+const hues = dark.colors.filter((c) => !c.extra).map((c) => c.tiers[tier]!.default);
 const [light, base] = [palette.standard.light.base, dark.base];
 
 /**
@@ -68,7 +65,8 @@ render(
   180,
   "site/apple-touch-icon.png",
 );
-const swatches = [...hues.map((h) => h.color), colors.brown!.color]
+const swatches = hues
+  .map((h) => h.color)
   .map((c) => `<span style="flex:1;height:56px;border-radius:12px;background:${c}"></span>`)
   .join("");
 render(
