@@ -42,6 +42,8 @@ export function popButton(id: string, label: string, name: string, kind = ""): s
 const panel = document.createElement("div");
 panel.id = "popover";
 panel.setAttribute("role", "dialog");
+// It takes the focus when opened from the keyboard, so its links and details can be reached.
+panel.tabIndex = -1;
 panel.hidden = true;
 document.body.append(panel);
 
@@ -74,9 +76,10 @@ function place(): void {
 /**
  * Opens a popover.
  *
- * @param id  Its id.
+ * @param id     Its id.
+ * @param focus  Whether it takes the focus: opened from the keyboard.
  */
-function show(id: string): void {
+function show(id: string, focus = false): void {
   const html = sources.get(id.split(":")[0]!)?.(id.slice(id.indexOf(":") + 1));
   // Nothing to say, as for a color that's just been removed: it stays closed.
   if (!html) return;
@@ -87,6 +90,7 @@ function show(id: string): void {
   panel.hidden = false;
   trigger()?.setAttribute("aria-expanded", "true");
   place();
+  if (focus) panel.focus({ preventScroll: true });
 }
 
 /**
@@ -109,7 +113,8 @@ document.addEventListener("click", (event) => {
   const button = (event.target as Element).closest<HTMLElement>("[data-pop]");
   if (button) {
     const id = button.dataset.pop!;
-    return open === id ? close() : show(id);
+    // A click from the keyboard has no pointer behind it.
+    return open === id ? close() : show(id, event.detail === 0);
   }
   if (!panel.contains(event.target as Node)) close();
 });

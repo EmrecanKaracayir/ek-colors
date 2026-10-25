@@ -9,6 +9,7 @@
 import {
   apca,
   composition,
+  darkBase,
   hueTurn,
   makeModel,
   type Model,
@@ -69,12 +70,26 @@ export type Palette = Readonly<Record<Gamut, GamutPalette>>;
 
 /* >------------------------------------< Placing a color >-------------------------------------< */
 
+const darkness = new Map<string, boolean>();
+
+/**
+ * Whether a base is dark, worked out once per base: the search asks it every time.
+ *
+ * @param base  The background.
+ * @returns     True for a dark base.
+ */
+function isDark(base: string): boolean {
+  let dark = darkness.get(base);
+  if (dark === undefined) darkness.set(base, (dark = darkBase(base)));
+  return dark;
+}
+
 /**
  * The color at a hue and colorfulness that sits exactly on a tier.
  *
  * Its CAM16 lightness is searched until APCA against the base just reaches the tier: the lowest
- * that does in dark mode, the highest in light mode, so it is never below the tier and only as far
- * above as rounding forces.
+ * that does on a dark base, the highest on a light one, so it is never below the tier and only as
+ * far above as rounding forces.
  *
  * @param model          The color model.
  * @param base           The background.
@@ -92,7 +107,7 @@ function place(
   colorfulness: number,
   tier: number,
 ): string | null {
-  const dark = mode === "dark";
+  const dark = isDark(base);
   let lo = 0;
   let hi = 100;
   for (let i = 0; i < 34; i++) {
@@ -452,7 +467,8 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   };
   const solveTier = (tier: number, hues: readonly number[], reach: number) => {
     const { target, limit } = ceiling(tier, hues);
-    const aim = (hue: number) => target + boost(settings, mode, hue);
+    // A curve that takes away more than the tier has stops at grey.
+    const aim = (hue: number) => Math.max(0, target + boost(settings, mode, hue));
     const spaced = space({ model, base, mode, fixed, tier, start: hues, reach, sep, target: aim });
     return { target, limit, targets: spaced.hues.map(aim), ...spaced };
   };

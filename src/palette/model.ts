@@ -99,6 +99,17 @@ export function makeModel(
   };
 }
 
+/**
+ * Whether a base is dark: then its colors are lighter than it, and the search for one on a tier
+ * looks above it.
+ *
+ * @param base  The background.
+ * @returns     True when its lightness (L*) is under 50.
+ */
+export function darkBase(base: string): boolean {
+  return lstarFromArgb(argbFromHex(base)) < 50;
+}
+
 /* >-----------------------------------------< Colors >-----------------------------------------< */
 
 /**
