@@ -8,7 +8,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { type Gamut, GAMUTS, type Mode, MODES } from "../palette/settings";
-import { copyText, flash } from "./dom";
+import { announce, copyText, flash } from "./dom";
 
 /** One answer: where the test stood, and how it was answered (1, 0, or ½ for "can't tell"). */
 interface Answer {
@@ -151,7 +151,7 @@ function progress(stairs: readonly Stair[]): number {
 export function progressBar(stairs: readonly Stair[]): string {
   const share = progress(stairs);
   const done = stairs.filter((s) => s.done).length;
-  return `<div class="test-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${String(Math.round(share * 100))}">
+  return `<div class="test-progress" role="progressbar" aria-label="Progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${String(Math.round(share * 100))}">
       <span style="--p:${share.toFixed(4)}"></span></div>
     <p class="soft">${String(Math.round(share * 100))}% · ${String(done)} of ${String(stairs.length)} colors done</p>`;
 }
@@ -371,9 +371,10 @@ function pickOf(event: KeyboardEvent): Pick | null {
  * @returns     HTML.
  */
 export function runItem(name: string, run: Run<unknown>, i: number, unit: string): string {
-  return `<li><span class="mono">${new Date(run.when).toLocaleString()}</span> · ${String(run.points.length)} ${unit} · ${run.gamut}, Lc ${String(run.tier)}
-    <button type="button" data-${name}="copy" data-run="${String(i)}">Copy code</button>
-    <button type="button" data-${name}="remove" data-run="${String(i)}">Remove</button></li>`;
+  const when = new Date(run.when).toLocaleString();
+  return `<li><span class="mono">${when}</span> · ${String(run.points.length)} ${unit} · ${run.gamut}, Lc ${String(run.tier)}
+    <button type="button" data-${name}="copy" data-run="${String(i)}" aria-label="Copy the code of the run from ${when}">Copy code</button>
+    <button type="button" data-${name}="remove" data-run="${String(i)}" aria-label="Remove the run from ${when}">Remove</button></li>`;
 }
 
 /**
@@ -388,7 +389,7 @@ export function runsSection(name: string, items: string): string {
       <h2>Runs</h2>
       <ul class="test-runs">${items}</ul>
       <p class="soft">Send someone the link; when they finish, they copy their code and send it to you. Paste it here to add their answers.</p>
-      <div class="row"><input id="${name}-code" class="test-code" type="text" placeholder="Paste a code" spellcheck="false"><button type="button" data-${name}="add">Add</button><span id="${name}-message" class="soft" role="status"></span></div>
+      <div class="row"><input id="${name}-code" class="test-code" type="text" placeholder="Paste a code" aria-label="A run's code" spellcheck="false"><button type="button" data-${name}="add">Add</button><span id="${name}-message" class="soft" role="status"></span></div>
     </section>`;
 }
 
@@ -432,7 +433,11 @@ export function bindBlind<C extends { readonly redraw: () => void }>(get: () => 
     if (action === "remove") test.runs.keep(test.runs.all().filter((_, i) => i !== Number(el.dataset.run)));
     if (action === "copy") {
       const run = test.runs.all()[Number(el.dataset.run)];
-      if (run) copyText(test.encode(run as Run<never>), (copied) => (el.textContent = copied ? "Copied" : "Copying isn't allowed here"));
+      if (run)
+        copyText(test.encode(run as Run<never>), (copied) => {
+          el.textContent = copied ? "Copied" : "Copying isn't allowed here";
+          announce(el.textContent);
+        });
       return;
     }
     if (action === "add") {

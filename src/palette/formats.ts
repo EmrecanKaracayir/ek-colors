@@ -72,7 +72,7 @@ export function toCsv(settings: Settings, palette: Palette): string {
  * @returns         Markdown.
  */
 export function toMarkdown(settings: Settings, palette: Palette): string {
-  const md = ["# Palette, solved with EK Colors", ""];
+  const md = [`# ${settings.name || "Palette"}, solved with EK Colors`, ""];
   for (const gamut of GAMUTS) {
     md.push(`## ${GAMUT_NAMES[gamut]} gamut`, "");
     for (const mode of MODES) {
@@ -145,9 +145,10 @@ export function toCss(settings: Settings, palette: Palette): string {
   };
   const css = [
     "/*",
-    " * Palette, solved with EK Colors. --red-60 is red on Lc 60 against --base, --red-60-muted its",
-    " * muted version. Light and dark follow color-scheme: the system's, or color-scheme: light or",
-    " * dark set on the page. Screens that show a wider gamut get its colors.",
+    ` * ${settings.name || "Palette"}, solved with EK Colors.`,
+    " * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version. Light and dark",
+    " * follow color-scheme: the system's, or color-scheme: light or dark set on the page. Screens",
+    " * that show a wider gamut get its colors.",
     " */",
     "",
     block("standard", ""),

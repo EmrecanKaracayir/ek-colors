@@ -1,4 +1,4 @@
-# Palette, solved with EK Colors
+# EK Palette, solved with EK Colors
 
 ## Standard gamut
 

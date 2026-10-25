@@ -6,6 +6,7 @@
 | that make sense. A field that's missing takes its default.                                       |
 \*------------------------------------------------------------------------------------------------*/
 
+import { lightness } from "./model";
 import { SYSTEMS } from "./references";
 import {
   type CurvePoint,
@@ -292,8 +293,14 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
       .map(([key, h]) => [key, hue(h, `Where ${key} is placed`)]),
   );
   const window = record(s.hueWindow, "The hue window");
+  const bases = perMode(s.bases, "The bases", base);
+  if (lightness(bases.light) <= lightness(bases.dark))
+    fail("The light base must be lighter than the dark base.");
+  if (typeof s.name !== "string" || s.name.trim().length > 60)
+    fail("The name must be text of at most 60 characters.");
+  const name = s.name.trim();
   return {
-    bases: perMode(s.bases, "The bases", base),
+    bases,
     rooms: perMode(s.rooms, "The rooms", room),
     colorfulness: number(s.colorfulness, "Target M", LIMITS.colorfulness),
     equalTiers: flag(s.equalTiers, "Equal per tier"),
@@ -314,5 +321,6 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
     anchor: anchor as string | number,
     placed,
     guide,
+    name,
   };
 }

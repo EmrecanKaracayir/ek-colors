@@ -31,10 +31,11 @@ export function popSource(prefix: string, source: Source): void {
  * @param label  The button's content (HTML).
  * @param name   What the button is for, for screen readers.
  * @param kind   Extra classes.
+ * @param key    Its own id, so it keeps the focus when it's drawn anew as something else.
  * @returns      HTML.
  */
-export function popButton(id: string, label: string, name: string, kind = ""): string {
-  return `<button type="button" class="pop-trigger ${kind}" data-pop="${id}" aria-haspopup="dialog" aria-expanded="${String(open === id)}" aria-label="${name}">${label}</button>`;
+export function popButton(id: string, label: string, name: string, kind = "", key = ""): string {
+  return `<button type="button" class="pop-trigger ${kind}"${key ? ` id="${key}"` : ""} data-pop="${id}" aria-haspopup="dialog" aria-controls="popover" aria-expanded="${String(open === id)}" aria-label="${name}">${label}</button>`;
 }
 
 /* >----------------------------------------< Placing >-----------------------------------------< */
@@ -86,7 +87,16 @@ function show(id: string, focus = false): void {
   trigger()?.setAttribute("aria-expanded", "false");
   open = id;
   panel.innerHTML = html;
-  panel.setAttribute("aria-label", trigger()?.getAttribute("aria-label") ?? "Details");
+  // Named by its own title, or by its button when it has none.
+  const title = panel.querySelector("h3");
+  if (title) {
+    title.id = "popover-title";
+    panel.setAttribute("aria-labelledby", title.id);
+    panel.removeAttribute("aria-label");
+  } else {
+    panel.removeAttribute("aria-labelledby");
+    panel.setAttribute("aria-label", trigger()?.getAttribute("aria-label") ?? "Details");
+  }
   panel.hidden = false;
   trigger()?.setAttribute("aria-expanded", "true");
   place();
@@ -102,7 +112,8 @@ function close(focus = false): void {
   if (open === null) return;
   const button = trigger();
   button?.setAttribute("aria-expanded", "false");
-  if (focus) button?.focus();
+  // The focus goes back to its button when it was inside, so it isn't lost.
+  if (focus || panel.contains(document.activeElement)) button?.focus();
   open = null;
   panel.hidden = true;
 }
@@ -127,6 +138,11 @@ document.addEventListener("click", (event) => {
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && open !== null) close(true);
+});
+// Tabbing out of it closes it, rather than leaving it open behind the focus.
+panel.addEventListener("focusout", (event) => {
+  const next = event.relatedTarget as Node | null;
+  if (next && !panel.contains(next) && next !== trigger()) close();
 });
 
 let frame = 0;

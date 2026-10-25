@@ -113,7 +113,7 @@ function huesLayers(view: HuesView): string {
       </g>`;
       const even = fixed("uniform", uniform, "in the uniform lineup") + fixed("turned", turned, "in the turned lineup");
       const note = r.anchor ? ", the anchor" : r.placed ? ", placed" : "";
-      const point = `<g data-hue-point="${r.key}" data-row="current" class="hue-point current${on(r.key, "current") ? " selected" : ""}" tabindex="0" role="slider" aria-label="${r.label}: ${r.current.hue.toFixed(0)}°${note}" aria-valuenow="${r.current.hue.toFixed(0)}">
+      const point = `<g data-hue-point="${r.key}" data-row="current" class="hue-point current${on(r.key, "current") ? " selected" : ""}" tabindex="0" role="slider" aria-label="${r.label}${note}" aria-valuemin="0" aria-valuemax="359" aria-valuenow="${r.current.hue.toFixed(0)}" aria-valuetext="${r.current.hue.toFixed(0)}°, ${composition(r.current.hue)}">
         <circle cx="${c}" cy="${String(ROWS.current)}" r="14" class="hit"></circle>
         <circle cx="${c}" cy="${String(ROWS.current)}" r="${on(r.key, "current") ? "8" : "7"}" style="fill:${r.current.color}" class="dot-fill"></circle>
         ${r.placed || r.anchor ? `<circle cx="${c}" cy="${String(ROWS.current)}" r="2.25" class="pin"></circle>` : ""}
@@ -217,7 +217,13 @@ export function huesEditor(view: HuesView): string {
       <g class="hues-layers">${huesLayers(view)}</g>
     </svg>
     <p class="graph-caption readout hues-readout">${huesReadout(view)}</p>
-    <p class="graph-caption hint">These rows leave out colorfulness per hue, so they show placing alone: Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match the placed hues, still evenly different; Current has the placed hues. Bend is how far Current is from Turned. Click a color on any row to see its values. Drag it on the Current row to place it there, and the others re-space around it; double-click it to let it go. Dragging the anchor moves the whole lineup. Arrow keys move the selected color by 1°, with Shift by 10°. A dot in the middle marks a color that stays put.</p>
+    <p class="graph-caption hint">Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match the placed hues; Current has them. Bend is how far Current is from Turned. These rows leave out colorfulness per hue, and a dot in the middle marks a color that stays put.</p>
+    <details class="graph-caption hint graph-help" id="hues-help"><summary>Keyboard and mouse</summary><ul>
+      <li>See a color's values: click it on any row, or focus it and press Enter.</li>
+      <li>Place a color: drag it on the Current row, or focus it and press the arrow keys, by 1°, with Shift by 10°. The others re-space around it.</li>
+      <li>Let it go: double-click it, or untick Placed.</li>
+      <li>Move the whole lineup: drag the anchor, or set its hue above.</li>
+    </ul></details>
   </div>`;
 }
 

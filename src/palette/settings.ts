@@ -135,6 +135,9 @@ export interface Settings {
 
   /** The reference system whose hues are drawn as guides (see references.ts). */
   readonly guide: string;
+
+  /** What the palette is called; empty for EK Palette's own name, or Custom palette once changed. */
+  readonly name: string;
 }
 
 /* >-----------------------------------------< Limits >-----------------------------------------< */
@@ -173,6 +176,7 @@ export const DEFAULTS: Settings = {
   anchor: "ncs",
   placed: {},
   guide: "cam16",
+  name: "",
 };
 
 /** The eight hues' names, in hue order. */

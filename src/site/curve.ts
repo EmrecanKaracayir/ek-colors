@@ -102,6 +102,20 @@ function curveLayers(view: CurveView): string {
   return `<path d="${line}" class="curve-line"></path>${dots.join("")}${handles.join("")}${nodes.join("")}`;
 }
 
+/** A plus in a circle, like the ⓘ beside it. */
+const PLUS = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="6.75" fill="none" stroke="currentColor" stroke-width="1.25"></circle><path d="M8 4.75v6.5M4.75 8h6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"></path></svg>`;
+
+/**
+ * Whether the curve has as many points as hues: past that, a point has no color of its own to
+ * adjust. While the hues are still solving, it isn't.
+ *
+ * @param view  What the editor shows.
+ * @returns     True when no more points fit.
+ */
+function full(view: CurveView): boolean {
+  return view.dots.length > 0 && view.points.length >= view.dots.length;
+}
+
 /**
  * The selected point's values.
  *
@@ -111,8 +125,9 @@ function curveLayers(view: CurveView): string {
 function valuesPanel(view: CurveView): string {
   const { mode, points } = view;
   const i = selected[mode];
-  if (!points[i]) return `<p class="soft">No points: the curve is flat.</p>`;
-  return `<p class="soft">Point ${String(i + 1)} of ${String(points.length)}</p>
+  const add = `<button type="button" class="icon-button" data-curve-add aria-label="Add a point" title="${full(view) ? "As many points as hues" : "Add a point"}"${full(view) ? " disabled" : ""}>${PLUS}</button>`;
+  if (!points[i]) return `<p class="soft point-count">No points: the curve is flat.${add}</p>`;
+  return `<p class="soft point-count">Point ${String(i + 1)} of ${String(points.length)}${add}</p>
     <label class="field graph-check" for="curve-on-${mode}"><span>On</span><input id="curve-on-${mode}" type="checkbox" data-curve-on ${points[i].off ? "" : "checked"}></label>
     ${field(`curve.${mode}.${String(i)}.amount`, "Amount", [-LIMIT, LIMIT, 1])}
     ${field(`curve.${mode}.${String(i)}.center`, "Center", [0, 359, 1])}
@@ -187,7 +202,14 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
     <p class="graph-caption readout curve-readout">${curveReadout(view)}</p>
-    <p class="graph-caption hint">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; ${ALT}-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold ${ALT} and scroll, to set its width. With a point focused, the arrow keys move it (with Shift, by 10° across), and [ and ] narrow and widen it.</p>
+    <p class="graph-caption hint">Each point adds colorfulness around its center, easing to none at its width; drag a point to move it.</p>
+    <details class="graph-caption hint graph-help" id="curve-help-${mode}"><summary>Keyboard and mouse</summary><ul>
+      <li>Add a point: the + button, or double-click the graph.</li>
+      <li>Remove it: double-click it, or focus it and press Backspace.</li>
+      <li>Switch it off and on: the On box, or ${ALT}-click it.</li>
+      <li>Move it: drag it, or focus it and press the arrow keys, with Shift by 10° across.</li>
+      <li>Set its width: drag its edges, hold ${ALT} and scroll, or press [ and ].</li>
+    </ul></details>
   </div>`;
 }
 
@@ -204,7 +226,6 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   let wheel = 0;
 
   /** The editor last pressed in, whose selected point Backspace and Delete remove. */
-  let active: Mode | null = null;
 
   const point = (svg: SVGSVGElement, event: { clientX: number; clientY: number }) => {
     const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.getScreenCTM()!.inverse());
@@ -244,7 +265,6 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   let lastPress = { time: 0, on: "" };
 
   document.addEventListener("pointerdown", (event) => {
-    active = (editorOf(event.target)?.dataset.curve as Mode | undefined) ?? null;
     const svg = (event.target as Element).closest<SVGSVGElement>("[data-curve] svg");
     if (!svg) return;
     const part = (event.target as Element).closest<SVGElement>("[data-drag]");
@@ -268,8 +288,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     // The padding around the data takes no new points.
     if (twice && !part && pointAt(svg, event)) {
       const points = [...get(mode).points];
-      // No more points than hues: past that, a point has no color of its own to adjust.
-      if (points.length >= get(mode).dots.length) return;
+      if (full(get(mode))) return;
       const { hue, amount } = point(svg, event);
       points.push({ amount: amount || 4, center: hue, width: 60 });
       selected[mode] = points.length - 1;
@@ -283,6 +302,20 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     drag = { mode, part: part.dataset.drag!, svg };
     svg.setPointerCapture(event.pointerId);
     event.preventDefault();
+  });
+  // A new point goes where the curve is furthest from any, at a small amount, and is selected.
+  document.addEventListener("click", (event) => {
+    const button = (event.target as Element).closest?.<HTMLButtonElement>("[data-curve-add]");
+    const editor = editorOf(button ?? null);
+    if (!button || !editor) return;
+    const mode = editor.dataset.curve as Mode;
+    const points = [...get(mode).points];
+    if (full(get(mode))) return;
+    const gap = (h: number) => Math.min(...points.map((p) => away(h, p.center)), 360);
+    const center = Array.from({ length: 360 }, (_, h) => h).reduce((best, h) => (gap(h) > gap(best) ? h : best), 0);
+    points.push({ amount: 4, center, width: 60 });
+    selected[mode] = points.length - 1;
+    apply(mode, points, true);
   });
   document.addEventListener("change", (event) => {
     const box = event.target as HTMLInputElement;
@@ -322,10 +355,9 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
   );
 
   document.addEventListener("keydown", (event) => {
-    // Backspace and Delete remove the selected point of the focused editor, or, with nothing
-    // focused, of the one last pressed in.
-    const typing = (event.target as Element).closest?.("input, select, textarea");
-    const target = (editorOf(event.target)?.dataset.curve as Mode | undefined) ?? (event.target === document.body ? active : null);
+    // Backspace and Delete remove the selected point of the focused editor, never from elsewhere.
+    const typing = (event.target as Element).closest?.("input, select, textarea, button");
+    const target = (editorOf(event.target)?.dataset.curve as Mode | undefined) ?? null;
     if ((event.key === "Backspace" || event.key === "Delete") && target && !typing && get(target).points.length) {
       event.preventDefault();
       return remove(target, selected[target]);

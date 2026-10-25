@@ -1,7 +1,8 @@
 /*
- * Palette, solved with EK Colors. --red-60 is red on Lc 60 against --base, --red-60-muted its
- * muted version. Light and dark follow color-scheme: the system's, or color-scheme: light or
- * dark set on the page. Screens that show a wider gamut get its colors.
+ * EK Palette, solved with EK Colors.
+ * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version. Light and dark
+ * follow color-scheme: the system's, or color-scheme: light or dark set on the page. Screens
+ * that show a wider gamut get its colors.
  */
 
 :root {

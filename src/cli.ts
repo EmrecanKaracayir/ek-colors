@@ -18,8 +18,10 @@ const palette = solvePalette(CONFIG);
 mkdirSync("out", { recursive: true });
 writeFileSync("out/palette.json", toJson(CONFIG, palette));
 writeFileSync("out/palette.csv", toCsv(CONFIG, palette));
-writeFileSync("out/palette.md", toMarkdown(CONFIG, palette));
-writeFileSync("out/palette.css", toCss(CONFIG, palette));
+// Markdown and CSS are titled with the palette's name.
+const named = { ...CONFIG, name: CONFIG.name || "EK Palette" };
+writeFileSync("out/palette.md", toMarkdown(named, palette));
+writeFileSync("out/palette.css", toCss(named, palette));
 
 for (const gamut of GAMUTS) {
   console.log(

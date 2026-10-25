@@ -270,13 +270,14 @@ function stage(ctx: HueTestContext): string {
   const [left, right] = t.afterLeft ? [t.stair.after, t.stair.before] : [t.stair.before, t.stair.after];
   const name = (key: string) => ctx.label(key).toLowerCase();
   return `<section class="test-stage" id="test-stage">
+      <h1 class="visually-hidden">Blind hue test</h1>
       ${progressBar(s.stairs)}
       <p>Does it lean more ${name(left)} or more ${name(right)}?</p>
       <div class="test-single${s.resting ? " resting" : ""}" style="--c:${t.color}" role="img" aria-label="The color to judge"></div>
       <div class="row test-answers">
-        <button type="button" data-hue-test="left">More ${name(left)}</button>
-        <button type="button" data-hue-test="same">Neither</button>
-        <button type="button" data-hue-test="right">More ${name(right)}</button>
+        <button type="button" id="answer-left" data-hue-test="left">More ${name(left)}</button>
+        <button type="button" id="answer-same" data-hue-test="same">Neither</button>
+        <button type="button" id="answer-right" data-hue-test="right">More ${name(right)}</button>
       </div>
       <p class="soft">Keys: ← ${name(left)}, ↓ neither, → ${name(right)}. <button type="button" data-hue-test="stop" class="link">Stop the test</button></p>
     </section>`;
@@ -302,11 +303,11 @@ function results(ctx: HueTestContext): string {
       const clear = r?.sure && off !== null && (off - r.below > 0 || off + r.above < 0);
       return `<tr${clear ? ' class="clear"' : ""}>
         <th scope="row"><span class="dot" style="--c:${current?.color ?? "transparent"}"></span> ${ctx.label(m.key)}</th>
-        <td class="mono">${String(m.count)}</td>
-        <td class="mono">${r ? `${r.hue.toFixed(1)}°` : "—"}</td>
-        <td class="mono soft">${r ? (r.sure ? `±${((r.below + r.above) / 2).toFixed(1)}°` : "unsure") : "—"}</td>
-        <td class="mono">${current ? `${current.hue.toFixed(1)}°` : "—"}</td>
-        <td class="mono">${off === null ? "—" : `${signed(off)}°`}</td>
+        <td class="mono num">${String(m.count)}</td>
+        <td class="mono num">${r ? `${r.hue.toFixed(1)}°` : "—"}</td>
+        <td class="mono soft num">${r ? (r.sure ? `±${((r.below + r.above) / 2).toFixed(1)}°` : "unsure") : "—"}</td>
+        <td class="mono num">${current ? `${current.hue.toFixed(1)}°` : "—"}</td>
+        <td class="mono num">${off === null ? "—" : `${signed(off)}°`}</td>
       </tr>`;
     })
     .join("");
@@ -319,7 +320,7 @@ function results(ctx: HueTestContext): string {
   return `<section>
       <h2>Results, ${name} mode</h2>
       <p class="soft">The hue where each color leans toward neither neighbor, from every run below together. "Could be" is how far either way the answers can't rule out; a color in bold is clearly off, since the palette's hue is outside that range.</p>
-      <div class="scroll"><table class="test-results"><thead><tr><th>Color</th><th>Answers</th><th>Measured</th><th>Could be</th><th>Palette</th><th>Off by</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="scroll"><table class="test-results"><thead><tr><th scope="col">Color</th><th scope="col" class="num">Answers</th><th scope="col" class="num">Measured</th><th scope="col" class="num">Could be</th><th scope="col" class="num">Palette</th><th scope="col" class="num">Off by</th></tr></thead><tbody>${rows}</tbody></table></div>
       ${
         count
           ? `<p>Place the ${String(count)} color${count === 1 ? "" : "s"} with a sure result at the measured hue${count === 1 ? "" : "s"}; yellow's moves the anchor. <button type="button" data-hue-test="apply" data-hues='${JSON.stringify(sure)}'>Place them</button></p>`

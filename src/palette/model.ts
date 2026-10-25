@@ -122,7 +122,17 @@ export function makeModel(
  * @returns     True when its lightness (L*) is under 50.
  */
 export function darkBase(base: string): boolean {
-  return lstarFromArgb(argbFromHex(base)) < 50;
+  return lightness(base) < 50;
+}
+
+/**
+ * How light a color is, as CIE L*.
+ *
+ * @param color  The color, as hex.
+ * @returns      0 for black to 100 for white.
+ */
+export function lightness(color: string): number {
+  return lstarFromArgb(argbFromHex(color));
 }
 
 /**

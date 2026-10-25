@@ -178,13 +178,14 @@ function room(ctx: Context): string {
       <circle cx="${x(lux).toFixed(1)}" cy="${y(m).toFixed(1)}" r="6" style="fill:${first.color}" class="${mode === ctx.mode ? "" : "other"}"></circle>
       <text x="${(x(lux) + 8).toFixed(1)}" y="${String(top + (mode === "dark" ? 12 : 30))}" class="axis label">${mode === "dark" ? "Dark mode" : "Light mode"} · ${String(lux)} lux</text>`;
   });
-  return `<svg class="chart" viewBox="0 0 ${String(left + width + 20)} ${String(top + height + 30)}" role="img" aria-label="How colorful ${ctx.label(first.key)} looks as the room gets brighter">
+  const named = (["dark", "light"] as const).map((mode) => `M ${looks(ctx.settings.rooms[mode].lux).toFixed(0)} in ${mode} mode's ${String(ctx.settings.rooms[mode].lux)} lux`).join(", ");
+  return `<svg class="chart" viewBox="0 0 ${String(left + width + 20)} ${String(top + height + 30)}" role="img" aria-label="How colorful ${ctx.label(first.key).toLowerCase()} looks as the room gets brighter: ${named}" aria-describedby="room-note">
       ${yTicks.join("")}
       ${xTicks.map(([lux, text]) => `<text x="${x(lux).toFixed(1)}" y="${String(top + height + 20)}" class="axis" text-anchor="${lux === 1 ? "start" : lux === 10_000 ? "end" : "middle"}">${text}</text>`).join("")}
       <path d="${line}" fill="none" style="stroke:${first.color}" stroke-width="3" stroke-linecap="round"></path>
       ${marks.join("")}
     </svg>
-    <p class="soft">How colorful the palette's ${ctx.label(first.key).toLowerCase()} looks (M), from a dark room to daylight. The screen color never changes.</p>`;
+    <p class="soft" id="room-note">How colorful the palette's ${ctx.label(first.key).toLowerCase()} looks (M), from a dark room to daylight. The screen color never changes.</p>`;
 }
 
 /**
@@ -308,7 +309,7 @@ function reach(ctx: Context): string {
     const y = i * row + 6;
     const limit = limited && r === least;
     return `<g class="${limit ? "limiter" : limited ? "follower" : ""}">
-      <text x="0" y="${String(y + 15)}" class="axis label">${ctx.label(r.key)}</text>
+      <text x="0" y="${String(y + 15)}" class="axis label">${ctx.label(r.key)}${limited && !limit ? " ↓" : ""}</text>
       ${r.reach
         .map(
           (m, g) =>
@@ -318,12 +319,12 @@ function reach(ctx: Context): string {
   });
   const key = (g: Gamut) =>
     `<span><i class="bar-key" style="background:${shade(least.color, g)}"></i>${GAMUT_NAMES[g]}</span>`;
-  return `<svg class="chart" viewBox="0 0 ${String(left + width + 20)} ${String(height)}" role="img" aria-label="How colorful each hue can be on Lc ${String(lc)}">
+  return `<svg class="chart" viewBox="0 0 ${String(left + width + 20)} ${String(height)}" role="img" aria-label="How colorful each hue can be on Lc ${String(lc)} in ${ctx.mode} mode, on Standard, Wide and Ultra" aria-describedby="reach-note">
       ${ticks.join("")}${bars.join("")}
       <line x1="${String(x(target))}" x2="${String(x(target))}" y1="0" y2="${String(height - 24)}" class="target"></line>
       <line x1="${x(ceiling).toFixed(1)}" x2="${x(ceiling).toFixed(1)}" y1="0" y2="${String(height - 24)}" class="ceiling"></line>
     </svg>
-    <p class="demo-verdict">${
+    <p class="demo-verdict" id="reach-note">${
       limited
         ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach M ${ceiling.toFixed(1)} on Lc ${String(lc)}, so every color on this tier stops there.`
         : least.reach[shown]! < target
@@ -331,7 +332,7 @@ function reach(ctx: Context): string {
           : `On ${GAMUT_NAMES[ctx.gamut]}, every hue reaches the target on Lc ${String(lc)}.`
     }</p>
     <p class="legend-row soft">${GAMUTS.map(key).join("")}
-      <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span></p>`;
+      <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span>${limited ? "<span>↓ Held back to this tier</span>" : ""}</p>`;
 }
 
 /**
@@ -426,11 +427,11 @@ function bump(ctx: Context): string {
     }
   };
   const row = (aim: (hue: number) => number) => `<div class="demo-touch short">${list.map((h) => `<span style="--c:${swatch(h.hue, aim(h.hue))}"></span>`).join("")}</div>`;
-  return `<svg class="chart" viewBox="0 0 ${String(left + width + 12)} ${String(top + height + 24)}" role="img" aria-label="Colorfulness added over hue">
+  return `<svg class="chart" viewBox="0 0 ${String(left + width + 12)} ${String(top + height + 24)}" role="img" aria-label="Colorfulness added over hue: ${signedWhole(point.amount)} at ${String(point.center)}°, easing to none ${String(point.width)}° away" aria-describedby="bump-note">
       ${grid.join("")}${ticks.join("")}<path d="${line}" fill="none" class="curve-line"></path>${dots.join("")}
     </svg>
     <div class="swatch-rows"><span class="soft">Without</span>${row(() => target)}<span class="soft">With</span>${row((hue) => target + added(hue))}</div>
-    <p class="soft">Lc ${String(tierLc)}, aiming at M ${target.toFixed(1)}. The colors move only where the bump reaches; this is a sandbox and changes nothing in the palette.</p>`;
+    <p class="soft" id="bump-note">Lc ${String(tierLc)}, aiming at M ${target.toFixed(1)}. The colors move only where the bump reaches; this is a sandbox and changes nothing in the palette.</p>`;
 }
 
 /**
@@ -467,10 +468,10 @@ function placing(ctx: Context): string {
     })
     .join("");
   const axis = [0, 90, 180, 270, 360].map((h) => `<text x="${x(h === 360 ? 359.99 : h).toFixed(1)}" y="16" class="axis" text-anchor="middle">${String(h)}°</text>`).join("");
-  return `<svg class="chart" viewBox="0 0 600 124" role="img" aria-label="Even starting hues and where each color sits">
+  return `<svg class="chart" viewBox="0 0 600 124" role="img" aria-label="Even starting hues and where each color sits" aria-describedby="starts-key">
       ${axis}<line x1="${String(left)}" x2="${String(left + width)}" y1="33" y2="33" class="grid"></line>${marks}
     </svg>
-    <p class="legend-row soft"><span><i class="tick-key"></i>Even start from the anchor</span><span><i class="dot-key"></i>Where it sits</span><span><i class="dot-key pinned"></i>Placed by hand, or the anchor</span></p>`;
+    <p class="legend-row soft" id="starts-key"><span><i class="tick-key"></i>Even start from the anchor</span><span><i class="dot-key"></i>Where it sits</span><span><i class="dot-key pinned"></i>Placed by hand, or the anchor</span></p>`;
 }
 
 /**
@@ -573,7 +574,7 @@ export function explain(ctx: Context): string {
         </div>
         <div id="demo-reach-out" class="demo-out wide">${reach(ctx)}</div>
       </div>
-      <p>Small labels say what happened to a color. <strong>Sets the tier</strong>, in amber, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, in grey, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, in red, marks a color the screen can't make as colorful as it should be at all. Tables spell all three out; on cards, Sets the tier is a label, and a Lowered or Gamut limit color shows its M value in grey or red. Each one opens why, with the numbers.</p>
+      <p>Small marks say what happened to a color. <strong>Sets the tier</strong>, an amber flag, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, a grey ↓, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, a red !, marks a color the screen can't make as colorful as it should be at all. Tables show them in small chips beside the M value; on cards the flag sits beside the name, and a Lowered or Gamut limit color shows its M value in grey or red with its mark. A key under the colors says which is which, and each mark opens why, with the numbers.</p>
     </section>
 
     <section class="step">

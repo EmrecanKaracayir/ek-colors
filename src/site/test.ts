@@ -331,16 +331,17 @@ function stage(): string {
   const pair = s.pair;
   const [a, b] = pair.left ? [pair.test, pair.other] : [pair.other, pair.test];
   return `<section class="test-stage" id="test-stage">
+      <h1 class="visually-hidden">Blind colorfulness test</h1>
       ${progressBar(s.stairs)}
       <p>Which looks more colorful?</p>
       <div class="test-pair${s.resting ? " resting" : ""}">
-        <button type="button" class="test-swatch" data-test="left" style="--c:${a}" aria-label="Left"></button>
-        <button type="button" class="test-swatch" data-test="right" style="--c:${b}" aria-label="Right"></button>
+        <button type="button" class="test-swatch" data-test="left" style="--c:${a}" tabindex="-1" aria-hidden="true"></button>
+        <button type="button" class="test-swatch" data-test="right" style="--c:${b}" tabindex="-1" aria-hidden="true"></button>
       </div>
       <div class="row test-answers">
-        <button type="button" data-test="left">Left</button>
-        <button type="button" data-test="same">Can't tell</button>
-        <button type="button" data-test="right">Right</button>
+        <button type="button" id="answer-left" data-test="left">Left</button>
+        <button type="button" id="answer-same" data-test="same">Can't tell</button>
+        <button type="button" id="answer-right" data-test="right">Right</button>
       </div>
       <p class="soft">Keys: ← left, ↓ can't tell, → right. <button type="button" data-test="stop" class="link">Stop the test</button></p>
     </section>`;
@@ -369,10 +370,10 @@ function results(ctx: TestContext): string {
       const clear = r?.sure && (r.low > 0 || r.high < 0);
       return `<tr${clear ? ' class="clear"' : ""}>
         <th scope="row"><span class="dot" style="--c:${colorOf(m.key)}"></span> ${ctx.label(m.key)}</th>
-        <td class="mono">${String(m.count)}</td>
-        <td class="mono">${r ? sign(r.equal) : "—"}</td>
-        <td class="mono soft">${r ? (r.sure ? `${sign(r.low)} to ${sign(r.high)}` : "unsure") : "—"}</td>
-        <td class="mono">${curve ? sign(boost(settings, ctx.mode, m.hue)) : "—"}</td>
+        <td class="mono num">${String(m.count)}</td>
+        <td class="mono num">${r ? sign(r.equal) : "—"}</td>
+        <td class="mono soft num">${r ? (r.sure ? `${sign(r.low)} to ${sign(r.high)}` : "unsure") : "—"}</td>
+        <td class="mono num">${curve ? sign(boost(settings, ctx.mode, m.hue)) : "—"}</td>
       </tr>`;
     })
     .join("");
@@ -385,7 +386,7 @@ function results(ctx: TestContext): string {
   return `<section>
       <h2>Results, ${name} mode</h2>
       <p class="soft">How much colorfulness (M) each hue needs to look as colorful as the others, from every run below together. "Could be" is the range the answers can't rule out; a hue in bold is clearly off, since its whole range is on one side of zero.</p>
-      <div class="scroll"><table class="test-results"><thead><tr><th>Color</th><th>Answers</th><th>Measured</th><th>Could be</th><th>Curve</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="scroll"><table class="test-results"><thead><tr><th scope="col">Color</th><th scope="col" class="num">Answers</th><th scope="col" class="num">Measured</th><th scope="col" class="num">Could be</th><th scope="col" class="num">Curve</th></tr></thead><tbody>${rows}</tbody></table></div>
       ${
         curve === null
           ? `<p class="soft">Not enough answers to fit a curve yet.</p>`

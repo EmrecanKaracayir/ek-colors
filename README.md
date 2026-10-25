@@ -103,6 +103,13 @@ and what the site is. After changing `src/`, rebuild it:
 pnpm build
 ```
 
+Its icon, iPhone home-screen icon and link preview card are drawn from EK Palette in `out/`, with
+Chrome; after EK Palette changes, draw them again:
+
+```sh
+pnpm art
+```
+
 It's published to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`.
 
 ## Built with
