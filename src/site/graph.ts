@@ -6,16 +6,8 @@
 | system's guides with their exact hues under it, chosen by a switch that previews on hover.       |
 \*------------------------------------------------------------------------------------------------*/
 
-import { SYSTEMS } from "../palette/references";
+import { type Guide, system, SYSTEMS } from "../palette/references";
 import { popButton, popSource } from "./popover";
-
-/** A reference system's hue, drawn as a guide. */
-export interface Guide {
-  readonly system: string;
-  readonly label: string;
-  readonly hue: number;
-  readonly unique: boolean;
-}
 
 /**
  * Hue runs from 0 to WIDTH; PAD on each side holds no data; LEFT and RIGHT are room for row labels
@@ -138,7 +130,7 @@ const along = (bend: number) => Math.sqrt(Math.min(bend, 1.5) / 1.5) * 100;
  */
 export function bendMeter(bend: number, large = false): string {
   const edges = [0, ...ZONES.map((z) => along(z.upTo))];
-  const parts = ZONES.map((z, i) => `<span style="flex-basis:${(edges[i + 1]! - edges[i]!).toFixed(2)}%"></span>`).join("");
+  const parts = ZONES.map((_, i) => `<span style="flex-basis:${(edges[i + 1]! - edges[i]!).toFixed(2)}%"></span>`).join("");
   const names = large
     ? `<span class="meter-names">${ZONES.map((z, i) => `<span style="left:${((edges[i]! + edges[i + 1]!) / 2).toFixed(2)}%">${z.name}</span>`).join("")}</span>`
     : "";
@@ -265,8 +257,8 @@ export function circleGuides(guides: readonly Guide[]): string {
  * @returns   HTML.
  */
 export function guideSource(id: string): string {
-  const system = SYSTEMS.find((s) => s.id === id) ?? SYSTEMS[0]!;
-  return `<h3>${system.name}</h3><p>${system.summary}</p><p class="pop-how">${system.source}</p><p class="pop-how">Solid lines are pure hues, dashed ones the hues between; each label shows its exact hue. Point at another system above to preview it; click it to keep it.</p>`;
+  const chosen = system(id);
+  return `<h3>${chosen.name}</h3><p>${chosen.summary}</p><p class="pop-how">${chosen.source}</p><p class="pop-how">Solid lines are pure hues, dashed ones the hues between; each label shows its exact hue. Point at another system above to preview it; click it to keep it.</p>`;
 }
 
 /**
@@ -274,13 +266,14 @@ export function guideSource(id: string): string {
  * until the pointer leaves.
  *
  * @param chosen  The chosen system.
+ * @param where   Which graph it's above, so each one's ⓘ opens its own popover.
  * @returns       HTML.
  */
-export function guidePicker(chosen: string): string {
+export function guidePicker(chosen: string, where: string): string {
   const buttons = SYSTEMS.map(
     (s) => `<button type="button" data-guide-pick="${s.id}" aria-pressed="${String(s.id === chosen)}">${s.name}</button>`,
   );
-  return `<div class="guide-row"><div class="segmented guide-picker" role="group" aria-label="Guides">${buttons.join("")}</div>${popButton("guide:chosen", "ⓘ", "About these guides", "guide-info")}</div>`;
+  return `<div class="guide-row"><div class="segmented guide-picker" role="group" aria-label="Guides">${buttons.join("")}</div>${popButton(`guide:${where}`, "ⓘ", "About these guides", "guide-info")}</div>`;
 }
 
 /**

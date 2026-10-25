@@ -7,8 +7,9 @@
 | the anchor moves the whole lineup.                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
+import type { Guide } from "../palette/references";
 import { composition } from "../palette/model";
-import { band, evenText, INSETS, signed, zone, type Guide, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
+import { band, evenText, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on every row. */
 export interface HueRow {
@@ -188,7 +189,7 @@ export function huesEditor(view: HuesView): string {
     ([row, y]) => `<text x="-18" y="${String(y + 3)}" class="axis row-label" text-anchor="end">${NAMES[row]}</text>`,
   );
   return `<div class="graph-editor guided hues-editor" style="${INSETS}">
-    ${guidePicker(view.guide)}
+    ${guidePicker(view.guide, "hues")}
     <div class="graph-values hues-values">${huesPanel(view)}</div>
     <svg viewBox="${viewBox(HEIGHT)}" data-height="${String(HEIGHT)}" role="group" aria-label="Where the uniform lineup puts each color, and where the current one does">
       ${band("hues-band", stops(view.band), HEIGHT)}<g class="guide-layer">${guideLayer(view.guides, HEIGHT)}</g>${labels.join("")}${hueScale(HEIGHT)}

@@ -6,17 +6,16 @@
 | reference.                                                                                       |
 \*------------------------------------------------------------------------------------------------*/
 
-import { argbFromHex, lstarFromArgb, ViewingConditions } from "@material/material-color-utilities";
+import { argbFromHex, lstarFromArgb } from "@material/material-color-utilities";
 
-import { anchorHue, SYSTEMS } from "../palette/references";
-import { MODES, NAMES } from "../palette/settings";
+import { LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
+import { anchorHue, anchorSource } from "../palette/references";
+import { MODE_NAMES, MODES } from "../palette/settings";
+import { hueKeys } from "../palette/solve";
 import type { Context } from "./explain";
 import { escape } from "./graph";
 
 /* >-----------------------------------------< Values >-----------------------------------------< */
-
-/** Lux to the luminance the eye adapts to: E / π × 0.184, a 20% gray (L* 50) lit by E lux. */
-const LUX_TO_ADAPTING = 0.0586;
 
 const fixed = (x: number, d = 3) => x.toFixed(d);
 
@@ -31,9 +30,9 @@ function conditions(ctx: Context): string {
     const room = ctx.settings.rooms[mode];
     const la = room.lux * LUX_TO_ADAPTING;
     const yb = lstarFromArgb(argbFromHex(ctx.settings.bases[mode]));
-    const vc = ViewingConditions.make(undefined, la, yb, room.surround);
+    const vc = viewingConditions(ctx.settings, mode);
     const f = 0.8 + room.surround / 10;
-    return `<tr><th scope="row">${mode === "light" ? "Light" : "Dark"}</th>
+    return `<tr><th scope="row">${MODE_NAMES[mode]}</th>
       <td class="mono">${String(room.lux)}</td><td class="mono">${fixed(la, 2)}</td><td class="mono">${fixed(yb, 1)}</td>
       <td class="mono">${fixed(f, 1)}</td><td class="mono">${fixed(vc.c, 3)}</td><td class="mono">${fixed(vc.fl, 3)}</td>
       <td class="mono">${fixed(vc.fLRoot, 3)}</td><td class="mono">${fixed(vc.n, 3)}</td><td class="mono">${fixed(vc.z, 3)}</td></tr>`;
@@ -51,13 +50,11 @@ function conditions(ctx: Context): string {
 export function technical(ctx: Context): string {
   const s = ctx.settings;
   const anchor = anchorHue(s);
-  const first = NAMES.indexOf("yellow");
-  const starts = Array.from({ length: s.hues }, (_, k) => {
-    const key = s.hues === NAMES.length ? NAMES[(first + k) % s.hues]! : `hue-${String(k + 1)}`;
+  const starts = hueKeys(s.hues).map((key, k) => {
     const placed = k === 0 ? undefined : s.placed[key];
     return `<tr><th scope="row">${ctx.label(key)}${k === 0 ? " (anchor)" : ""}</th><td class="mono">${fixed((anchor + (k * 360) / s.hues) % 360, 1)}°</td><td class="mono">${placed === undefined ? "—" : `${fixed(placed, 0)}°`}</td></tr>`;
   }).join("");
-  const from = typeof s.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === s.anchor)?.name ?? ""} yellow`;
+  const from = anchorSource(s);
   return `<section class="intro">
       <h1>The algorithm</h1>
       <p>Every step the solver takes, with its formulas, constants and search rules, in the order it runs. For the same thing in plain words, see <a href="#how">How it works</a>; the papers, standards and libraries named here are listed under <a href="#references">References</a>. Numbers use the current settings.</p>

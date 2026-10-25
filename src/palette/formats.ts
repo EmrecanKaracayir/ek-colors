@@ -2,11 +2,12 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< FORMATS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | A solved palette as files: JSON (settings and everything solved), CSV (one row per swatch) and   |
-| Markdown (tables per mode and variant). The command line and the site's export both use these.   |
+| Markdown (tables per gamut tier, mode and variant). The command line and the site's export both  |
+| use these.                                                                                       |
 \*------------------------------------------------------------------------------------------------*/
 
 import type { Palette } from "./solve";
-import { GAMUTS, MODES, type Settings } from "./settings";
+import { GAMUT_NAMES, GAMUTS, MODE_NAMES, MODES, type Settings } from "./settings";
 
 /**
  * The palette and what it was solved from, as JSON.
@@ -37,7 +38,6 @@ export function toCsv(settings: Settings, palette: Palette): string {
           const cell = color.tiers[tier]!;
           for (const variant of ["default", "muted"] as const) {
             const s = cell[variant];
-            if (!s) continue;
             rows.push(
               [
                 gamut,
@@ -65,7 +65,7 @@ export function toCsv(settings: Settings, palette: Palette): string {
 }
 
 /**
- * Tables per mode and variant, a color per row and a tier per column.
+ * Tables per gamut tier, mode and variant, a color per row and a tier per column.
  *
  * @param settings  The settings (for the bases and tiers).
  * @param palette   The solved palette.
@@ -74,9 +74,9 @@ export function toCsv(settings: Settings, palette: Palette): string {
 export function toMarkdown(settings: Settings, palette: Palette): string {
   const md = ["# Palette, solved with EK Colors", ""];
   for (const gamut of GAMUTS) {
-    md.push(`## ${gamut.charAt(0).toUpperCase()}${gamut.slice(1)} gamut`, "");
+    md.push(`## ${GAMUT_NAMES[gamut]} gamut`, "");
     for (const mode of MODES) {
-      md.push(`### ${mode === "light" ? "Light" : "Dark"} · base ${settings.bases[mode]}`, "");
+      md.push(`### ${MODE_NAMES[mode]} · base ${settings.bases[mode]}`, "");
       for (const variant of ["default", "muted"] as const) {
         md.push(
           `#### ${variant === "default" ? "Default" : "Muted"}`,
@@ -86,9 +86,8 @@ export function toMarkdown(settings: Settings, palette: Palette): string {
         );
         for (const color of palette[gamut][mode].colors) {
           const cells = settings.tiers.map((t) => color.tiers[t]![variant]);
-          if (cells.every((s) => !s)) continue;
           md.push(
-            `| ${color.key} | ${cells.map((s) => (s ? `\`${s.color}\` WCAG ${s.wcag.toFixed(2)}` : "")).join(" | ")} |`,
+            `| ${color.key} | ${cells.map((s) => `\`${s.color}\` WCAG ${s.wcag.toFixed(2)}`).join(" | ")} |`,
           );
         }
         md.push("");

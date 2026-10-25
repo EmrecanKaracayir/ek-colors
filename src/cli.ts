@@ -2,7 +2,7 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CLI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | Solves the palette from config.ts and writes it to out/: palette.json (everything), palette.csv  |
-| (one row per swatch) and palette.md (tables per mode and variant).                               |
+| (one row per swatch) and palette.md (tables per gamut tier, mode and variant).                   |
 \*------------------------------------------------------------------------------------------------*/
 
 import { mkdirSync, writeFileSync } from "node:fs";

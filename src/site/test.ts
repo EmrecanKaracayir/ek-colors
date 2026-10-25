@@ -274,7 +274,7 @@ function decode(code: string): Run | null {
  */
 export function testPage(ctx: TestContext): string {
   if (session && session.mode === ctx.mode) return stage();
-  const mode = ctx.label(ctx.mode).toLowerCase();
+  const mode = ctx.mode;
   const done = runs().filter((r) => r.mode === ctx.mode);
   const hues = ctx.palette?.[ctx.mode].colors.filter((c) => !c.extra).length ?? 8;
   return `<section class="intro">
@@ -356,7 +356,7 @@ function results(ctx: TestContext): string {
         <button type="button" data-test="remove" data-run="${String(i)}">Remove</button></li>`,
     )
     .join("");
-  const name = ctx.label(ctx.mode).toLowerCase();
+  const name = ctx.mode;
   return `<section>
       <h2>Results, ${name} mode</h2>
       <p class="soft">How much colorfulness (M) each hue needs to look as colorful as the others, from every run below together. "Could be" is the range the answers can't rule out; a hue in bold is clearly off, since its whole range is on one side of zero.</p>

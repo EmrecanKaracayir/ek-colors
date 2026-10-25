@@ -6,7 +6,16 @@
 | the yellow anchor.                                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "./model";
+import {
+  apca,
+  composition,
+  hueTurn,
+  makeModel,
+  type Model,
+  wcag,
+  wcagLevel,
+  wrapHue,
+} from "./model";
 import { anchorHue } from "./references";
 import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings } from "./settings";
 
@@ -29,13 +38,13 @@ export interface Swatch {
 
 export interface Color {
   readonly key: string;
+
+  /** The colorfulness it aims at before any tier lowers it and before the curve: an extra color's share of the target, or the target. */
   readonly target: number;
 
   /** Whether it's an extra color: on its own hue, not spaced with the others. */
   readonly extra: boolean;
-  readonly tiers: Readonly<
-    Record<number, { readonly default: Swatch; readonly muted: Swatch | null }>
-  >;
+  readonly tiers: Readonly<Record<number, { readonly default: Swatch; readonly muted: Swatch }>>;
 }
 
 export interface ModePalette {
@@ -82,7 +91,7 @@ function place(
   hue: number,
   colorfulness: number,
   tier: number,
-) {
+): string | null {
   const dark = mode === "dark";
   let lo = 0;
   let hi = 100;
@@ -143,12 +152,24 @@ export function strongest(
 export function boost(settings: Pick<Settings, "curve">, mode: Mode, hue: number): number {
   return settings.curve[mode].reduce((sum, { amount, center, width, off }) => {
     if (off) return sum;
-    const away = Math.abs(((((hue - center) % 360) + 540) % 360) - 180);
+    const away = Math.abs(hueTurn(center, hue));
     return away >= width ? sum : sum + (amount * (1 + Math.cos((Math.PI * away) / width))) / 2;
   }, 0);
 }
 
 /* >----------------------------------------< Spacing >-----------------------------------------< */
+
+/**
+ * How different each color looks from the next one around the circle.
+ *
+ * @param model   The color model.
+ * @param mode    The mode.
+ * @param colors  The colors, in order around the circle.
+ * @returns       Each color's distance to the next (CAM16-UCS), the last to the first.
+ */
+export function neighbors(model: Model, mode: Mode, colors: readonly string[]): number[] {
+  return colors.map((c, i) => model.distance(mode, c, colors[(i + 1) % colors.length]!));
+}
 
 /**
  * How unevenly spaced a ring of distances is.
@@ -169,7 +190,9 @@ interface Spacing {
   readonly start: readonly number[];
   /** The colors that don't move: the placed ones. */
   readonly fixed: readonly number[];
-  readonly window: number;
+
+  /** How far, in degrees, a hue may move from its start. */
+  readonly reach: number;
 
   /** How close neighbors may come, in degrees: no color passes another. */
   readonly sep: number;
@@ -187,9 +210,8 @@ interface Spacing {
  * @param spacing  What to space, where, and how far hues may move.
  * @returns        The hues, their colors and the neighbor distances.
  */
-function space({ model, base, mode, tier, start, fixed, window, sep, target }: Spacing) {
-  const ring = (cs: readonly string[]) =>
-    cs.map((c, i) => model.distance(mode, c, cs[(i + 1) % cs.length]!));
+function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Spacing) {
+  const ring = (cs: readonly string[]) => neighbors(model, mode, cs);
   const hues = [...start];
   const colors = hues.map((h) => strongest(model, base, mode, h, target(h), tier));
   let best = spread(ring(colors));
@@ -199,13 +221,12 @@ function space({ model, base, mode, tier, start, fixed, window, sep, target }: S
       if (fixed.includes(i)) continue;
       for (const step of [-3, 3, -1, 1]) {
         const hue = hues[i]! + step;
-        if (Math.abs(hue - start[i]!) > window) continue;
+        if (Math.abs(hue - start[i]!) > reach) continue;
         const [before, after] = [
           hues[(i - 1 + hues.length) % hues.length]!,
           hues[(i + 1) % hues.length]!,
         ];
-        if ((((hue - before) % 360) + 360) % 360 < sep || (((after - hue) % 360) + 360) % 360 < sep)
-          continue;
+        if (wrapHue(hue - before) < sep || wrapHue(after - hue) < sep) continue;
         const trial = [...colors];
         trial[i] = strongest(model, base, mode, hue, target(hue), tier);
         const score = spread(ring(trial));
@@ -224,11 +245,25 @@ function space({ model, base, mode, tier, start, fixed, window, sep, target }: S
 export const CLOSEST = 0.25;
 
 /**
+ * The hues' keys in lineup order: with eight, their names from yellow, the anchor; with any other
+ * number, hue-1 (the anchor), hue-2 and so on.
+ *
+ * @param n  How many hues.
+ * @returns  The keys.
+ */
+export function hueKeys(n: number): string[] {
+  const first = NAMES.indexOf("yellow");
+  return Array.from({ length: n }, (_, k) =>
+    n === NAMES.length ? NAMES[(first + k) % n]! : `hue-${String(k + 1)}`,
+  );
+}
+
+/**
  * The lineup: every color in order around the circle from the anchor (yellow, with eight, then
  * green, mint, blue, purple, pink, red, orange), with the hue it starts from, unwrapped so they rise
  * from the anchor. A color starts where it's placed, or else where the circle divided evenly puts
- * it. Placed colors are kept in order: each stays at least a quarter of the even step from the
- * colors beside it.
+ * it. Placed colors are kept in order: each stays at least CLOSEST of the even step from the colors
+ * beside it.
  *
  * @param settings  The settings.
  * @returns         The keys, their hues (rising from the anchor), which stay put, and the closest
@@ -236,19 +271,14 @@ export const CLOSEST = 0.25;
  */
 export function lineup(settings: Pick<Settings, "hues" | "placed" | "anchor" | "bases" | "rooms">) {
   const n = settings.hues;
-  const first = NAMES.indexOf("yellow");
-  const keys = Array.from({ length: n }, (_, k) =>
-    n === NAMES.length ? NAMES[(first + k) % n]! : `hue-${String(k + 1)}`,
-  );
+  const keys = hueKeys(n);
   const anchor = anchorHue(settings);
   const step = 360 / n;
   const sep = step * CLOSEST;
   const held = keys.map((key, k) => k === 0 || settings.placed[key] !== undefined);
   const hues = keys.map((key, k) => {
     const placed = k === 0 ? undefined : settings.placed[key];
-    return placed === undefined
-      ? anchor + k * step
-      : anchor + ((((placed - anchor) % 360) + 360) % 360);
+    return placed === undefined ? anchor + k * step : anchor + wrapHue(placed - anchor);
   });
   // A placed color that passed the next one is brought back before it; then one that fell behind
   // the color before it is brought up.
@@ -273,6 +303,7 @@ export function bounds(
   const { keys, hues, held, sep } = lineup(settings);
   const n = keys.length;
   const k = keys.indexOf(key);
+  if (k < 0) throw new Error(`"${key}" isn't one of the hues.`);
   if (k > 0) return [hues[k - 1]! + sep, (k === n - 1 ? hues[0]! + 360 : hues[k + 1]!) - sep];
   // The anchor carries every color that isn't placed; each must stay between the placed ones.
   const placed = hues.flatMap((h, j) => (j > 0 && held[j] ? [h] : []));
@@ -307,8 +338,8 @@ function seeds(settings: Settings) {
   };
 }
 
-/** Words the site's pages use in its address, so no color's key can take one. */
-const TAKEN = [
+/** The site's pages, by the word in its address; colors share the address, so no color's key can take one. */
+export const PAGES = [
   "overview",
   "tiers",
   "colors",
@@ -324,16 +355,20 @@ const TAKEN = [
 
 /**
  * The extra colors' keys: each name in lowercase words joined by hyphens, numbered when it would
- * repeat a hue's key, another extra's or a page's.
+ * repeat a hue's key, another extra's, a page's or a mode's.
  *
  * @param settings  The settings.
  * @returns         One key per extra color, in order.
  */
-export function extraKeys(settings: Settings): string[] {
-  const used = new Set([...TAKEN, ...lineup(settings).keys]);
+export function extraKeys(settings: Pick<Settings, "hues" | "extras">): string[] {
+  const used = new Set([...PAGES, ...MODES, ...hueKeys(settings.hues)]);
   return settings.extras.map((extra) => {
+    // Accents are dropped and a dotless ı is an i, so "Çivit" becomes "civit".
     const word =
       extra.name
+        .normalize("NFKD")
+        .replace(/\p{M}/gu, "")
+        .replace(/ı/g, "i")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "") || "extra";
@@ -345,6 +380,15 @@ export function extraKeys(settings: Settings): string[] {
 }
 
 /**
+ * A number rounded to a few decimals.
+ *
+ * @param x  The number.
+ * @param d  Decimals.
+ * @returns  It rounded.
+ */
+const round = (x: number, d = 1) => Math.round(x * 10 ** d) / 10 ** d;
+
+/**
  * A color described for output and display.
  *
  * @param model   The color model.
@@ -354,9 +398,14 @@ export function extraKeys(settings: Settings): string[] {
  * @param target  The colorfulness it aimed at.
  * @returns       Its CAM16 description, name and contrasts.
  */
-function swatch(model: Model, base: string, mode: Mode, color: string, target: number): Swatch {
+export function swatch(
+  model: Model,
+  base: string,
+  mode: Mode,
+  color: string,
+  target: number,
+): Swatch {
   const c = model.cam(mode, color);
-  const round = (x: number, d = 1) => Math.round(x * 10 ** d) / 10 ** d;
   const ratio = wcag(color, base);
   return {
     color,
@@ -389,10 +438,8 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const base = settings.bases[mode];
   const { keys, start, fixed, sep } = seeds(settings);
   const extras = extraKeys(settings);
-  const window =
-    settings.hues === NAMES.length
-      ? settings.hueWindow.identity
-      : Math.min(settings.hueWindow.identity, 180 / settings.hues);
+  // With few hues, the identity tier may move each only up to halfway to its even neighbor.
+  const identityReach = Math.min(settings.hueWindow.identity, 180 / settings.hues);
 
   // On an equal tier, the target drops to what its least colorful hue can reach.
   const ceiling = (tier: number, hues: readonly number[]) => {
@@ -403,15 +450,15 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
       ? { target: reach[least]!, limit: keys[least]! }
       : { target: settings.colorfulness, limit: null };
   };
-  const solveTier = (tier: number, hues: readonly number[], window: number) => {
+  const solveTier = (tier: number, hues: readonly number[], reach: number) => {
     const { target, limit } = ceiling(tier, hues);
     const aim = (hue: number) => target + boost(settings, mode, hue);
-    const spaced = space({ model, base, mode, fixed, tier, start: hues, window, sep, target: aim });
+    const spaced = space({ model, base, mode, fixed, tier, start: hues, reach, sep, target: aim });
     return { target, limit, targets: spaced.hues.map(aim), ...spaced };
   };
 
-  const identity = solveTier(settings.identityTier[mode], start, window);
-  const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch | null }>> = {};
+  const identity = solveTier(settings.identityTier[mode], start, identityReach);
+  const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch }>> = {};
   const targets: Record<number, number> = {};
   const limits: Record<number, string | null> = {};
   const ring: Record<number, number[]> = {};
@@ -421,39 +468,28 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
         ? identity
         : solveTier(tier, identity.hues, settings.hueWindow.tier);
     tiers[tier] = {};
-    targets[tier] = Math.round(solved.target * 10) / 10;
+    targets[tier] = round(solved.target);
     limits[tier] = solved.limit;
-    ring[tier] = solved.ring.map((d) => Math.round(d * 10) / 10);
-    keys.forEach((key, i) => {
-      const def = swatch(model, base, mode, solved.colors[i]!, solved.targets[i]!);
+    ring[tier] = solved.ring.map((d) => round(d));
+    // A color on this tier, and its muted version: the same hue at a share of its colorfulness.
+    const pair = (hue: number, color: string, target: number) => {
+      const def = swatch(model, base, mode, color, target);
       const quiet = def.colorfulness * settings.muted;
-      const muted = swatch(
-        model,
-        base,
-        mode,
-        strongest(model, base, mode, solved.hues[i]!, quiet, tier),
-        quiet,
-      );
-      tiers[tier]![key] = { default: def, muted };
+      return {
+        default: def,
+        muted: swatch(model, base, mode, strongest(model, base, mode, hue, quiet, tier), quiet),
+      };
+    };
+    keys.forEach((key, i) => {
+      tiers[tier]![key] = pair(solved.hues[i]!, solved.colors[i]!, solved.targets[i]!);
     });
     settings.extras.forEach((extra, i) => {
       const target = solved.target * extra.share;
-      const def = swatch(
-        model,
-        base,
-        mode,
+      tiers[tier]![extras[i]!] = pair(
+        extra.hue,
         strongest(model, base, mode, extra.hue, target, tier),
         target,
       );
-      const quiet = def.colorfulness * settings.muted;
-      const muted = swatch(
-        model,
-        base,
-        mode,
-        strongest(model, base, mode, extra.hue, quiet, tier),
-        quiet,
-      );
-      tiers[tier]![extras[i]!] = { default: def, muted };
     });
   }
   const colors = [

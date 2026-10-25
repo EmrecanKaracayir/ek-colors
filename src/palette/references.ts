@@ -6,11 +6,11 @@
 | names or measured colors.                                                                        |
 \*------------------------------------------------------------------------------------------------*/
 
-import { hueOf, makeModel } from "./model";
+import { hueOf, hueTurn, makeModel, wrapHue } from "./model";
 import type { Settings } from "./settings";
 
-/** A hue a system draws as a guide: a pure hue (solid) or an in-between one (dashed). */
-export interface Guide {
+/** A hue a system draws as a guide, as written: a pure hue (solid) or an in-between one (dashed). */
+interface GuideSpec {
   readonly label: string;
 
   /** A CAM16 name ("R", "R 50 Y") or a measured color (CSS, e.g. color(xyz-d65 …)). */
@@ -18,7 +18,7 @@ export interface Guide {
   readonly unique: boolean;
 }
 
-export interface ReferenceSystem {
+interface ReferenceSystem {
   readonly id: string;
   readonly name: string;
 
@@ -28,7 +28,7 @@ export interface ReferenceSystem {
   /** Where its numbers come from. */
   readonly source: string;
 
-  readonly guides: readonly Guide[];
+  readonly guides: readonly GuideSpec[];
 
   /** Its yellow, which the lineup can be anchored on. */
   readonly yellow: string;
@@ -36,7 +36,7 @@ export interface ReferenceSystem {
 
 /* >----------------------------------------< Systems >-----------------------------------------< */
 
-const CAM16_GUIDES: readonly Guide[] = [
+const CAM16_GUIDES: readonly GuideSpec[] = [
   { label: "R", at: "R", unique: true },
   { label: "R 50 Y", at: "R 50 Y", unique: false },
   { label: "Y", at: "Y", unique: true },
@@ -147,17 +147,35 @@ const cache = new Map<string, number>();
  * @param at        A CAM16 name or a measured color.
  * @returns         CAM16 hue (degrees).
  */
-export function hueAt(settings: Pick<Settings, "bases" | "rooms">, at: string): number {
+function hueAt(settings: Pick<Settings, "bases" | "rooms">, at: string): number {
   if (NAME.test(at)) return hueOf(at);
   const key = JSON.stringify([settings.bases, settings.rooms, at]);
   let hue = cache.get(key);
   if (hue === undefined) {
     const model = makeModel(settings);
     const [light, dark] = [model.cam("light", at).hue, model.cam("dark", at).hue];
-    hue = (light + (((dark - light + 540) % 360) - 180) / 2 + 360) % 360;
+    hue = wrapHue(light + hueTurn(light, dark) / 2);
     cache.set(key, hue);
   }
   return hue;
+}
+
+/** A reference system's hue, drawn as a guide. */
+export interface Guide {
+  readonly system: string;
+  readonly label: string;
+  readonly hue: number;
+  readonly unique: boolean;
+}
+
+/**
+ * A reference system by its id.
+ *
+ * @param id  The id.
+ * @returns   The system, or the first one for an id that isn't one.
+ */
+export function system(id: string): ReferenceSystem {
+  return SYSTEMS.find((s) => s.id === id) ?? SYSTEMS[0]!;
 }
 
 /**
@@ -167,10 +185,13 @@ export function hueAt(settings: Pick<Settings, "bases" | "rooms">, at: string): 
  * @param id        The system; the settings' chosen one when left out.
  * @returns         Each guide's system, label, hue and whether it's a pure hue.
  */
-export function guides(settings: Pick<Settings, "bases" | "rooms" | "guide">, id = settings.guide) {
-  const system = SYSTEMS.find((s) => s.id === id) ?? SYSTEMS[0]!;
-  return system.guides.map((g) => ({
-    system: system.id,
+export function guides(
+  settings: Pick<Settings, "bases" | "rooms" | "guide">,
+  id = settings.guide,
+): Guide[] {
+  const chosen = system(id);
+  return chosen.guides.map((g) => ({
+    system: chosen.id,
     label: g.label,
     hue: hueAt(settings, g.at),
     unique: g.unique,
@@ -184,7 +205,18 @@ export function guides(settings: Pick<Settings, "bases" | "rooms" | "guide">, id
  * @returns         CAM16 hue (degrees).
  */
 export function anchorHue(settings: Pick<Settings, "bases" | "rooms" | "anchor">): number {
-  if (typeof settings.anchor === "number") return settings.anchor;
-  const system = SYSTEMS.find((s) => s.id === settings.anchor) ?? SYSTEMS[0]!;
-  return hueAt(settings, system.yellow);
+  if (typeof settings.anchor === "number") return wrapHue(settings.anchor);
+  return hueAt(settings, system(settings.anchor).yellow);
+}
+
+/**
+ * Where the anchor comes from, in words.
+ *
+ * @param settings  The settings.
+ * @returns         E.g. "Munsell yellow" or "set by hand".
+ */
+export function anchorSource(settings: Pick<Settings, "anchor">): string {
+  return typeof settings.anchor === "number"
+    ? "set by hand"
+    : `${system(settings.anchor).name} yellow`;
 }

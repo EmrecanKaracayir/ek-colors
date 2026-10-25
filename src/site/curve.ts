@@ -9,8 +9,9 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import type { CurvePoint, Mode } from "../palette/settings";
+import type { Guide } from "../palette/references";
 import { boost } from "../palette/solve";
-import { band, inGaps, INSETS, visibility, type Guide, guideLayer, guidePicker, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
+import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -161,7 +162,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${String(m)}</text>`,
   );
   return `<div class="graph-editor guided curve-editor" data-curve="${mode}" style="${INSETS}">
-    ${guidePicker(view.guide)}
+    ${guidePicker(view.guide, `curve-${view.mode}`)}
     <div class="graph-values curve-values">${valuesPanel(view)}</div>
     <svg viewBox="${viewBox(HEIGHT)}" data-height="${String(HEIGHT)}" role="group" aria-label="Colorfulness curve, ${mode} mode">
       ${band(`band-${mode}`, bandStops(view), HEIGHT)}

@@ -6,8 +6,8 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
-import { type Gamut, GAMUTS, type Mode, type Settings } from "../palette/settings";
-import { anchorHue, SYSTEMS } from "../palette/references";
+import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, ROLES, type Settings } from "../palette/settings";
+import { anchorHue, anchorSource } from "../palette/references";
 import { escape, zoneTable } from "./graph";
 import { boost, type GamutPalette, lineup, strongest } from "../palette/solve";
 
@@ -21,18 +21,6 @@ export interface Context {
   readonly palette: GamutPalette | null;
   readonly label: (key: string) => string;
 }
-
-/** What each tier is for. */
-const ROLES: Readonly<Record<number, string>> = {
-  15: "Dividers and faint fills",
-  30: "Icons, outlines and controls",
-  45: "Large text and the color itself",
-  60: "Labels and links",
-  75: "Body text",
-  90: "Long reading",
-};
-
-const GAMUT_NAMES: Readonly<Record<Gamut, string>> = { standard: "Standard", wide: "Wide", ultra: "Ultra" };
 
 /* >----------------------------------------< Helpers >-----------------------------------------< */
 
@@ -443,7 +431,7 @@ export function explain(ctx: Context): string {
   const count = hues(ctx).length;
   const extras = s.extras.length;
   const swatches = (count + extras) * s.tiers.length * 2 * 2 * GAMUTS.length;
-  const anchor = typeof s.anchor === "number" ? "set by hand" : `${SYSTEMS.find((r) => r.id === s.anchor)?.name ?? ""} yellow`;
+  const anchor = anchorSource(s);
   return `<section class="intro">
       <h1>How it works</h1>
       <p><strong>EK Colors</strong> solves color palettes instead of picking them by eye. A small program builds a palette from a handful of rules, so every color can be explained, and solved again when a rule changes. It starts from <strong>EK Palette</strong>, the palette it was made for; change the settings and it solves a palette of its own. This page walks through the rules one at a time; every demo runs the same code as the solver.</p>

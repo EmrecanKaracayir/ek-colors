@@ -38,8 +38,28 @@ const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies 
 
 /* >-----------------------------------< Viewing conditions >-----------------------------------< */
 
-/** Lux to the luminance the eye adapts to (cd/m²), as material-color-utilities documents it. */
-const LUX_TO_ADAPTING = 0.0586;
+/** Lux to the luminance the eye adapts to (cd/m²): E / π × 0.184, a 20% gray (L* 50) lit by E lux. */
+export const LUX_TO_ADAPTING = 0.0586;
+
+/**
+ * Where a mode's colors are seen, as CAM16 needs it: the room's light, the base as the background,
+ * and the surround.
+ *
+ * @param settings  The bases and rooms.
+ * @param mode      The mode.
+ * @returns         CAM16 viewing conditions.
+ */
+export function viewingConditions(
+  settings: Pick<Settings, "bases" | "rooms">,
+  mode: Mode,
+): ViewingConditions {
+  return ViewingConditions.make(
+    undefined,
+    settings.rooms[mode].lux * LUX_TO_ADAPTING,
+    lstarFromArgb(argbFromHex(settings.bases[mode])),
+    settings.rooms[mode].surround,
+  );
+}
 
 export interface Model {
   /** The color in CAM16 as it appears in a mode. */
@@ -64,16 +84,9 @@ export function makeModel(
   settings: Pick<Settings, "bases" | "rooms">,
   gamut: Gamut = "standard",
 ): Model {
-  const viewing = (mode: Mode) =>
-    ViewingConditions.make(
-      undefined,
-      settings.rooms[mode].lux * LUX_TO_ADAPTING,
-      lstarFromArgb(argbFromHex(settings.bases[mode])),
-      settings.rooms[mode].surround,
-    );
   const conditions: Record<Mode, ViewingConditions> = {
-    light: viewing("light"),
-    dark: viewing("dark"),
+    light: viewingConditions(settings, "light"),
+    dark: viewingConditions(settings, "dark"),
   };
   const cam = (mode: Mode, color: string) => {
     const [x, y, z] = to(getColor(color), XYZ_D65).coords as [number, number, number];
@@ -131,7 +144,50 @@ function colorAt(
   return serialize({ ...inSpace, coords: coords as [number, number, number] });
 }
 
+/* >------------------------------------------< Hues >------------------------------------------< */
+
+/**
+ * A hue on the circle.
+ *
+ * @param hue  Degrees, any number.
+ * @returns    The same hue from 0 up to 360.
+ */
+export function wrapHue(hue: number): number {
+  return ((hue % 360) + 360) % 360;
+}
+
+/**
+ * The shorter way around the circle from one hue to another.
+ *
+ * @param from  Degrees.
+ * @param to    Degrees.
+ * @returns     Degrees from −180 to 180: positive the way hues rise.
+ */
+export function hueTurn(from: number, to: number): number {
+  return wrapHue(to - from + 180) - 180;
+}
+
 /* >---------------------------------------< Difference >---------------------------------------< */
+
+/**
+ * The difference shown, ΔE, from CAM16-UCS's plain distance ΔE′: 1.41 · ΔE′^0.63.
+ *
+ * @param plain  ΔE′.
+ * @returns      ΔE.
+ */
+export function deltaE(plain: number): number {
+  return 1.41 * plain ** 0.63;
+}
+
+/**
+ * ΔE′ squared from ΔE, so differences can be added up the way they combine.
+ *
+ * @param shown  ΔE.
+ * @returns      ΔE′².
+ */
+export function plainSquared(shown: number): number {
+  return (shown / 1.41) ** (2 / 0.63);
+}
 
 /**
  * What a color difference is made of: lightness, colorfulness and hue, as shares of the whole. In
@@ -140,15 +196,14 @@ function colorAt(
  *
  * @param a  One color.
  * @param b  The other.
- * @returns  Each part's share, adding up to 1.
+ * @returns  Each part's share, adding up to 1; all 0 for the same color.
  */
 export function parts(
   a: Cam16,
   b: Cam16,
 ): { lightness: number; colorfulness: number; hue: number } {
-  const ucs = (m: number) => Math.log(1 + 0.0228 * m) / 0.0228;
-  const [ma, mb] = [ucs(a.m), ucs(b.m)];
-  const turn = (((((b.hue - a.hue) % 360) + 540) % 360) - 180) * (Math.PI / 180);
+  const [ma, mb] = [Math.hypot(a.astar, a.bstar), Math.hypot(b.astar, b.bstar)];
+  const turn = hueTurn(a.hue, b.hue) * (Math.PI / 180);
   const lightness = (b.jstar - a.jstar) ** 2;
   const colorfulness = (mb - ma) ** 2;
   const hue = (2 * Math.sqrt(ma * mb) * Math.sin(turn / 2)) ** 2;
@@ -244,6 +299,7 @@ export function hueOf(name: string): number {
   if (at(from) < 0 || at(next) < 0 || (!forward && !backward))
     throw new Error(`"${name}" isn't a CAM16 hue name.`);
   const i = forward ? at(from) : at(next);
+  if (!Number.isFinite(Number(share))) throw new Error(`"${name}" isn't a CAM16 hue name.`);
   const toward = (forward ? Number(share) : 100 - Number(share)) / 100;
   let lo: number = UNIQUE.h[i]!;
   let hi: number = UNIQUE.h[i + 1]!;

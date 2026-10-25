@@ -13,7 +13,7 @@ for (const file of ["site/app.js", "site/worker.js"]) hash.update(readFileSync(f
 const version = hash.digest("hex").slice(0, 10);
 
 const page = readFileSync("site/index.html", "utf8");
-writeFileSync(
-  "site/index.html",
-  page.replace(/src="app\.js(\?v=\w+)?"/, `src="app.js?v=${version}"`),
-);
+const stamped = page.replace(/src="app\.js(\?v=\w+)?"/, `src="app.js?v=${version}"`);
+if (!stamped.includes(`app.js?v=${version}`))
+  throw new Error("site/index.html has no app.js script to stamp.");
+writeFileSync("site/index.html", stamped);

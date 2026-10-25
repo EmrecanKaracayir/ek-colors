@@ -1,21 +1,48 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SETTINGS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Everything a palette is solved from, with EK Colors' defaults: bases, the two viewing rooms, the |
-| colorfulness target and its curve over hue, the yellow anchor per mode, how many hues, the       |
-| APCA tiers, the muted share and any extra colors.                                                |
+| Everything a palette is solved from, with EK Colors' defaults: the bases and the room each mode  |
+| is seen in, the colorfulness target, whether tiers are equally colorful, the curve over hue per  |
+| mode, how many hues and where they're anchored and placed, the APCA tiers and the identity tier  |
+| per mode, how far hues may move, the muted share, any extra colors, and the reference system     |
+| drawn as guides.                                                                                 |
 \*------------------------------------------------------------------------------------------------*/
 
 /* >-----------------------------------------< Types >------------------------------------------< */
 
-export type Mode = "light" | "dark";
+export const MODES = ["light", "dark"] as const;
 
-export const MODES = ["light", "dark"] as const satisfies readonly Mode[];
+export type Mode = (typeof MODES)[number];
 
 /** How much color a screen can show: every screen, most new ones, and the widest. */
-export type Gamut = "standard" | "wide" | "ultra";
+export const GAMUTS = ["standard", "wide", "ultra"] as const;
 
-export const GAMUTS = ["standard", "wide", "ultra"] as const satisfies readonly Gamut[];
+export type Gamut = (typeof GAMUTS)[number];
+
+/* >-----------------------------------------< Names >------------------------------------------< */
+
+/** Each mode as people read it. */
+export const MODE_NAMES: Readonly<Record<Mode, string>> = { light: "Light", dark: "Dark" };
+
+/** Each gamut tier as people read it. */
+export const GAMUT_NAMES: Readonly<Record<Gamut, string>> = {
+  standard: "Standard",
+  wide: "Wide",
+  ultra: "Ultra",
+};
+
+/** Each CAM16 surround, by its number. */
+export const SURROUNDS = ["Dark", "Dim", "Average"] as const;
+
+/** What each tier is for. */
+export const ROLES: Readonly<Record<number, string>> = {
+  15: "Dividers and faint fills",
+  30: "Icons, outlines and controls",
+  45: "Large text and the color itself",
+  60: "Labels and links",
+  75: "Body text",
+  90: "Long reading",
+};
 
 /** Where a mode's colors are seen: how bright the room is, and how bright its surround is. */
 export interface Room {
@@ -72,7 +99,7 @@ export interface Settings {
    */
   readonly curve: Readonly<Record<Mode, readonly CurvePoint[]>>;
 
-  /** How many hues share the circle; 8 uses Codemos's names and colors as a start. */
+  /** How many hues share the circle; 8 are named red to pink, any other number Hue 1, Hue 2 and so on. */
   readonly hues: number;
 
   /** The APCA contrasts every hue gets a color for. */
@@ -171,7 +198,7 @@ export const CODEMOS: Readonly<Record<Mode, Readonly<Record<string, string>>>> =
   },
 };
 
-/** Codemos's alternative (now: muted) colors, for the comparison. */
+/** Codemos's muted colors, for the comparison. */
 export const CODEMOS_MUTED: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#C35354",

@@ -216,7 +216,7 @@ function decode(code: string): Run | null {
  */
 export function hueTestPage(ctx: HueTestContext): string {
   if (session && session.mode === ctx.mode) return stage(ctx);
-  const mode = ctx.label(ctx.mode).toLowerCase();
+  const mode = ctx.mode;
   const done = runs().filter((r) => r.mode === ctx.mode);
   const named = ctx.settings.hues === NAMES.length;
   const ready = Boolean(ctx.palette) && named;
@@ -296,7 +296,7 @@ function results(ctx: HueTestContext): string {
         <button type="button" data-hue-test="remove" data-run="${String(i)}">Remove</button></li>`,
     )
     .join("");
-  const name = ctx.label(ctx.mode).toLowerCase();
+  const name = ctx.mode;
   const count = Object.keys(sure).length;
   return `<section>
       <h2>Results, ${name} mode</h2>
