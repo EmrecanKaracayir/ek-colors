@@ -7,6 +7,26 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-10-26
+
+### Changed
+
+- The Settings strip, and the one in How it works, keeps its colors in one row however many there
+  are. With more than fit, the row scrolls sideways and fades on each side with more to see, so the
+  pinned strip never grows. Each color is at least 6rem wide on desktop and 3.5rem on phones.
+- The strip's labels put the name on the left and the gap on the right. Crowded, the word "gap" goes
+  first, then "Hue" becomes "#", as in "#3"; on phones a numbered hue shows "#3" and its gap, a
+  named one its gap alone.
+- The bar switches to the menu button below 54rem, and there puts the switches between the name and
+  the status whenever they fit on one line.
+- The status may wrap onto a second line, set closer together.
+
+### Fixed
+
+- The name in the bar no longer wraps onto two lines at in-between widths.
+- In the compact bar, each ⓘ sits by its own switch, and the switches stand apart from each other,
+  so it's clear which ⓘ explains which.
+
 ## [2.2.0] - 2026-10-26
 
 ### Added
@@ -116,7 +136,8 @@ The first release as EK Colors, the project Codemos palette grew into.
 - Export as JSON, CSV, Markdown or CSS, the CSS with `light-dark()` custom properties per gamut.
 - Settings can be copied, and pasted back in with each field checked, with Undo paste.
 
-[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.4...v2.2.0
 [2.1.4]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.3...v2.1.4
 [2.1.3]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.2...v2.1.3

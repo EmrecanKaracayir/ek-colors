@@ -2015,8 +2015,10 @@ function drawComparison(el: Element, mode: Mode): void {
     const fills = swatches.map((sw, i) => `<span class="fill" data-row="${String(i)}" style="--f:${sw.color}"></span>`).join("");
     const rows = swatches.map((sw, i) => `--f${String(i)}:${sw.color}`).join(";");
     const amount = (inGaps(change.bend[3] / gap) || "0.0 gap").replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`);
+    // "Hue" before a number can go when the row is crowded; the number stays, as "#3".
+    const name = change.name.replace(/^Hue (?=\d)/, `<span class="hue-word">Hue </span><span class="hash">#</span>`);
     return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
-      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name">${change.name}</span> <span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
+      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span> <span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
   });
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
@@ -2025,9 +2027,53 @@ function drawComparison(el: Element, mode: Mode): void {
     const turn = i === 1 ? turnText(angle) : "";
     return `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" aria-label="${step.title}${turn ? `, ${turn}` : ""}"${turn ? ` title="${step.name} ${turn}"` : ""}>${step.name}</button>`;
   }).join("");
+  // Drawn again, the row keeps where it was scrolled to.
+  const scrolled = el.querySelector(".strip-items")?.scrollLeft ?? 0;
   el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div><div class="strip-metrics mono">${metrics()}</div>`;
+  const row = el.querySelector<HTMLElement>(".strip-items")!;
+  row.scrollLeft = scrolled;
+  fadeEdges(row);
+  fitLabels(row);
   if (pinned !== null && !el.classList.contains("focused")) showRow(pinned);
 }
+
+/**
+ * Shortens the strip's labels until every name fits beside its gap: first without the word "gap",
+ * then without the word "Hue" before a number. The whole row shortens together.
+ *
+ * @param row  The row.
+ */
+function fitLabels(row: HTMLElement): void {
+  row.classList.remove("tight", "tighter");
+  const crowded = () => [...row.querySelectorAll<HTMLElement>(".strip-gap .name")].some((n) => n.scrollWidth > n.clientWidth);
+  if (crowded()) row.classList.add("tight");
+  if (crowded()) row.classList.add("tighter");
+}
+
+/**
+ * Marks which sides of the strip's row have more colors to scroll to, so those sides fade.
+ *
+ * @param row  The row.
+ */
+function fadeEdges(row: HTMLElement): void {
+  const rest = row.scrollWidth - row.clientWidth - row.scrollLeft;
+  row.classList.toggle("more-start", row.scrollLeft > 1);
+  row.classList.toggle("more-end", rest > 1);
+}
+
+document.addEventListener(
+  "scroll",
+  (event) => {
+    if (event.target instanceof HTMLElement && event.target.classList.contains("strip-items")) fadeEdges(event.target);
+  },
+  { capture: true, passive: true },
+);
+window.addEventListener("resize", () =>
+  document.querySelectorAll<HTMLElement>(".strip-items").forEach((row) => {
+    fadeEdges(row);
+    fitLabels(row);
+  }),
+);
 
 /* >----------------------------------------< Metrics >-----------------------------------------< */
 
@@ -2534,6 +2580,7 @@ function render(): void {
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-variant]")) b.setAttribute("aria-pressed", String(b.dataset.variant === state.variant));
   $<HTMLElement>("#variant").hidden = view !== "tiers" && view !== "compare";
   $<HTMLElement>("#edits").hidden = !followsEdits(view);
+  fitHeader();
   for (const b of document.querySelectorAll<HTMLElement>("[data-edit]")) b.setAttribute("aria-pressed", String(state.edits[b.dataset.edit as "h" | "m"]));
   const first = colors()[0]?.key ?? "red";
   refill(
@@ -2849,6 +2896,22 @@ document.addEventListener("change", (event) => {
   updateTune();
   solve();
 });
+
+/**
+ * Puts the switches between the name and the status when the bar has the menu button and they fit
+ * there on one line; otherwise they go on a row of their own below.
+ */
+function fitHeader(): void {
+  const header = $("header");
+  const tools = $<HTMLElement>(".tools");
+  header.classList.remove("one-row");
+  // The bar has the menu button below 54rem, as in the page's styles.
+  if (!matchMedia("(max-width: 54rem)").matches) return;
+  header.classList.add("one-row");
+  if (tools.scrollWidth > tools.clientWidth) header.classList.remove("one-row");
+}
+
+window.addEventListener("resize", fitHeader);
 
 // Settings' color strip sticks just below the bar, whose height changes as it wraps.
 new ResizeObserver(([entry]) => {
