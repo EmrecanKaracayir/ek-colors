@@ -74,7 +74,7 @@ render(
     `<main style="display:grid;gap:56px;align-content:center;height:630px;padding:0 88px;box-sizing:border-box">
       <div style="display:flex;gap:48px;align-items:center">${svg.replace("<svg ", '<svg width="200" height="200" ')}
         <div style="display:grid;gap:16px"><h1 style="font-size:96px;font-weight:600;letter-spacing:-0.03em;color:#E7E8EA">EK Colors</h1>
-        <p style="font-size:34px;line-height:1.35;color:#9C9EA4;max-width:740px">Accessible color palettes, solved: every color exactly on its APCA contrast, equally colorful, evenly spaced.</p></div></div>
+        <p style="font-size:34px;line-height:1.35;color:#9C9EA4;max-width:740px">Accessible color palettes, solved: every color exactly on its APCA contrast, equally colorful, evenly different.</p></div></div>
       <div style="display:flex;gap:16px">${swatches}</div></main>`,
     `width:1200px;height:630px;font-family:"Instrument Sans",system-ui,sans-serif`,
   ),
