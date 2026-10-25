@@ -6,7 +6,7 @@
 | names or measured colors.                                                                        |
 \*------------------------------------------------------------------------------------------------*/
 
-import { hueOf, hueTurn, makeModel, wrapHue } from "./model";
+import { hueOf, makeModel, meanHue, wrapHue } from "./model";
 import type { Settings } from "./settings";
 
 /** A hue a system draws as a guide, as written: a pure hue (solid) or an in-between one (dashed). */
@@ -154,7 +154,7 @@ function hueAt(settings: Pick<Settings, "bases" | "rooms">, at: string): number 
   if (hue === undefined) {
     const model = makeModel(settings);
     const [light, dark] = [model.cam("light", at).hue, model.cam("dark", at).hue];
-    hue = wrapHue(light + hueTurn(light, dark) / 2);
+    hue = meanHue([light, dark]);
     cache.set(key, hue);
   }
   return hue;

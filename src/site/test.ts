@@ -7,10 +7,32 @@
 | sure each one is, fit the curve.                                                                 |
 \*------------------------------------------------------------------------------------------------*/
 
-import { makeModel, type Model } from "../palette/model";
+import { makeModel, meanHue, type Model } from "../palette/model";
 import type { CurvePoint, Gamut, Mode, Settings } from "../palette/settings";
 import { boost, type GamutPalette, strongest } from "../palette/solve";
-import { ask, balance, CAP, type Fit, fromCode, progressBar, record, type Stair as Staircase, savedRuns, stair, toCode } from "./blind";
+import {
+  ask,
+  balance,
+  bindBlind,
+  CAP,
+  decodeRun,
+  encodeRun,
+  type Fit,
+  nextStair,
+  plainAnswer,
+  pool,
+  progressBar,
+  record,
+  type Run as Saved,
+  runItem,
+  runsSection,
+  type Stair as Staircase,
+  savedRuns,
+  stair,
+  startSides,
+  type Pick,
+} from "./blind";
+import { signed } from "./graph";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -51,13 +73,7 @@ interface Point {
 }
 
 /** A finished test. */
-interface Run {
-  readonly mode: Mode;
-  readonly gamut: Gamut;
-  readonly tier: number;
-  readonly when: string;
-  readonly points: readonly Point[];
-}
+type Run = Saved<Point>;
 
 /** One hue's staircase, and the hue it tests. */
 interface Stair extends Staircase {
@@ -104,10 +120,8 @@ let session: Session | null = null;
  * @returns     The pair, or null when every staircase is done.
  */
 function nextPair(s: Omit<Session, "pair">, last?: string): Pair | null {
-  const open = s.stairs.filter((t) => !t.done);
-  if (!open.length) return null;
-  const choices = open.length > 1 ? open.filter((t) => t.key !== last) : open;
-  const stair = choices[Math.floor(Math.random() * choices.length)]!;
+  const stair = nextStair(s.stairs, last);
+  if (!stair) return null;
   const others = s.stairs.filter((t) => t.key !== stair.key);
   const other = others[Math.floor(Math.random() * others.length)]!;
   const color = (hue: number, m: number) => strongest(s.model, s.base, s.mode, hue, Math.max(0, m), s.tier);
@@ -130,7 +144,7 @@ function start(ctx: TestContext): boolean {
   if (!palette) return false;
   const tier = ctx.settings.identityTier[ctx.mode];
   const hues = palette.colors.filter((c) => !c.extra).map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
-  const signs = hues.map((_, i) => (i % 2 ? 1 : -1)).toSorted(() => Math.random() - 0.5);
+  const signs = startSides(hues.length);
   const base = {
     mode: ctx.mode,
     gamut: ctx.gamut,
@@ -167,12 +181,10 @@ function equal(points: readonly Point[]) {
  * @returns     Per hue: its average hue angle, how many answers, and where it looks equal.
  */
 function pooled(mode: Mode) {
-  const byKey = new Map<string, Point[]>();
-  for (const run of runs().filter((r) => r.mode === mode))
-    for (const p of run.points) byKey.set(p.key, [...(byKey.get(p.key) ?? []), p]);
-  return [...byKey].map(([key, points]) => ({
+  return [...pool(runs(), mode)].map(([key, points]) => ({
     key,
-    hue: points.reduce((s, p) => s + p.hue, 0) / points.length,
+    // Around the circle: a hue measured at 359° and at 1° is at 0°, not 180°.
+    hue: meanHue(points.map((p) => p.hue)),
     count: points.length,
     result: equal(points),
   }));
@@ -236,7 +248,13 @@ function fitCurve(measured: readonly Measured[], mode: Mode): CurvePoint[] {
 
 /* >---------------------------------------< Saved runs >---------------------------------------< */
 
-const saved = savedRuns<Run>("ek-colors:tests");
+/** The test's name: its data attribute, ids and the tag its codes start with. */
+const NAME = "test";
+
+/** Whether an answer is plain: a key, its hue and x as numbers, and 0, ½ or 1. */
+const plain = (p: Point) => plainAnswer(p.key, [p.hue, p.x], p.y);
+
+const saved = savedRuns<Point>("ek-colors:tests", plain);
 const runs = () => saved.all();
 const keep = (list: Run[]) => saved.keep(list);
 
@@ -247,21 +265,34 @@ const keep = (list: Run[]) => saved.keep(list);
  * @returns    The code.
  */
 function encode(run: Run): string {
-  const points = run.points.map((p) => [p.key, Math.round(p.hue), Math.round(p.x * 10) / 10, p.y]);
-  return toCode([run.mode, run.gamut, run.tier, run.when, points]);
+  return encodeRun(
+    NAME,
+    run,
+    run.points.map((p) => [p.key, Math.round(p.hue), Math.round(p.x * 10) / 10, p.y]),
+  );
 }
 
 /**
- * A run from its code.
+ * A run from its code. Codes made before they carried the test's name start with the mode, and
+ * still read.
  *
  * @param code  The code.
  * @returns     The run, or null when it isn't one.
  */
 function decode(code: string): Run | null {
-  const value = fromCode(code);
-  if (!Array.isArray(value) || value.length !== 5 || !Array.isArray(value[4])) return null;
-  const [mode, gamut, tier, when, points] = value as [Mode, Gamut, number, string, [string, number, number, number][]];
-  return { mode, gamut, tier, when, points: points.map(([key, hue, x, y]) => ({ key, hue, x, y })) };
+  let tagged = code;
+  try {
+    const value = JSON.parse(atob(code.trim())) as unknown;
+    if (Array.isArray(value) && value.length === 5) tagged = btoa(JSON.stringify([NAME, ...value]));
+  } catch {
+    return null;
+  }
+  return decodeRun(tagged, NAME, (value) => {
+    if (!Array.isArray(value)) return null;
+    const [key, hue, x, y] = value as [string, number, number, number];
+    const p = { key, hue, x, y };
+    return plain(p) ? p : null;
+  });
 }
 
 /* >------------------------------------------< Page >------------------------------------------< */
@@ -331,7 +362,7 @@ function results(ctx: TestContext): string {
   );
   const curve = usable.length >= 3 ? fitCurve(usable, ctx.mode) : null;
   const settings = { curve: { light: curve ?? [], dark: curve ?? [] } };
-  const sign = (v: number) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
+  const sign = signed;
   const rows = measured
     .map((m) => {
       const r = m.result;
@@ -346,15 +377,9 @@ function results(ctx: TestContext): string {
     })
     .join("");
   const describe = (points: readonly CurvePoint[]) =>
-    points.map((p) => `${p.amount > 0 ? "+" : ""}${String(p.amount)} at ${String(p.center)}°, width ${String(p.width)}°`).join("; ");
+    points.map((p) => `${signed(p.amount)} at ${String(p.center)}°, width ${String(p.width)}°`).join("; ");
   const mine = runs()
-    .map((r, i) => ({ r, i }))
-    .filter(({ r }) => r.mode === ctx.mode)
-    .map(
-      ({ r, i }) => `<li><span class="mono">${new Date(r.when).toLocaleString()}</span> · ${String(r.points.length)} pairs · ${r.gamut}, Lc ${String(r.tier)}
-        <button type="button" data-test="copy" data-run="${String(i)}">Copy code</button>
-        <button type="button" data-test="remove" data-run="${String(i)}">Remove</button></li>`,
-    )
+    .flatMap((r, i) => (r.mode === ctx.mode ? [runItem(NAME, r, i, "pairs")] : []))
     .join("");
   const name = ctx.mode;
   return `<section>
@@ -370,12 +395,7 @@ function results(ctx: TestContext): string {
       }
       <p class="soft">It only adds a point where the answers clearly need one. One run is a rough answer; two or three, or a few people's, make it steadier.</p>
     </section>
-    <section>
-      <h2>Runs</h2>
-      <ul class="test-runs">${mine}</ul>
-      <p class="soft">Send someone the link; when they finish, they copy their code and send it to you. Paste it here to add their answers.</p>
-      <div class="row"><input id="test-code" type="text" placeholder="Paste a code" spellcheck="false"><button type="button" data-test="add">Add</button><span id="test-message" class="soft" role="status"></span></div>
-    </section>`;
+    ${runsSection(NAME, mine)}`;
 }
 
 /* >-----------------------------------------< Events >-----------------------------------------< */
@@ -387,7 +407,7 @@ function results(ctx: TestContext): string {
  * @param ctx     What the page shows.
  * @param answer  Which side was picked.
  */
-function answer(ctx: TestContext, answer: "left" | "right" | "same"): void {
+function answer(ctx: TestContext, answer: Pick): void {
   const s = session;
   if (!s || s.resting) return;
   const pair = s.pair;
@@ -405,6 +425,8 @@ function answer(ctx: TestContext, answer: "left" | "right" | "same"): void {
   s.resting = true;
   ctx.redraw();
   window.setTimeout(() => {
+    // Stopped, or another test started, in the meantime: nothing to show.
+    if (session !== s) return;
     s.resting = false;
     ctx.redraw();
   }, 300);
@@ -416,43 +438,16 @@ function answer(ctx: TestContext, answer: "left" | "right" | "same"): void {
  * @param get  What the page shows now.
  */
 export function bindTest(get: () => TestContext): void {
-  document.addEventListener("click", (event) => {
-    const el = (event.target as Element).closest<HTMLElement>("[data-test]");
-    if (!el) return;
-    const ctx = get();
-    const action = el.dataset.test!;
-    if (action === "left" || action === "right" || action === "same") return answer(ctx, action);
-    if (action === "start" && !start(ctx)) return;
-    if (action === "stop") session = null;
-    if (action === "apply") ctx.applyCurve(ctx.mode, JSON.parse(el.dataset.points ?? "[]") as CurvePoint[]);
-    if (action === "remove") keep(runs().filter((_, i) => i !== Number(el.dataset.run)));
-    if (action === "copy") {
-      const run = runs()[Number(el.dataset.run)];
-      if (run)
-        navigator.clipboard.writeText(encode(run)).then(
-          () => (el.textContent = "Copied"),
-          () => (el.textContent = "Copying isn't allowed here"),
-        );
-      return;
-    }
-    if (action === "add") {
-      const run = decode(document.querySelector<HTMLInputElement>("#test-code")?.value ?? "");
-      if (!run) {
-        const message = document.querySelector("#test-message");
-        if (message) message.textContent = "That isn't a test code. Copy it again and paste the whole code.";
-        return;
-      }
-      keep([...runs(), run]);
-    }
-    ctx.redraw();
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (!session || !document.querySelector("#test-stage")) return;
-    const keys: Record<string, "left" | "right" | "same"> = { ArrowLeft: "left", ArrowRight: "right", ArrowDown: "same" };
-    const picked = keys[event.key];
-    if (!picked) return;
-    event.preventDefault();
-    answer(get(), picked);
+  bindBlind(get, {
+    name: NAME,
+    code: "test",
+    runs: saved as { all(): Saved<unknown>[]; keep(list: Saved<unknown>[]): void },
+    encode,
+    decode,
+    start,
+    stop: () => (session = null),
+    answer,
+    apply: (ctx, el) => ctx.applyCurve(ctx.mode, JSON.parse(el.dataset.points ?? "[]") as CurvePoint[]),
+    asking: () => Boolean(session && document.querySelector("#test-stage .test-pair")),
   });
 }

@@ -167,6 +167,20 @@ export function hueTurn(from: number, to: number): number {
   return wrapHue(to - from + 180) - 180;
 }
 
+/**
+ * The average of hues around the circle: 350° and 10° average to 0°, not 180°.
+ *
+ * @param hues  Degrees.
+ * @returns     Degrees from 0 up to 360; 0 for none.
+ */
+export function meanHue(hues: readonly number[]): number {
+  const [x, y] = hues.reduce(
+    ([a, b], h) => [a + Math.cos((h * Math.PI) / 180), b + Math.sin((h * Math.PI) / 180)],
+    [0, 0],
+  );
+  return wrapHue((Math.atan2(y, x) * 180) / Math.PI);
+}
+
 /* >---------------------------------------< Difference >---------------------------------------< */
 
 /**

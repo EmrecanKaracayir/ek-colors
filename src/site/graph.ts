@@ -61,10 +61,10 @@ export function evenness(closer: number): string {
  * Text someone typed, safe to put in a page: in its text or in an attribute.
  *
  * @param text  E.g. an extra color's name.
- * @returns     The text with &, <, > and " written as entities.
+ * @returns     The text with &, <, >, " and ' written as entities.
  */
 export function escape(text: string): string {
-  return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
 }
 
 /**

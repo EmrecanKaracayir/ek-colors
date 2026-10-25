@@ -7,6 +7,9 @@
 | between people as short codes.                                                                   |
 \*------------------------------------------------------------------------------------------------*/
 
+import { type Gamut, GAMUTS, type Mode, MODES } from "../palette/settings";
+import { copyText, flash } from "./dom";
+
 /** One answer: where the test stood, and how it was answered (1, 0, or ½ for "can't tell"). */
 export interface Answer {
   readonly x: number;
@@ -32,7 +35,6 @@ export interface Stair {
   step: number;
   turns: number;
   last: number;
-  count: number;
   done: boolean;
   readonly answers: Answer[];
 }
@@ -52,7 +54,45 @@ export interface Fit {
  * @returns       The staircase.
  */
 export function stair(key: string, offset: number): Stair {
-  return { key, delta: offset, step: 4, turns: 0, last: 0, count: 0, done: false, answers: [] };
+  return { key, delta: offset, step: 4, turns: 0, last: 0, done: false, answers: [] };
+}
+
+/**
+ * A list in random order, every order equally likely.
+ *
+ * @param list  The list.
+ * @returns     A shuffled copy.
+ */
+export function shuffled<T>(list: readonly T[]): T[] {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
+
+/**
+ * Which side each staircase starts on: half below, half above, in random order.
+ *
+ * @param n  How many staircases.
+ * @returns  −1 or 1 for each.
+ */
+export function startSides(n: number): number[] {
+  return shuffled(Array.from({ length: n }, (_, i) => (i % 2 ? 1 : -1)));
+}
+
+/**
+ * The staircase to ask next: one that isn't done, never the one just asked while another is open.
+ *
+ * @param stairs  Every staircase.
+ * @param last    The key asked last, if any.
+ * @returns       The staircase, or null when every one is done.
+ */
+export function nextStair<S extends Stair>(stairs: readonly S[], last?: string): S | null {
+  const open = stairs.filter((s) => !s.done);
+  const choices = open.length > 1 ? open.filter((s) => s.key !== last) : open;
+  return choices[Math.floor(Math.random() * choices.length)] ?? null;
 }
 
 /**
@@ -64,7 +104,7 @@ export function stair(key: string, offset: number): Stair {
  * @returns    The offset to show and whether it's a check.
  */
 export function ask(s: Stair, far: number): { offset: number; check: boolean } {
-  const check = s.count % CHECK_EVERY === CHECK_EVERY - 1;
+  const check = s.answers.length % CHECK_EVERY === CHECK_EVERY - 1;
   return { offset: check ? s.delta + (Math.random() < 0.5 ? -far : far) : s.delta, check };
 }
 
@@ -82,9 +122,8 @@ export function ask(s: Stair, far: number): { offset: number; check: boolean } {
  */
 export function record(s: Stair, a: Answer, check: boolean, reach: number, fit: Fit): void {
   s.answers.push(a);
-  if (check) s.count++;
-  else climb(s, a.y, reach);
-  if (s.count >= CAP) {
+  if (!check) climb(s, a.y, reach);
+  if (s.answers.length >= CAP) {
     s.done = true;
     return;
   }
@@ -100,7 +139,7 @@ export function record(s: Stair, a: Answer, check: boolean, reach: number, fit: 
  * @returns       The share done.
  */
 export function progress(stairs: readonly Stair[]): number {
-  return stairs.reduce((sum, s) => sum + (s.done ? 1 : s.count / CAP), 0) / stairs.length;
+  return stairs.reduce((sum, s) => sum + (s.done ? 1 : s.answers.length / CAP), 0) / stairs.length;
 }
 
 /**
@@ -126,7 +165,6 @@ export function progressBar(stairs: readonly Stair[]): string {
  * @param reach   How far it may go either way.
  */
 export function climb(s: Stair, picked: number, reach: number): void {
-  s.count++;
   if (picked === 0.5) return;
   const direction = picked === 1 ? -1 : 1;
   if (s.last && direction !== s.last) {
@@ -176,23 +214,49 @@ export function balance(answers: readonly Answer[], center: number, range: numbe
   return { at: peak.at, low, high, sure, gain };
 }
 
+/* >-----------------------------------------< Runs >-------------------------------------------< */
+
+/** A finished run: where it was taken and its answers. */
+export interface Run<P> {
+  readonly mode: Mode;
+  readonly gamut: Gamut;
+  readonly tier: number;
+  readonly when: string;
+  readonly points: readonly P[];
+}
+
 /**
- * Finished runs kept in this browser.
+ * A run's answers pooled by color, from every saved run of a mode.
  *
- * @param key  The storage key.
- * @returns    Reading and saving them.
+ * @param runs  The saved runs.
+ * @param mode  The mode.
+ * @returns     Each color's answers.
  */
-export function savedRuns<Run>(key: string) {
-  let memory: Run[] = [];
+export function pool<P extends { readonly key: string }>(runs: readonly Run<P>[], mode: Mode): Map<string, P[]> {
+  const byKey = new Map<string, P[]>();
+  for (const run of runs) if (run.mode === mode) for (const p of run.points) byKey.set(p.key, [...(byKey.get(p.key) ?? []), p]);
+  return byKey;
+}
+
+/**
+ * Finished runs kept in this browser. Only whole, plain runs are read back.
+ *
+ * @param key    The storage key.
+ * @param plain  Whether one answer is plain.
+ * @returns      Reading and saving them.
+ */
+export function savedRuns<P>(key: string, plain: (point: P) => boolean) {
+  let memory: Run<P>[] = [];
   return {
-    all(): Run[] {
+    all(): Run<P>[] {
       try {
-        return JSON.parse(localStorage.getItem(key) ?? "[]") as Run[];
+        const list = JSON.parse(localStorage.getItem(key) ?? "[]") as unknown;
+        return Array.isArray(list) ? (list as Run<P>[]).filter((r) => plainRun(r) && r.points.every(plain)) : [];
       } catch {
         return memory;
       }
     },
-    keep(list: Run[]): void {
+    keep(list: Run<P>[]): void {
       memory = list;
       try {
         localStorage.setItem(key, JSON.stringify(list));
@@ -214,15 +278,174 @@ export function toCode(value: unknown): string {
 }
 
 /**
- * A value from its code.
+ * A run from its code, checked through: codes come from other people, so anything that isn't a
+ * whole, plain run is refused rather than shown or kept.
  *
- * @param code  The code.
- * @returns     The value, or null when it isn't one.
+ * @param code   The code.
+ * @param tag    The test's tag, the code's first entry.
+ * @param point  Reads one answer, or null when it isn't one.
+ * @returns      The run, or null when the code isn't one.
  */
-export function fromCode(code: string): unknown {
+export function decodeRun<P>(code: string, tag: string, point: (value: unknown) => P | null): Run<P> | null {
+  let value: unknown;
   try {
-    return JSON.parse(atob(code.trim()));
+    value = JSON.parse(atob(code.trim()));
   } catch {
     return null;
   }
+  if (!Array.isArray(value) || value.length !== 6 || value[0] !== tag || !Array.isArray(value[5])) return null;
+  const [, mode, gamut, tier, when, list] = value as [unknown, Mode, Gamut, number, string, unknown[]];
+  const points = list.map(point);
+  if (points.some((p) => p === null)) return null;
+  const run = { mode, gamut, tier, when, points: points as P[] };
+  return plainRun(run) ? run : null;
+}
+
+/**
+ * Whether a run is a whole, plain one: a mode, a gamut tier, a tier, a time, and answers. Runs
+ * saved in this browser are read through it too.
+ *
+ * @param run  The run, as read.
+ * @returns    True when it is.
+ */
+export function plainRun(run: Run<unknown>): boolean {
+  return (
+    MODES.includes(run.mode) &&
+    GAMUTS.includes(run.gamut) &&
+    typeof run.tier === "number" &&
+    Number.isFinite(run.tier) &&
+    typeof run.when === "string" &&
+    !Number.isNaN(Date.parse(run.when)) &&
+    Array.isArray(run.points) &&
+    run.points.length > 0
+  );
+}
+
+/**
+ * A run as a code: its tag first, then where it was taken, then its answers.
+ *
+ * @param tag     The test's tag.
+ * @param run     The run.
+ * @param points  Its answers as plain lists.
+ * @returns       The code.
+ */
+export function encodeRun(tag: string, run: Run<unknown>, points: readonly unknown[]): string {
+  return toCode([tag, run.mode, run.gamut, run.tier, run.when, points]);
+}
+
+/**
+ * Whether an answer's parts are what codes hold: a color's key, finite numbers, and 0, ½ or 1.
+ *
+ * @param key      The color's key.
+ * @param numbers  Its numbers.
+ * @param y        The answer.
+ * @returns        True when they are.
+ */
+export function plainAnswer(key: unknown, numbers: readonly unknown[], y: unknown): boolean {
+  return typeof key === "string" && /^[a-z0-9-]+$/.test(key) && numbers.every((n) => typeof n === "number" && Number.isFinite(n)) && (y === 0 || y === 0.5 || y === 1);
+}
+
+/* >-----------------------------------------< Page >-------------------------------------------< */
+
+/** How an answer is given: one side, the other, or neither. */
+export type Pick = "left" | "right" | "same";
+
+/**
+ * The answer a key gives, if any: ←, → and ↓, pressed on their own.
+ *
+ * @param event  The key press.
+ * @returns      The answer, or null.
+ */
+export function pickOf(event: KeyboardEvent): Pick | null {
+  if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return null;
+  return ({ ArrowLeft: "left", ArrowRight: "right", ArrowDown: "same" } as const)[event.key as "ArrowLeft"] ?? null;
+}
+
+/**
+ * A run in a test's list of runs, with a button to copy its code and one to remove it.
+ *
+ * @param name  The test's name: its data attribute and ids.
+ * @param run   The run.
+ * @param i     Its place among the saved runs.
+ * @param unit  What its answers are, e.g. "pairs".
+ * @returns     HTML.
+ */
+export function runItem(name: string, run: Run<unknown>, i: number, unit: string): string {
+  return `<li><span class="mono">${new Date(run.when).toLocaleString()}</span> · ${String(run.points.length)} ${unit} · ${run.gamut}, Lc ${String(run.tier)}
+    <button type="button" data-${name}="copy" data-run="${String(i)}">Copy code</button>
+    <button type="button" data-${name}="remove" data-run="${String(i)}">Remove</button></li>`;
+}
+
+/**
+ * The Runs section: the runs so far and a field to add someone else's by its code.
+ *
+ * @param name   The test's name: its data attribute and ids.
+ * @param items  The runs, as list items.
+ * @returns      HTML.
+ */
+export function runsSection(name: string, items: string): string {
+  return `<section>
+      <h2>Runs</h2>
+      <ul class="test-runs">${items}</ul>
+      <p class="soft">Send someone the link; when they finish, they copy their code and send it to you. Paste it here to add their answers.</p>
+      <div class="row"><input id="${name}-code" class="test-code" type="text" placeholder="Paste a code" spellcheck="false"><button type="button" data-${name}="add">Add</button><span id="${name}-message" class="soft" role="status"></span></div>
+    </section>`;
+}
+
+/** What a test gives the page's clicks and keys. */
+export interface Controls<C> {
+  /** Its name: its data attribute and ids. */
+  readonly name: string;
+
+  /** What its codes are called, for the message when one isn't. */
+  readonly code: string;
+
+  readonly runs: { all(): Run<unknown>[]; keep(list: Run<unknown>[]): void };
+  readonly encode: (run: Run<never>) => string;
+  readonly decode: (code: string) => Run<unknown> | null;
+  readonly start: (ctx: C) => boolean;
+  readonly stop: () => void;
+  readonly answer: (ctx: C, pick: Pick) => void;
+  readonly apply: (ctx: C, el: HTMLElement) => void;
+
+  /** Whether its question is on screen, so its keys answer it. */
+  readonly asking: () => boolean;
+}
+
+/**
+ * Makes a test's page respond to clicks and keys: answering, starting and stopping, applying the
+ * result, and copying, removing and adding runs.
+ *
+ * @param get   What the page shows now, and how to draw it again.
+ * @param test  The test.
+ */
+export function bindBlind<C extends { readonly redraw: () => void }>(get: () => C, test: Controls<C>): void {
+  document.addEventListener("click", (event) => {
+    const el = (event.target as Element).closest<HTMLElement>(`[data-${test.name}]`);
+    if (!el) return;
+    const ctx = get();
+    const action = el.getAttribute(`data-${test.name}`)!;
+    if (action === "left" || action === "right" || action === "same") return test.answer(ctx, action);
+    if (action === "start" && !test.start(ctx)) return;
+    if (action === "stop") test.stop();
+    if (action === "apply") test.apply(ctx, el);
+    if (action === "remove") test.runs.keep(test.runs.all().filter((_, i) => i !== Number(el.dataset.run)));
+    if (action === "copy") {
+      const run = test.runs.all()[Number(el.dataset.run)];
+      if (run) copyText(test.encode(run as Run<never>), (copied) => (el.textContent = copied ? "Copied" : "Copying isn't allowed here"));
+      return;
+    }
+    if (action === "add") {
+      const run = test.decode(document.querySelector<HTMLInputElement>(`#${test.name}-code`)?.value ?? "");
+      if (!run) return flash(document.querySelector(`#${test.name}-message`), `That isn't a ${test.code} code. Copy it again and paste the whole code.`);
+      test.runs.keep([...test.runs.all(), run]);
+    }
+    ctx.redraw();
+  });
+  document.addEventListener("keydown", (event) => {
+    const pick = pickOf(event);
+    if (!pick || !test.asking()) return;
+    event.preventDefault();
+    test.answer(get(), pick);
+  });
 }

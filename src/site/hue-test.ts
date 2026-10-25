@@ -7,10 +7,31 @@
 | those hues, with how sure each one is, can be placed.                                            |
 \*------------------------------------------------------------------------------------------------*/
 
-import { makeModel, type Model } from "../palette/model";
+import { hueTurn, makeModel, type Model, wrapHue } from "../palette/model";
 import { type Gamut, type Mode, NAMES, type Settings } from "../palette/settings";
 import { boost, type GamutPalette, strongest } from "../palette/solve";
-import { ask, balance, CAP, fromCode, progressBar, record, type Stair as Staircase, savedRuns, stair, toCode } from "./blind";
+import {
+  ask,
+  balance,
+  bindBlind,
+  CAP,
+  decodeRun,
+  encodeRun,
+  nextStair,
+  type Pick,
+  plainAnswer,
+  pool,
+  progressBar,
+  record,
+  type Run as Saved,
+  runItem,
+  runsSection,
+  type Stair as Staircase,
+  savedRuns,
+  stair,
+  startSides,
+} from "./blind";
+import { signed } from "./graph";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -50,13 +71,7 @@ interface Point {
 }
 
 /** A finished test. */
-interface Run {
-  readonly mode: Mode;
-  readonly gamut: Gamut;
-  readonly tier: number;
-  readonly when: string;
-  readonly points: readonly Point[];
-}
+type Run = Saved<Point>;
 
 /** One color's staircase: its hue in the palette and the neighbors it can lean toward. */
 interface Stair extends Staircase {
@@ -105,13 +120,11 @@ let session: Session | null = null;
  * @returns     The trial, or null when every staircase is done.
  */
 function nextTrial(s: Omit<Session, "trial">, last?: string): Trial | null {
-  const open = s.stairs.filter((t) => !t.done);
-  if (!open.length) return null;
-  const choices = open.length > 1 ? open.filter((t) => t.key !== last) : open;
-  const chosen = choices[Math.floor(Math.random() * choices.length)]!;
+  const chosen = nextStair(s.stairs, last);
+  if (!chosen) return null;
   const { offset, check } = ask(chosen, FAR);
   const hue = chosen.hue + offset;
-  const at = ((hue % 360) + 360) % 360;
+  const at = wrapHue(hue);
   const color = strongest(s.model, s.base, s.mode, at, s.target + boost(s.settings, s.mode, at), s.tier);
   return { stair: chosen, color, hue, afterLeft: Math.random() < 0.5, check };
 }
@@ -131,7 +144,7 @@ function start(ctx: HueTestContext): boolean {
     .filter((c) => !c.extra)
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }))
     .toSorted((a, b) => a.hue - b.hue);
-  const signs = colors.map((_, i) => (i % 2 ? 1 : -1)).toSorted(() => Math.random() - 0.5);
+  const signs = startSides(colors.length);
   const base = {
     mode: ctx.mode,
     gamut: ctx.gamut,
@@ -162,23 +175,29 @@ function start(ctx: HueTestContext): boolean {
  * @returns     Per color: how many answers, and the hue with its range, or null.
  */
 function pooled(mode: Mode) {
-  const byKey = new Map<string, Point[]>();
-  for (const run of runs().filter((r) => r.mode === mode))
-    for (const p of run.points) byKey.set(p.key, [...(byKey.get(p.key) ?? []), p]);
-  return [...byKey].map(([key, points]) => {
+  return [...pool(runs(), mode)].map(([key, points]) => {
     // Runs can sit on either side of 0°; every answer is brought next to the first.
     const near = points[0]!.x;
-    const unwrapped = points.map((p) => ({ ...p, x: near + ((((p.x - near) % 360) + 540) % 360) - 180 }));
+    const unwrapped = points.map((p) => ({ ...p, x: near + hueTurn(near, p.x) }));
     const center = unwrapped.reduce((s, p) => s + p.x, 0) / unwrapped.length;
     const found = balance(unwrapped, Math.round(center), REACH + 10);
-    const wrap = (h: number) => ((h % 360) + 360) % 360;
-    return { key, count: points.length, result: found && { hue: wrap(found.at), low: found.low, high: found.high, sure: found.sure } };
+    // The range is kept as distances from the result, which mean the same on either side of 0°.
+    return { key, count: points.length, result: found && { hue: wrapHue(found.at), below: found.at - found.low, above: found.high - found.at, sure: found.sure } };
   });
 }
 
 /* >---------------------------------------< Saved runs >---------------------------------------< */
 
-const saved = savedRuns<Run>("ek-colors:hue-tests");
+/** The test's name: its data attribute and ids. */
+const NAME = "hue-test";
+
+/** The tag its codes start with. */
+const TAG = "hue";
+
+/** Whether an answer is plain: a key, the hue as a number, and 0, ½ or 1. */
+const plain = (p: Point) => plainAnswer(p.key, [p.x], p.y);
+
+const saved = savedRuns<Point>("ek-colors:hue-tests", plain);
 const runs = () => saved.all();
 const keep = (list: Run[]) => saved.keep(list);
 
@@ -189,8 +208,11 @@ const keep = (list: Run[]) => saved.keep(list);
  * @returns    The code.
  */
 function encode(run: Run): string {
-  const points = run.points.map((p) => [p.key, Math.round(p.x * 10) / 10, p.y]);
-  return toCode(["hue", run.mode, run.gamut, run.tier, run.when, points]);
+  return encodeRun(
+    TAG,
+    run,
+    run.points.map((p) => [p.key, Math.round(p.x * 10) / 10, p.y]),
+  );
 }
 
 /**
@@ -200,10 +222,12 @@ function encode(run: Run): string {
  * @returns     The run, or null when it isn't one.
  */
 function decode(code: string): Run | null {
-  const value = fromCode(code);
-  if (!Array.isArray(value) || value[0] !== "hue" || !Array.isArray(value[5])) return null;
-  const [, mode, gamut, tier, when, points] = value as [string, Mode, Gamut, number, string, [string, number, number][]];
-  return { mode, gamut, tier, when, points: points.map(([key, x, y]) => ({ key, x, y })) };
+  return decodeRun(code, TAG, (value) => {
+    if (!Array.isArray(value)) return null;
+    const [key, x, y] = value as [string, number, number];
+    const p = { key, x, y };
+    return plain(p) ? p : null;
+  });
 }
 
 /* >------------------------------------------< Page >------------------------------------------< */
@@ -269,32 +293,26 @@ function results(ctx: HueTestContext): string {
   const tier = ctx.settings.identityTier[ctx.mode];
   const now = (key: string) => ctx.palette?.[ctx.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default;
   const measured = pooled(ctx.mode).toSorted((a, b) => (now(a.key)?.hue ?? 0) - (now(b.key)?.hue ?? 0));
-  const sign = (v: number) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v).toFixed(1)}`;
   const rows = measured
     .map((m) => {
       const r = m.result;
       const current = now(m.key);
-      const off = r && current ? ((((r.hue - current.hue) % 360) + 540) % 360) - 180 : null;
-      const clear = r?.sure && current && (r.low > current.hue || r.high < current.hue);
+      const off = r && current ? hueTurn(current.hue, r.hue) : null;
+      // Clearly off: the palette's hue is outside the range, both measured from the result.
+      const clear = r?.sure && off !== null && (off - r.below > 0 || off + r.above < 0);
       return `<tr${clear ? ' class="clear"' : ""}>
         <th scope="row"><span class="dot" style="--c:${current?.color ?? "transparent"}"></span> ${ctx.label(m.key)}</th>
         <td class="mono">${String(m.count)}</td>
         <td class="mono">${r ? `${r.hue.toFixed(1)}°` : "—"}</td>
-        <td class="mono soft">${r ? (r.sure ? `±${((r.high - r.low) / 2).toFixed(1)}°` : "unsure") : "—"}</td>
+        <td class="mono soft">${r ? (r.sure ? `±${((r.below + r.above) / 2).toFixed(1)}°` : "unsure") : "—"}</td>
         <td class="mono">${current ? `${current.hue.toFixed(1)}°` : "—"}</td>
-        <td class="mono">${off === null ? "—" : `${sign(off)}°`}</td>
+        <td class="mono">${off === null ? "—" : `${signed(off)}°`}</td>
       </tr>`;
     })
     .join("");
   const sure = Object.fromEntries(measured.flatMap((m) => (m.result?.sure ? [[m.key, Math.round(m.result.hue)]] : [])));
   const mine = runs()
-    .map((r, i) => ({ r, i }))
-    .filter(({ r }) => r.mode === ctx.mode)
-    .map(
-      ({ r, i }) => `<li><span class="mono">${new Date(r.when).toLocaleString()}</span> · ${String(r.points.length)} colors · ${r.gamut}, Lc ${String(r.tier)}
-        <button type="button" data-hue-test="copy" data-run="${String(i)}">Copy code</button>
-        <button type="button" data-hue-test="remove" data-run="${String(i)}">Remove</button></li>`,
-    )
+    .flatMap((r, i) => (r.mode === ctx.mode ? [runItem(NAME, r, i, "colors")] : []))
     .join("");
   const name = ctx.mode;
   const count = Object.keys(sure).length;
@@ -309,12 +327,7 @@ function results(ctx: HueTestContext): string {
       }
       <p class="soft">Hues apply to both modes. One run is a rough answer; two or three, or a few people's, make it steadier.</p>
     </section>
-    <section>
-      <h2>Runs</h2>
-      <ul class="test-runs">${mine}</ul>
-      <p class="soft">Send someone the link; when they finish, they copy their code and send it to you. Paste it here to add their answers.</p>
-      <div class="row"><input id="hue-test-code" class="test-code" type="text" placeholder="Paste a code" spellcheck="false"><button type="button" data-hue-test="add">Add</button><span id="hue-test-message" class="soft" role="status"></span></div>
-    </section>`;
+    ${runsSection(NAME, mine)}`;
 }
 
 /* >-----------------------------------------< Events >-----------------------------------------< */
@@ -326,7 +339,7 @@ function results(ctx: HueTestContext): string {
  * @param ctx     What the page shows.
  * @param answer  Which button was picked.
  */
-function answer(ctx: HueTestContext, answer: "left" | "right" | "same"): void {
+function answer(ctx: HueTestContext, answer: Pick): void {
   const s = session;
   if (!s || s.resting) return;
   const t = s.trial;
@@ -344,6 +357,8 @@ function answer(ctx: HueTestContext, answer: "left" | "right" | "same"): void {
   s.resting = true;
   ctx.redraw();
   window.setTimeout(() => {
+    // Stopped, or another test started, in the meantime: nothing to show.
+    if (session !== s) return;
     s.resting = false;
     ctx.redraw();
   }, 300);
@@ -355,43 +370,16 @@ function answer(ctx: HueTestContext, answer: "left" | "right" | "same"): void {
  * @param get  What the page shows now.
  */
 export function bindHueTest(get: () => HueTestContext): void {
-  document.addEventListener("click", (event) => {
-    const el = (event.target as Element).closest<HTMLElement>("[data-hue-test]");
-    if (!el) return;
-    const ctx = get();
-    const action = el.dataset.hueTest!;
-    if (action === "left" || action === "right" || action === "same") return answer(ctx, action);
-    if (action === "start" && !start(ctx)) return;
-    if (action === "stop") session = null;
-    if (action === "apply") ctx.applyHues(JSON.parse(el.dataset.hues ?? "{}") as Record<string, number>);
-    if (action === "remove") keep(runs().filter((_, i) => i !== Number(el.dataset.run)));
-    if (action === "copy") {
-      const run = runs()[Number(el.dataset.run)];
-      if (run)
-        navigator.clipboard.writeText(encode(run)).then(
-          () => (el.textContent = "Copied"),
-          () => (el.textContent = "Copying isn't allowed here"),
-        );
-      return;
-    }
-    if (action === "add") {
-      const run = decode(document.querySelector<HTMLInputElement>("#hue-test-code")?.value ?? "");
-      if (!run) {
-        const message = document.querySelector("#hue-test-message");
-        if (message) message.textContent = "That isn't a hue test code. Copy it again and paste the whole code.";
-        return;
-      }
-      keep([...runs(), run]);
-    }
-    ctx.redraw();
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (!session || !document.querySelector("#test-stage .test-single")) return;
-    const keys: Record<string, "left" | "right" | "same"> = { ArrowLeft: "left", ArrowRight: "right", ArrowDown: "same" };
-    const picked = keys[event.key];
-    if (!picked) return;
-    event.preventDefault();
-    answer(get(), picked);
+  bindBlind(get, {
+    name: NAME,
+    code: "hue test",
+    runs: saved as { all(): Saved<unknown>[]; keep(list: Saved<unknown>[]): void },
+    encode,
+    decode,
+    start,
+    stop: () => (session = null),
+    answer,
+    apply: (ctx, el) => ctx.applyHues(JSON.parse(el.dataset.hues ?? "{}") as Record<string, number>),
+    asking: () => Boolean(session && document.querySelector("#test-stage .test-single")),
   });
 }
