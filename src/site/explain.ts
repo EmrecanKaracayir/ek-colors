@@ -5,11 +5,11 @@
 | the same code as the solver.                                                                     |
 \*------------------------------------------------------------------------------------------------*/
 
-import { apca, composition, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
-import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, ROLES, type Settings } from "../palette/settings";
+import { apca, composition, makeModel, type Model, parts, wcag, wcagLevel } from "../palette/model";
+import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../palette/settings";
 import { anchorHue, anchorSource } from "../palette/references";
 import { escape, zoneTable } from "./graph";
-import { boost, type GamutPalette, lineup, strongest } from "../palette/solve";
+import { boost, type GamutPalette, hueKeys, lineup, strongest } from "../palette/solve";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -24,7 +24,82 @@ export interface Context {
 
 /* >----------------------------------------< Helpers >-----------------------------------------< */
 
-const value = (id: string) => (document.querySelector<HTMLInputElement>(`#${id}`)?.value ?? "");
+/** What each demo control is set to, kept while the page is drawn again. */
+const chosen = new Map<string, string>();
+
+/** What a demo control starts at, before it's moved. */
+const STARTS: Readonly<Record<string, (ctx: Context) => string | number>> = {
+  "demo-hue": () => 25,
+  "demo-lc": () => 60,
+  "demo-tier": (ctx) => ctx.settings.tiers.at(-1) ?? 60,
+  "demo-a": (ctx) => hues(ctx)[0]?.key ?? "",
+  "demo-b": (ctx) => hues(ctx)[1]?.key ?? "",
+  "demo-dtier": (ctx) => ctx.settings.identityTier[ctx.mode],
+  "demo-amount": (ctx) => Math.max(-12, Math.min(12, ctx.settings.curve[ctx.mode][0]?.amount ?? 6)),
+  "demo-center": (ctx) => ctx.settings.curve[ctx.mode][0]?.center ?? 20,
+  "demo-width": (ctx) => Math.max(20, Math.min(180, ctx.settings.curve[ctx.mode][0]?.width ?? 60)),
+  "demo-color": (ctx) => ctx.palette?.[ctx.mode].colors[0]?.key ?? "",
+};
+
+/**
+ * What a demo control is set to: as moved, or where it starts.
+ *
+ * @param ctx  What the page shows.
+ * @param id   The control.
+ * @returns    Its value.
+ */
+function setting(ctx: Context, id: string): string {
+  return chosen.get(id) ?? String(STARTS[id]?.(ctx) ?? "");
+}
+
+/**
+ * A tier a demo control is set to, or where it starts when the tier isn't solved any more.
+ *
+ * @param ctx  What the page shows.
+ * @param id   The control.
+ * @returns    The tier.
+ */
+function tierSetting(ctx: Context, id: string): number {
+  const tier = Number(setting(ctx, id));
+  return ctx.settings.tiers.includes(tier) ? tier : Number(STARTS[id]!(ctx));
+}
+
+/**
+ * A demo's slider, at what it's set to.
+ *
+ * @param ctx    What the page shows.
+ * @param id     Its id.
+ * @param label  Its label.
+ * @param range  Min, max and step.
+ * @param range.0  Minimum.
+ * @param range.1  Maximum.
+ * @param range.2  Step.
+ * @param demo   The demo it redraws.
+ * @returns      HTML.
+ */
+function slider(ctx: Context, id: string, label: string, [min, max, step]: readonly [number, number, number], demo: string): string {
+  return `<label for="${id}">${label} <input id="${id}" type="range" min="${String(min)}" max="${String(max)}" step="${String(step)}" value="${setting(ctx, id)}" data-demo="${demo}"></label>`;
+}
+
+/**
+ * A demo's choice, with what it's set to selected.
+ *
+ * @param ctx      What the page shows.
+ * @param id       Its id.
+ * @param label    Its label.
+ * @param options  Each option's value and text.
+ * @param demo     The demo it redraws.
+ * @returns        HTML.
+ */
+function choice(ctx: Context, id: string, label: string, options: readonly (readonly [string, string])[], demo: string): string {
+  const now = setting(ctx, id);
+  return `<label for="${id}">${label} <select id="${id}" data-demo="${demo}">${options
+    .map(([v, text]) => `<option value="${v}" ${v === now ? "selected" : ""}>${text}</option>`)
+    .join("")}</select></label>`;
+}
+
+/** The tiers as choices. */
+const tierOptions = (ctx: Context) => ctx.settings.tiers.map((t) => [String(t), `Lc ${String(t)}`] as const);
 
 const models = new Map<string, Model>();
 
@@ -111,28 +186,29 @@ function room(ctx: Context): string {
 }
 
 /**
- * The same hue solved for each mode, each on its own base, with how much color the screen gives
- * it.
+ * The same hue at the same colorfulness on the same tier, solved for each mode on its own base and
+ * in its own room, with how much color the screen gives each.
  *
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
 function modes(ctx: Context): string {
-  // A tier where neither mode was lowered, so both sit exactly on the target.
-  const tier =
-    ctx.settings.tiers.find((t) => !ctx.palette?.light.limits[t] && !ctx.palette?.dark.limits[t]) ??
-    ctx.settings.identityTier[ctx.mode];
-  const ink = { light: "#1C1D20", dark: "#E7E8EA" } as const;
-  const pair = (["light", "dark"] as const).map((mode) => {
-    const c = ctx.palette?.[mode].colors[0];
-    if (!c) return "";
-    const s = c.tiers[tier]!.default;
-    return `<figure class="on-base" style="--base:${ctx.settings.bases[mode]};--c:${s.color};--ink:${ink[mode]}">
+  const first = hues(ctx)[0];
+  if (!first) return "Solving…";
+  const lc = ctx.settings.identityTier.light;
+  const m = model(ctx.settings, ctx.gamut);
+  const reach = (mode: Mode) => m.cam(mode, strongest(m, ctx.settings.bases[mode], mode, first.hue, 200, lc)).m;
+  // As colorful as both modes can be here, so each sits exactly on it.
+  const target = Math.floor(Math.min(30, reach("light"), reach("dark")));
+  const pair = MODES.map((mode) => {
+    const color = strongest(m, ctx.settings.bases[mode], mode, first.hue, target, lc);
+    const cam = m.cam(mode, color);
+    return `<figure class="on-base" style="--base:${ctx.settings.bases[mode]};--c:${color};--ink:var(--fg-${mode})">
       <span class="demo-swatch"></span><span class="on-base-sample">Aa</span>
-      <figcaption><strong>${mode === "light" ? "Light mode" : "Dark mode"}</strong><span>Looks M ${s.colorfulness.toFixed(0)} · screen chroma ${s.chroma.toFixed(0)}</span></figcaption>
+      <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks M ${cam.m.toFixed(0)} · screen chroma ${cam.chroma.toFixed(0)}</span></figcaption>
     </figure>`;
   });
-  return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(ctx.palette?.light.colors[0]?.key ?? "")} on Lc ${String(tier)}.</p>`;
+  return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(first.key)}'s hue at M ${String(target)} on Lc ${String(lc)}, in each mode's room.</p>`;
 }
 
 /**
@@ -142,8 +218,8 @@ function modes(ctx: Context): string {
  * @returns    HTML.
  */
 function tier(ctx: Context): string {
-  const hue = Number(value("demo-hue") || 25);
-  const lc = Number(value("demo-lc") || 60);
+  const hue = Number(setting(ctx, "demo-hue"));
+  const lc = Number(setting(ctx, "demo-lc"));
   const base = ctx.settings.bases[ctx.mode];
   let color: string;
   try {
@@ -187,7 +263,7 @@ function shade(color: string, gamut: Gamut): string {
 function reach(ctx: Context): string {
   const list = hues(ctx);
   if (!list.length) return "Solving…";
-  const lc = Number(value("demo-tier") || ctx.settings.tiers.at(-1));
+  const lc = tierSetting(ctx, "demo-tier");
   const base = ctx.settings.bases[ctx.mode];
   const rows = list.map((h) => ({
     ...h,
@@ -203,7 +279,8 @@ function reach(ctx: Context): string {
   const shown = GAMUTS.indexOf(ctx.gamut);
   const target = ctx.settings.colorfulness;
   const least = rows.reduce((a, r) => (r.reach[shown]! < a.reach[shown]! ? r : a));
-  const limited = least.reach[shown]! < target;
+  // Only with Equal per tier does the tier stop at its least colorful hue.
+  const limited = ctx.settings.equalTiers && least.reach[shown]! < target;
   const ceiling = limited ? least.reach[shown]! : target;
   const most = Math.ceil(Math.max(target, ...rows.flatMap((r) => r.reach)) / 20) * 20;
   const [left, width, row] = [96, 504, 34];
@@ -235,7 +312,9 @@ function reach(ctx: Context): string {
     <p class="demo-verdict">${
       limited
         ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach M ${ceiling.toFixed(1)} on Lc ${String(lc)}, so every color on this tier stops there.`
-        : `On ${GAMUT_NAMES[ctx.gamut]}, every hue reaches the target on Lc ${String(lc)}.`
+        : least.reach[shown]! < target
+          ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach M ${least.reach[shown]!.toFixed(1)} on Lc ${String(lc)}; with Equal per tier off, each color goes as far as it can.`
+          : `On ${GAMUT_NAMES[ctx.gamut]}, every hue reaches the target on Lc ${String(lc)}.`
     }</p>
     <p class="legend-row soft">${GAMUTS.map(key).join("")}
       <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span></p>`;
@@ -251,17 +330,15 @@ function reach(ctx: Context): string {
 function difference(ctx: Context): string {
   const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => !c.extra);
   if (colors.length < 2) return "Solving…";
-  const lc = Number(value("demo-dtier") || ctx.settings.identityTier[ctx.mode]);
-  const pick = (id: string, fallback: number) =>
-    colors.find((c) => c.key === value(id)) ?? colors[fallback]!;
+  const lc = tierSetting(ctx, "demo-dtier");
+  const pick = (id: string, fallback: number) => colors.find((c) => c.key === setting(ctx, id)) ?? colors[fallback]!;
   const [a, b] = [pick("demo-a", 0), pick("demo-b", 1)];
   const [ca, cb] = [a.tiers[lc]!.default.color, b.tiers[lc]!.default.color];
   const m = model(ctx.settings, ctx.gamut);
   const [x, y] = [m.cam(ctx.mode, ca), m.cam(ctx.mode, cb)];
   const total = x.distance(y);
-  const lightness = Math.abs(x.jstar - y.jstar);
-  const colorfulness = Math.abs(Math.hypot(x.astar, x.bstar) - Math.hypot(y.astar, y.bstar));
-  const hue = Math.sqrt(Math.max(0, total ** 2 - lightness ** 2 - colorfulness ** 2));
+  const share = parts(x, y);
+  const percent = (part: number) => `${String(Math.round(part * 100))}%`;
   const ring = ctx.palette?.[ctx.mode].ring[lc] ?? [];
   const typical = ring.length ? ring.reduce((s, d) => s + d, 0) / ring.length : 0;
   const scale = Math.max(30, Math.ceil(total / 10) * 10);
@@ -270,16 +347,16 @@ function difference(ctx: Context): string {
     <p class="demo-sample"><span style="color:${ca}">${ctx.label(a.key)}</span> <span style="color:${cb}">${ctx.label(b.key)}</span></p>
     <dl class="demo-numbers">
       <div><dt>Difference</dt><dd class="mono">${total.toFixed(1)}</dd></div>
-      <div><dt>From lightness</dt><dd class="mono">${lightness.toFixed(1)}</dd></div>
-      <div><dt>From colorfulness</dt><dd class="mono">${colorfulness.toFixed(1)}</dd></div>
-      <div><dt>From hue</dt><dd class="mono">${hue.toFixed(1)}</dd></div>
+      <div><dt>From lightness</dt><dd class="mono">${percent(share.lightness)}</dd></div>
+      <div><dt>From colorfulness</dt><dd class="mono">${percent(share.colorfulness)}</dd></div>
+      <div><dt>From hue</dt><dd class="mono">${percent(share.hue)}</dd></div>
     </dl>
     <div class="scale">
       <span class="scale-fill" style="width:${at(total)}"></span>
       <span class="scale-mark" style="left:${at(1.5)}"><span>Just visible</span></span>
       ${typical ? `<span class="scale-mark" style="left:${at(typical)}"><span>Neighbors on this tier</span></span>` : ""}
     </div>
-    <p class="soft">CAM16-UCS distance. Around 1 to 2 is the smallest difference most people see with two colors side by side. On a tier, every color solves to sit about the same distance from its neighbors, which is why the circle below stays even.</p>`;
+    <p class="soft">CAM16-UCS distance, and the share of it each part makes up. Around 1 to 2 is the smallest difference most people see with two colors side by side. On a tier, every color solves to sit about the same distance from its neighbors, which is why the circle below stays even.</p>`;
 }
 
 /**
@@ -313,9 +390,7 @@ function bump(ctx: Context): string {
   const tierLc = ctx.settings.identityTier[ctx.mode];
   const target = ctx.palette?.[ctx.mode].targets[tierLc];
   if (!list.length || target === undefined) return "Solving…";
-  const first = ctx.settings.curve[ctx.mode][0];
-  const read = (id: string, fallback: number) => (value(id) === "" ? fallback : Number(value(id)));
-  const point = { amount: read("demo-amount", first?.amount ?? 6), center: read("demo-center", first?.center ?? 20), width: read("demo-width", first?.width ?? 60) };
+  const point = { amount: Number(setting(ctx, "demo-amount")), center: Number(setting(ctx, "demo-center")), width: Number(setting(ctx, "demo-width")) };
   const added = (hue: number) => boost({ curve: { light: [point], dark: [point] } }, ctx.mode, hue);
   const [left, width, top, height, most] = [36, 564, 10, 120, 12];
   const x = (hue: number) => left + (hue / 360) * width;
@@ -393,7 +468,7 @@ function placing(ctx: Context): string {
 function ladder(ctx: Context): string {
   const colors = ctx.palette?.[ctx.mode].colors ?? [];
   if (!colors.length) return "Solving…";
-  const c = colors.find((x) => x.key === value("demo-color")) ?? colors[0]!;
+  const c = colors.find((x) => x.key === setting(ctx, "demo-color")) ?? colors[0]!;
   const tiers = ctx.settings.tiers;
   const cells = (variant: "default" | "muted") =>
     tiers
@@ -413,7 +488,9 @@ const DEMOS = { tier, reach, difference, bump, ladder } as const;
  * @param ctx   What the page shows.
  * @param name  The demo.
  */
-export function updateDemo(ctx: Context, name: string): void {
+export function updateDemo(ctx: Context, control: HTMLInputElement | HTMLSelectElement): void {
+  chosen.set(control.id, control.value);
+  const name = control.dataset.demo!;
   const out = document.querySelector(`#demo-${name}-out`);
   if (out && name in DEMOS) out.innerHTML = DEMOS[name as keyof typeof DEMOS](ctx);
 }
@@ -432,6 +509,7 @@ export function explain(ctx: Context): string {
   const extras = s.extras.length;
   const swatches = (count + extras) * s.tiers.length * 2 * 2 * GAMUTS.length;
   const anchor = anchorSource(s);
+  const hueOptions = hues(ctx).map((h) => [h.key, ctx.label(h.key)] as const);
   return `<section class="intro">
       <h1>How it works</h1>
       <p><strong>EK Colors</strong> solves color palettes instead of picking them by eye. A small program builds a palette from a handful of rules, so every color can be explained, and solved again when a rule changes. It starts from <strong>EK Palette</strong>, the palette it was made for; change the settings and it solves a palette of its own. This page walks through the rules one at a time; every demo runs the same code as the solver.</p>
@@ -448,7 +526,7 @@ export function explain(ctx: Context): string {
       <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light.</p>
       <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. Both come from the sRGB standard: its typical room and its reference room. CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
       <div class="demo"><div class="demo-out wide">${room(ctx)}</div></div>
-      <p>So the same target needs different screen colors in each mode. Both of these are meant to look equally colorful. The dark-mode one gets more color on the screen, because a dim room makes colors look quieter.</p>
+      <p>So the same target needs different screen colors in each mode. Both of these aim at the same colorfulness. The dark-mode one gets more color on the screen, because a dim room makes colors look quieter.</p>
       <div class="demo"><div class="demo-out wide">${modes(ctx)}</div></div>
     </section>
 
@@ -461,8 +539,8 @@ export function explain(ctx: Context): string {
       <p>For each hue and tier, the solver searches lightness until the color sits exactly on the tier: never below it, and only as far above as rounding forces. The older WCAG 2 contrast is reported beside every color too, because laws still point to it. Its badge says what that ratio allows: AAA and AA pass for text, AA large only for large text and for icons, borders and controls, and below 3:1 for nothing that must be read. Each badge opens its level.</p>
       <div class="demo">
         <div class="demo-controls">
-          <label for="demo-hue">Hue <input id="demo-hue" type="range" min="0" max="359" step="1" value="25" data-demo="tier"></label>
-          <label for="demo-lc">Contrast <input id="demo-lc" type="range" min="15" max="90" step="1" value="60" data-demo="tier"></label>
+          ${slider(ctx, "demo-hue", "Hue", [0, 359, 1], "tier")}
+          ${slider(ctx, "demo-lc", "Contrast", [15, 90, 1], "tier")}
         </div>
         <div id="demo-tier-out" class="demo-out">${tier(ctx)}</div>
       </div>
@@ -474,9 +552,7 @@ export function explain(ctx: Context): string {
       <p>The chart shows how far each hue could go on one tier, on each kind of screen.</p>
       <div class="demo">
         <div class="demo-controls">
-          <label for="demo-tier">Tier <select id="demo-tier" data-demo="reach">
-            ${s.tiers.map((t) => `<option value="${String(t)}" ${t === s.tiers.at(-1) ? "selected" : ""}>Lc ${String(t)}</option>`).join("")}
-          </select></label>
+          ${choice(ctx, "demo-tier", "Tier", tierOptions(ctx), "reach")}
         </div>
         <div id="demo-reach-out" class="demo-out wide">${reach(ctx)}</div>
       </div>
@@ -488,24 +564,24 @@ export function explain(ctx: Context): string {
       <p>The model isn't perfect: some parts of the circle can look weaker or stronger to the eye than CAM16 says. <strong>Colorfulness per hue</strong> adds or takes away colorfulness smoothly over the circle, as a few points that each ease to nothing on either side, so neighbors never jump. Light and dark each have their own curve.</p>
       <div class="demo">
         <div class="demo-controls">
-          <label for="demo-amount">Amount <input id="demo-amount" type="range" min="-12" max="12" step="1" value="${String(s.curve[ctx.mode][0]?.amount ?? 6)}" data-demo="bump"></label>
-          <label for="demo-center">Center <input id="demo-center" type="range" min="0" max="359" step="1" value="${String(s.curve[ctx.mode][0]?.center ?? 20)}" data-demo="bump"></label>
-          <label for="demo-width">Width <input id="demo-width" type="range" min="20" max="180" step="5" value="${String(s.curve[ctx.mode][0]?.width ?? 60)}" data-demo="bump"></label>
+          ${slider(ctx, "demo-amount", "Amount", [-12, 12, 1], "bump")}
+          ${slider(ctx, "demo-center", "Center", [0, 359, 1], "bump")}
+          ${slider(ctx, "demo-width", "Width", [20, 180, 5], "bump")}
         </div>
         <div id="demo-bump-out" class="demo-out wide">${bump(ctx)}</div>
       </div>
-      <p>The <strong>blind colorfulness test</strong> in Settings measures where it's needed. It shows two colors at a time, without names, and asks which looks more colorful, moving one of them after every answer until it finds where each hue looks as colorful as the others. Its result can be applied as the curve.</p>
+      <p>The <strong>blind colorfulness test</strong> in Settings measures where it's needed. It shows two colors at a time, without names, and asks which looks more colorful, nudging the color it's testing after each answer, apart from the occasional easy check, until it finds where each hue looks as colorful as the others. Its result can be applied as the curve.</p>
     </section>
 
     <section class="step">
       <h2>Evenly different</h2>
       <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space, CAM16-UCS, where distance matches how different colors look. The hues start evenly apart in angle, ${String(count)} hues ${(360 / count).toFixed(count === 8 ? 0 : 1)}° apart. Angles aren't how differences are seen, though, so the solver nudges each one, a few degrees at a time, until the differences around the circle are as even as they can be. That's the <strong>uniform lineup</strong>.</p>
-      <p>Evening out the differences doesn't say where the lineup sits, since turning all of it around the circle keeps them almost the same. So one hue, yellow, is the <strong>anchor</strong>, and every other hue is spaced from it. It sits at ${anchorHue(s).toFixed(0)}° here, ${anchor}. It can be the yellow of CAM16, Munsell, NCS, unique-hue studies or the World Color Survey's focal colors, or any hue; the same systems can be drawn as guides on the hue graphs, to see where each puts its hues.</p>
+      <p>Evening out the differences doesn't say where the lineup sits, since turning all of it around the circle keeps them almost the same. So one hue, ${ctx.label(hueKeys(s.hues)[0]!).toLowerCase()}, is the <strong>anchor</strong>, and every other hue is spaced from it. It sits at ${anchorHue(s).toFixed(0)}° here, ${anchor}. It can be the yellow of CAM16, Munsell, NCS, unique-hue studies or the World Color Survey's focal colors, or any hue; the same systems can be drawn as guides on the hue graphs, to see where each puts its hues.</p>
       <div class="demo">
         <div class="demo-controls">
-          <label for="demo-a">First color <select id="demo-a" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 0 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>
-          <label for="demo-b">Second color <select id="demo-b" data-demo="difference">${hues(ctx).map((h, i) => `<option value="${h.key}" ${i === 1 ? "selected" : ""}>${ctx.label(h.key)}</option>`).join("")}</select></label>
-          <label for="demo-dtier">Tier <select id="demo-dtier" data-demo="difference">${s.tiers.map((t) => `<option value="${String(t)}" ${t === s.identityTier[ctx.mode] ? "selected" : ""}>Lc ${String(t)}</option>`).join("")}</select></label>
+          ${choice(ctx, "demo-a", "First color", hueOptions, "difference")}
+          ${choice(ctx, "demo-b", "Second color", hueOptions, "difference")}
+          ${choice(ctx, "demo-dtier", "Tier", tierOptions(ctx), "difference")}
         </div>
         <div id="demo-difference-out" class="demo-out wide">${difference(ctx)}</div>
       </div>
@@ -534,7 +610,13 @@ export function explain(ctx: Context): string {
       <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.muted * 100))}% of the default's colorfulness: quieter, never weaker in contrast. Every tier of one color:</p>
       <div class="demo">
         <div class="demo-controls">
-          <label for="demo-color">Color <select id="demo-color" data-demo="ladder">${(ctx.palette?.[ctx.mode].colors ?? []).map((c, i) => `<option value="${c.key}" ${i === 0 ? "selected" : ""}>${ctx.label(c.key)}</option>`).join("")}</select></label>
+          ${choice(
+            ctx,
+            "demo-color",
+            "Color",
+            (ctx.palette?.[ctx.mode].colors ?? []).map((c) => [c.key, ctx.label(c.key)] as const),
+            "ladder",
+          )}
         </div>
         <div id="demo-ladder-out" class="demo-out wide">${ladder(ctx)}</div>
       </div>

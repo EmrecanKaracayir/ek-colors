@@ -11,7 +11,8 @@ import { argbFromHex, lstarFromArgb } from "@material/material-color-utilities";
 import { LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
 import { anchorHue, anchorSource } from "../palette/references";
 import { MODE_NAMES, MODES } from "../palette/settings";
-import { hueKeys } from "../palette/solve";
+import project from "../../package.json";
+import { CLOSEST, hueKeys } from "../palette/solve";
 import type { Context } from "./explain";
 import { escape } from "./graph";
 
@@ -49,6 +50,7 @@ function conditions(ctx: Context): string {
  */
 export function technical(ctx: Context): string {
   const s = ctx.settings;
+  const identityReach = Math.min(s.hueWindow.identity, 180 / s.hues);
   const anchor = anchorHue(s);
   const starts = hueKeys(s.hues).map((key, k) => {
     const placed = k === 0 ? undefined : s.placed[key];
@@ -65,9 +67,9 @@ export function technical(ctx: Context): string {
 <pre class="formula">for each gamut tier g in (standard, wide, ultra):            // solved independently
   for each mode m in (light, dark):
     VC[m]   ← viewing conditions from room[m] and base[m]
-    starts  ← the circle divided evenly from the anchor (yellow), or where a color is placed
-    identity tier: T ← target ceiling; hues ← space(starts, ±20°)
-    other tiers:   T ← target ceiling; hues ← space(identity hues, ±6°)
+    starts  ← the circle divided evenly from the anchor (${ctx.label(hueKeys(s.hues)[0]!).toLowerCase()}), or where a color is placed
+    identity tier: T ← target ceiling; hues ← space(starts, ±${fixed(identityReach, 1)}°)
+    other tiers:   T ← target ceiling; hues ← space(identity hues, ±${String(s.hueWindow.tier)}°)
     per tier, per hue: default ← strongest(h, T + curve(h))
                        muted   ← strongest(h, M(default) × muted share)
     per tier, per extra: default ← strongest(its hue, T × its share), muted as above
@@ -77,7 +79,7 @@ variants for the H and M switches: the same solve without placed hues, without t
 
     <section class="step">
       <h2>1. Viewing conditions</h2>
-      <p>CAM16 (Li et al., 2017), as implemented by Google's material-color-utilities 0.4.0. Each mode gets its own <code>ViewingConditions.make(white, L<sub>A</sub>, Y<sub>b</sub>, surround)</code>:</p>
+      <p>CAM16 (Li et al., 2017), as implemented by Google's material-color-utilities ${project.dependencies["@material/material-color-utilities"]}. Each mode gets its own <code>ViewingConditions.make(white, L<sub>A</sub>, Y<sub>b</sub>, surround)</code>:</p>
 <pre class="formula">white  = D65
 L_A    = E × 0.0586          // cd/m²: E lux on a 20% gray (L* 50): E/π × 0.184
 Y_b    = luminance of the base // passed to CAM16 as its L*
@@ -104,7 +106,7 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
 
     <section class="step">
       <h2>3. Contrast: exactly on a tier</h2>
-      <p>APCA 0.0.98G (Color.js 0.7.1), always text = the color, background = the base, reported as |Lc|. Luminance is <code>Y = 0.2126729·R<sup>2.4</sup> + 0.7151522·G<sup>2.4</sup> + 0.0721750·B<sup>2.4</sup></code> on sRGB-encoded values; wide-gamut colors use their extended sRGB coordinates.</p>
+      <p>APCA 0.0.98G (Color.js ${project.dependencies["colorjs.io"]}), always text = the color, background = the base, reported as |Lc|. Luminance is <code>Y = 0.2126729·R<sup>2.4</sup> + 0.7151522·G<sup>2.4</sup> + 0.0721750·B<sup>2.4</sup></code> on sRGB-encoded values; wide-gamut colors use their extended sRGB coordinates.</p>
 <pre class="formula">place(h, M, Lc):                       // lightness search at fixed h and M
   lo, hi ← 0, 100
   repeat 34 times:                     // 100 / 2³⁴ ≈ 6·10⁻⁹ in J
@@ -175,14 +177,15 @@ a*, b* = M*·cos h, M*·sin h
         h ← hue_i + step;  skip if |h − start_i| &gt; window
         try color_i ← strongest(h, target(h));  rescore
         keep it if the score drops by more than 10⁻⁴</pre>
-      <p>The identity tier (light Lc ${String(s.identityTier.light)}, dark Lc ${String(s.identityTier.dark)}) is spaced first from the starting hues with a window of ±${String(s.hueWindow.identity)}°. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
-      <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least a quarter of the even step from each (${String(Math.round((90 / s.hues) * 100) / 100)}° here), and a spacing step that would bring a color closer than that to a neighbor isn't taken. Dragging the anchor stops before any color it carries would pass a placed one.</p>
+      <p>The identity tier (light Lc ${String(s.identityTier.light)}, dark Lc ${String(s.identityTier.dark)}) is spaced first from the starting hues with a window of ±${fixed(identityReach, 1)}°: ${String(s.hueWindow.identity)}°, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
+      <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(CLOSEST * 100)}% of the even step from each (${fixed((360 / s.hues) * CLOSEST, 2)}° here), and a spacing step that would bring a color closer than that to a neighbor isn't taken. Dragging the anchor stops before any color it carries would pass a placed one.</p>
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
 bend     = √(mean over colors of (ΔE(color, turned color) / gap)²)
 zone     = Uniform &lt; 0.1 · Tuned &lt; 0.25 · Reshaped &lt; 0.5 · Departed &lt; 1 · Different palette
+even     = max over neighbors of |ΔE(neighbors) / gap − 1|     // the strip's Even: the furthest from even, either way
 closer   = 1 − (smallest neighbor ΔE) / gap                     // how much the tightest pair lost
-evenness = fine &lt; 10% · worth watching &lt; 25% · getting confusable</pre>
+evenness = fine &lt; 10% · worth watching &lt; 25% · getting confusable  // of even and of closer</pre>
       <p>A change between two colors is split into lightness, colorfulness and hue, each as its share of the three added together:</p>
 <pre class="formula">lightness    = ΔJ*²
 colorfulness = ΔM*²
@@ -224,8 +227,8 @@ WCAG level              ≥ 7 AAA · ≥ 4.5 AA · ≥ 3 AA large · else below<
 
     <section class="step">
       <h2>12. The blind colorfulness test</h2>
-      <p><strong>Pairs.</strong> Per hue, a staircase on Δ, the test color's offset from the palette (start ±8, alternating; bounded to ±16). Each pair shows the test hue at T + Δ against a different, randomly chosen hue at T, on the identity tier, sides random, a 300 ms blank between pairs. Picked as more colorful → Δ −= step; not picked → Δ += step; "can't tell" → no move. The step is 4, then 2 after two reversals, then 1 after four.</p>
-      <p><strong>Checks and stopping.</strong> Every third pair for a hue is a check at Δ ± 12, to a random side, which doesn't move the staircase: a real observer answers it easily, a guess doesn't. A hue is done at 16 answers, or sooner once it settles: at least 8 answers, a sure result whose range is within ±5 either way, and log L(μ̂) − log L₀ ≥ 4, stricter than the final 1.92 since it's checked after every answer. Progress is the mean over hues of 1 when done, else answers/16. In simulation a consistent observer averages about 12–13 answers per hue, and random answers almost never settle.</p>
+      <p><strong>Pairs.</strong> Per hue, a staircase on Δ, the test color's offset from the palette (start ±8, half of the hues above and half below, in random order; bounded to ±16). Each pair shows the test hue at T + Δ against a different, randomly chosen hue at T, on the identity tier, sides random, a 300 ms blank between pairs. Picked as more colorful → Δ −= step; not picked → Δ += step; "can't tell" → no move. The step is 4, then 2 after two reversals, then 1 after four.</p>
+      <p><strong>Checks and stopping.</strong> Every third pair for a hue is a check at Δ ± 12, to a random side, which doesn't move the staircase: a real observer answers it easily, a guess doesn't. A hue is done at 16 answers, or sooner once it settles: at least 8 answers, a sure result whose range is within ±5 either way, and log L(μ̂) − log L₀ ≥ 4, stricter than the final 1.92 since it's checked after every answer. Progress is the mean over hues of 1 when done, else answers/16. In simulation a consistent observer takes about 10 to 13 answers per hue, while answering at random still ends sure for about one hue in twelve, so one run is a rough answer and several pooled are steadier.</p>
       <p><strong>Equal point.</strong> Each answer is (x, y) with x = measured M<sub>test</sub> − M<sub>other</sub> and y ∈ {1, ½, 0}. Fitted by maximum likelihood to</p>
 <pre class="formula">P(test picked | x) = 1 / (1 + e^(−(x − μ)/s))
 μ ∈ [−24, 24] step 0.5,   s ∈ {1.5, 2.5, 4, 6, 10, 20, 40}
@@ -238,7 +241,7 @@ unsure if the range reaches ±24, or log L(μ̂) − log L₀ &lt; 1.92</pre>
 
     <section class="step">
       <h2>13. The blind hue test</h2>
-      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, alternating; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 12, with the range within ±5°.</p>
+      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, half of the colors toward one neighbor and half toward the other, in random order; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 12, with the range within ±5°.</p>
       <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 12, over μ within ±40° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
     </section>`;
 }

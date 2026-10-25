@@ -2197,7 +2197,7 @@ document.addEventListener("click", (event) => {
 
 document.addEventListener("input", (event) => {
   const el = event.target as HTMLInputElement;
-  if (el.dataset.demo) return void updateDemo(context(), el.dataset.demo);
+  if (el.dataset.demo) return void updateDemo(context(), el);
   if (el.dataset.tier) {
     const checked = [...document.querySelectorAll<HTMLInputElement>("[data-tier]")].filter((c) => c.checked).map((c) => Number(c.dataset.tier));
     if (!checked.length) return void (el.checked = true);
