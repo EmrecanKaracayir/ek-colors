@@ -1028,22 +1028,56 @@ function drawComparison(el: Element, mode: Mode): void {
   const value = (d: number) => `<span class="${d >= 2 ? "noticeable" : ""}">${d.toFixed(1)}</span>`;
   const cost = `<span class="strip-cost mono" title="How far each step moved the most-moved color (CAM16-UCS ΔE); about 2 is the smallest difference seen side by side.">
       <span data-row="0">ΔE</span><span data-row="1">${value(moved[0]!)}</span><span data-row="2">${value(moved[1]!)}</span><span class="total">Total ${value(moved[2]!)}</span></span>`;
-  const names = STEPS.map((step, i) => `<span data-row="${String(i)}" title="${step.title}">${step.name}</span>`).join("");
+  const names = STEPS.map(
+    (step, i) => `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" title="${step.title}. Click to keep it shown; ↑ and ↓ then switch rows.">${step.name}</button>`,
+  ).join("");
   el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}${cost}</div>`;
+  if (pinned !== null && !el.classList.contains("focused")) showRow(pinned);
 }
 
-// Pointing at one of the strip's rows shows that row alone: every swatch fills with it. The row
-// stays set while the cover fades out, so it fades in that row's colors.
-document.addEventListener("pointerover", (event) => {
+/** The strip row pinned by clicking its name, for comparing one step with another. */
+let pinned: number | null = null;
+
+/**
+ * Shows one of the strip's rows alone, every swatch filled with it, or all three. The row stays set
+ * while the cover fades out, so it fades in that row's colors.
+ *
+ * @param row  The row, or null for all three.
+ */
+function showRow(row: number | null): void {
   const strip = document.querySelector<HTMLElement>("#tune-preview");
+  if (!strip) return;
+  if (row !== null) strip.dataset.row = String(row);
+  strip.classList.toggle("focused", row !== null);
+  for (const b of strip.querySelectorAll<HTMLElement>(".strip-labels [data-row]")) b.setAttribute("aria-pressed", String(Number(b.dataset.row) === pinned));
+}
+
+// Pointing at a row shows it; leaving shows the pinned row again, if any.
+document.addEventListener("pointerover", (event) => {
+  const strip = document.querySelector("#tune-preview");
   if (!strip?.contains(event.target as Node)) return;
   const row = (event.target as Element).closest<HTMLElement>("[data-row]")?.dataset.row;
-  if (row !== undefined) strip.dataset.row = row;
-  strip.classList.toggle("focused", row !== undefined);
+  showRow(row === undefined ? pinned : Number(row));
 });
 document.addEventListener("pointerout", (event) => {
-  const strip = document.querySelector<HTMLElement>("#tune-preview");
-  if (strip?.contains(event.target as Node) && !strip.contains(event.relatedTarget as Node | null)) strip.classList.remove("focused");
+  const strip = document.querySelector("#tune-preview");
+  if (strip?.contains(event.target as Node) && !strip.contains(event.relatedTarget as Node | null)) showRow(pinned);
+});
+
+// Clicking a row's name pins it, clicking it again clears it; while pinned, ↑ and ↓ move the pin.
+document.addEventListener("click", (event) => {
+  const name = (event.target as Element).closest<HTMLElement>("#tune-preview .strip-labels [data-row]");
+  if (!name) return;
+  const row = Number(name.dataset.row);
+  pinned = pinned === row ? null : row;
+  showRow(pinned);
+});
+document.addEventListener("keydown", (event) => {
+  if (pinned === null || state.view !== "tune" || !(event.key === "ArrowUp" || event.key === "ArrowDown")) return;
+  if ((event.target as Element).closest?.("input, select, textarea, svg")) return;
+  event.preventDefault();
+  pinned = Math.min(STEPS.length - 1, Math.max(0, pinned + (event.key === "ArrowUp" ? -1 : 1)));
+  showRow(pinned);
 });
 
 let dock: IntersectionObserver | null = null;

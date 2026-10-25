@@ -215,6 +215,8 @@
   .strip.docked { border-bottom-color: var(--line); }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr)); gap: 0.5rem; }
   .strip-labels { display: grid; grid-template-rows: repeat(3, 1rem); align-items: center; font-size: 0.75rem; color: var(--soft); text-align: right; }
+  .strip-labels button { font: inherit; color: inherit; text-align: right; background: none; border: 0; padding: 0 0.25rem; border-radius: 0.25rem; cursor: pointer; }
+  .strip-labels button[aria-pressed="true"] { color: var(--fg); background: var(--raised); box-shadow: 0 0 0 1px var(--line); }
   .strip-item.changed .mono { font-weight: 700; }
   .strip-item { position: relative; display: grid; gap: 0; align-content: start; }
   .strip-item .cover { position: absolute; inset: 0 0 auto; height: 3rem; border-radius: 0.5rem; background: var(--f2); opacity: 0; transform: scaleY(0.3334); pointer-events: none; transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
@@ -377,6 +379,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=7681880586"></script>
+<script type="module" src="app.js?v=55bca7019b"></script>
 </body>
 </html>
