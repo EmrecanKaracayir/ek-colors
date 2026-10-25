@@ -109,7 +109,7 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
       <p>APCA 0.0.98G (Color.js ${project.dependencies["colorjs.io"]}), always text = the color, background = the base, reported as |Lc|. Luminance is <code>Y = 0.2126729·R<sup>2.4</sup> + 0.7151522·G<sup>2.4</sup> + 0.0721750·B<sup>2.4</sup></code> on sRGB-encoded values; wide-gamut colors use their extended sRGB coordinates.</p>
 <pre class="formula">place(h, M, Lc):                       // lightness search at fixed h and M
   lo, hi ← 0, 100
-  repeat 34 times:                     // 100 / 2³⁴ ≈ 6·10⁻⁹ in J
+  repeat 32 times:                     // 100 / 2³² ≈ 2·10⁻⁸ in J, far finer than any output shows
     J   ← (lo + hi)/2
     x   ← color(J, M, h)
     ok  ← APCA(x, base) ≥ Lc        // x as written; off the screen, by its coordinates past the edge
@@ -222,7 +222,7 @@ labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA · ≥ 4.5 AA · ≥ 3 AA large · else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 34 steps each. A full solve of one gamut tier (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.extras.length)} colors, default and muted, plus spacing) takes about a second in a browser worker.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut tier (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.extras.length)} colors, default and muted, plus spacing) takes about a second in a browser worker.</p>
     </section>
 
     <section class="step">

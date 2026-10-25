@@ -110,7 +110,7 @@ function place(
   const dark = isDark(base);
   let lo = 0;
   let hi = 100;
-  for (let i = 0; i < 34; i++) {
+  for (let i = 0; i < 32; i++) {
     const m = (lo + hi) / 2;
     // A color the screen shows is judged as it's written, so the one found passes as written; one
     // it can't show is judged by its contrast all the same, since it can be off the screen on either
