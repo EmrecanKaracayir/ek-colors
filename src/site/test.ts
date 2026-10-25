@@ -9,7 +9,7 @@
 
 import { makeModel, meanHue, type Model } from "../palette/model";
 import type { CurvePoint, Gamut, Mode, Settings } from "../palette/settings";
-import { boost, type GamutPalette, strongest } from "../palette/solve";
+import { boost, type GamutPalette, identityOf, strongest } from "../palette/solve";
 import {
   ask,
   balance,
@@ -142,7 +142,7 @@ function nextPair(s: Omit<Session, "pair">, last?: string): Pair | null {
 function start(ctx: TestContext): boolean {
   const palette = ctx.palette?.[ctx.mode];
   if (!palette) return false;
-  const tier = ctx.settings.identityTier[ctx.mode];
+  const tier = identityOf(ctx.settings, ctx.mode);
   const hues = palette.colors.filter((c) => !c.extra).map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
   const signs = startSides(hues.length);
   const base = {
@@ -312,7 +312,7 @@ export function testPage(ctx: TestContext): string {
       <h1>Blind colorfulness test</h1>
       <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once the answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
-        <li>Turn off True Tone and Night Shift, and use the usual brightness.</li>
+        <li>Turn off True Tone, Night Shift, Night Light or any blue-light filter, and use the usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
         <li>Go with the first impression. If you truly can't tell, pick "Can't tell".</li>
       </ul>
@@ -354,7 +354,7 @@ function stage(): string {
  * @returns    HTML.
  */
 function results(ctx: TestContext): string {
-  const tier = ctx.settings.identityTier[ctx.mode];
+  const tier = identityOf(ctx.settings, ctx.mode);
   const colorOf = (key: string) => ctx.palette?.[ctx.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
   const measured = pooled(ctx.mode).toSorted((a, b) => a.hue - b.hue);
   const usable = measured.flatMap((m) =>

@@ -22,14 +22,14 @@ What follows describes EK Palette; every number in it is a setting.
 - **Modes:** light on `#EBEBEB`, dark on `#181818`.
 - **Tiers:** one color per APCA contrast against the base:
 
-  | Tier  | For                             |
-  | ----- | ------------------------------- |
-  | Lc 15 | Dividers and faint fills        |
-  | Lc 30 | Icons, outlines and controls    |
-  | Lc 45 | Large text and the color itself |
-  | Lc 60 | Labels and links                |
-  | Lc 75 | Body text                       |
-  | Lc 90 | Long reading                    |
+  | Tier  | For                          |
+  | ----- | ---------------------------- |
+  | Lc 15 | Dividers and faint fills     |
+  | Lc 30 | Icons, outlines and controls |
+  | Lc 45 | Headlines and large text     |
+  | Lc 60 | Labels and links             |
+  | Lc 75 | Body text                    |
+  | Lc 90 | Long reading                 |
 
 - **Variants:** default, and muted at just under half the colorfulness, for every color.
 - **Screens:** standard (every screen, written as hex), wide (most new phones and computers) and
@@ -89,12 +89,14 @@ The palette is written to `out/`:
 - `palette.json`: the settings and everything solved
 - `palette.csv`: one row per color
 - `palette.md`: tables per screen, mode and variant
+- `palette.css`: custom properties for a website, light and dark through `light-dark()`, wider
+  screens through `@media (color-gamut: …)`
 
 ## Site
 
 `site/` is the live site: an overview, every tier, a page per color, how it works, the algorithm
 with every formula, references, and settings, with the two blind tests (one finds where each color
-looks most like its name, the other how colorful each hue looks), export as JSON, CSV or Markdown,
+looks most like its name, the other how colorful each hue looks), export as JSON, CSV, Markdown or CSS,
 and what the site is. After changing `src/`, rebuild it:
 
 ```sh

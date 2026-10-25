@@ -10,6 +10,7 @@ import {
   apca,
   composition,
   darkBase,
+  greyLevel,
   hueTurn,
   makeModel,
   type Model,
@@ -258,6 +259,72 @@ function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Sp
   return { hues, colors, ring: ring(colors) };
 }
 
+/* >-------------------------------------< Identity tier >--------------------------------------< */
+
+/** The contrast each rule asks of ordinary text: APCA's Lc and WCAG 2's ratio for AA. */
+export const TEXT_MINIMUM = { apca: 60, wcag: 4.5 } as const;
+
+/**
+ * How near a tier is to reading as text by both contrast rules at once: a grey on the tier, its
+ * APCA Lc over APCA's minimum and its WCAG 2 ratio over WCAG's, averaged. At 1, the two rules
+ * together are just at their minimum; below, too faint; above, more than text needs.
+ *
+ * @param base  The background.
+ * @param tier  The tier.
+ * @returns     The score.
+ */
+export function textScore(base: string, tier: number): number {
+  const dark = isDark(base);
+  const grey = (v: number) => `#${v.toString(16).padStart(2, "0").repeat(3)}`;
+  // The grey nearest the base that reaches the tier, searched on the side away from it: the first
+  // lighter one that does on a dark base, the one before the first darker one that doesn't on a
+  // light base. When none does, the furthest grey.
+  let [lo, hi] = dark ? [greyLevel(base), 256] : [0, greyLevel(base) + 1];
+  while (lo < hi) {
+    const v = Math.floor((lo + hi) / 2);
+    if (apca(grey(v), base) >= tier === dark) hi = v;
+    else lo = v + 1;
+  }
+  const v = dark ? Math.min(255, lo) : Math.max(0, lo - 1);
+  return (apca(grey(v), base) / TEXT_MINIMUM.apca + wcag(grey(v), base) / TEXT_MINIMUM.wcag) / 2;
+}
+
+const automatic = new Map<string, number>();
+
+/**
+ * The tier that stands for each hue on a base, when it's left to the palette: the one whose text
+ * score is nearest 1, the lower one on a tie.
+ *
+ * @param base   The background.
+ * @param tiers  The tiers solved.
+ * @returns      The tier.
+ */
+export function autoIdentity(base: string, tiers: readonly number[]): number {
+  const key = `${base} ${tiers.join(",")}`;
+  let tier = automatic.get(key);
+  if (tier === undefined) {
+    const off = tiers.map((t) => Math.abs(textScore(base, t) - 1));
+    tier = tiers[off.indexOf(Math.min(...off))]!;
+    automatic.set(key, tier);
+  }
+  return tier;
+}
+
+/**
+ * A mode's identity tier: the one set by hand, or the automatic one.
+ *
+ * @param settings  The bases, tiers and identity tiers.
+ * @param mode      The mode.
+ * @returns         The tier.
+ */
+export function identityOf(
+  settings: Pick<Settings, "bases" | "tiers" | "identityTier">,
+  mode: Mode,
+): number {
+  const set = settings.identityTier[mode];
+  return set === "auto" ? autoIdentity(settings.bases[mode], settings.tiers) : set;
+}
+
 /* >----------------------------------------< Palette >-----------------------------------------< */
 
 /** How close neighbors may come, as a share of the even step between them. */
@@ -482,16 +549,15 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     return { target, limit, targets: spaced.hues.map(aim), ...spaced };
   };
 
-  const identity = solveTier(settings.identityTier[mode], start, identityReach);
+  const identityTier = identityOf(settings, mode);
+  const identity = solveTier(identityTier, start, identityReach);
   const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch }>> = {};
   const targets: Record<number, number> = {};
   const limits: Record<number, string | null> = {};
   const ring: Record<number, number[]> = {};
   for (const tier of settings.tiers) {
     const solved =
-      tier === settings.identityTier[mode]
-        ? identity
-        : solveTier(tier, identity.hues, settings.hueWindow.tier);
+      tier === identityTier ? identity : solveTier(tier, identity.hues, settings.hueWindow.tier);
     tiers[tier] = {};
     targets[tier] = round(solved.target);
     limits[tier] = solved.limit;

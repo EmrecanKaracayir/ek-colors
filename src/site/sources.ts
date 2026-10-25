@@ -54,7 +54,7 @@ const GROUPS: readonly Group[] = [
       {
         cite: "Ottosson, B. <em>A perceptual color space for image processing.</em> 2020.",
         link: "https://bottosson.github.io/posts/oklab/",
-        use: "Oklab lightness, which the default bases are stepped in.",
+        use: "Oklab lightness, in which the default light base sits a few just-noticeable steps below white; the dark base mirrors its contrast.",
       },
     ],
   },
@@ -79,16 +79,16 @@ const GROUPS: readonly Group[] = [
       {
         cite: "W3C. <em>CSS Color Module Level 4.</em>",
         link: "https://www.w3.org/TR/css-color-4/",
-        use: "The color spaces of the three gamut tiers (sRGB, Display P3, Rec. 2020) and the color() values the wide and ultra palettes are written in.",
+        use: "The color spaces of the three gamuts (sRGB, Display P3, Rec. 2020) and the color() values the wide and ultra palettes are written in.",
       },
       {
-        cite: "ITU-R Recommendation BT.2020. <em>Parameter values for ultra-high definition television systems.</em> International Telecommunication Union.",
-        use: "The widest gamut tier, Ultra.",
+        cite: "Recommendation ITU-R BT.2020-2. <em>Parameter values for ultra-high definition television systems for production and international programme exchange.</em> International Telecommunication Union, 2015.",
+        use: "The widest gamut, Ultra.",
       },
       {
         cite: "W3C. <em>Media Queries Level 4</em>, the color-gamut feature.",
         link: "https://www.w3.org/TR/mediaqueries-4/#color-gamut",
-        use: "How a page tells which gamut tier a screen can show.",
+        use: "How a page tells which gamut a screen can show.",
       },
     ],
   },
@@ -146,9 +146,14 @@ const GROUPS: readonly Group[] = [
         use: "The site's numbers and color values.",
       },
       {
-        cite: "Microsoft. <em>TypeScript</em>, and Wallace, E. <em>esbuild</em>.",
+        cite: `Microsoft. <em>TypeScript</em> ${project.devDependencies.typescript}. Apache License 2.0.`,
+        link: "https://www.typescriptlang.org",
+        use: "The language the solver and the site are written in.",
+      },
+      {
+        cite: `Wallace, E. <em>esbuild</em> ${project.devDependencies.esbuild}. MIT License.`,
         link: "https://esbuild.github.io",
-        use: "The language the solver and the site are written in, and the tool that bundles them.",
+        use: "The tool that bundles the solver and the site for the browser.",
       },
     ],
   },

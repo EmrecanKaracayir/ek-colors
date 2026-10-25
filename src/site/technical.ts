@@ -12,7 +12,7 @@ import { LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
 import { anchorHue, anchorSource } from "../palette/references";
 import { MODE_NAMES, MODES, NAMES } from "../palette/settings";
 import project from "../../package.json";
-import { CLOSEST, hueKeys } from "../palette/solve";
+import { autoIdentity, CLOSEST, hueKeys, identityOf, TEXT_MINIMUM, textScore } from "../palette/solve";
 import type { Context } from "./explain";
 import { escape } from "./graph";
 
@@ -64,11 +64,11 @@ export function technical(ctx: Context): string {
 
     <section class="step">
       <h2>0. Overview</h2>
-<pre class="formula">for each gamut tier g in (standard, wide, ultra):            // solved independently
+<pre class="formula">for each gamut g in (standard, wide, ultra):                 // solved independently
   for each mode m in (light, dark):
     VC[m]   ← viewing conditions from room[m] and base[m]
     starts  ← the circle divided evenly from the anchor (${ctx.label(hueKeys(s.hues)[0]!).toLowerCase()}), or where a color is placed
-    identity tier: T ← target ceiling; hues ← space(starts, ±${fixed(identityReach, 1)}°)
+    identity tier: T ← target ceiling; hues ← space(starts, ±${fixed(identityReach, 1)}°)   // the tier from step 3
     other tiers:   T ← target ceiling; hues ← space(identity hues, ±${String(s.hueWindow.tier)}°)
     per tier, per hue: default ← strongest(h, T + curve(h))
                        muted   ← strongest(h, M(default) × muted share)
@@ -81,7 +81,7 @@ variants for the H and M switches: the same solve without placed hues, without t
       <h2>1. Viewing conditions</h2>
       <p>CAM16 (Li et al., 2017), as implemented by Google's material-color-utilities ${project.dependencies["@material/material-color-utilities"]}. Each mode gets its own <code>ViewingConditions.make(white, L<sub>A</sub>, Y<sub>b</sub>, surround)</code>:</p>
 <pre class="formula">white  = D65
-L_A    = E × 0.0586          // cd/m²: E lux on a 20% gray (L* 50): E/π × 0.184
+L_A    = E × 0.0586          // cd/m²: E lux on an 18% gray (L* 50): E/π × 0.184
 Y_b    = luminance of the base // passed to CAM16 as its L*
 F      = 0.8 + surround/10    // surround 0 dark, 1 dim, 2 average → F 0.8, 0.9, 1.0
 c      = lerp(0.525…0.59…0.69 by F),  N_c = F
@@ -89,7 +89,7 @@ D      = F × (1 − (1/3.6)·e^((−L_A − 42)/92)),  clamped to 0…1
 k      = 1/(5·L_A + 1)
 F_L    = k⁴·L_A + 0.1·(1 − k⁴)²·∛(5·L_A)
 n      = Y_b / Y_w,   z = 1.48 + √n,   N_bb = N_cb = 0.725 / n^0.2</pre>
-      <div class="scroll"><table><thead><tr><th>Mode</th><th>Lux</th><th>L<sub>A</sub></th><th>Base L*</th><th>F</th><th>c</th><th>F<sub>L</sub></th><th>F<sub>L</sub><sup>¼</sup></th><th>n</th><th>z</th></tr></thead><tbody>${conditions(ctx)}</tbody></table></div>
+      <div class="scroll"><table class="symbols"><thead><tr><th>Mode</th><th>Lux</th><th>L<sub>A</sub></th><th>Base L*</th><th>F</th><th>c</th><th>F<sub>L</sub></th><th>F<sub>L</sub><sup>¼</sup></th><th>n</th><th>z</th></tr></thead><tbody>${conditions(ctx)}</tbody></table></div>
     </section>
 
     <section class="step">
@@ -97,9 +97,9 @@ n      = Y_b / Y_w,   z = 1.48 + √n,   N_bb = N_cb = 0.725 / n^0.2</pre>
       <p>The solver works in CAM16 lightness J, colorfulness M and hue h. Colorfulness depends on the room through F<sub>L</sub>; chroma doesn't:</p>
 <pre class="formula">C = M / F_L^¼
 (J, C, h) → CAM16 inverse in VC[m] → XYZ (D65, 0…100)
-XYZ / 100 → the tier's RGB space:  standard sRGB · wide Display P3 · ultra Rec. 2020
+XYZ / 100 → the gamut's RGB space: standard sRGB · wide Display P3 · ultra Rec. 2020
 in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0005)
-              no  → no color (counts as "too far" in the searches below)
+              no  → off the screen: the search judges it by its contrast (step 3); a final color must be on it
               yes → standard: 8-bit hex;  wide/ultra: color(…) rounded to 4 decimals</pre>
       <p>Every reported number is measured again on the rounded color, so what's shown is what's shipped.</p>
     </section>
@@ -118,6 +118,11 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
   x ← color(light ? lo : hi, M, h)
   return x if APCA(x, base) ≥ Lc after rounding, else none</pre>
       <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces, typically a few tenths of an Lc. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
+      <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together are just at their minimum for text. It's measured on a grey, so it's known before any color is solved:</p>
+<pre class="formula">g(Lc)     = the 8-bit grey nearest the base with APCA(g, base) ≥ Lc
+score(Lc) = (APCA(g, base) / ${String(TEXT_MINIMUM.apca)} + WCAG(g, base) / ${String(TEXT_MINIMUM.wcag)}) / 2     // 1: both just at their minimum for text
+identity  = the tier with score nearest 1, the lower on a tie
+${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textScore(s.bases[m], t).toFixed(2)}`).join(" · ")}   → Lc ${String(autoIdentity(s.bases[m], s.tiers))}${s.identityTier[m] === "auto" ? "" : `, set by hand to Lc ${String(identityOf(s, m))}`}`).join("\n")}</pre>
 <pre class="formula">strongest(h, M_target, Lc):            // colorfulness search
   if place(h, M_target, Lc) exists → return it
   lo, hi ← 0, M_target
@@ -152,7 +157,7 @@ curve(h) = Σ_i  [ d_i(h) &lt; w_i ]  ·  a_i · (1 + cos(π · d_i(h) / w_i)) /
       <h2>6. Names and starting hues</h2>
       <p>CAM16's unique hues and their eccentricity weights (the hue-quadrature table): R 20.14° (e 0.8), Y 90° (0.7), G 164.25° (1.0), B 237.53° (1.2), and R again at 380.14° (0.8). Between two unique hues, a hue's share of the next one is:</p>
 <pre class="formula">p(h) = ((h − h_i)/e_i) / ((h − h_i)/e_i + (h_(i+1) − h)/e_(i+1))</pre>
-      <p>A name like "R 33 B" (33% toward the other hue, from B's side) is turned back into an angle by bisecting p(h) on that segment. The same formula names every swatch ("Y 11 G").</p>
+      <p>A name like "R 33 B" (red with 33% blue: a third of the way from R to B, in steps of p) is turned back into an angle by bisecting p(h) on that segment. The same formula names every swatch ("Y 11 G").</p>
       <p>The other reference systems (Munsell, NCS, unique hues, focal colors) give measured colors instead of names: each one's D65 XYZ (Munsell and WCS chips adapted from illuminant C by Bradford, NCS from its sRGB approximations) is taken into CAM16 in each mode's viewing conditions, and its hue is the circular mean of the light and dark hues. They're drawn as guides, and each one's yellow can be the anchor.</p>
 <pre class="formula">start_k = anchor + k · 360° / n     // k = 0 … n − 1, yellow first with eight hues
 start_k = placed_k                  // a color placed by hand starts there instead</pre>
@@ -177,7 +182,7 @@ a*, b* = M*·cos h, M*·sin h
         h ← hue_i + step;  skip if |h − start_i| &gt; window
         try color_i ← strongest(h, target(h));  rescore
         keep it if the score drops by more than 10⁻⁴</pre>
-      <p>The identity tier (light Lc ${String(s.identityTier.light)}, dark Lc ${String(s.identityTier.dark)}) is spaced first from the starting hues with a window of ±${fixed(identityReach, 1)}°: ${String(s.hueWindow.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less`}. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
+      <p>The identity tier (light Lc ${String(identityOf(s, "light"))}, dark Lc ${String(identityOf(s, "dark"))}) is spaced first from the starting hues with a window of ±${String(s.hueWindow.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less: ±${fixed(identityReach, 1)}° here`}. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
       <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(CLOSEST * 100)}% of the even step from each (${fixed((360 / s.hues) * CLOSEST, 2)}° here), and a spacing step that would bring a color closer than that to a neighbor isn't taken. Dragging the anchor stops before any color it carries would pass a placed one.</p>
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
@@ -210,8 +215,8 @@ turned         Uniform, solved with the anchor moved by the turn (step 7)   // "
     </section>
 
     <section class="step">
-      <h2>10. Three gamut tiers</h2>
-      <p>Steps 2 to 9 run once per tier, with only the gamut check (step 2) changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one tier to another; each tier's ceilings, hues and colors come from its own solve. On the web, a page serves the widest tier the screen reports through <code>@media (color-gamut: …)</code>.</p>
+      <h2>10. Three gamuts</h2>
+      <p>Steps 2 to 9 run once per gamut, with only the gamut check (step 2) changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one gamut to another; each gamut's ceilings, hues and colors come from its own solve. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
     </section>
 
     <section class="step">
@@ -222,7 +227,7 @@ labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA · ≥ 4.5 AA · ≥ 3 AA large · else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut tier (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.extras.length)} colors, default and muted, plus spacing) takes about a second in a browser worker.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.extras.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker; the header shows how long the one on screen took.</p>
     </section>
 
     <section class="step">
@@ -241,7 +246,7 @@ unsure if the range reaches ±24, or log L(μ̂) − log L₀ &lt; 1.92</pre>
 
     <section class="step">
       <h2>13. The blind hue test</h2>
-      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, half of the colors toward one neighbor and half toward the other, in random order; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 12, with the range within ±5°.</p>
+      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, half of the colors toward one neighbor and half toward the other, in random order; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials. The test runs only with the eight named colors, since it asks about each one's neighbors by name. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 12, with the range within ±5°.</p>
       <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 12, over μ within ±40° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
     </section>`;
 }

@@ -8,8 +8,8 @@
 import { apca, composition, makeModel, type Model, parts, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../palette/settings";
 import { anchorHue, anchorSource } from "../palette/references";
-import { escape, zoneTable } from "./graph";
-import { boost, type GamutPalette, hueKeys, lineup, strongest } from "../palette/solve";
+import { escape, signedWhole, zoneTable } from "./graph";
+import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, strongest } from "../palette/solve";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -34,7 +34,7 @@ const STARTS: Readonly<Record<string, (ctx: Context) => string | number>> = {
   "demo-tier": (ctx) => ctx.settings.tiers.at(-1) ?? 60,
   "demo-a": (ctx) => hues(ctx)[0]?.key ?? "",
   "demo-b": (ctx) => hues(ctx)[1]?.key ?? "",
-  "demo-dtier": (ctx) => ctx.settings.identityTier[ctx.mode],
+  "demo-dtier": (ctx) => identityOf(ctx.settings, ctx.mode),
   "demo-amount": (ctx) => Math.max(-12, Math.min(12, ctx.settings.curve[ctx.mode][0]?.amount ?? 6)),
   "demo-center": (ctx) => ctx.settings.curve[ctx.mode][0]?.center ?? 20,
   "demo-width": (ctx) => Math.max(20, Math.min(180, ctx.settings.curve[ctx.mode][0]?.width ?? 60)),
@@ -126,7 +126,7 @@ function model(settings: Pick<Settings, "bases" | "rooms">, gamut: Gamut): Model
  * @returns    One entry per hue (extra colors left out).
  */
 function hues(ctx: Context) {
-  const tier = ctx.settings.identityTier[ctx.mode];
+  const tier = identityOf(ctx.settings, ctx.mode);
   return (ctx.palette?.[ctx.mode].colors ?? [])
     .filter((c) => !c.extra)
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
@@ -197,7 +197,7 @@ function room(ctx: Context): string {
 function modes(ctx: Context): string {
   const first = hues(ctx)[0];
   if (!first) return "Solving…";
-  const lc = ctx.settings.identityTier.light;
+  const lc = identityOf(ctx.settings, "light");
   const m = model(ctx.settings, ctx.gamut);
   const reach = (mode: Mode) => {
     try {
@@ -219,7 +219,7 @@ function modes(ctx: Context): string {
     const cam = m.cam(mode, color);
     return `<figure class="on-base" style="--base:${ctx.settings.bases[mode]};--c:${color};--ink:var(--fg-${mode})">
       <span class="demo-swatch"></span><span class="on-base-sample">Aa</span>
-      <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks M ${cam.m.toFixed(0)} · screen chroma ${cam.chroma.toFixed(0)}</span></figcaption>
+      <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks M ${cam.m.toFixed(0)} · chroma C ${cam.chroma.toFixed(0)}</span></figcaption>
     </figure>`;
   });
   return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(first.key)}'s hue at M ${String(target)} on Lc ${String(lc)}, in each mode's room.</p>`;
@@ -381,7 +381,7 @@ function difference(ctx: Context): string {
  */
 function spacing(ctx: Context): string {
   const list = hues(ctx);
-  const ring = ctx.palette?.[ctx.mode].ring[ctx.settings.identityTier[ctx.mode]] ?? [];
+  const ring = ctx.palette?.[ctx.mode].ring[identityOf(ctx.settings, ctx.mode)] ?? [];
   if (!ring.length) return "Solving…";
   const most = Math.max(...ring);
   return ring
@@ -401,7 +401,7 @@ function spacing(ctx: Context): string {
  */
 function bump(ctx: Context): string {
   const list = hues(ctx);
-  const tierLc = ctx.settings.identityTier[ctx.mode];
+  const tierLc = identityOf(ctx.settings, ctx.mode);
   const target = ctx.palette?.[ctx.mode].targets[tierLc];
   if (!list.length || target === undefined) return "Solving…";
   const point = { amount: Number(setting(ctx, "demo-amount")), center: Number(setting(ctx, "demo-center")), width: Number(setting(ctx, "demo-width")) };
@@ -412,7 +412,7 @@ function bump(ctx: Context): string {
   const line = Array.from({ length: 181 }, (_, i) => `${i ? "L" : "M"}${x(i * 2).toFixed(1)} ${y(added(i * 2)).toFixed(1)}`).join(" ");
   const grid = [-12, -6, 0, 6, 12].map(
     (m) => `<line x1="${String(left)}" x2="${String(left + width)}" y1="${y(m).toFixed(1)}" y2="${y(m).toFixed(1)}" class="${m === 0 ? "target" : "grid"}"></line>
-      <text x="${String(left - 6)}" y="${(y(m) + 4).toFixed(1)}" class="axis" text-anchor="end">${m > 0 ? "+" : m < 0 ? "−" : ""}${String(Math.abs(m))}</text>`,
+      <text x="${String(left - 6)}" y="${(y(m) + 4).toFixed(1)}" class="axis" text-anchor="end">${signedWhole(m)}</text>`,
   );
   const ticks = [0, 90, 180, 270, 360].map((h) => `<text x="${x(h).toFixed(1)}" y="${String(top + height + 16)}" class="axis" text-anchor="middle">${String(h)}°</text>`);
   const dots = list.map((h) => `<circle cx="${x(h.hue).toFixed(1)}" cy="${y(added(h.hue)).toFixed(1)}" r="6" style="fill:${h.color}" class="mark"></circle>`);
@@ -546,11 +546,14 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Contrast decides lightness</h2>
-      <p>Every color has a job, and the job decides how much it must stand out from the background. The solver measures that with <strong>APCA</strong>, the contrast method written for the next version of the web's accessibility guidelines. APCA reads light-on-dark and dark-on-light differently, the way eyes do. Its unit is Lc.</p>
+      <p>Every color has a job, and the job decides how much it must stand out from the background. The solver measures that with <strong>APCA</strong>, a contrast method proposed for the next version of the web's accessibility guidelines. APCA reads light-on-dark and dark-on-light differently, the way eyes do. Its unit is Lc.</p>
       <div class="scroll"><table class="roles"><tbody>${s.tiers
         .map((t) => `<tr><th scope="row" class="mono">Lc ${String(t)}</th><td>${ROLES[t] ?? ""}</td></tr>`)
         .join("")}</tbody></table></div>
       <p>For each hue and tier, the solver searches lightness until the color sits exactly on the tier: never below it, and only as far above as rounding forces. The older WCAG 2 contrast is reported beside every color too, because laws still point to it. Its badge says what that ratio allows: AAA and AA pass for text, AA large only for large text and for icons, borders and controls, and below 3:1 for nothing that must be read. Each badge opens its level.</p>
+      <p>One tier stands for each hue: the <strong>identity tier</strong>. It's where the colors look most like themselves: clear enough to read, neither faint nor heavy. The solver picks it as the tier where APCA and WCAG 2, taken together, are just at their minimum for text: Lc ${String(autoIdentity(s.bases.light, s.tiers))} on the light base and Lc ${String(autoIdentity(s.bases.dark, s.tiers))} on the dark one, since WCAG 2 rates colors on a dark base as more contrasty than APCA does.${MODES.filter((m) => s.identityTier[m] !== "auto")
+        .map((m) => ` Here, ${m} mode's is set by hand to Lc ${String(identityOf(s, m))}.`)
+        .join("")} Any tier can be made the identity on the Tiers page, or in Settings.</p>
       <div class="demo">
         <div class="demo-controls">
           ${slider(ctx, "demo-hue", "Hue", [0, 359, 1], "tier")}
@@ -562,7 +565,7 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Equally colorful</h2>
-      <p>Every color aims at the same colorfulness: M ${String(s.colorfulness)}. The screen doesn't always allow it. Near white, a screen can show a strong yellow but only a pale red; near black, the opposite. With <strong>Equal per tier</strong> on, each tier's target drops to what its least colorful hue can reach, and every color on the tier follows, so nothing stands out by accident. Switched off in Settings, each color goes as far as the screen allows instead, and a tier is no longer equally colorful.</p>
+      <p>Every hue aims at the same colorfulness: M ${String(s.colorfulness)}, apart from what colorfulness per hue (below) adds or takes away. The screen doesn't always allow it. Near white, a screen can show a strong yellow but only a pale red; near black, the opposite. With <strong>Equal per tier</strong> on, each tier's target drops to what its least colorful hue can reach, and every color on the tier follows, so nothing stands out by accident. Switched off in Settings, each color goes as far as the screen allows instead, and a tier is no longer equally colorful.</p>
       <p>The chart shows how far each hue could go on one tier, on each kind of screen.</p>
       <div class="demo">
         <div class="demo-controls">
@@ -570,7 +573,7 @@ export function explain(ctx: Context): string {
         </div>
         <div id="demo-reach-out" class="demo-out wide">${reach(ctx)}</div>
       </div>
-      <p>Small labels on the cards and tables say what happened to a color. <strong>Sets the tier</strong>, in amber, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, in grey, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, in red, marks a color the screen can't make as colorful as it should be at all. Each one opens why, with the numbers.</p>
+      <p>Small labels say what happened to a color. <strong>Sets the tier</strong>, in amber, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, in grey, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, in red, marks a color the screen can't make as colorful as it should be at all. Tables spell all three out; on cards, Sets the tier is a label, and a Lowered or Gamut limit color shows its M value in grey or red. Each one opens why, with the numbers.</p>
     </section>
 
     <section class="step">
@@ -639,12 +642,12 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Three kinds of screen</h2>
-      <p>Screens differ in how much color they can show. <strong>Standard</strong> is what every screen shows. <strong>Wide</strong> is what most new phones and computers show, iPhones and Macs included. <strong>Ultra</strong> is the widest, which few screens fully reach yet.</p>
+      <p>Screens differ in how much color they can show, their gamut; the Gamut switch in the header picks one of the three. <strong>Standard</strong> is what every screen shows. <strong>Wide</strong> is what most new phones and computers show, iPhones and Macs included. <strong>Ultra</strong> is the widest, which few screens fully reach yet.</p>
       <p>The palette is solved once per kind, each on its own. A wider screen keeps more color on the tiers where the standard one runs out, as the chart above shows. A website gives every screen the widest palette it can show.</p>
     </section>
 
     <section class="step">
       <h2>Every rule is a setting</h2>
-      <p>The bases and rooms, the number of hues, the anchor and placed hues, the target colorfulness and its curve per hue, the tiers, the muted share and the extra colors are all settings. Change one in Settings and watch the palette follow; Export, at the end of Settings, gives it as JSON, CSV or Markdown.</p>
+      <p>The bases and rooms, the number of hues, the anchor and placed hues, the target colorfulness and its curve per hue, the tiers, the muted share and the extra colors are all settings. Change one in Settings and watch the palette follow; Export, at the end of Settings, gives it as JSON, CSV, Markdown or CSS.</p>
     </section>`;
 }

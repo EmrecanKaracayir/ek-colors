@@ -8,6 +8,7 @@
 
 import {
   argbFromHex,
+  argbFromLstar,
   Cam16,
   lstarFromArgb,
   ViewingConditions,
@@ -122,6 +123,16 @@ export function makeModel(
  */
 export function darkBase(base: string): boolean {
   return lstarFromArgb(argbFromHex(base)) < 50;
+}
+
+/**
+ * The grey as light as a base, as its 8-bit level.
+ *
+ * @param base  The background.
+ * @returns     0 for black to 255 for white.
+ */
+export function greyLevel(base: string): number {
+  return argbFromLstar(lstarFromArgb(argbFromHex(base))) & 0xff;
 }
 
 /* >-----------------------------------------< Colors >-----------------------------------------< */

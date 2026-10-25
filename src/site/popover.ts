@@ -107,6 +107,13 @@ function close(focus = false): void {
   panel.hidden = true;
 }
 
+/**
+ * Closes the popover from outside, when what it explains has just changed.
+ */
+export function hidePopover(): void {
+  close();
+}
+
 /* >-----------------------------------------< Events >-----------------------------------------< */
 
 document.addEventListener("click", (event) => {

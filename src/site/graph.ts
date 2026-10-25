@@ -80,6 +80,28 @@ export function signed(x: number): string {
 }
 
 /**
+ * A whole number with its sign, for an axis of amounts added or taken away.
+ *
+ * @param x  The number.
+ * @returns  E.g. "+8", "−8", "0".
+ */
+export function signedWhole(x: number): string {
+  return `${x > 0 ? "+" : x < 0 ? "−" : ""}${String(Math.abs(x))}`;
+}
+
+/**
+ * A gap between neighbors against the even gap.
+ *
+ * @param gap   The gap.
+ * @param even  The even gap.
+ * @returns     E.g. "8% under even", "9% over even", or "even".
+ */
+export function againstEven(gap: number, even: number): string {
+  const percent = Math.round(Math.abs(1 - gap / even) * 100);
+  return percent === 0 ? "even" : `${String(percent)}% ${gap < even ? "under" : "over"} even`;
+}
+
+/**
  * How even a ring of neighbor gaps is: its closest and widest pair against the even gap, with how
  * worrying the closest is.
  *
@@ -92,10 +114,7 @@ export function evenText(ring: readonly number[], names: readonly string[], even
   if (!ring.length) return "";
   const [low, high] = [ring.indexOf(Math.min(...ring)), ring.indexOf(Math.max(...ring))];
   const pair = (i: number) => `${names[i] ?? ""}–${names[(i + 1) % names.length] ?? ""}`;
-  const off = (d: number) => {
-    const percent = Math.round(Math.abs(1 - d / even) * 100);
-    return percent === 0 ? "even" : `${String(percent)}% ${d < even ? "under" : "over"} even`;
-  };
+  const off = (d: number) => againstEven(d, even);
   if (off(ring[low]!) === "even" && off(ring[high]!) === "even") return `Every pair is one even gap apart (${even.toFixed(1)} ΔE).`;
   return `Closest: ${pair(low)}, ${off(ring[low]!)} (${ring[low]!.toFixed(1)} ΔE): ${evenness(Math.max(0, 1 - ring[low]! / even))}. Widest: ${pair(high)}, ${off(ring[high]!)} (${ring[high]!.toFixed(1)} ΔE). Even gap: ${even.toFixed(1)}.`;
 }
@@ -203,7 +222,7 @@ export function stops(colors: readonly { readonly hue: number; readonly color: s
  */
 export function hueScale(height: number): string {
   return Array.from({ length: 13 }, (_, k) => k * 30)
-    .map((h) => `<text x="${String(h)}" y="${String(height + 13)}" class="axis" text-anchor="middle">${String(h)}°</text>`)
+    .map((h) => `<text x="${String(h)}" y="${String(height + 13)}" class="axis${h % 90 ? " minor" : ""}" text-anchor="middle">${String(h)}°</text>`)
     .join("");
 }
 
@@ -220,7 +239,7 @@ export function guideLayer(guides: readonly Guide[], height: number): string {
     .map((g) => {
       const x = g.hue.toFixed(1);
       return `<line x1="${x}" x2="${x}" y1="0" y2="${String(height)}" class="guide${g.unique ? "" : " half"}"></line>
-      <text x="${x}" y="${String(height + 28)}" class="axis guide-label" text-anchor="middle">${g.label}</text>
+      <text x="${x}" y="${String(height + 28)}" class="axis guide-label${g.unique ? "" : " half"}" text-anchor="middle">${g.label}</text>
       <text x="${x}" y="${String(height + 37)}" class="axis guide-degree" text-anchor="middle">${g.hue.toFixed(0)}°</text>`;
     })
     .join("");

@@ -42,8 +42,8 @@
       90
     ],
     "identityTier": {
-      "light": 60,
-      "dark": 45
+      "light": "auto",
+      "dark": "auto"
     },
     "muted": 0.48,
     "extras": [

@@ -38,7 +38,7 @@ export const SURROUNDS = ["Dark", "Dim", "Average"] as const;
 export const ROLES: Readonly<Record<number, string>> = {
   15: "Dividers and faint fills",
   30: "Icons, outlines and controls",
-  45: "Large text and the color itself",
+  45: "Headlines and large text",
   60: "Labels and links",
   75: "Body text",
   90: "Long reading",
@@ -105,8 +105,11 @@ export interface Settings {
   /** The APCA contrasts every hue gets a color for. */
   readonly tiers: readonly number[];
 
-  /** Per mode, the tier whose color stands for the hue and sets every tier's hues. */
-  readonly identityTier: Readonly<Record<Mode, number>>;
+  /**
+   * Per mode, the tier whose color stands for the hue and sets every tier's hues: "auto" for the
+   * one where APCA and WCAG 2 together are just at their minimum for text, or a tier set by hand.
+   */
+  readonly identityTier: Readonly<Record<Mode, number | "auto">>;
 
   /** Muted colorfulness, as a share of the default's. */
   readonly muted: number;
@@ -134,6 +137,20 @@ export interface Settings {
   readonly guide: string;
 }
 
+/* >-----------------------------------------< Limits >-----------------------------------------< */
+
+/** The lowest and highest each number in the settings may be; the fields and the check share them. */
+export const LIMITS = {
+  colorfulness: [10, 80],
+  muted: [0.1, 0.9],
+  hues: [4, 16],
+  lux: [1, 1000],
+  amount: [-24, 24],
+  width: [10, 180],
+  share: [0.1, 1],
+  hueWindow: [0, 90],
+} as const satisfies Record<string, readonly [number, number]>;
+
 /* >----------------------------------------< Defaults >----------------------------------------< */
 
 /*
@@ -149,7 +166,7 @@ export const DEFAULTS: Settings = {
   curve: { light: [], dark: [] },
   hues: 8,
   tiers: [15, 30, 45, 60, 75, 90],
-  identityTier: { light: 60, dark: 45 },
+  identityTier: { light: "auto", dark: "auto" },
   muted: 0.5,
   extras: [],
   hueWindow: { identity: 20, tier: 6 },
@@ -172,7 +189,7 @@ export const NAMES = [
 
 /* >----------------------------------------< Codemos >-----------------------------------------< */
 
-/** Codemos's colors, the palette this one replaces, for the comparison. */
+/** Codemos's colors, EK Palette's predecessor, for the comparison. */
 export const CODEMOS: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#B70004",

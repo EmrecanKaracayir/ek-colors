@@ -8,16 +8,17 @@
 
 import project from "../../package.json";
 import { CONFIG } from "../config";
-import { toCsv, toJson, toMarkdown } from "../palette/formats";
+import { toCss, toCsv, toJson, toMarkdown } from "../palette/formats";
 import { composition, deltaE, makeModel, type Model, parts, plainSquared } from "../palette/model";
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
-import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
-import { boost, bounds, type Color, extraKeys, hueKeys, lineup, neighbors, PAGES, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { readSettings, SettingsError } from "../palette/check";
+import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
+import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, PAGES, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { copyText, flash, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
 import { bendMeter, bindGuides, CIRCLE, circleGuides, escape, evenness, guidePicker, evenText, inGaps, signed, THRESHOLDS, visibility, zone, zoneTable } from "./graph";
-import { popButton, popSource } from "./popover";
+import { hidePopover, popButton, popSource } from "./popover";
 import { bindHues, huesEditor, type HuesView, refreshHues } from "./hues";
 import { references } from "./sources";
 import { technical } from "./technical";
@@ -28,7 +29,7 @@ import type { Request, Response } from "./worker";
 /* >-----------------------------------------< State >------------------------------------------< */
 
 type Variant = "default" | "muted";
-type Format = "json" | "csv" | "md";
+type Format = "json" | "csv" | "md" | "css";
 
 /** The pages drawn on their own; "colors" opens the first color, and "export" a section of Settings. */
 const VIEWS = PAGES.filter((p) => p !== "colors" && p !== "export");
@@ -68,6 +69,12 @@ const state = {
   solving: false,
   took: 0,
   error: null as string | null,
+
+  /** Settings' paste box: whether it's open, what's in it, and what's wrong with it, if anything. */
+  paste: { open: false, text: "", problem: "" },
+
+  /** The settings before the last paste, until anything else changes them. */
+  undo: null as Settings | null,
 };
 
 /**
@@ -78,37 +85,9 @@ const state = {
 function load(): Settings {
   try {
     const saved = localStorage.getItem(STORE);
-    if (saved) {
-      // Settings saved before exceptions became the curve still hold them; they're left out.
-      const { offsets: _, ...stored } = JSON.parse(saved) as Partial<Settings> & { offsets?: unknown };
-      const settings = { ...CONFIG, ...stored } as { -readonly [K in keyof Settings]: Settings[K] };
-      // Settings saved before the anchor held yellow's hue, per mode or as its home; it becomes the anchor.
-      const old = stored as { yellowHue?: Record<Mode, number>; homes?: Record<string, number>; start?: number };
-      const yellow = old.homes?.yellow ?? old.yellowHue?.light ?? old.start;
-      if (yellow !== undefined && stored.anchor === undefined) settings.anchor = yellow;
-      // Settings saved before one guide at a time list several; the first is kept.
-      const shown = (stored as { guides?: string[] }).guides;
-      if (shown?.length && stored.guide === undefined) settings.guide = shown[0]!;
-      // Settings saved before extra colors hold brown's share, or null without it; it becomes an extra color.
-      const brown = (stored as { brown?: number | null }).brown;
-      if (brown !== undefined && stored.extras === undefined) settings.extras = brown === null ? [] : [{ name: "Brown", hue: 40, share: brown }];
-      // Anything else from an older version is left out, so only settings that exist are kept.
-      for (const key of Object.keys(settings)) if (!(key in CONFIG)) delete (settings as Record<string, unknown>)[key];
-      // Settings saved before the identity tier was per mode hold one number.
-      const identity = settings.identityTier as Settings["identityTier"] | number;
-      if (typeof identity === "number") settings.identityTier = { light: identity, dark: identity };
-      // Settings saved before the curve had several points hold one point, flat or not.
-      const curve = settings.curve as Record<Mode, unknown>;
-      for (const m of MODES) {
-        const one = curve[m] as CurvePoint | CurvePoint[] | undefined;
-        if (!Array.isArray(one)) curve[m] = one && one.amount !== 0 ? [one] : [];
-      }
-      // Each mode's identity tier is one of the tiers solved.
-      for (const m of MODES) if (!settings.tiers.includes(settings.identityTier[m])) settings.identityTier = { ...settings.identityTier, [m]: settings.tiers.includes(CONFIG.identityTier[m]) ? CONFIG.identityTier[m] : settings.tiers[0]! };
-      return structuredClone(settings);
-    }
+    if (saved) return readSettings(JSON.parse(saved), CONFIG);
   } catch {
-    // Storage can be blocked; the defaults do.
+    // Storage can be blocked, and settings that no longer make sense are dropped; the defaults do.
   }
   return structuredClone(CONFIG);
 }
@@ -317,7 +296,7 @@ const turns = new WeakMap<ModePalette, WeakMap<ModePalette, Map<number, number>>
  * @returns     Degrees, or null while either palette solves.
  */
 function turn(mode: Mode): number | null {
-  const tier = state.settings.identityTier[mode];
+  const tier = identityOf(state.settings, mode);
   const [even, hued] = [plain()?.[mode], uncurved()?.[mode]];
   if (!even || !hued) return null;
   if (!turns.has(even)) turns.set(even, new WeakMap());
@@ -365,7 +344,7 @@ function turned(mode: Mode): {
   const even = plain()?.[mode];
   if (angle === null || !even) return null;
   const s = state.settings;
-  const tier = s.identityTier[mode];
+  const tier = identityOf(s, mode);
   const solved = angle === 0 ? even : variant({ ...flat(), placed: {}, anchor: Math.round((anchorHue(s) + angle) * 10) / 10 })?.[mode];
   const colors = Object.fromEntries(
     even.colors.flatMap((c) => {
@@ -418,7 +397,7 @@ function model(): Model {
  * @returns     The cost, or null while it solves.
  */
 function spacingCost(mode: Mode): HuesView["cost"] {
-  const tier = state.settings.identityTier[mode];
+  const tier = identityOf(state.settings, mode);
   const [hued, even] = [uncurved()?.[mode], plain()?.[mode]];
   const ring = hued?.ring[tier];
   const evenRing = even?.ring[tier];
@@ -439,7 +418,7 @@ function spacingCost(mode: Mode): HuesView["cost"] {
  * @returns     The cost, or null while it solves.
  */
 function colorfulnessCost(mode: Mode): CurveView["cost"] {
-  const tier = state.settings.identityTier[mode];
+  const tier = identityOf(state.settings, mode);
   const [before, after] = [uncurved()?.[mode], current()?.[mode]];
   if (!before || !after) return null;
   return after.colors
@@ -461,7 +440,7 @@ function colorfulnessCost(mode: Mode): CurveView["cost"] {
  */
 function bandOf(mode: Mode): CurveView["band"] {
   const s = state.settings;
-  const tier = s.identityTier[mode];
+  const tier = identityOf(s, mode);
   const target = current()?.[mode].targets[tier] ?? s.colorfulness;
   const key = JSON.stringify([s.bases, s.rooms, state.gamut, mode, tier, target]);
   let band = bands.get(key);
@@ -487,7 +466,7 @@ function bandOf(mode: Mode): CurveView["band"] {
  */
 function curveView(mode: Mode): CurveView {
   const s = state.settings;
-  const tier = s.identityTier[mode];
+  const tier = identityOf(s, mode);
   const palette = current()?.[mode];
   const band = bandOf(mode);
   const dots = (palette?.colors ?? [])
@@ -531,7 +510,7 @@ function gapsOf(palette: ModePalette | undefined, tier: number): HuesView["gaps"
 function huesView(): HuesView {
   const s = state.settings;
   const mode = state.mode;
-  const tier = s.identityTier[mode];
+  const tier = identityOf(s, mode);
   const palette = uncurved()?.[mode] ?? current()?.[mode];
   const even = plain()?.[mode];
   // Placed colors where the lineup holds them, in order.
@@ -731,6 +710,15 @@ function isPreset(): boolean {
 }
 
 /**
+ * What the palette is called: EK Palette as it ships, a custom palette once anything is changed.
+ *
+ * @returns  Its name.
+ */
+function paletteName(): string {
+  return isPreset() ? "EK Palette" : "Custom palette";
+}
+
+/**
  * The settings without what only changes how the site looks: the guide shown, and curve points
  * marked as on, which is the same as not marked.
  *
@@ -775,13 +763,15 @@ const LEVELS: Readonly<Record<Swatch["wcagLevel"], string>> = {
 };
 
 /**
- * A color value that copies itself when clicked.
+ * A color value that copies itself when clicked. A color() value breaks after its color space, so
+ * its numbers read on one line wherever it's shown.
  *
  * @param value  The CSS color.
  * @returns      HTML.
  */
 function copyable(value: string): string {
-  return `<button type="button" class="mono copy" data-action="copy-value" data-value="${value}" title="${value}" aria-label="Copy ${value}">${value}</button>`;
+  const shown = value.replace(/^(color\([\w-]+) /, "$1<br>");
+  return `<button type="button" class="mono copy" data-action="copy-value" data-value="${value}" title="${value}" aria-label="Copy ${value}">${shown}</button>`;
 }
 
 /**
@@ -921,7 +911,7 @@ function card(s: Swatch, title: string, href?: string, at?: Place): string {
       : at && isLowered(s, at)
         ? popButton(`why:lowered:${id}`, value, `${title} is lowered by the tier: why`, "wanted lowered")
         : value;
-  const tag = at && setsTier(at) ? popButton(`why:tier:${id}`, "sets tier", `Why ${title} sets the tier`, "chip") : "";
+  const tag = at && setsTier(at) ? popButton(`why:tier:${id}`, "Sets the tier", `Why ${title} sets the tier`, "chip") : "";
   return `<div class="card${href ? " linked" : ""}" style="--c:${s.color}">
     ${href ? `<a class="card-link" href="#${href}" aria-label="${title}"></a>` : ""}
     <span class="fill"></span>
@@ -946,7 +936,7 @@ popSource("why", (which) => {
   const gamut = GAMUT_NAMES[state.gamut];
   const tierTarget = palette.targets[tier] ?? s.target;
   if (kind === "tier")
-    return `<h3>Sets the tier</h3>
+    return `<h3 class="why tier">Sets the tier</h3>
       <p>On Lc ${String(tier)}, ${name.toLowerCase()} can't be more colorful than M ${s.colorfulness.toFixed(1)} on ${gamut} screens. <strong>Equal per tier</strong> is on, so every color on this tier is held to M ${tierTarget.toFixed(1)} to match it, though most could go further.</p>
       ${EQUAL_OFF}`;
   if (kind === "lowered") {
@@ -958,7 +948,7 @@ popSource("why", (which) => {
       ${EQUAL_OFF}`;
   }
   const reason = variant === "muted" ? `${String(Math.round(state.settings.muted * 100))}% of the default's colorfulness` : aimText(key, s, tierTarget);
-  return `<h3>Gamut limit</h3>
+  return `<h3 class="why gamut">Gamut limit</h3>
     <p>${name} would be M ${s.target.toFixed(1)} here (${reason}), but on Lc ${String(tier)} no ${name.toLowerCase()} that colorful exists on ${gamut} screens. It shows M ${s.colorfulness.toFixed(1)}, the most it can.</p>
     <p class="pop-how">A color's contrast fixes its lightness, and at that lightness a screen can only show so much colorfulness in each hue. ${state.gamut === "ultra" ? "This is already the widest gamut." : "A wider gamut can reach further."}</p>`;
 });
@@ -988,15 +978,15 @@ function range(ring: readonly number[]): string {
  * A tier's colorfulness, and what lowered it.
  *
  * @param tier  The tier.
- * @returns     E.g. "Colorfulness M 12.7, lowered from 40: Red can't reach more".
+ * @returns     E.g. "M 12.7, lowered from 40: Red can't reach more".
  */
 function held(tier: number): string {
   const p = current()?.[state.mode];
-  if (!p) return "Colorfulness …";
+  if (!p) return "…";
   const limit = p.limits[tier];
   return limit
-    ? `Colorfulness M ${(p.targets[tier] ?? 0).toFixed(1)}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`
-    : `Colorfulness M ${(p.targets[tier] ?? 0).toFixed(1)}, every color reaches it`;
+    ? `M ${(p.targets[tier] ?? 0).toFixed(1)}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`
+    : `M ${(p.targets[tier] ?? 0).toFixed(1)}, every color reaches it`;
 }
 
 /**
@@ -1090,19 +1080,19 @@ document.addEventListener("pointerout", (event) => {
  */
 function overview(): string {
   const { settings, mode } = state;
-  const tier = settings.identityTier[mode];
+  const tier = identityOf(settings, mode);
   const room = settings.rooms[mode];
   const list = colors(tier);
-  if (!list.length) return `<section class="intro"><h1>${isPreset() ? "EK Palette" : "Custom palette"}</h1><p>Solving…</p></section>`;
+  if (!list.length) return `<section class="intro"><h1>${paletteName()}</h1><p>Solving…</p></section>`;
   const extras = list.filter((c) => c.extra);
   const hues = list.length - extras.length;
   const ring = current()?.[mode].ring[tier] ?? [];
   return `<section class="intro">
-      <h1>${isPreset() ? "EK Palette" : "Custom palette"}</h1>
-      <p>${extras.length ? `${String(hues)} + ${String(extras.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim at the same colorfulness and are as different from their neighbors as they are from theirs; the extra ${extras.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast, aims at the same colorfulness, and is as different from its neighbors as they are from theirs.`}</p>
+      <h1>${paletteName()}</h1>
+      <p>${extras.length ? `${String(hues)} + ${String(extras.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the extra ${extras.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
     </section>
     <section class="glance">
-      <h2>At a glance <span class="soft">· Lc ${String(tier)}, the tier that stands for each hue</span></h2>
+      <h2>At a glance <span class="soft">· Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>
       <div class="split">
       <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, c.tiers[tier]!.muted].map((s, i) => ({ hue: s.hue, m: s.colorfulness, color: s.color, extra: c.extra, name: i ? `${label(c.key)}, muted` : label(c.key) }))))}</div>
       <dl class="facts-list">
@@ -1125,6 +1115,104 @@ function overview(): string {
 /* >-----------------------------------------< Tiers >------------------------------------------< */
 
 /**
+ * A star, the identity tier's mark: filled for the tier in use, an outline for the suggested one
+ * when another is in use, and on any other tier's title an outline that shows only under the
+ * pointer, as a preview of choosing it.
+ */
+const star = (kind: "selected" | "suggested" | "slot") =>
+  `<svg class="id-star ${kind}" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.85 5.95 6.55.85-4.8 4.55 1.2 6.5L12 17.3l-5.8 3.15 1.2-6.5-4.8-4.55 6.55-.85z"/></svg>`;
+
+/**
+ * A tier's heading on the Tiers page. Its title is a choice of identity tier: the identity tier's
+ * opens what that means; any other's makes it the identity, and the suggested one's, while another
+ * is set by hand, goes back to automatic. A star marks the identity tier and an outline the
+ * suggestion when it differs; a note at the line's end says which is which and opens the same
+ * explanation.
+ *
+ * @param tier  The tier.
+ * @returns     HTML.
+ */
+function tierHeading(tier: number): string {
+  const { settings, mode } = state;
+  const selected = tier === identityOf(settings, mode);
+  const suggested = tier === autoIdentity(settings.bases[mode], settings.tiers);
+  const pop = `identity:${mode}:${String(tier)}`;
+  const title = `${star(selected ? "selected" : suggested ? "suggested" : "slot")}Lc ${String(tier)} <span class="soft">· ${ROLES[tier] ?? ""}</span>`;
+  const pick = selected
+    ? popButton(`${pop}:title`, title, `Lc ${String(tier)} is the identity tier, ${identityHow(tier)}: what that means`, "tier-pick chosen")
+    : `<button type="button" class="tier-pick" data-identity="${suggested ? "auto" : String(tier)}" aria-label="${suggested ? `Lc ${String(tier)} is the suggested identity tier: go back to automatic` : `Make Lc ${String(tier)} the identity tier for ${mode} mode`}">${title}</button>`;
+  const note = selected && suggested ? "Selected · suggested ID" : selected ? "Selected ID" : suggested ? "Suggested ID" : "";
+  return `<div class="tier-head"><h2>${pick}</h2>${note ? popButton(`${pop}:note`, note, `${note}: what that means`, "id-note") : ""}</div>`;
+}
+
+/**
+ * How the identity tier came to be: picked automatically or set by hand.
+ *
+ * @param tier  The identity tier.
+ * @returns     E.g. "automatic".
+ */
+function identityHow(tier: number): string {
+  const { settings, mode } = state;
+  if (settings.identityTier[mode] === "auto") return "automatic";
+  return tier === autoIdentity(settings.bases[mode], settings.tiers) ? "set by hand, also suggested" : "set by hand";
+}
+
+/**
+ * The identity tier's star on a color's table, opening what the identity tier is.
+ *
+ * @param tier   The identity tier.
+ * @param where  Where it's shown, so each star opens its own popover.
+ * @returns      HTML.
+ */
+function identityLabel(tier: number, where: string): string {
+  return popButton(`identity:${state.mode}:${String(tier)}:${where}`, star("selected"), `Lc ${String(tier)} is the identity tier, ${identityHow(tier)}: what that means`, "id-mark");
+}
+
+popSource("identity", (which) => {
+  const [mode, tierText] = which.split(":") as [Mode, string];
+  const { settings } = state;
+  const tier = Number(tierText);
+  const base = settings.bases[mode];
+  const auto = autoIdentity(base, settings.tiers);
+  const score = (t: number) => textScore(base, t).toFixed(2);
+  if (tier !== identityOf(settings, mode))
+    return `<h3>${star("suggested")}Suggested identity tier</h3>
+      <p>Lc ${String(tier)} is where APCA and WCAG 2 together are just at their minimum for text in ${mode} mode, Lc ${String(TEXT_MINIMUM.apca)} and ${String(TEXT_MINIMUM.wcag)}:1, with a score of ${score(tier)}; 1 is exactly at the minimum. It's the identity tier when it's left automatic.</p>
+      <p>Lc ${String(identityOf(settings, mode))} is set by hand instead, with a score of ${score(identityOf(settings, mode))}.</p>
+      <p><button type="button" data-identity="auto">Back to automatic</button></p>`;
+  const picked =
+    settings.identityTier[mode] === "auto"
+      ? `<p>Picked automatically: it's where APCA and WCAG 2 together are just at their minimum for text, Lc ${String(TEXT_MINIMUM.apca)} and ${String(TEXT_MINIMUM.wcag)}:1, with a score of ${score(tier)} here; 1 is exactly at the minimum.</p>`
+      : `<p>Set by hand. Automatic would be Lc ${String(auto)}, where APCA and WCAG 2 together are just at their minimum for text (a score of ${score(auto)}, against ${score(tier)} here).</p>
+        <p><button type="button" data-identity="auto">Back to automatic</button></p>`;
+  return `<h3>${star("selected")}Identity tier</h3>
+    <p>Lc ${String(tier)} stands for each hue in ${mode} mode: the Overview shows it, every tier's hues start from it, and the blind tests use it.</p>
+    ${picked}
+    <p class="pop-how">On the Tiers page, clicking a tier's title makes it the identity; that solves the whole palette again, since every tier's hues start from this one. Settings → Tiers sets it for both modes.</p>`;
+});
+
+/**
+ * Makes a tier the identity for a mode, or gives the choice back to the palette. Choosing the
+ * automatic pick is the same as automatic.
+ *
+ * @param mode    The mode.
+ * @param choice  A tier, or "auto".
+ */
+function setIdentity(mode: Mode, choice: number | "auto"): void {
+  const { bases, tiers } = state.settings;
+  write(`identityTier.${mode}`, choice === autoIdentity(bases[mode], tiers) ? "auto" : choice);
+  hidePopover();
+  render();
+  solve();
+}
+
+document.addEventListener("click", (event) => {
+  const el = (event.target as Element).closest<HTMLElement>("[data-identity]");
+  if (!el) return;
+  setIdentity(state.mode, el.dataset.identity === "auto" ? "auto" : Number(el.dataset.identity));
+});
+
+/**
  * Every tier of the current mode and variant, one section each.
  *
  * @returns  HTML.
@@ -1140,8 +1228,8 @@ function tiers(): string {
         const ring = current()?.[mode].ring[tier] ?? [];
         const list = colors(tier);
         return `<section>
-          <h2>Lc ${String(tier)} <span class="soft">· ${ROLES[tier] ?? ""}</span></h2>
-          <p class="soft">${held(tier)} · neighbor differences ${range(ring)}</p>
+          ${tierHeading(tier)}
+          <p class="soft">Colorfulness ${held(tier)} · neighbor differences ${range(ring)}</p>
           <div class="cards small">${list.map((c) => card(c.tiers[tier]![variant], label(c.key), c.key, { key: c.key, tier, variant })).join("")}</div>
         </section>`;
       })
@@ -1198,7 +1286,7 @@ function heading(col: Column, table: string): string {
 
 popSource("column", (which) => {
   const col = COLUMNS.find((c) => c.key === which.split(":")[0]);
-  return col ? `<h3>${col.name()}${col.unit ? ` ${col.unit}` : ""}</h3><p>${col.what()}</p>` : "";
+  return col ? `<h3>${col.name()}${col.unit ? ` <span class="unit">${col.unit}</span>` : ""}</h3><p>${col.what()}</p>` : "";
 });
 
 /**
@@ -1212,36 +1300,59 @@ function fitTables(): void {
 }
 
 /**
+ * A cell of a color's table, named by its column so a phone can show the name beside the value.
+ *
+ * @param col   Its column.
+ * @param html  Its contents.
+ * @returns     HTML.
+ */
+function columnCell(col: Column, html: string): string {
+  const mono = col.key === "sample" || col.key === "wcag" ? "" : ' class="mono"';
+  return `<td${mono} data-label="${col.name()}${col.unit ? ` ${col.unit}` : ""}">${html}</td>`;
+}
+
+/**
  * One color: every tier, default and muted, with all its numbers.
  *
  * @param key  The color.
  * @returns    HTML.
  */
 function color(key: string): string {
-  const tier = state.settings.identityTier[state.mode];
+  const tier = identityOf(state.settings, state.mode);
   const list = colors(tier);
   const c = list.find((x) => x.key === key);
   if (!c) return `<section class="intro"><h1>${label(key)}</h1><p>${list.length ? "There's no such color in this palette." : "Solving…"}</p></section>`;
   const identity = c.tiers[tier]!.default;
+  const { colorfulness, equalTiers } = state.settings;
+  const own = ownTarget(key, identity, current()?.[state.mode].targets[tier] ?? identity.target);
+  const extra = extraOf(key);
+  const aim = extra
+    ? `${own.toFixed(1)} (${String(Math.round(extra.share * 100))}% of ${String(colorfulness)})`
+    : Math.abs(own - colorfulness) >= 0.05
+      ? `${own.toFixed(1)} (${String(colorfulness)}, ${signed(own - colorfulness)} from colorfulness per hue)`
+      : String(colorfulness);
   const table = (variant: Variant) => {
     const rows = state.settings.tiers.filter((t) => c.tiers[t]);
     return `<section>
       <h2>${variant === "default" ? "Default" : "Muted"}</h2>
-      <div class="scroll units"><table>
+      <div class="scroll units"><table class="swatch-table">
         <thead><tr>${COLUMNS.map((col) => `<th scope="col">${heading(col, variant)}</th>`).join("")}</tr></thead>
         <tbody>${rows
           .map((t) => {
             const s = c.tiers[t]![variant];
+            const cells = [
+              `<span class="pair" style="--c:${s.color}"><span class="fill"></span><span class="sample">Aa</span></span>`,
+              copyable(s.color),
+              s.apca.toFixed(1),
+              `<span class="facts"><span class="mono">${s.wcag.toFixed(2)}</span>${badge(s)}</span>`,
+              s.lightness.toFixed(1),
+              s.chroma.toFixed(1),
+              `<span class="facts stacked">${s.colorfulness.toFixed(1)}${variant === "default" ? lowered(c.key, t, s) : ""}</span>`,
+              `${s.hue.toFixed(1)}° <span class="soft">${s.name}</span>`,
+            ];
             return `<tr>
-              <th scope="row">Lc ${String(t)}<span class="soft">${ROLES[t] ?? ""}</span></th>
-              <td><span class="pair" style="--c:${s.color}"><span class="fill"></span><span class="sample">Aa</span></span></td>
-              <td class="mono">${copyable(s.color)}</td>
-              <td class="mono">${s.apca.toFixed(1)}</td>
-              <td><span class="facts"><span class="mono">${s.wcag.toFixed(2)}</span>${badge(s)}</span></td>
-              <td class="mono">${s.lightness.toFixed(1)}</td>
-              <td class="mono">${s.chroma.toFixed(1)}</td>
-              <td class="mono"><span class="facts">${s.colorfulness.toFixed(1)}${variant === "default" ? lowered(c.key, t, s) : ""}</span></td>
-              <td class="mono">${s.hue.toFixed(1)}° <span class="soft">${s.name}</span></td>
+              <th scope="row">${t === tier ? identityLabel(t, variant) : ""}Lc ${String(t)}<span class="soft">${ROLES[t] ?? ""}</span></th>
+              ${cells.map((html, i) => columnCell(COLUMNS[i + 1]!, html)).join("")}
             </tr>`;
           })
           .join("")}</tbody>
@@ -1253,7 +1364,7 @@ function color(key: string): string {
     .join("")}</nav>
     <section class="intro hero" style="--c:${identity.color}">
       <h1>${label(key)}</h1>
-      <p>CAM16 hue ${identity.hue.toFixed(1)}°, read as ${identity.name}. Aims at colorfulness ${c.target.toFixed(0)}${state.settings.equalTiers ? ". A tier lowers it to what its least colorful hue can reach." : "."}</p>
+      <p>CAM16 hue ${identity.hue.toFixed(1)}°, read as ${identity.name}. Aims at colorfulness ${aim}.${equalTiers ? ` On a tier whose least colorful hue falls short of ${String(colorfulness)}, the ${String(colorfulness)} drops to that hue's reach.` : ""}</p>
     </section>
     ${table("default")}${table("muted")}`;
 }
@@ -1261,7 +1372,7 @@ function color(key: string): string {
 /* >----------------------------------------< Compare >-----------------------------------------< */
 
 /**
- * Codemos next to EK Palette on the identity tier: the hue circle, each color, and how even the
+ * Codemos next to the palette on the identity tier: the hue circle, each color, and how even the
  * differences between neighbors are.
  *
  * @returns  HTML.
@@ -1272,7 +1383,7 @@ function compare(): string {
     return `<section class="intro"><h1>Compare with Codemos</h1><p>Codemos has eight hues. Set Hues to 8 in Settings to compare.</p></section>`;
   const m = model();
   const base = settings.bases[mode];
-  const tier = settings.identityTier[mode];
+  const tier = identityOf(settings, mode);
   const source = variant === "default" ? CODEMOS[mode] : CODEMOS_MUTED[mode];
   const rows = colors(tier)
     .filter((c) => source[c.key])
@@ -1287,6 +1398,9 @@ function compare(): string {
   const oldRing = ring(hues.map((r) => r.old.color));
   const newRing = ring(hues.map((r) => r.now.color));
   const most = Math.max(...oldRing, ...newRing);
+  const reached = hues.map((r) => r.now.colorfulness);
+  const offRing = Math.max(...reached) - Math.min(...reached) >= 0.5;
+  const name = paletteName();
   const bars = (values: readonly number[]) =>
     values
       .map(
@@ -1296,20 +1410,20 @@ function compare(): string {
       .join("");
   return `<section class="intro">
       <h1>Compare with Codemos</h1>
-      <p>Codemos's ${variant} colors next to EK Palette's on Lc ${String(tier)}, on the ${mode} base. Codemos was picked by eye; EK Palette is solved.</p>
+      <p>Codemos is the palette of <a href="https://github.com/EmrecanKaracayir/Codemos-Modern#readme">Codemos Modern</a>, an extension for theming VS Code, and EK Palette's predecessor: the first attempt at a uniform palette, and the one this project grew from. Its colors were set by hand, each worked out with the same measures used here; EK Colors solves them instead. Here are Codemos's ${variant} colors next to ${name}'s on Lc ${String(tier)}, on the ${mode} base.</p>
     </section>
     <section class="split">
-      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colorfulness, color: r.old.color, hollow: true, extra: r.extra, name: `${label(r.key)}, Codemos` })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colorfulness, color: r.now.color, extra: r.extra, name: `${label(r.key)}, EK Palette` }))])}</div>
+      <div>${circle([...rows.map((r) => ({ hue: r.old.hue, m: r.old.colorfulness, color: r.old.color, hollow: true, extra: r.extra, name: `${label(r.key)}, Codemos` })), ...rows.map((r) => ({ hue: r.now.hue, m: r.now.colorfulness, color: r.now.color, extra: r.extra, name: `${label(r.key)}, ${name}` }))])}</div>
       <div class="legend">
-        <p><span class="key hollow"></span> Codemos <span class="key"></span> EK Palette</p>
-        <p class="soft">Distance from the center is colorfulness. EK Palette's dots share one ring; Codemos's scatter, so some of its colors look stronger than others.</p>
+        <p><span class="key hollow"></span> Codemos <span class="key"></span> ${name}</p>
+        <p class="soft">Distance from the center is colorfulness. ${name}'s hues share one ring${offRing ? ", apart from those colorfulness per hue moves on purpose" : ""}${rows.some((r) => r.extra) ? ", and its extra colors sit at their share of it" : ""}; Codemos's scatter, so some of its colors look stronger than others.</p>
       </div>
     </section>
     <section>
       <h2>Each color</h2>
       <div class="pairs">${rows
         .map(
-          (r) => `<div class="versus"><h3>${label(r.key)}</h3>${card(r.old, "Codemos")}${card(r.now, "EK Palette", r.key, { key: r.key, tier, variant })}</div>`,
+          (r) => `<div class="versus"><h3>${label(r.key)}</h3>${card(r.old, "Codemos")}${card(r.now, name, r.key, { key: r.key, tier, variant })}</div>`,
         )
         .join("")}</div>
     </section>
@@ -1318,12 +1432,23 @@ function compare(): string {
       <p class="soft">How different each color looks from the next one around the circle. Even bars mean no two neighbors are easier to confuse than the rest.</p>
       <div class="split even">
         <div><h3>Codemos <span class="soft">· ${range(oldRing)}</span></h3>${bars(oldRing)}</div>
-        <div><h3>EK Palette <span class="soft">· ${range(newRing)}</span></h3>${bars(newRing)}</div>
+        <div><h3>${name} <span class="soft">· ${range(newRing)}</span></h3>${bars(newRing)}</div>
       </div>
     </section>`;
 }
 
 /* >----------------------------------------< Settings >----------------------------------------< */
+
+/**
+ * The automatic identity tier's choice in Settings, with the tier it picks on the mode's base.
+ *
+ * @param mode  The mode.
+ * @returns     E.g. "Automatic (Lc 60)".
+ */
+function automaticName(mode: Mode): string {
+  const { bases, tiers } = state.settings;
+  return `Automatic (Lc ${String(autoIdentity(bases[mode], tiers))})`;
+}
 
 /**
  * A number control bound to a setting.
@@ -1334,15 +1459,25 @@ function compare(): string {
  * @param range.0  Minimum.
  * @param range.1  Maximum.
  * @param range.2  Step.
- * @param slider Whether to show a slider too.
- * @returns      HTML.
+ * @param options          How it's shown.
+ * @param options.slider   Whether to show a slider too.
+ * @param options.percent  Whether a fraction is shown as a percentage; the range stays a fraction.
+ * @returns                HTML.
  */
-function number(path: string, title: string, [min, max, step]: readonly [number, number, number], slider = false): string {
-  const value = String(read(path) ?? 0);
+function number(
+  path: string,
+  title: string,
+  [min, max, step]: readonly [number, number, number],
+  { slider = false, percent = false }: { slider?: boolean; percent?: boolean } = {},
+): string {
+  const scale = percent ? 100 : 1;
+  const shown = (x: number) => String(Math.round(x * scale * 1e6) / 1e6);
   const id = `set-${path.replaceAll(".", "-")}`;
+  const bound = `data-set="${path}"${percent ? ` data-scale="${String(scale)}"` : ""} min="${shown(min)}" max="${shown(max)}" step="${shown(step)}" value="${shown(Number(read(path) ?? 0))}"`;
+  const field = `<input id="${id}" type="number" ${bound}${percent ? ` aria-label="${title}, percent"` : ""}>`;
   return `<label class="field" for="${id}"><span>${title}</span>
-    ${slider ? `<input type="range" data-set="${path}" min="${String(min)}" max="${String(max)}" step="${String(step)}" value="${value}" aria-label="${title}">` : ""}
-    <input id="${id}" type="number" data-set="${path}" min="${String(min)}" max="${String(max)}" step="${String(step)}" value="${value}">
+    ${slider ? `<input type="range" ${bound} aria-label="${title}">` : ""}
+    ${percent ? `<span class="with-unit">${field}<span aria-hidden="true">%</span></span>` : field}
   </label>`;
 }
 
@@ -1370,6 +1505,11 @@ function write(path: string, value: unknown): void {
   keys.slice(0, -1).forEach((k, i) => (o = (o[k] ??= /^\d+$/.test(keys[i + 1]!) ? [] : {}) as Record<string, unknown>));
   o[keys.at(-1)!] = value;
   state.settings = next as unknown as Settings;
+  // A change after a paste keeps it: there's nothing left to undo.
+  if (state.undo) {
+    state.undo = null;
+    document.querySelector('[data-action="undo-paste"]')?.remove();
+  }
   save();
 }
 
@@ -1385,8 +1525,8 @@ function extraFields(i: number): string {
   return `<div class="extra" data-extra="${String(i)}">
     <h3 class="extra-title">${extraTitle(i)}<button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
     <label class="field wide" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
-    ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], true)}
-    ${number(`extras.${String(i)}.share`, "Colorfulness share", [0.1, 1, 0.05], true)}
+    ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true })}
+    ${number(`extras.${String(i)}.share`, "Colorfulness share", [...LIMITS.share, 0.05], { slider: true, percent: true })}
   </div>`;
 }
 
@@ -1399,7 +1539,7 @@ function extraFields(i: number): string {
 function extraTitle(i: number): string {
   const extra = state.settings.extras[i]!;
   const key = extraKeys(state.settings)[i]!;
-  const tier = state.settings.identityTier[state.mode];
+  const tier = identityOf(state.settings, state.mode);
   const color = current()?.[state.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
   return `<span class="extra-name"><span class="dot" style="--c:${color}"></span>${label(key)}<span class="soft">${extra.hue.toFixed(1)}° · ${composition(extra.hue)}</span></span>`;
 }
@@ -1414,12 +1554,13 @@ function tune(): string {
   return `<section class="intro">
       <h1>Settings</h1>
       <p>Change a setting and the palette solves again. Changes stay in this browser.</p>
-      <p class="row"><button type="button" data-action="reset">Reset to EK Palette</button><button type="button" data-action="copy-settings">Copy settings</button><span id="copied" class="soft" role="status"></span></p>
+      <p class="row"><button type="button" data-action="reset">Reset to EK Palette</button><button type="button" data-action="copy-settings">Copy settings</button><button type="button" data-action="paste-settings" aria-expanded="${String(state.paste.open)}" aria-controls="paste-box">Paste settings</button>${state.undo ? `<button type="button" class="link" data-action="undo-paste">Undo paste</button>` : ""}<span id="copied" class="soft" role="status"></span></p>
+      ${pasteBox()}
     </section>
     <div id="palette-strip" class="strip"></div>
     <section class="group">
       <h2>Hue (H)</h2>
-      ${number("hues", "How many hues", [4, 16, 1])}
+      ${number("hues", "How many hues", [...LIMITS.hues, 1])}
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
       <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
       <p><a href="#hue-test" class="button">Measure it with the blind hue test</a></p>
@@ -1437,9 +1578,9 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Colorfulness (M)</h2>
-      <p class="soft">One CAM16 colorfulness every color aims at, in both modes. A color the screen can't make that colorful goes as far as it can.</p>
-      ${number("colorfulness", "Target M", [10, 80, 1], true)}
-      ${number("muted", "Muted share", [0.1, 0.9, 0.05], true)}
+      <p class="soft">One CAM16 colorfulness every hue aims at, in both modes, before colorfulness per hue adds or takes away; extra colors aim at their share of it. A color the screen can't make that colorful goes as far as it can.</p>
+      ${number("colorfulness", "Target M", [...LIMITS.colorfulness, 1], { slider: true })}
+      ${number("muted", "Muted share", [...LIMITS.muted, 0.05], { slider: true, percent: true })}
       <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
       <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
       <h3>Per hue</h3>
@@ -1455,13 +1596,13 @@ function tune(): string {
     </section>
     <section class="group">
       <h2>Tiers</h2>
-      <p class="soft">The APCA contrasts every color gets. The identity tier stands for the hue and sets every tier's starting hues.</p>
+      <p class="soft">The APCA contrasts every color gets. The identity tier stands for the hue and sets every tier's starting hues. Automatic picks the tier where APCA and WCAG 2 together are just at their minimum for text; choose a tier to set it by hand, here or on the Tiers page.</p>
       <div class="checks">${Object.keys(ROLES)
         .map(Number)
         .map((t) => `<label for="tier-${String(t)}"><input id="tier-${String(t)}" type="checkbox" data-tier="${String(t)}" ${s.tiers.includes(t) ? "checked" : ""}> Lc ${String(t)}</label>`)
         .join("")}</div>
       ${MODES.map(
-          (m) => `<label class="field" for="set-identity-${m}"><span>Identity, ${m}</span><select id="set-identity-${m}" data-set="identityTier.${m}">${s.tiers
+          (m) => `<label class="field" for="set-identity-${m}"><span>Identity, ${m}</span><select id="set-identity-${m}" data-set="identityTier.${m}"><option value="auto" ${s.identityTier[m] === "auto" ? "selected" : ""}>${automaticName(m)}</option>${s.tiers
             .map((t) => `<option value="${String(t)}" ${t === s.identityTier[m] ? "selected" : ""}>Lc ${String(t)}</option>`)
             .join("")}</select></label>`,
         )
@@ -1479,7 +1620,7 @@ function tune(): string {
         .map(
           (m) => `<div><h3>${MODE_NAMES[m]}</h3>
             <label class="field" for="set-base-${m}"><span>Base</span><input id="set-base-${m}" type="text" data-set="bases.${m}" value="${s.bases[m]}" spellcheck="false" pattern="#[0-9A-Fa-f]{6}"></label>
-            ${number(`rooms.${m}.lux`, "Room lux", [1, 1000, 1])}
+            ${number(`rooms.${m}.lux`, "Room lux", [...LIMITS.lux, 1])}
             <label class="field" for="set-surround-${m}"><span>Surround</span><select id="set-surround-${m}" data-set="rooms.${m}.surround">${SURROUNDS.map((name, i) => `<option value="${String(i)}" ${i === s.rooms[m].surround ? "selected" : ""}>${name}</option>`)
               .join("")}</select></label></div>`,
         )
@@ -1508,7 +1649,7 @@ const evenGaps = new Map<Mode, number>();
  * @returns     ΔE.
  */
 function evenGap(mode: Mode): number {
-  const ring = plain()?.[mode].ring[state.settings.identityTier[mode]];
+  const ring = plain()?.[mode].ring[identityOf(state.settings, mode)];
   if (ring?.length) evenGaps.set(mode, ring.reduce((x, y) => x + y, 0) / ring.length);
   return evenGaps.get(mode) ?? 9;
 }
@@ -1573,7 +1714,7 @@ let focusKey: string | null = null;
  * @param mode  The mode.
  */
 function drawComparison(el: Element, mode: Mode): void {
-  const tier = state.settings.identityTier[mode];
+  const tier = identityOf(state.settings, mode);
   // Always the palette as set, whatever the H and M switches show: the strip is what they compare.
   const now = inUse()?.[mode].colors ?? [];
   const palettes = [plain()?.[mode], uncurved()?.[mode], inUse()?.[mode]];
@@ -1615,15 +1756,16 @@ function drawComparison(el: Element, mode: Mode): void {
     colors.push(change);
     const fills = swatches.map((sw, i) => `<span class="fill" data-row="${String(i)}" style="--f:${sw.color}"></span>`).join("");
     const rows = swatches.map((sw, i) => `--f${String(i)}:${sw.color}`).join(";");
-    const amount = inGaps(change.bend[3] / gap).replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`);
+    const amount = (inGaps(change.bend[3] / gap) || "0.0 gap").replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`);
     return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
       ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name">${change.name}</span> ${amount}`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
   });
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
+  // The turn's angle stays off the row's name, which would widen the names' column for one row.
   const names = STEPS.map((step, i) => {
-    const text = i === 1 ? `${step.name} ${angle > 0 ? "+" : angle < 0 ? "−" : ""}${Math.abs(angle).toFixed(1)}°` : step.name;
-    return `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" aria-label="${step.title}">${text}</button>`;
+    const turn = i === 1 ? turnText(angle) : "";
+    return `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" aria-label="${step.title}${turn ? `, ${turn}` : ""}"${turn ? ` title="${step.name} ${turn}"` : ""}>${step.name}</button>`;
   }).join("");
   el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div><div class="strip-metrics mono">${metrics()}</div>`;
   if (pinned !== null && !el.classList.contains("focused")) showRow(pinned);
@@ -1775,8 +1917,8 @@ function turnText(degrees: number): string {
 
 popSource("tools", (which) => {
   const { bases } = state.settings;
-  if (which === "palette")
-    return `<h3>Palette: Light and Dark</h3>
+  if (which === "mode")
+    return `<h3>Mode: Light and Dark</h3>
       <p>Two palettes, each made for its own background: <span class="mono">${bases.light}</span> for light and <span class="mono">${bases.dark}</span> for dark. Every color sits exactly on its contrast against that background, so a light-mode color and its dark-mode twin differ.</p>
       <p class="pop-how">Switching also turns this page into that background, so you see the colors where they're meant to be used. It isn't a separate theme for the site.</p>`;
   if (which === "edits")
@@ -1933,14 +2075,21 @@ let barHeight = 0;
 
 /**
  * Marks the strip at the top of Settings as docked once it sticks under the bar, so it shows a
- * border. Docked, it sits 1px up under the bar, so it's no longer wholly below it.
+ * border, and thins on phones. Docked, it sits 1px up under the bar, so it's no longer wholly below
+ * it. A margin makes up for the height it loses, so the page below doesn't jump.
  */
 function watchDock(): void {
   dock?.disconnect();
   const strip = document.querySelector("#palette-strip");
   if (!strip || state.view !== "tune") return;
   dock = new IntersectionObserver(
-    ([entry]) => strip.classList.toggle("docked", entry!.intersectionRatio < 1 && entry!.boundingClientRect.top < entry!.rootBounds!.top),
+    ([entry]) => {
+      const docked = entry!.intersectionRatio < 1 && entry!.boundingClientRect.top < entry!.rootBounds!.top;
+      if (docked === strip.classList.contains("docked")) return;
+      const before = strip.getBoundingClientRect().height;
+      strip.classList.toggle("docked", docked);
+      (strip as HTMLElement).style.marginBottom = docked ? `${String(before - strip.getBoundingClientRect().height)}px` : "";
+    },
     // The page's own viewport, not the outer page's when it's shown in a frame, which would ignore
     // the margin for the bar.
     { root: document, rootMargin: `${String(-barHeight)}px 0px 0px 0px`, threshold: 1 },
@@ -1972,6 +2121,38 @@ function updateTune(): void {
   for (const m of MODES) refreshCurve(curveView(m));
 }
 
+/**
+ * Settings' paste box, when it's open: a place to paste settings or a JSON export, and what's
+ * wrong with them, if anything.
+ *
+ * @returns  HTML.
+ */
+function pasteBox(): string {
+  const { open, text, problem } = state.paste;
+  if (!open) return "";
+  return `<div id="paste-box" class="paste">
+      <label for="paste-text">Settings, or the JSON export. They replace these settings; Undo paste brings these back.</label>
+      <textarea id="paste-text" spellcheck="false" data-paste>${escape(text)}</textarea>
+      <p class="row"><button type="button" data-action="use-paste">Use these settings</button><button type="button" class="link" data-action="paste-settings">Cancel</button><span class="paste-problem" role="alert">${escape(problem)}</span></p>
+    </div>`;
+}
+
+/**
+ * Pasted settings, checked.
+ *
+ * @param text  What was pasted.
+ * @returns     The settings, or what's wrong with them.
+ */
+function pasteSettings(text: string): Settings | string {
+  if (!text.trim()) return "Paste the copied settings or the JSON export first.";
+  try {
+    return readSettings(JSON.parse(text), CONFIG);
+  } catch (error) {
+    if (error instanceof SettingsError) return error.message;
+    return "That isn't JSON. Paste the copied settings or the JSON export as they are.";
+  }
+}
+
 /* >-----------------------------------------< Export >-----------------------------------------< */
 
 /**
@@ -1981,7 +2162,7 @@ function updateTune(): void {
  */
 function exportText(): string {
   const p = GAMUTS.every((g) => state.fresh.has(g)) ? (state.palettes as Palette) : null;
-  return p ? { json: toJson, csv: toCsv, md: toMarkdown }[state.format](state.settings, p) : "Solving every gamut tier…";
+  return p ? { json: toJson, csv: toCsv, md: toMarkdown, css: toCss }[state.format](state.settings, p) : "Solving every gamut…";
 }
 
 /**
@@ -1993,8 +2174,8 @@ function exportSection(): string {
   const tab = (f: Format, t: string) => `<button type="button" data-format="${f}" aria-pressed="${String(state.format === f)}">${t}</button>`;
   return `<section class="group" id="export-section">
       <h2>Export</h2>
-      <p class="soft">Every gamut tier, both modes, every tier, default and muted, extra colors included. JSON keeps the settings too, so the palette can be solved again.</p>
-      <div class="row"><div class="segmented">${tab("json", "JSON")}${tab("csv", "CSV")}${tab("md", "Markdown")}</div>
+      <p class="soft">Every gamut, both modes, every tier, default and muted, extra colors included. JSON keeps the settings too, so they can be pasted back into Settings.</p>
+      <div class="row"><div class="segmented">${tab("json", "JSON")}${tab("csv", "CSV")}${tab("md", "Markdown")}${tab("css", "CSS")}</div>
       <button type="button" data-action="copy">Copy</button><span id="export-copied" class="soft" role="status"></span></div>
       <textarea id="export-text" readonly spellcheck="false">${escape(exportText())}</textarea>
     </section>`;
@@ -2044,7 +2225,6 @@ function render(): void {
     const target = a.getAttribute("href")!.slice(1);
     a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && (view === "curve-test" || view === "hue-test")) || (target === "how" && view === "algorithm"));
   }
-  for (const row of document.querySelectorAll(".tools")) fadeEdges(row);
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-gamut]")) {
     b.setAttribute("aria-pressed", String(b.dataset.gamut === state.gamut));
@@ -2191,8 +2371,36 @@ document.addEventListener("click", (event) => {
   }
   if (action === "reset") {
     state.settings = structuredClone(CONFIG);
+    state.undo = null;
     save();
     solve();
+  }
+  if (action === "paste-settings") {
+    // Opening it goes to the box; closing it goes back to the button.
+    state.paste = { open: !state.paste.open, text: "", problem: "" };
+    render();
+    return $<HTMLElement>(state.paste.open ? "#paste-text" : '[data-action="paste-settings"]').focus();
+  }
+  if (action === "use-paste") {
+    const pasted = pasteSettings(state.paste.text);
+    if (typeof pasted === "string") state.paste = { ...state.paste, problem: pasted };
+    else {
+      state.undo = state.settings;
+      state.settings = pasted;
+      state.paste = { open: false, text: "", problem: "" };
+      save();
+      solve();
+      render();
+      return flash($("#copied"), "Settings pasted");
+    }
+  }
+  if (action === "undo-paste" && state.undo) {
+    state.settings = state.undo;
+    state.undo = null;
+    save();
+    solve();
+    render();
+    return flash($("#copied"), "Paste undone");
   }
   if (action === "copy") {
     const area = $<HTMLTextAreaElement>("#export-text");
@@ -2247,13 +2455,21 @@ function outOfRange(el: HTMLInputElement): boolean {
 document.addEventListener("input", (event) => {
   const el = event.target as HTMLInputElement;
   if (el.dataset.demo) return void updateDemo(context(), el);
+  // What's in the paste box is kept, so drawing Settings again doesn't lose it.
+  if (el.dataset.paste !== undefined) {
+    state.paste = { ...state.paste, text: el.value, problem: "" };
+    $(".paste-problem").textContent = "";
+    return;
+  }
   if (el.dataset.tier) {
     const checked = [...document.querySelectorAll<HTMLInputElement>("[data-tier]")].filter((c) => c.checked).map((c) => Number(c.dataset.tier));
     if (!checked.length) return void (el.checked = true);
     write("tiers", checked);
-    for (const m of MODES)
-      if (!checked.includes(state.settings.identityTier[m]))
-        write(`identityTier.${m}`, checked.includes(CONFIG.identityTier[m]) ? CONFIG.identityTier[m] : checked[0]);
+    // A tier set by hand that's no longer solved gives the choice back to the palette.
+    for (const m of MODES) {
+      const set = state.settings.identityTier[m];
+      if (set !== "auto" && !checked.includes(set)) write(`identityTier.${m}`, "auto");
+    }
     // The identity choices list the tiers, so they're drawn again.
     render();
     solve(150);
@@ -2286,11 +2502,13 @@ document.addEventListener("input", (event) => {
   } else {
     // A value outside its field's range waits: it may be half typed.
     if (outOfRange(el)) return;
-    write(path, Number(el.value));
+    write(path, el.value === "auto" ? "auto" : Number(el.value) / Number(el.dataset.scale ?? 1));
     for (const twin of document.querySelectorAll<HTMLInputElement>(`[data-set="${path}"]`)) if (twin !== el) twin.value = el.value;
   }
-  // A system's yellow is measured in the rooms, on the bases, so its hue can move with them.
+  // A system's yellow is measured in the rooms, on the bases, so its hue can move with them; the
+  // automatic identity tier is measured on the bases.
   if (path.startsWith("bases.") || path.startsWith("rooms.")) syncAnchor();
+  if (path.startsWith("bases.")) for (const m of MODES) $(`#set-identity-${m} option[value="auto"]`).textContent = automaticName(m);
   if (path.startsWith("curve.") || path.startsWith("extras.")) updateTune();
   solve(150);
 });
@@ -2315,17 +2533,6 @@ new ResizeObserver(([entry]) => {
   watchDock();
 }).observe($("header"));
 
-/**
- * Marks a row that scrolls sideways with which of its ends have more to scroll to.
- *
- * @param row  The switches.
- */
-function fadeEdges(row: Element): void {
-  const more = row.scrollWidth - row.clientWidth;
-  row.classList.toggle("fade-start", more > 1 && row.scrollLeft > 1);
-  row.classList.toggle("fade-end", more > 1 && row.scrollLeft < more - 1);
-}
-
 // The phone menu: the button opens the views; choosing one, Escape, or a tap elsewhere closes it.
 const toggle = $<HTMLButtonElement>("#menu-toggle");
 const openMenu = (open: boolean) => {
@@ -2346,11 +2553,6 @@ document.addEventListener("keydown", (event) => {
 addEventListener("hashchange", () => openMenu(false));
 
 new ResizeObserver(fitTables).observe($("main"));
-
-for (const row of document.querySelectorAll(".tools")) {
-  row.addEventListener("scroll", () => fadeEdges(row), { passive: true });
-  new ResizeObserver(() => fadeEdges(row)).observe(row);
-}
 
 addEventListener("hashchange", route);
 route();

@@ -9,7 +9,7 @@
 
 import { hueTurn, makeModel, type Model, wrapHue } from "../palette/model";
 import { type Gamut, type Mode, NAMES, type Settings } from "../palette/settings";
-import { boost, type GamutPalette, strongest } from "../palette/solve";
+import { boost, type GamutPalette, identityOf, strongest } from "../palette/solve";
 import {
   ask,
   balance,
@@ -139,7 +139,7 @@ function nextTrial(s: Omit<Session, "trial">, last?: string): Trial | null {
 function start(ctx: HueTestContext): boolean {
   const palette = ctx.palette?.[ctx.mode];
   if (!palette || ctx.settings.hues !== NAMES.length) return false;
-  const tier = ctx.settings.identityTier[ctx.mode];
+  const tier = identityOf(ctx.settings, ctx.mode);
   const colors = palette.colors
     .filter((c) => !c.extra)
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }))
@@ -248,7 +248,7 @@ export function hueTestPage(ctx: HueTestContext): string {
       <h1>Blind hue test</h1>
       <p>Measures where each ${mode}-mode color looks most like its name, to place it. One color at a time, without its name: say which of its two neighbors it leans toward, or neither. Up to ${String(CAP * NAMES.length)} colors, fewer once the answers settle; usually about five minutes. Each color's answers close in on the hue where it leans neither way, the middle of its name, with an easy one now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
-        <li>Turn off True Tone and Night Shift, and use the usual brightness.</li>
+        <li>Turn off True Tone, Night Shift, Night Light or any blue-light filter, and use the usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
         <li>Go with the first impression. If it leans neither way, pick "Neither".</li>
       </ul>
@@ -290,7 +290,7 @@ function stage(ctx: HueTestContext): string {
  * @returns    HTML.
  */
 function results(ctx: HueTestContext): string {
-  const tier = ctx.settings.identityTier[ctx.mode];
+  const tier = identityOf(ctx.settings, ctx.mode);
   const now = (key: string) => ctx.palette?.[ctx.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default;
   const measured = pooled(ctx.mode).toSorted((a, b) => (now(a.key)?.hue ?? 0) - (now(b.key)?.hue ?? 0));
   const rows = measured

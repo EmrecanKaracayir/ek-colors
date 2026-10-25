@@ -8,12 +8,12 @@
 | to set its width. The selected point's values can be typed in too.                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import type { CurvePoint, Mode } from "../palette/settings";
+import { type CurvePoint, LIMITS, type Mode } from "../palette/settings";
 import type { Guide } from "../palette/references";
 import { hueTurn, wrapHue } from "../palette/model";
 import { boost } from "../palette/solve";
 import { refill } from "./dom";
-import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
+import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, signedWhole, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -40,10 +40,13 @@ export interface CurveView {
 /** Draws a number field bound to a setting. */
 type Field = (path: string, title: string, range: readonly [number, number, number]) => string;
 
-/** The amount runs from −LIMIT to +LIMIT, its scale marked every STEP; the width runs from MIN_WIDTH to 180°. */
-const LIMIT = 24;
+/** The amount runs from −LIMIT to +LIMIT, its scale marked every STEP; the width runs from MIN_WIDTH to MAX_WIDTH. */
+const LIMIT = LIMITS.amount[1];
 const STEP = 8;
-const MIN_WIDTH = 10;
+const [MIN_WIDTH, MAX_WIDTH] = LIMITS.width;
+
+/** The Alt key's name on this device: Option on Apple's. */
+const ALT = /Mac|iPhone|iPad|iPod/.test(navigator.platform) ? "Option" : "Alt";
 
 /** Drawing space: hue across, amount up, zero in the middle. */
 const HEIGHT = 120;
@@ -112,8 +115,8 @@ function valuesPanel(view: CurveView): string {
   return `<p class="soft">Point ${String(i + 1)} of ${String(points.length)}</p>
     <label class="field graph-check" for="curve-on-${mode}"><span>On</span><input id="curve-on-${mode}" type="checkbox" data-curve-on ${points[i].off ? "" : "checked"}></label>
     ${field(`curve.${mode}.${String(i)}.amount`, "Amount", [-LIMIT, LIMIT, 1])}
-    ${field(`curve.${mode}.${String(i)}.center`, "Hue", [0, 359, 1])}
-    ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, 180, 5])}`;
+    ${field(`curve.${mode}.${String(i)}.center`, "Center", [0, 359, 1])}
+    ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, MAX_WIDTH, 5])}`;
 }
 
 /**
@@ -171,7 +174,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
   selected[mode] = clamp(selected[mode], 0, Math.max(0, view.points.length - 1));
   const levels = Array.from({ length: (2 * LIMIT) / STEP + 1 }, (_, k) => k * STEP - LIMIT).map(
     (m) => `${m ? `<line x1="0" x2="${String(WIDTH)}" y1="${String(MIDDLE - m * SCALE)}" y2="${String(MIDDLE - m * SCALE)}" class="grid"></line>` : ""}
-      <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${String(m)}</text>`,
+      <text x="-16" y="${String(MIDDLE - m * SCALE + 3)}" class="axis" text-anchor="end">${signedWhole(m)}</text>`,
   );
   return `<div class="graph-editor guided curve-editor" data-curve="${mode}" style="${INSETS}">
     ${guidePicker(view.guide, `curve-${view.mode}`)}
@@ -184,7 +187,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
     <p class="graph-caption readout curve-readout">${curveReadout(view)}</p>
-    <p class="graph-caption hint">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; Option-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold Option and scroll, to set its width. With a point focused, the arrow keys move it (with Shift, by 10° across), and [ and ] narrow and widen it.</p>
+    <p class="graph-caption hint">Double-click the graph to add a point; double-click a point, or press Backspace, to remove it; ${ALT}-click a point to switch it off and on. Drag a point to move it, and drag its edges, or hold ${ALT} and scroll, to set its width. With a point focused, the arrow keys move it (with Shift, by 10° across), and [ and ] narrow and widen it.</p>
   </div>`;
 }
 
@@ -296,7 +299,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     if (!drag) return;
     const { hue, amount } = point(drag.svg, event);
     if (drag.part === "point") change(drag.mode, (p) => ({ ...p, center: hue, amount }));
-    else change(drag.mode, (p) => ({ ...p, width: clamp(Math.round(away(hue, p.center)), MIN_WIDTH, 180) }));
+    else change(drag.mode, (p) => ({ ...p, width: clamp(Math.round(away(hue, p.center)), MIN_WIDTH, MAX_WIDTH) }));
   });
   document.addEventListener("pointerup", () => (drag = null));
   document.addEventListener("pointercancel", () => (drag = null));
@@ -313,7 +316,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
       const steps = Math.trunc(wheel);
       if (!steps) return;
       wheel -= steps;
-      change(editor.dataset.curve as Mode, (p) => ({ ...p, width: clamp(p.width + steps, MIN_WIDTH, 180) }));
+      change(editor.dataset.curve as Mode, (p) => ({ ...p, width: clamp(p.width + steps, MIN_WIDTH, MAX_WIDTH) }));
     },
     { passive: false },
   );
@@ -340,8 +343,8 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
       ArrowRight: (p) => ({ ...p, center: wrapHue(p.center + step) }),
       ArrowUp: (p) => ({ ...p, amount: clamp(p.amount + 1, -LIMIT, LIMIT) }),
       ArrowDown: (p) => ({ ...p, amount: clamp(p.amount - 1, -LIMIT, LIMIT) }),
-      "[": (p) => ({ ...p, width: clamp(p.width - 5, MIN_WIDTH, 180) }),
-      "]": (p) => ({ ...p, width: clamp(p.width + 5, MIN_WIDTH, 180) }),
+      "[": (p) => ({ ...p, width: clamp(p.width - 5, MIN_WIDTH, MAX_WIDTH) }),
+      "]": (p) => ({ ...p, width: clamp(p.width + 5, MIN_WIDTH, MAX_WIDTH) }),
     };
     const move = moves[event.key];
     if (!move) return;

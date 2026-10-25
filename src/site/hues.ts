@@ -1,16 +1,16 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HUES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| The hue graph: every color on two rows, the uniform lineup (evenly different, nothing placed)   |
-| and the current one (with colors placed by hand). Click a color on either row to see its values |
-| beside the graph; drag it on the current row to place it; double-click it to let it go. Dragging |
-| the anchor moves the whole lineup.                                                               |
+| The hue graph: every color on three rows, the uniform lineup (evenly different, nothing placed), |
+| that lineup turned to best match the placed hues, and the current one (with colors placed by     |
+| hand). Click a color on any row to see its values beside the graph; drag it on the current row   |
+| to place it; double-click it to let it go. Dragging the anchor moves the whole lineup.           |
 \*------------------------------------------------------------------------------------------------*/
 
 import type { Guide } from "../palette/references";
 import { composition, hueTurn, wrapHue } from "../palette/model";
 import { refill } from "./dom";
-import { band, evenText, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
+import { againstEven, band, evenText, inGaps, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on every row. */
 interface HueRow {
@@ -149,7 +149,6 @@ function huesPanel(view: HuesView): string {
       </dl>
       <p class="soft hue-note">${note}</p>`;
   }
-  const gaps = view.cost?.gaps[r.key];
   const state = r.anchor ? "the anchor" : r.placed ? "placed" : "spaced";
   return `<p class="hue-name"><span class="dot" style="--c:${r.current.color}"></span> ${r.label} <span class="soft">${state}</span></p>
     <label class="field" for="hue-at"><span>Hue</span><input id="hue-at" type="number" data-hue-at min="0" max="359" step="1" value="${r.current.hue.toFixed(0)}"></label>
@@ -158,9 +157,29 @@ function huesPanel(view: HuesView): string {
       <div><dt>Name</dt><dd class="mono">${composition(r.current.hue)}</dd></div>
       <div><dt>Turned</dt><dd class="mono">${r.turned ? degrees(r.turned.hue) : "…"}</dd></div>
       <div><dt>Off by</dt><dd class="mono">${off}</dd></div>
-      <div><dt>Bend</dt><dd class="mono">${r.bend === null ? "…" : `${r.bend.toFixed(2)} gap`}</dd></div>
-      <div><dt>Gaps</dt><dd class="mono">${gaps ? `${signed(gaps[0])} / ${signed(gaps[1])}` : "…"}</dd></div>
+      <div><dt>Bend</dt><dd class="mono">${r.bend === null ? "…" : inGaps(r.bend) || "under 0.1 gap"}</dd></div>
+      ${neighborGaps(view, r.key)}
     </dl>`;
+}
+
+/**
+ * A color's gaps to the colors before and after it, each against the even gap, as rows of the
+ * color's facts.
+ *
+ * @param view  What the graph shows.
+ * @param key   The color.
+ * @returns     HTML.
+ */
+function neighborGaps(view: HuesView, key: string): string {
+  const cost = view.cost;
+  const gaps = cost?.gaps[key];
+  if (!cost || !gaps) return `<div><dt>Gaps</dt><dd class="mono">…</dd></div>`;
+  const n = cost.keys.length;
+  const i = cost.keys.indexOf(key);
+  const name = (k: string | undefined) => view.rows.find((row) => row.key === k)?.label ?? "";
+  return [cost.keys[(i - 1 + n) % n], cost.keys[(i + 1) % n]]
+    .map((k, side) => `<div><dt>To ${name(k)}</dt><dd>${againstEven(cost.uniform + gaps[side]!, cost.uniform)}</dd></div>`)
+    .join("");
 }
 
 /**
@@ -173,7 +192,9 @@ function huesReadout(view: HuesView): string {
   const cost = view.cost;
   if (!cost) return "Solving…";
   const names = cost.keys.map((key) => view.rows.find((r) => r.key === key)?.label ?? "");
-  const made = view.split ? ` (hue ${String(Math.round(view.split.hue * 100))}%${view.split.colorfulness >= 0.005 ? `, colorfulness ${String(Math.round(view.split.colorfulness * 100))}%` : ""})` : "";
+  const share = (x: number) => `${String(Math.round(x * 100))}%`;
+  const split = view.split;
+  const made = !split ? "" : split.hue >= 0.995 ? ", all from hue" : `, ${share(split.hue)} from hue${split.colorfulness >= 0.005 ? ` and ${share(split.colorfulness)} from colorfulness` : ""}`;
   const turn = view.turn === null || view.bend === null ? "" : `${zone(view.bend).name}: bend ${view.bend.toFixed(2)} gap${view.bend >= 0.005 ? made : ""}, turned ${signed(view.turn)}°. `;
   return turn + evenText(cost.ring, names, cost.uniform);
 }
@@ -196,7 +217,7 @@ export function huesEditor(view: HuesView): string {
       <g class="hues-layers">${huesLayers(view)}</g>
     </svg>
     <p class="graph-caption readout hues-readout">${huesReadout(view)}</p>
-    <p class="graph-caption hint">These rows leave out colorfulness per hue, so they show placing alone: Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match the placed hues, still evenly different; Current has the placed hues. Bend is how far Current is from Turned. Click a color on either row to see its values. Drag it on the Current row to place it there, and the others re-space around it; double-click it to let it go. Dragging the anchor moves the whole lineup. Arrow keys move the selected color by 1°, with Shift by 10°. A dot in the middle marks a color that stays put.</p>
+    <p class="graph-caption hint">These rows leave out colorfulness per hue, so they show placing alone: Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match the placed hues, still evenly different; Current has the placed hues. Bend is how far Current is from Turned. Click a color on any row to see its values. Drag it on the Current row to place it there, and the others re-space around it; double-click it to let it go. Dragging the anchor moves the whole lineup. Arrow keys move the selected color by 1°, with Shift by 10°. A dot in the middle marks a color that stays put.</p>
   </div>`;
 }
 

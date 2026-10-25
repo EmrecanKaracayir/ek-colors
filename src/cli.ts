@@ -2,15 +2,16 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CLI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | Solves the palette from config.ts and writes it to out/: palette.json (everything), palette.csv  |
-| (one row per swatch) and palette.md (tables per gamut tier, mode and variant).                   |
+| (one row per swatch), palette.md (tables per gamut, mode and variant) and palette.css (custom    |
+| properties for a website).                                                                       |
 \*------------------------------------------------------------------------------------------------*/
 
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { CONFIG } from "./config";
-import { toCsv, toJson, toMarkdown } from "./palette/formats";
+import { toCss, toCsv, toJson, toMarkdown } from "./palette/formats";
 import { GAMUTS, MODES } from "./palette/settings";
-import { solvePalette } from "./palette/solve";
+import { identityOf, solvePalette } from "./palette/solve";
 
 const palette = solvePalette(CONFIG);
 
@@ -18,6 +19,7 @@ mkdirSync("out", { recursive: true });
 writeFileSync("out/palette.json", toJson(CONFIG, palette));
 writeFileSync("out/palette.csv", toCsv(CONFIG, palette));
 writeFileSync("out/palette.md", toMarkdown(CONFIG, palette));
+writeFileSync("out/palette.css", toCss(CONFIG, palette));
 
 for (const gamut of GAMUTS) {
   console.log(
@@ -25,7 +27,7 @@ for (const gamut of GAMUTS) {
   );
 }
 for (const mode of MODES) {
-  const tier = CONFIG.identityTier[mode];
+  const tier = identityOf(CONFIG, mode);
   const colors = palette.standard[mode].colors.map((c) => {
     const s = c.tiers[tier]!.default;
     return `${c.key} ${s.color}${s.short ? "*" : ""}`;
