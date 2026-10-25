@@ -1020,16 +1020,31 @@ function drawComparison(el: Element, mode: Mode): void {
     const turned = Math.round((((hued.hue - first.hue + 540) % 360) - 180));
     const added = Math.round(boost(state.settings, mode, last.hue));
     const marks = [turned ? `${turned > 0 ? "+" : ""}${String(turned)}°` : "", added ? `${added > 0 ? "+" : ""}${String(added)}` : ""].filter(Boolean);
-    const fills = swatches.map((s) => `<span class="fill" style="--f:${s.color}"></span>`).join("");
-    return `<span class="strip-item${marks.length ? " changed" : ""}" style="--c:${last.color}" title="${label(c.key)}: ${swatches.map((s) => s.color).join(" → ")}">
-      ${fills}<span class="mono"><span class="name">${label(c.key)}</span> ${marks.join(" ")}</span></span>`;
+    const fills = swatches.map((s, i) => `<span class="fill" data-row="${String(i)}" style="--f:${s.color}"></span>`).join("");
+    const rows = swatches.map((s, i) => `--f${String(i)}:${s.color}`).join(";");
+    return `<span class="strip-item${marks.length ? " changed" : ""}" style="--c:${last.color};${rows}" title="${label(c.key)}: ${swatches.map((s) => s.color).join(" → ")}">
+      ${fills}<span class="cover" aria-hidden="true"></span><span class="mono"><span class="name">${label(c.key)}</span> ${marks.join(" ")}</span></span>`;
   });
   const value = (d: number) => `<span class="${d >= 2 ? "noticeable" : ""}">${d.toFixed(1)}</span>`;
   const cost = `<span class="strip-cost mono" title="How far each step moved the most-moved color (CAM16-UCS ΔE); about 2 is the smallest difference seen side by side.">
-      <span>ΔE</span>${value(moved[0]!)}${value(moved[1]!)}<span class="total">Total ${value(moved[2]!)}</span></span>`;
-  const names = STEPS.map((step) => `<span title="${step.title}">${step.name}</span>`).join("");
+      <span data-row="0">ΔE</span><span data-row="1">${value(moved[0]!)}</span><span data-row="2">${value(moved[1]!)}</span><span class="total">Total ${value(moved[2]!)}</span></span>`;
+  const names = STEPS.map((step, i) => `<span data-row="${String(i)}" title="${step.title}">${step.name}</span>`).join("");
   el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}${cost}</div>`;
 }
+
+// Pointing at one of the strip's rows shows that row alone: every swatch fills with it. The row
+// stays set while the cover fades out, so it fades in that row's colors.
+document.addEventListener("pointerover", (event) => {
+  const strip = document.querySelector<HTMLElement>("#tune-preview");
+  if (!strip?.contains(event.target as Node)) return;
+  const row = (event.target as Element).closest<HTMLElement>("[data-row]")?.dataset.row;
+  if (row !== undefined) strip.dataset.row = row;
+  strip.classList.toggle("focused", row !== undefined);
+});
+document.addEventListener("pointerout", (event) => {
+  const strip = document.querySelector<HTMLElement>("#tune-preview");
+  if (strip?.contains(event.target as Node) && !strip.contains(event.relatedTarget as Node | null)) strip.classList.remove("focused");
+});
 
 let dock: IntersectionObserver | null = null;
 let barHeight = 0;
