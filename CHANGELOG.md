@@ -7,6 +7,26 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.2] - 2026-10-26
+
+### Changed
+
+- All clickable text shares one underline: dotted, links and copy values included, and solid while
+  its popover is open, its state is on, or a value shows "Copied".
+- The strip's row names (Uniform, Turned, +H, +M) are text buttons: dotted underlines, lit by the
+  pointer without a background, and a solid underline while a row is kept shown.
+- The strip's labels read as one line from the left, the name and its gap with a bullet between,
+  as in "Hue 1 • 0.0 gap"; crowded, they still shorten to "Hue 1 • 0.0", then "#1 • 0.0".
+- The strip's bend verdict has no ⓘ; its dotted underline already says it opens what it means.
+- The strip's Bend, Even and M columns hug their numbers, at least four characters each, and sit
+  closer together, so the block beside the colors is narrower and its meter starts under Bend. A
+  verdict or color name too long for it is cut short, and a color's dot sits closer to its name.
+
+### Fixed
+
+- A color() value keeps its line break after being copied, and copying again while it shows
+  "Copied" no longer leaves it stuck there.
+
 ## [2.2.1] - 2026-10-26
 
 ### Changed
@@ -136,7 +156,8 @@ The first release as EK Colors, the project Codemos palette grew into.
 - Export as JSON, CSV, Markdown or CSS, the CSS with `light-dark()` custom properties per gamut.
 - Settings can be copied, and pasted back in with each field checked, with Undo paste.
 
-[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.2...HEAD
+[2.2.2]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.4...v2.2.0
 [2.1.4]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.3...v2.1.4

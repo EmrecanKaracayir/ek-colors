@@ -859,9 +859,21 @@ const LEVELS: Readonly<Record<Swatch["wcagLevel"], string>> = {
  * @returns      HTML.
  */
 function copyable(value: string): string {
-  const shown = value.replace(/^(color\([\w-]+) /, "$1<br>");
-  return `<button type="button" class="mono copy" data-action="copy-value" data-value="${value}" title="${value}" aria-label="Copy ${value}">${shown}</button>`;
+  return `<button type="button" class="mono copy" data-action="copy-value" data-value="${value}" title="${value}" aria-label="Copy ${value}">${shownValue(value)}</button>`;
 }
+
+/**
+ * A color value as a copy button shows it: a CSS color() breaks after its color space.
+ *
+ * @param value  The value.
+ * @returns      HTML.
+ */
+function shownValue(value: string): string {
+  return value.replace(/^(color\([\w-]+) /, "$1<br>");
+}
+
+/** Each copy button's pending return from "Copied" to its value. */
+const copying = new WeakMap<Element, number>();
 
 /**
  * A swatch's WCAG level as a badge that opens what the level means. Its color keeps the popover's
@@ -2018,7 +2030,7 @@ function drawComparison(el: Element, mode: Mode): void {
     // "Hue" before a number can go when the row is crowded; the number stays, as "#3".
     const name = change.name.replace(/^Hue (?=\d)/, `<span class="hue-word">Hue </span><span class="hash">#</span>`);
     return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
-      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span> <span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
+      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span><span class="sep" aria-hidden="true">•</span><span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
   });
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
@@ -2175,8 +2187,8 @@ function metrics(): string {
   // Below, the palette's bend on its zones; or the color pointed at, on the same scale.
   const bend = color ? color.bend[3] / changes.gap : averageBend(3);
   const scope = color
-    ? `<span class="metric-scope">${bendMeter(bend)}<span class="scope-text"><span class="dot" style="--c:${color.color}"></span> ${color.name}</span></span>`
-    : popButton("metric:verdict", `${bendMeter(bend)}<span class="scope-text">${zone(bend).name} ⓘ</span>`, `Bend ${bend.toFixed(2)} gap: ${zone(bend).name}. What it means`, "metric-scope");
+    ? `<span class="metric-scope">${bendMeter(bend)}<span class="scope-text"><span class="dot" style="--c:${color.color}"></span>${color.name}</span></span>`
+    : popButton("metric:verdict", `${bendMeter(bend)}<span class="scope-text">${zone(bend).name}</span>`, `Bend ${bend.toFixed(2)} gap: ${zone(bend).name}. What it means`, "metric-scope");
   return heads.join("") + cells.join("") + scope;
 }
 
@@ -2759,12 +2771,21 @@ document.addEventListener("click", (event) => {
     return;
   }
   if (action === "copy-value") {
-    // The value reads "Copied" for a moment, then shows itself again.
+    // The value reads "Copied" for a moment, marked done so its underline is solid, then shows itself
+    // again; another click starts the moment over.
     const value = el.dataset.value!;
     copyText(value, (copied) => {
       el.textContent = copied ? "Copied" : "Copying isn't allowed here";
+      el.dataset.done = "";
       announce(el.textContent);
-      window.setTimeout(() => (el.textContent = value), 1500);
+      clearTimeout(copying.get(el));
+      copying.set(
+        el,
+        window.setTimeout(() => {
+          el.innerHTML = shownValue(value);
+          delete el.dataset.done;
+        }, 1500),
+      );
     });
     return;
   }

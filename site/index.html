@@ -122,12 +122,12 @@
   * { box-sizing: border-box; scrollbar-width: thin; scrollbar-color: color-mix(in oklch, var(--fg) 35%, transparent) transparent; }
   [hidden] { display: none !important; }
   a { color: inherit; }
-  /* Clickable text: a faint line under links and actions, faint dots under text that opens an
-     explanation; under the pointer, or while its popover is open, they turn as strong as the text.
-     Controls drawn as buttons, tabs or chips don't use either. */
-  a, button.link, .copy { text-decoration: underline color-mix(in oklch, currentColor 45%, transparent); text-underline-offset: 0.2em; }
-  .pop-trigger:is(.wanted, .metric, .metric-scope, .strip-gap, .id-note) { text-decoration: underline dotted color-mix(in oklch, currentColor 45%, transparent); text-underline-offset: 0.2em; }
-  :is(a, button.link, .copy, .pop-trigger:is(.wanted, .metric, .metric-scope, .strip-gap, .id-note)):is(:hover, [aria-expanded="true"]) { text-decoration-color: currentColor; }
+  /* Clickable text, links included: faint dots under it. Under the pointer they turn as strong as the
+     text; while its popover is open, its state is on, or it has just copied, the dots join into a
+     line. Controls drawn as buttons, tabs or chips don't use them. */
+  :where(a, button.link, .copy, .pop-trigger:is(.wanted, .metric, .metric-scope, .strip-gap, .id-note), .strip-labels button) { text-decoration: underline dotted color-mix(in oklch, currentColor 45%, transparent); text-underline-offset: 0.2em; }
+  :where(a, button.link, .copy, .pop-trigger:is(.wanted, .metric, .metric-scope, .strip-gap, .id-note), .strip-labels button):is(:hover, [aria-expanded="true"], [aria-pressed="true"], [data-done]) { text-decoration-color: currentColor; }
+  :where(a, button.link, .copy, .pop-trigger:is(.wanted, .metric, .metric-scope, .strip-gap, .id-note), .strip-labels button):is([aria-expanded="true"], [aria-pressed="true"], [data-done]) { text-decoration-style: solid; }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   main :is(h1, h2)[tabindex="-1"]:focus { outline: none; }
   /* Small text controls reach 24px tall under the pointer without looking any bigger. */
@@ -402,11 +402,15 @@
   .hue-facts dd { margin: 0; }
   .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 9rem 13rem; }
   .strip.docked { border-bottom-color: var(--line); }
-  .strip-metrics { display: grid; grid-template-columns: repeat(3, 5ch); width: calc(15ch + 1.5rem); grid-template-rows: repeat(4, 1rem) auto; column-gap: var(--space-5); align-items: center; justify-items: end; font-size: var(--type-xs); }
+  /* The columns hug their numbers, at least four characters each; the verdict row below takes their
+     width without adding to it, and a word too long for it is cut short. */
+  .strip-metrics { display: grid; grid-template-columns: repeat(3, minmax(4ch, auto)); grid-template-rows: repeat(4, 1rem) auto; column-gap: var(--space-4); align-items: center; justify-items: end; font-size: var(--type-xs); }
   .strip-metrics .head { color: var(--soft); }
-  .strip-metrics .metric-scope { grid-column: 1 / -1; justify-self: stretch; margin-top: var(--space-3); color: var(--soft); display: flex; gap: var(--space-3); align-items: center; white-space: nowrap; overflow: hidden; }
+  .strip-metrics .metric-scope { grid-column: 1 / -1; justify-self: stretch; width: 0; min-width: 100%; margin-top: var(--space-3); color: var(--soft); display: flex; gap: var(--space-4); align-items: center; white-space: nowrap; overflow: hidden; }
   .strip-metrics .metric-scope .bend-meter { flex: 1; }
-  .strip-metrics .scope-text { display: inline-flex; gap: var(--space-3); align-items: center; }
+  /* A color's dot sits closer to its name than to the meter. */
+  .strip-metrics .scope-text { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .strip-metrics .scope-text .dot { display: inline-block; margin-right: var(--space-2); vertical-align: -0.05em; }
   .strip-metrics .dot { width: 0.5rem; height: 0.5rem; }
   .pop-trigger.metric, .pop-trigger.metric-scope { font: inherit; color: inherit; background: none; border: 0; border-radius: var(--radius-control); padding: 0; cursor: pointer; }
   .pop-trigger.strip-gap { font: inherit; background: none; border: 0; border-radius: var(--radius-control); padding: 0; text-align: left; cursor: pointer; }
@@ -451,9 +455,9 @@
   .strip-items.more-end { mask-image: linear-gradient(to left, transparent, #000 var(--fade)); }
   .strip-items.more-start.more-end { mask-image: linear-gradient(to right, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent); }
   .strip-labels { display: grid; grid-template-rows: repeat(4, 1rem); align-items: center; font-size: var(--type-sm); color: var(--soft); text-align: right; }
-  .strip-labels button { font: inherit; color: inherit; text-align: right; background: none; border: 0; padding: 0 var(--space-2); border-radius: var(--radius-control); cursor: pointer; }
-  .strip-labels button[aria-pressed="true"] { color: var(--fg); background: var(--raised); box-shadow: 0 0 0 1px var(--line); }
-  .strip-labels button:not([aria-pressed="true"]):hover { color: var(--fg); background: var(--hover); }
+  /* The row names are text buttons, lit by the pointer and while a row is kept shown. */
+  .strip-labels button { font: inherit; color: inherit; text-align: right; background: none; border: 0; padding: 0; cursor: pointer; }
+  .strip-labels button:is(:hover, [aria-pressed="true"]) { color: var(--fg); }
   .strip-item.changed .strip-gap { font-weight: 700; }
   .strip-item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; align-content: start; }
   .strip-item .cover { position: absolute; inset: 0 0 auto; height: 4rem; border-radius: var(--radius-control); background: var(--f3); opacity: 0; transform: scaleY(0.25); pointer-events: none; transition: opacity 0.2s ease-out, transform 0.2s ease-out; }
@@ -467,11 +471,11 @@
   .strip-item .fill[data-row="0"] { border-radius: var(--radius-control) var(--radius-control) 0 0; }
   .strip-item .fill[data-row="3"] { border-radius: 0 0 var(--radius-control) var(--radius-control); margin-bottom: var(--space-2); }
   .strip-item .strip-gap { font-size: var(--type-xs); color: var(--c); font-weight: 500; }
-  /* The name on the left and its gap on the right, on one line; crowded, the word "gap" goes, then
-     "Hue" before a number, and a name still too long is cut short. */
-  .strip-item .strip-gap { display: flex; justify-content: space-between; gap: var(--space-2); min-width: 0; white-space: nowrap; }
+  /* The name and its gap as one line from the left, a bullet between; crowded, the word "gap" goes,
+     then "Hue" before a number, and a name still too long is cut short. */
+  .strip-item .strip-gap { display: flex; gap: var(--space-2); min-width: 0; white-space: nowrap; }
   .strip-item .strip-gap .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .strip-item .strip-gap .amount { flex: none; margin-left: auto; }
+  .strip-item .strip-gap :is(.sep, .amount) { flex: none; }
   .strip-items:is(.tight, .tighter) .unit, .strip-items.tighter .hue-word, .strip-items:not(.tighter) .hash { display: none; }
 
   /* How it works */
@@ -650,10 +654,10 @@
     .strip-labels { grid-template-rows: repeat(4, 0.75rem); font-size: var(--type-xs); }
     .strip-item .fill { height: 0.75rem; }
     /* A numbered hue keeps its number beside its gap; a named one shows its gap alone. */
-    .strip-item .name:not(.numbered), .strip-item :is(.unit, .hue-word) { display: none; }
+    .strip-item .name:not(.numbered), .strip-item .name:not(.numbered) + .sep, .strip-item :is(.unit, .hue-word) { display: none; }
     .strip-items .strip-item .hash { display: inline; }
     .strip-item .strip-gap { font-size: var(--type-xs); min-height: 0.8rem; }
-    .strip-metrics { grid-template-columns: 5ch; width: 5ch; grid-template-rows: repeat(4, 0.75rem) auto; font-size: var(--type-xs); }
+    .strip-metrics { grid-template-columns: minmax(4ch, auto); grid-template-rows: repeat(4, 0.75rem) auto; font-size: var(--type-xs); }
     .strip-metrics .even, .strip-metrics .colorful { display: none; }
     .strip-metrics .scope-text { display: none; }
     .strip-item .cover { height: 3rem; }
@@ -713,6 +717,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=32c89fae9c"></script>
+<script type="module" src="app.js?v=d6df2f95c1"></script>
 </body>
 </html>
