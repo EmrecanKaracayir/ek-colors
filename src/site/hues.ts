@@ -231,6 +231,11 @@ export function bindHues(get: () => HuesView, place: (key: string, hue: number) 
       if (el.value === "" || Number.isNaN(Number(el.value))) return;
       place(selected.key, wrap(Math.round(Number(el.value))));
       redraw();
+      // The panel isn't redrawn while its field is being typed in, so it's marked placed here.
+      const box = document.querySelector<HTMLInputElement>("[data-hue-placed]");
+      if (box) box.checked = true;
+      const state = document.querySelector(".hues-values .hue-name .soft");
+      if (state && box) state.textContent = "placed";
     } else if (el.matches("[data-hue-placed]")) {
       const row = get().rows.find((r) => r.key === selected.key);
       if (!row) return;

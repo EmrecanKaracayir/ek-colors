@@ -1095,7 +1095,9 @@ function watchDock(): void {
   if (!strip) return;
   dock = new IntersectionObserver(
     ([entry]) => strip.classList.toggle("docked", entry!.intersectionRatio < 1 && entry!.boundingClientRect.top < entry!.rootBounds!.top),
-    { rootMargin: `${String(-barHeight)}px 0px 0px 0px`, threshold: 1 },
+    // The page's own viewport, not the outer page's when it's shown in a frame, which would ignore
+    // the margin for the bar.
+    { root: document, rootMargin: `${String(-barHeight)}px 0px 0px 0px`, threshold: 1 },
   );
   dock.observe(strip);
 }
