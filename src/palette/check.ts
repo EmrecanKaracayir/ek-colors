@@ -62,7 +62,7 @@ function number(
     (whole && !Number.isInteger(value))
   )
     fail(
-      `${name} must be ${whole ? "a whole number" : "a number"} from ${shown(low)} to ${shown(high)}.`,
+      `${name} must be ${whole ? "a whole number" : "a number"} ${high === Infinity ? `of ${shown(low)} or more` : `from ${shown(low)} to ${shown(high)}`}.`,
     );
   return value;
 }

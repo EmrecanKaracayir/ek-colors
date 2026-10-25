@@ -142,14 +142,35 @@ function save(): void {
 /** The worker, at the same version as this script, so the two always match. */
 const WORKER = new URL(`worker.js${new URL(import.meta.url).search}`, import.meta.url);
 
-const worker = new Worker(WORKER, { type: "module" });
+/**
+ * Starts a worker.
+ *
+ * @param answer  What to do with each answer.
+ * @returns       The worker.
+ */
+function spawn(answer: (event: MessageEvent<Response>) => void): Worker {
+  const started = new Worker(WORKER, { type: "module" });
+  started.addEventListener("message", answer);
+  return started;
+}
+
+let worker = spawn(solved);
 let latest = 0;
 let timer = 0;
+
+/** Whether the worker is solving a request that hasn't answered yet. */
+let busy = false;
 
 /** The pending read-out of a finished solve. */
 let settled = 0;
 
-worker.addEventListener("message", (event: MessageEvent<Response>) => {
+/**
+ * Takes a solved gamut tier from the worker, and asks for the next one.
+ *
+ * @param event  The worker's answer.
+ */
+function solved(event: MessageEvent<Response>): void {
+  busy = false;
   const data = event.data;
   if (data.id !== latest) return;
   if ("error" in data) {
@@ -170,7 +191,7 @@ worker.addEventListener("message", (event: MessageEvent<Response>) => {
     else updateExport();
   } else if (shown) render();
   status();
-});
+}
 
 /**
  * Asks the worker for one gamut tier of the current settings.
@@ -178,6 +199,7 @@ worker.addEventListener("message", (event: MessageEvent<Response>) => {
  * @param gamut  The gamut tier.
  */
 function post(gamut: Gamut): void {
+  busy = true;
   worker.postMessage({ id: latest, settings: state.settings, gamut } satisfies Request);
 }
 
@@ -195,6 +217,13 @@ function solve(wait = 0): void {
   state.solving = true;
   status();
   timer = window.setTimeout(() => {
+    // A solve still running is for older settings: it's stopped rather than waited for, so many
+    // hues never hold up the next change.
+    if (busy) {
+      worker.terminate();
+      worker = spawn(solved);
+    }
+    if (solvingVariant && performance.now() - variantSince > LONG_VARIANT) restartVariants();
     post(state.gamut);
     askVariants();
   }, wait);
@@ -204,9 +233,14 @@ function solve(wait = 0): void {
 
 // A second worker solves variants of the settings, without the curve or with nothing placed, so
 // they can be shown beside the palette.
-const baseline = new Worker(WORKER, { type: "module" });
+let baseline = spawn(variantSolved);
 
-baseline.addEventListener("message", (event: MessageEvent<Response>) => {
+/**
+ * Keeps a solved variant, and sends the next one waiting.
+ *
+ * @param event  The worker's answer.
+ */
+function variantSolved(event: MessageEvent<Response>): void {
   const data = event.data;
   nextVariant();
   if ("error" in data) return;
@@ -220,7 +254,7 @@ baseline.addEventListener("message", (event: MessageEvent<Response>) => {
   else if (state.view === "compare") render();
   else if (followsEdits(state.view) && !(state.edits.h && state.edits.m)) render();
   else if (state.view === "how") updateStrip();
-});
+}
 
 let asks = 0;
 const asked = new Map<string, number>();
@@ -235,13 +269,34 @@ const QUEUED = 4;
 /** How many solved variants are kept. */
 const KEPT = 48;
 
+/** The variant being solved, and since when. */
+let variantId = 0;
+let variantSince = 0;
+
+/** How long a variant may run, in ms, before a change of settings stops it. */
+const LONG_VARIANT = 1000;
+
 /**
  * Sends the next waiting variant to the worker, if it's free.
  */
 function nextVariant(): void {
   const request = queue.shift();
   solvingVariant = !!request;
-  if (request) baseline.postMessage(request);
+  if (!request) return;
+  [variantId, variantSince] = [request.id, performance.now()];
+  baseline.postMessage(request);
+}
+
+/**
+ * Stops the variant being solved and those waiting, so they're asked for again if still wanted.
+ */
+function restartVariants(): void {
+  baseline.terminate();
+  baseline = spawn(variantSolved);
+  const dropped = new Set([variantId, ...queue.map((r) => r.id)]);
+  for (const [key, id] of asked) if (dropped.has(id)) asked.delete(key);
+  queue.length = 0;
+  solvingVariant = false;
 }
 
 /**
@@ -1625,6 +1680,27 @@ document.addEventListener("click", (event) => {
   if (id) jumpTo(id);
 });
 
+/** Past this many hues, neighbors come too close to tell apart easily. */
+const CLOSE_HUES = 16;
+
+/** Past this many hues, solving can take a long time. */
+const SLOW_HUES = 32;
+
+/**
+ * What a count of hues costs, said under its field: amber once neighbors come too close, red once
+ * solving can take a long time.
+ *
+ * @param hues  How many hues.
+ * @returns     HTML, or nothing.
+ */
+function huesNote(hues: number): string {
+  const notes = [
+    hues > CLOSE_HUES ? `<p class="field-note">With more than ${String(CLOSE_HUES)} hues, neighbors come too close to tell apart easily.</p>` : "",
+    hues > SLOW_HUES ? `<p class="field-note unmet">With more than ${String(SLOW_HUES)} hues, solving can take a long time, longer on phones.</p>` : "",
+  ];
+  return notes.join("");
+}
+
 /**
  * A number control bound to a setting.
  *
@@ -1648,7 +1724,7 @@ function number(
   const scale = percent ? 100 : 1;
   const shown = (x: number) => String(Math.round(x * scale * 1e6) / 1e6);
   const id = `set-${path.replaceAll(".", "-")}`;
-  const bound = `data-set="${path}"${percent ? ` data-scale="${String(scale)}"` : ""} min="${shown(min)}" max="${shown(max)}" step="${shown(step)}" value="${shown(Number(read(path) ?? 0))}"`;
+  const bound = `data-set="${path}"${percent ? ` data-scale="${String(scale)}"` : ""} min="${shown(min)}"${Number.isFinite(max) ? ` max="${shown(max)}"` : ""} step="${shown(step)}" value="${shown(Number(read(path) ?? 0))}"`;
   const field = `<input id="${id}" type="number" ${bound}${percent ? ` aria-label="${title}, percent"` : ""}>`;
   return `<label class="field" for="${id}"><span>${title}</span>
     ${slider ? `<input type="range" ${bound} aria-label="${title}">` : ""}
@@ -1742,7 +1818,7 @@ function tune(): string {
     <div id="palette-strip" class="strip"></div>
     <section class="group" id="hue-section">
       <h2>Hue (H)</h2>
-      ${number("hues", "How many hues", [...LIMITS.hues, 1])}
+      ${number("hues", "How many hues", [...LIMITS.hues, 1])}<div id="hues-note">${huesNote(state.settings.hues)}</div>
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
       <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
       <p><a href="#hue-test" class="button">Measure it with the blind hue test</a></p>
@@ -1940,7 +2016,7 @@ function drawComparison(el: Element, mode: Mode): void {
     const rows = swatches.map((sw, i) => `--f${String(i)}:${sw.color}`).join(";");
     const amount = (inGaps(change.bend[3] / gap) || "0.0 gap").replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`);
     return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
-      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name">${change.name}</span> ${amount}`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
+      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name">${change.name}</span> <span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
   });
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
@@ -2398,7 +2474,7 @@ function about(): string {
       <h2>About</h2>
       <dl class="facts-list">
         <div><dt>Name</dt><dd>EK Colors</dd></div>
-        <div><dt>Version</dt><dd><span class="mono">${project.version}</span>${build ? ` <span class="soft">• build <span class="mono">${build}</span></span>` : ""}</dd></div>
+        <div><dt>Version</dt><dd><span class="mono">${project.version}</span>${build ? ` <span class="soft">• build <span class="mono">${build}</span></span>` : ""} <span class="soft">•</span> <a href="${source}/blob/main/CHANGELOG.md">Changelog</a></dd></div>
         <div><dt>Made by</dt><dd>${project.author}, 2026</dd></div>
         <div><dt>License</dt><dd>${project.license}</dd></div>
         <div><dt>Source</dt><dd><a href="${source}">${source.replace(/^https:\/\//, "")}</a></dd></div>
@@ -2677,7 +2753,7 @@ document.addEventListener("click", (event) => {
 function outOfRange(el: HTMLInputElement): boolean {
   const bad = el.value === "" || el.validity.badInput || el.validity.rangeUnderflow || el.validity.rangeOverflow;
   const unit = el.dataset.scale ? "%" : "";
-  if (el.type === "number") markField(el, bad ? `From ${el.min}${unit} to ${el.max}${unit}` : "");
+  if (el.type === "number") markField(el, bad ? (el.max ? `From ${el.min}${unit} to ${el.max}${unit}` : `${el.min}${unit} or more`) : "");
   return bad;
 }
 
@@ -2750,6 +2826,7 @@ document.addEventListener("input", (event) => {
   if (path.startsWith("bases.") || path.startsWith("rooms.")) syncAnchor();
   if (path.startsWith("bases.")) for (const m of MODES) $(`#set-identity-${m} option[value="auto"]`).textContent = automaticName(m);
   if (path.startsWith("curve.") || path.startsWith("extras.")) updateTune();
+  if (path === "hues") $("#hues-note").innerHTML = huesNote(state.settings.hues);
   solve(150);
 });
 

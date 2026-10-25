@@ -462,6 +462,8 @@
   .strip-item .fill[data-row="0"] { border-radius: var(--radius-control) var(--radius-control) 0 0; }
   .strip-item .fill[data-row="3"] { border-radius: 0 0 var(--radius-control) var(--radius-control); margin-bottom: var(--space-2); }
   .strip-item .strip-gap { font-size: var(--type-xs); color: var(--c); font-weight: 500; }
+  /* The name on one line, its gap on the next. */
+  .strip-item :is(.name, .amount) { display: block; white-space: nowrap; }
 
   /* How it works */
   .step { max-width: 46rem; }
@@ -577,6 +579,9 @@
   .paste textarea { min-height: 10rem; }
   .paste-problem { color: var(--poor); }
   .field-problem { grid-column: 1 / -1; color: var(--poor); font-size: var(--type-sm); }
+  /* What a field's value costs, said under it: amber for a side effect of the choice, red when it may not work out. */
+  .field-note { margin: 0; color: var(--fair); font-size: var(--type-sm); }
+  .field-note.unmet { color: var(--poor); }
   .held { margin-left: 0.15em; }
   /* On phones, where a table's headers give way to names beside each value. */
   .columns-help { display: none; justify-self: start; font-size: var(--type-sm); color: var(--soft); }
@@ -690,6 +695,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=31a6effa44"></script>
+<script type="module" src="app.js?v=0adba93f4b"></script>
 </body>
 </html>

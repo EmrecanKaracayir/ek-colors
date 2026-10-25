@@ -77,7 +77,7 @@ export function technical(ctx: Context): string {
 variants for the H and M switches: the same solve without placed hues, without the curve, or both (step 9)</pre>
       <p>Every color is produced by one primitive: <code>strongest(h, M, Lc)</code>, the most colorful color of CAM16 hue h, up to colorfulness M, whose APCA contrast against the mode's base is exactly Lc.</p>
       <p>Settings from the site, from a paste or from storage are checked first, and older ones brought up to date; the config the command line solves isn't checked:</p>
-<pre class="formula">hues ${fixed(LIMITS.hues[0], 0)}–${fixed(LIMITS.hues[1], 0)} • M_target ${fixed(LIMITS.colorfulness[0], 0)}–${fixed(LIMITS.colorfulness[1], 0)} • muted share ${pct(LIMITS.muted[0])}–${pct(LIMITS.muted[1])} • lux ${fixed(LIMITS.lux[0], 0)}–${fixed(LIMITS.lux[1], 0)}
+<pre class="formula">hues ${fixed(LIMITS.hues[0], 0)} or more • M_target ${fixed(LIMITS.colorfulness[0], 0)}–${fixed(LIMITS.colorfulness[1], 0)} • muted share ${pct(LIMITS.muted[0])}–${pct(LIMITS.muted[1])} • lux ${fixed(LIMITS.lux[0], 0)}–${fixed(LIMITS.lux[1], 0)}
 curve amount −${fixed(-LIMITS.amount[0], 0)}…+${fixed(LIMITS.amount[1], 0)} M, width ${fixed(LIMITS.width[0], 0)}–${fixed(LIMITS.width[1], 0)}° • extra share ${pct(LIMITS.share[0])}–${pct(LIMITS.share[1])} • hue windows ${fixed(LIMITS.hueWindow[0], 0)}–${fixed(LIMITS.hueWindow[1], 0)}°
 tiers        at least one, each one of Lc ${Object.keys(ROLES).join(", ")}
 identity     set by hand to a tier that isn't solved → automatic
@@ -172,7 +172,8 @@ curve(h) = Σ_i  [ d_i(h) &lt; w_i ]  ·  a_i · (1 + cos(π · d_i(h) / w_i)) /
       <p>A name like "R 33 B" (red with 33% blue: a third of the way from R to B, in steps of p) is turned back into an angle by bisecting p(h) on that segment. The same formula names every swatch ("Y 11 G").</p>
       <p>The other reference systems (Munsell, NCS, unique hues, focal colors) give measured colors instead of names: each one's D65 XYZ (Munsell and WCS chips adapted from illuminant C by Bradford, NCS from its sRGB approximations) is taken into CAM16 in each mode's viewing conditions, and its hue is the circular mean of the light and dark hues. They're drawn as guides, and each one's yellow can be the anchor.</p>
 <pre class="formula">start_k = anchor + k · 360° / n     // k = 0 … n − 1, yellow first with eight hues
-start_k = placed_k                  // a color placed by hand starts there instead</pre>
+start_k = placed_k                  // a color placed by hand starts there instead
+order    = named hues by hue, red first; numbered ones by number, Hue 1 at the anchor</pre>
       <p>The anchor is ${fixed(anchor, 1)}° (${from}). It's needed because the spacing (step 7) only evens out differences between neighbors, and turning the whole lineup around the circle leaves those almost unchanged; the anchor fixes where it sits. The anchor and placed colors don't move while the others are spaced. With nothing placed, the result is the uniform lineup.</p>
       <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Even start</th><th>Placed at</th></tr></thead><tbody>${starts}</tbody></table></div>
     </section>

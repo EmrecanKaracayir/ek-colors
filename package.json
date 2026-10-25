@@ -1,12 +1,13 @@
 {
   "name": "ek-colors",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "private": true,
   "description": "Solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark. Ships with EK Palette.",
   "type": "module",
   "scripts": {
     "solve": "tsx src/cli.ts",
     "art": "tsx scripts/art.ts",
+    "release": "tsx scripts/release.ts",
     "typecheck": "tsc",
     "check": "tsc && prettier --check .",
     "format": "prettier --write .",
@@ -18,8 +19,10 @@
   },
   "devDependencies": {
     "@types/node": "22.20.5",
+    "@types/semver": "7.8.0",
     "esbuild": "0.25.10",
     "prettier": "3.4.2",
+    "semver": "7.8.5",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
   },

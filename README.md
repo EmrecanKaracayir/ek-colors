@@ -121,6 +121,15 @@ pnpm art
 
 It's published to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`.
 
+What changed in each version is in [CHANGELOG.md](CHANGELOG.md): every change goes under
+Unreleased, and a release dates it as the new version, sets `package.json`, checks, builds, solves,
+commits and tags:
+
+```sh
+pnpm release 2.2.0
+git push origin main v2.2.0
+```
+
 ## Built with
 
 - [material-color-utilities](https://github.com/material-foundation/material-color-utilities)

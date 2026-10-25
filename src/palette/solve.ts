@@ -406,8 +406,8 @@ export function bounds(
 }
 
 /**
- * The hues both modes start from, in hue order, and which of them stay put: the lineup, wrapped
- * onto the circle. The anchor and placed colors stay; the rest are spaced.
+ * The hues both modes start from, in the order they're listed, and which of them stay put: the
+ * lineup, wrapped onto the circle. The anchor and placed colors stay; the rest are spaced.
  *
  * @param settings  The settings.
  * @returns         The keys, starting hues, the indexes of the colors that stay put, and the closest
@@ -415,7 +415,9 @@ export function bounds(
  */
 function seeds(settings: Settings) {
   const { keys, hues, held, sep } = lineup(settings);
-  const order = hues.map((h, k) => [h % 360, k] as const).toSorted((a, b) => a[0] - b[0]);
+  // Named hues go in hue order, red first; numbered ones in number order, from the anchor.
+  const lined = hues.map((h, k) => [h % 360, k] as const);
+  const order = keys.length === NAMES.length ? lined.toSorted((a, b) => a[0] - b[0]) : lined;
   return {
     keys: order.map(([, k]) => keys[k]!),
     start: order.map(([h]) => h),

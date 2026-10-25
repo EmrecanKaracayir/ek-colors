@@ -1,0 +1,126 @@
+# Changelog
+
+All notable changes to EK Colors are written down here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and EK Colors
+follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [2.2.0] - 2026-10-26
+
+### Added
+
+- This changelog, linked from the version line in Settings' About.
+- `pnpm release <version>`: checks the version is a newer semantic version, dates the changelog's
+  Unreleased section as it, sets package.json, checks, builds, solves, commits and tags.
+- Any number of hues from 2 up. Past 16 an amber note says neighbors come too close to tell apart
+  easily; past 32 a red one says solving can take a long time.
+
+### Changed
+
+- Numbered hues are listed from Hue 1 everywhere, the strip, the Overview, the tables and the
+  exports; named hues still start at red. The colors themselves don't change.
+- The Settings strip puts each color's name and its gap on lines of their own.
+
+### Fixed
+
+- A long solve for settings that have since changed is stopped, instead of holding up the next one.
+
+## [2.1.4] - 2026-10-26
+
+### Changed
+
+- The page description, the link preview and the preview card say "evenly different" instead of
+  "evenly spaced": the hues are spaced to look equally different, and most of EK Palette's are
+  placed by name.
+
+## [2.1.3] - 2026-10-26
+
+### Changed
+
+- The algorithm page: the target stops at grey, where each tier's reach is measured, the identity
+  grey when none reaches the tier, what each mark is measured against, and a new list of how
+  settings are checked.
+- How it works: the live gap between neighbors, Lowered, the screen's dot on the Gamut switch and
+  the note for a wider gamut, the order of the bases, and everything Settings does.
+- README: placed hues, the identity tier, hue windows, what `pnpm solve` doesn't check, named
+  outputs, Compare and Settings, and what `pnpm art` needs.
+
+## [2.1.2] - 2026-10-26
+
+### Fixed
+
+- Reset, Copy settings and Paste settings stay on the right on narrow screens.
+
+## [2.1.1] - 2026-10-26
+
+### Added
+
+- A dot on the hue circle shows its colorfulness and hue under its name, as in "M 44 • 96°".
+
+### Changed
+
+- Separators are bullets (•); formulas keep the middle dot.
+- The link preview card shows the eight hues, without brown.
+
+## [2.1.0] - 2026-10-25
+
+### Added
+
+- Palettes have names, shown on the Overview and in the Markdown and CSS exports.
+- An icon drawn from the palette: its two bases as halves of a circle inside a ring of its hues.
+  The Overview shows the palette on screen's; the site uses EK Palette's.
+- `pnpm art` draws the site icon, the iPhone home-screen icon and the link preview card.
+- Link previews, a canonical address, theme colors for phone browsers, structured data and a short
+  description for crawlers that don't run JavaScript.
+- Exports are syntax colored, in EK Palette's own colors.
+- Compare is always there, against EK Palette, and says how EK Palette was made; Shift+C compares
+  with Codemos instead.
+- The hue circle can be shown as a table.
+- A button to add a curve point.
+- The light base must be lighter than the dark base.
+
+### Changed
+
+- Color tables right-align their values, with each badge, mark or hue name to its left.
+- Gamut limit, Sets the tier and Lowered are marks everywhere (!, a flag and ↓), with a key under
+  every group of colors that has them.
+- The note that the screen can't show the chosen gamut is red.
+- Settings has its actions on the right, and dropdowns keep their chevrons off the edge.
+- The fonts no longer hold up the first paint.
+- Accessibility: the focus stays put when a part of the page is drawn again, fields say what's wrong
+  with their value, popovers belong to their buttons, a live region announces changes, small
+  controls are at least 24 px, and graph values are written out in words.
+
+### Fixed
+
+- The browser no longer asks for a missing icon.
+- Scrollbars on dark pages have a dark track.
+
+## [2.0.0] - 2026-10-25
+
+The first release as EK Colors, the project Codemos palette grew into.
+
+### Added
+
+- The solver: every color exactly on its APCA contrast tier, equally colorful in CAM16, and evenly
+  different from its neighbors in CAM16-UCS, for light and dark and for three kinds of screen.
+- EK Palette: eight hues and brown, each placed where its name fits best.
+- Extra colors, colorfulness per hue as a curve, placed hues, and an anchor from CAM16, Munsell,
+  NCS, unique hues or the World Color Survey's focal colors.
+- Automatic identity tiers: the tier where APCA and WCAG 2 together are just at their minimum for
+  text, which can also be set by hand on the Tiers page or in Settings.
+- The site: Overview, Tiers, a page per color, Compare, How it works, the algorithm, References and
+  Settings, with two blind tests, one for colorfulness per hue and one for where each name fits.
+- Export as JSON, CSV, Markdown or CSS, the CSS with `light-dark()` custom properties per gamut.
+- Settings can be copied, and pasted back in with each field checked, with Undo paste.
+
+[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.4...v2.2.0
+[2.1.4]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.3...v2.1.4
+[2.1.3]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.2...v2.1.3
+[2.1.2]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.1...v2.1.2
+[2.1.1]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.0...v2.1.1
+[2.1.0]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/EmrecanKaracayir/ek-colors/releases/tag/v2.0.0

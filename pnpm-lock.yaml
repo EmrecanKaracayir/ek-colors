@@ -18,12 +18,18 @@ importers:
       '@types/node':
         specifier: 22.20.5
         version: 22.20.5
+      '@types/semver':
+        specifier: 7.8.0
+        version: 7.8.0
       esbuild:
         specifier: 0.25.10
         version: 0.25.10
       prettier:
         specifier: 3.4.2
         version: 3.4.2
+      semver:
+        specifier: 7.8.5
+        version: 7.8.5
       tsx:
         specifier: 4.23.15
         version: 4.23.15
@@ -351,6 +357,9 @@ packages:
   '@types/node@22.20.5':
     resolution: {integrity: sha512-U2+DNr+wSjpsTS/wZGYHq7GcwfuSmKiKvoPvK22zwTlRhU91yOniN4qRR5KhIjvif7ysw/dz/hKmfDH0Ris4aA==}
 
+  '@types/semver@7.8.0':
+    resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
+
   colorjs.io@0.7.1:
     resolution: {integrity: sha512-LY7OHnJZxHwT5UlzNa9bbhHHDbzB6yE5+3MIPwJEQKRvSCt/T4G7epsj+9j2BExUIIfXFIJGsIXUKdfrK9Q5tA==}
 
@@ -372,6 +381,11 @@ packages:
   prettier@3.4.2:
     resolution: {integrity: sha512-e9MewbtFo+Fevyuxn/4rrcDAaq0IYxPGLvObpQjiZBMAzB9IGmzlnG9RZy3FFas+eBMu2vA0CszMeduow5dIuQ==}
     engines: {node: '>=14'}
+    hasBin: true
+
+  semver@7.8.5:
+    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
+    engines: {node: '>=10'}
     hasBin: true
 
   tsx@4.23.15:
@@ -551,6 +565,8 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/semver@7.8.0': {}
+
   colorjs.io@0.7.1: {}
 
   esbuild@0.25.10:
@@ -615,6 +631,8 @@ snapshots:
     optional: true
 
   prettier@3.4.2: {}
+
+  semver@7.8.5: {}
 
   tsx@4.23.15:
     dependencies:
