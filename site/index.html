@@ -406,7 +406,7 @@
      width without adding to it, and a word too long for it is cut short. */
   .strip-metrics { display: grid; grid-template-columns: repeat(3, minmax(4ch, auto)); grid-template-rows: repeat(4, 1rem) auto; column-gap: var(--space-4); align-items: center; justify-items: end; font-size: var(--type-xs); }
   .strip-metrics .head { color: var(--soft); }
-  .strip-metrics .metric-scope { grid-column: 1 / -1; justify-self: stretch; width: 0; min-width: 100%; margin-top: var(--space-3); color: var(--soft); display: flex; gap: var(--space-4); align-items: center; white-space: nowrap; overflow: hidden; }
+  .strip-metrics .metric-scope { grid-column: 1 / -1; justify-self: stretch; width: 0; min-width: 100%; margin-top: var(--space-3); color: var(--soft); display: flex; gap: var(--space-4); align-items: center; white-space: nowrap; }
   .strip-metrics .metric-scope .bend-meter { flex: 1; }
   /* A color's dot sits closer to its name than to the meter. */
   .strip-metrics .scope-text { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
@@ -429,7 +429,8 @@
   .pop-split .lightness, .pop-legend .lightness { background: var(--line); }
   .bend-meter { position: relative; display: block; height: 0.3125rem; min-width: 2rem; }
   .bend-meter.large { height: 0.5rem; margin-bottom: var(--space-7); }
-  .meter-zones { display: flex; gap: 1px; height: 100%; border-radius: var(--radius-pill); overflow: hidden; }
+  /* A hairline around the track, so its faintest zones still show where it starts. */
+  .meter-zones { display: flex; gap: 1px; height: 100%; border-radius: var(--radius-pill); overflow: hidden; outline: 1px solid color-mix(in oklch, var(--fg) 20%, transparent); }
   .meter-zones span:nth-child(1) { background: color-mix(in oklch, var(--fg) 10%, transparent); }
   .meter-zones span:nth-child(2) { background: color-mix(in oklch, var(--fg) 20%, transparent); }
   .meter-zones span:nth-child(3) { background: color-mix(in oklch, var(--fg) 32%, transparent); }
@@ -471,11 +472,10 @@
   .strip-item .fill[data-row="0"] { border-radius: var(--radius-control) var(--radius-control) 0 0; }
   .strip-item .fill[data-row="3"] { border-radius: 0 0 var(--radius-control) var(--radius-control); margin-bottom: var(--space-2); }
   .strip-item .strip-gap { font-size: var(--type-xs); color: var(--c); font-weight: 500; }
-  /* The name and its gap as one line from the left, a bullet between; crowded, the word "gap" goes,
-     then "Hue" before a number, and a name still too long is cut short. */
-  .strip-item .strip-gap { display: flex; gap: var(--space-2); min-width: 0; white-space: nowrap; }
-  .strip-item .strip-gap .name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-  .strip-item .strip-gap :is(.sep, .amount) { flex: none; }
+  /* The name and its gap as one line of text from the left, a bullet between, so one underline runs
+     under all of it; crowded, the word "gap" goes, then "Hue" before a number, and a line still too
+     long is cut short. */
+  .strip-item .strip-gap { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .strip-items:is(.tight, .tighter) .unit, .strip-items.tighter .hue-word, .strip-items:not(.tighter) .hash { display: none; }
 
   /* How it works */
@@ -595,7 +595,6 @@
   /* What a field's value costs, said under it: amber for a side effect of the choice, red when it may not work out. */
   .field-note { margin: 0; color: var(--fair); font-size: var(--type-sm); }
   .field-note.unmet { color: var(--poor); }
-  .held { margin-left: 0.15em; }
   /* On phones, where a table's headers give way to names beside each value. */
   .columns-help { display: none; justify-self: start; font-size: var(--type-sm); color: var(--soft); }
 
@@ -614,7 +613,7 @@
     .nav a { padding: var(--space-5) var(--space-5); }
     /* The switches wrap onto two rows. Their buttons say what they are, so only Edits keeps its label.
        Each switch keeps its label and ⓘ close, and the groups stand apart, so each ⓘ reads as its own. */
-    .tools { grid-column: 1 / -1; order: 3; gap: var(--space-3) var(--space-6); }
+    .tools { grid-column: 1 / -1; order: 3; gap: var(--space-3) var(--space-5); }
     .tool { gap: var(--space-1); }
     #edits-label { margin-inline-end: var(--space-2); }
     .tool-label:not(#edits-label) { display: none; }
@@ -717,6 +716,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=d6df2f95c1"></script>
+<script type="module" src="app.js?v=00945e02f8"></script>
 </body>
 </html>

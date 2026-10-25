@@ -1011,7 +1011,8 @@ function card(s: Swatch, title: string, href?: string, at?: Place): string {
   // beside the name.
   // A mark beside the value, not only its color, says it's held back: ! by the screen, ↓ by the tier.
   const value = `M ${s.colorfulness.toFixed(1)}`;
-  const mark = (sign: string) => `${value}<span class="held" aria-hidden="true">${sign}</span>`;
+  // A thin space, not a margin, before the mark, so the underline runs on under it.
+  const mark = (sign: string) => `${value}<span class="held" aria-hidden="true">\u2009${sign}</span>`;
   const m =
     at && s.short
       ? popButton(`why:gamut:${id}`, mark("!"), `${title} is held back by the gamut: why`, "wanted")
@@ -2030,7 +2031,7 @@ function drawComparison(el: Element, mode: Mode): void {
     // "Hue" before a number can go when the row is crowded; the number stays, as "#3".
     const name = change.name.replace(/^Hue (?=\d)/, `<span class="hue-word">Hue </span><span class="hash">#</span>`);
     return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
-      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span><span class="sep" aria-hidden="true">•</span><span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
+      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span><span class="sep" aria-hidden="true"> • </span><span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
   });
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
@@ -2050,14 +2051,14 @@ function drawComparison(el: Element, mode: Mode): void {
 }
 
 /**
- * Shortens the strip's labels until every name fits beside its gap: first without the word "gap",
- * then without the word "Hue" before a number. The whole row shortens together.
+ * Shortens the strip's labels until every one fits its color's width: first without the word
+ * "gap", then without the word "Hue" before a number. The whole row shortens together.
  *
  * @param row  The row.
  */
 function fitLabels(row: HTMLElement): void {
   row.classList.remove("tight", "tighter");
-  const crowded = () => [...row.querySelectorAll<HTMLElement>(".strip-gap .name")].some((n) => n.scrollWidth > n.clientWidth);
+  const crowded = () => [...row.querySelectorAll<HTMLElement>(".strip-gap")].some((b) => b.scrollWidth > b.clientWidth);
   if (crowded()) row.classList.add("tight");
   if (crowded()) row.classList.add("tighter");
 }
@@ -2620,7 +2621,8 @@ function render(): void {
 function status(): void {
   const el = $<HTMLElement>("#status");
   el.dataset.state = state.error ? "error" : state.solving ? "busy" : "done";
-  el.textContent = state.error ?? (state.solving ? "Solving…" : `Solved in ${(state.took / 1000).toFixed(1)} s`);
+  // A no-break space keeps the time and its unit on one line.
+  el.textContent = state.error ?? (state.solving ? "Solving…" : `Solved in ${(state.took / 1000).toFixed(1)}\u00A0s`);
   // Read out once the changes settle: an error at once, a solve a moment after the last one.
   clearTimeout(settled);
   if (state.error) $("#announce").textContent = state.error;

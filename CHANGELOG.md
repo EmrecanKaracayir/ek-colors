@@ -7,6 +7,20 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.3] - 2026-10-26
+
+### Changed
+
+- The compact bar's switch groups sit a little closer together, 0.75rem apart instead of 1rem.
+- The bend meter has a faint hairline around it, so its darkest zones stay visible.
+
+### Fixed
+
+- The status keeps a time and its unit together, so "0.8 s" never breaks before the "s".
+- The strip's bend meter is no longer cut off at its edges, its marker at Uniform included.
+- Underlines run unbroken under the strip's labels and under a card's colorfulness with its mark,
+  which are now spaced with text instead of gaps and margins.
+
 ## [2.2.2] - 2026-10-26
 
 ### Changed
@@ -156,7 +170,8 @@ The first release as EK Colors, the project Codemos palette grew into.
 - Export as JSON, CSV, Markdown or CSS, the CSS with `light-dark()` custom properties per gamut.
 - Settings can be copied, and pasted back in with each field checked, with Undo paste.
 
-[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.3...HEAD
+[2.2.3]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.1.4...v2.2.0
