@@ -67,7 +67,7 @@ let field: Field = () => "";
  * @param view  What to show.
  * @returns     SVG.
  */
-export function curveLayers(view: CurveView): string {
+function curveLayers(view: CurveView): string {
   const { mode, points } = view;
   const settings = { curve: { light: points, dark: points } };
   const at = (hue: number) => MIDDLE - boost(settings, mode, hue) * SCALE;
@@ -122,7 +122,7 @@ function valuesPanel(view: CurveView): string {
  * @param view  What to show.
  * @returns     Text.
  */
-export function curveReadout(view: CurveView): string {
+function curveReadout(view: CurveView): string {
   if (!view.cost) return "Solving…";
   const moved = view.cost.filter((c) => c.difference >= 0.05).toSorted((a, b) => b.difference - a.difference);
   if (!moved.length) return "Every color is equally colorful, as the model says.";

@@ -9,7 +9,7 @@
 import project from "../../package.json";
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
-import { composition, makeModel, type Model, parts } from "../palette/model";
+import { composition, deltaE, makeModel, type Model, parts, plainSquared } from "../palette/model";
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
 import { boost, bounds, type Color, extraKeys, hueKeys, lineup, neighbors, PAGES, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
@@ -280,34 +280,24 @@ function variant(settings: Settings): GamutPalette | null {
 }
 
 /**
- * The palette on screen without the curve. It only depends on settings other than the curve, so
- * moving the curve never has to wait for it.
+ * The palette on screen with or without its edits: placed hues (H) and colorfulness per hue (M).
+ * An edit that changes nothing is left in, so the palette in use is shared where it can be.
  *
+ * @param h  Whether placed hues are kept.
+ * @param m  Whether colorfulness per hue is kept.
  * @returns  The palette, or null while it solves.
  */
-function uncurved(): GamutPalette | null {
-  return curved() ? variant(flat()) : inUse();
+function edited(h: boolean, m: boolean): GamutPalette | null {
+  const [noCurve, noPlaced] = [!m && curved(), !h && Object.keys(state.settings.placed).length > 0];
+  if (!noCurve && !noPlaced) return inUse();
+  return variant({ ...(noCurve ? flat() : state.settings), ...(noPlaced ? { placed: {} } : {}) });
 }
 
-/**
- * The uniform lineup: the palette on screen with nothing placed.
- *
- * @returns  The palette, or null while it solves.
- */
-function uniform(): GamutPalette | null {
-  return Object.keys(state.settings.placed).length ? variant({ ...state.settings, placed: {} }) : inUse();
-}
+/** Without the curve: it only depends on settings other than the curve, so moving the curve never waits for it. */
+const uncurved = () => edited(true, false);
 
-/**
- * The palette on screen with nothing placed and no curve: the first step of the strip.
- *
- * @returns  The palette, or null while it solves.
- */
-function plain(): GamutPalette | null {
-  const placed = Object.keys(state.settings.placed).length > 0;
-  if (!curved()) return uniform();
-  return placed ? variant({ ...flat(), placed: {} }) : uncurved();
-}
+/** Nothing placed and no curve: the first step of the strip. */
+const plain = () => edited(false, false);
 
 /** The turn found for each pair of palettes and tier: exact by construction, and let go with the palettes. */
 const turns = new WeakMap<ModePalette, WeakMap<ModePalette, Map<number, number>>>();
@@ -338,7 +328,7 @@ function turn(mode: Mode): number | null {
     const [cos, sin] = [Math.cos((degrees * Math.PI) / 180), Math.sin((degrees * Math.PI) / 180)];
     const sum = pairs.reduce((total, [u, h]) => {
       const [a, b] = [u.astar * cos - u.bstar * sin, u.astar * sin + u.bstar * cos];
-      const distance = 1.41 * Math.hypot(u.jstar - h.jstar, a - h.astar, b - h.bstar) ** 0.63;
+      const distance = deltaE(Math.hypot(u.jstar - h.jstar, a - h.astar, b - h.bstar));
       return total + distance ** 2;
     }, 0);
     return Math.sqrt(sum / pairs.length);
@@ -391,11 +381,10 @@ function turned(mode: Mode): {
 }
 
 /**
- * Asks for the variants Settings compares with.
+ * Asks for the variants the strip compares; the page asks for any other it shows.
  */
 function askVariants(): void {
   uncurved();
-  uniform();
   plain();
   turned(state.mode);
 }
@@ -455,7 +444,33 @@ function colorfulnessCost(mode: Mode): CurveView["cost"] {
       if (!a || !b) return [];
       return [{ label: label(c.key), added: Math.round(a.colorfulness - b.colorfulness), difference: model().distance(mode, a.color, b.color) }];
     })
-    .map((c) => ({ ...c, gap: evenGaps.get(mode) ?? 9 }));
+    .map((c) => ({ ...c, gap: evenGap(mode) }));
+}
+
+/**
+ * The colors around the circle at the identity tier's colorfulness, painted behind the graphs: one
+ * every 10°, made once per bases, rooms, gamut tier, tier and target.
+ *
+ * @param mode  The mode.
+ * @returns     The band.
+ */
+function bandOf(mode: Mode): CurveView["band"] {
+  const s = state.settings;
+  const tier = s.identityTier[mode];
+  const target = current()?.[mode].targets[tier] ?? s.colorfulness;
+  const key = JSON.stringify([s.bases, s.rooms, state.gamut, mode, tier, target]);
+  let band = bands.get(key);
+  if (!band) {
+    band = Array.from({ length: 37 }, (_, i) => i * 10).flatMap((hue) => {
+      try {
+        return [{ hue, color: strongest(model(), s.bases[mode], mode, hue % 360, target, tier) }];
+      } catch {
+        return [];
+      }
+    });
+    bands.set(key, band);
+  }
+  return band;
 }
 
 /**
@@ -469,19 +484,7 @@ function curveView(mode: Mode): CurveView {
   const s = state.settings;
   const tier = s.identityTier[mode];
   const palette = current()?.[mode];
-  const target = palette?.targets[tier] ?? s.colorfulness;
-  const key = JSON.stringify([s.bases, s.rooms, state.gamut, mode, tier, target]);
-  let band = bands.get(key);
-  if (!band) {
-    band = Array.from({ length: 37 }, (_, i) => i * 10).flatMap((hue) => {
-      try {
-        return [{ hue, color: strongest(model(), s.bases[mode], mode, hue % 360, target, tier) }];
-      } catch {
-        return [];
-      }
-    });
-    bands.set(key, band);
-  }
+  const band = bandOf(mode);
   const dots = (palette?.colors ?? [])
     .filter((c) => !c.extra && c.tiers[tier])
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
@@ -530,7 +533,7 @@ function huesView(): HuesView {
   const line = lineup(s);
   const held = Object.fromEntries(line.keys.map((key, k) => [key, line.hues[k]! % 360]));
   const twist = turned(mode);
-  const gap = evenGaps.get(mode) ?? 9;
+  const gap = evenGap(mode);
   const rows = (palette?.colors ?? [])
     .filter((c) => !c.extra && c.tiers[tier])
     .map((c) => {
@@ -555,12 +558,12 @@ function huesView(): HuesView {
   for (const r of rows) {
     const spot = twist?.colors[r.key];
     if (!spot || r.bend === null) continue;
-    const w = ((r.bend * gap) / 1.41) ** (2 / 0.63);
+    const w = plainSquared(r.bend * gap);
     const split = parts(model().cam(mode, spot.color), model().cam(mode, r.current.color));
     [weight, hue, colorful] = [weight + w, hue + w * split.hue, colorful + w * split.colorfulness];
   }
   const split = weight ? { hue: hue / weight, colorfulness: colorful / weight } : null;
-  return { rows, gaps, band: curveView(mode).band, guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend, split };
+  return { rows, gaps, band: bandOf(mode), guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend, split };
 }
 
 /**
@@ -700,9 +703,7 @@ function followsEdits(view: string): boolean {
  * @returns  The palette, or null while it solves.
  */
 function current(): GamutPalette | null {
-  const { h, m } = state.edits;
-  if (!followsEdits(state.view) || (h && m)) return inUse();
-  return h ? uncurved() : m ? uniform() : plain();
+  return followsEdits(state.view) ? edited(state.edits.h, state.edits.m) : inUse();
 }
 
 /* >----------------------------------------< Helpers >-----------------------------------------< */
@@ -758,6 +759,9 @@ function label(key: string): string {
   return escape(extra ? text : text.charAt(0).toUpperCase() + text.slice(1));
 }
 
+/** A WCAG 2 level as a class name: "AA large" is "AA-large". */
+const levelClass = (level: Swatch["wcagLevel"]) => level.replace(" ", "-");
+
 const LEVELS: Readonly<Record<Swatch["wcagLevel"], string>> = {
   AAA: "AAA",
   AA: "AA",
@@ -784,7 +788,7 @@ function copyable(value: string): string {
  */
 function badge(s: Swatch): string {
   const level = s.wcagLevel;
-  return popButton(`wcag:${level}:${s.wcag.toFixed(2)}:${s.color}`, LEVELS[level], `What WCAG 2 ${LEVELS[level]} means`, `badge ${level.replace(" ", "-")}`);
+  return popButton(`wcag:${level}:${s.wcag.toFixed(2)}:${s.color}`, LEVELS[level], `What WCAG 2 ${LEVELS[level]} means`, `badge ${levelClass(level)}`);
 }
 
 /** What each WCAG 2 level allows. */
@@ -799,7 +803,7 @@ const MEANINGS: Readonly<Record<Swatch["wcagLevel"], string>> = {
 
 popSource("wcag", (which) => {
   const [level, ratio] = which.split(":") as [Swatch["wcagLevel"], string];
-  return `<h3 class="level ${level.replace(" ", "-")}">WCAG 2 ${LEVELS[level]} · ${ratio}:1</h3>
+  return `<h3 class="level ${levelClass(level)}">WCAG 2 ${LEVELS[level]} · ${ratio}:1</h3>
     <p>${MEANINGS[level]}</p>
     <p class="pop-how">WCAG 2 compares the two colors' luminance as a ratio from 1:1 to 21:1. The palette is built on APCA's Lc instead, which follows how text reads on light and dark backgrounds; WCAG 2 is shown for audits that ask for it.</p>`;
 });
@@ -812,19 +816,26 @@ interface Place {
 }
 
 /**
+ * A place as the end of a popover's id: what the "why" popovers read back.
+ *
+ * @param at  Where it sits.
+ * @returns   E.g. "red:45:default".
+ */
+const placeId = (at: Place) => `${at.key}:${String(at.tier)}:${at.variant}`;
+
+/**
  * Why a swatch is less colorful than asked, as chips that open the reason: it sets its tier's
  * colorfulness, or the gamut can't reach its target.
  *
- * @param s       The swatch.
- * @param at      Where it sits.
- * @param limits  Whether it sets its tier.
- * @returns       HTML, or nothing.
+ * @param s   The swatch.
+ * @param at  Where it sits.
+ * @returns   HTML, or nothing.
  */
-function chips(s: Swatch, at: Place, limits: boolean): string {
-  const id = `${at.key}:${String(at.tier)}:${at.variant}`;
+function chips(s: Swatch, at: Place): string {
+  const id = placeId(at);
   return [
     s.short ? popButton(`why:gamut:${id}`, "Gamut limit", `Why ${label(at.key)} is held back`, "chip gamut") : "",
-    limits ? popButton(`why:tier:${id}`, "Sets the tier", `Why ${label(at.key)} sets the tier`, "chip") : "",
+    setsTier(at) ? popButton(`why:tier:${id}`, "Sets the tier", `Why ${label(at.key)} sets the tier`, "chip") : "",
     isLowered(s, at) ? popButton(`why:lowered:${id}`, "Lowered", `Why ${label(at.key)} is lowered`, "chip lowered") : "",
   ].join("");
 }
@@ -839,6 +850,16 @@ function chips(s: Swatch, at: Place, limits: boolean): string {
 function isLowered(s: Swatch, at: Place): boolean {
   const limit = current()?.[state.mode].limits[at.tier];
   return at.variant === "default" && !s.short && !!limit && limit !== at.key;
+}
+
+/**
+ * Whether a color's reach is what its tier was lowered to.
+ *
+ * @param at  Where it sits.
+ * @returns   True for the default swatch of the color that sets the tier.
+ */
+function setsTier(at: Place): boolean {
+  return at.variant === "default" && current()?.[state.mode].limits[at.tier] === at.key;
 }
 
 /**
@@ -884,8 +905,7 @@ function aimText(key: string, s: Swatch, tierTarget: number): string {
  * @returns      HTML.
  */
 function card(s: Swatch, title: string, href?: string, at?: Place): string {
-  const limits = at ? current()?.[state.mode].limits[at.tier] === at.key && at.variant === "default" : false;
-  const id = at ? `${at.key}:${String(at.tier)}:${at.variant}` : "";
+  const id = at ? placeId(at) : "";
   // Nothing covers the color: held back by the gamut, the colorfulness itself turns red and opens
   // why; lowered by the tier, it stays grey and opens why; setting the tier is a small amber tag
   // beside the name.
@@ -896,7 +916,7 @@ function card(s: Swatch, title: string, href?: string, at?: Place): string {
       : at && isLowered(s, at)
         ? popButton(`why:lowered:${id}`, value, `${title} is lowered by the tier: why`, "wanted lowered")
         : value;
-  const tag = limits ? popButton(`why:tier:${id}`, "sets tier", `Why ${title} sets the tier`, "chip") : "";
+  const tag = at && setsTier(at) ? popButton(`why:tier:${id}`, "sets tier", `Why ${title} sets the tier`, "chip") : "";
   return `<div class="card${href ? " linked" : ""}" style="--c:${s.color}">
     ${href ? `<a class="card-link" href="#${href}" aria-label="${title}"></a>` : ""}
     <span class="fill"></span>
@@ -907,6 +927,9 @@ function card(s: Swatch, title: string, href?: string, at?: Place): string {
     <span class="mono soft">WCAG ${s.wcag.toFixed(2)} · ${m}</span>
   </div>`;
 }
+
+/** What turning Equal per tier off does, under the popovers it explains. */
+const EQUAL_OFF = `<p class="pop-how">Turn off Equal per tier in Settings → Colorfulness to let each color go as far as the screen allows; the tier is then no longer equally colorful.</p>`;
 
 popSource("why", (which) => {
   const [kind, key, tierText, variant] = which.split(":") as [string, string, string, Variant];
@@ -920,14 +943,14 @@ popSource("why", (which) => {
   if (kind === "tier")
     return `<h3>Sets the tier</h3>
       <p>On Lc ${String(tier)}, ${name.toLowerCase()} can't be more colorful than M ${s.colorfulness.toFixed(1)} on ${gamut} screens. <strong>Equal per tier</strong> is on, so every color on this tier is held to M ${tierTarget.toFixed(1)} to match it, though most could go further.</p>
-      <p class="pop-how">Turn off Equal per tier in Settings → Colorfulness to let each color go as far as the screen allows; the tier is then no longer equally colorful.</p>`;
+      ${EQUAL_OFF}`;
   if (kind === "lowered") {
     const limit = label(palette.limits[tier]!);
     const own = ownTarget(key, s, tierTarget);
     const share = aimText(key, s, tierTarget);
     return `<h3>Lowered</h3>
       <p>${name} would be M ${own.toFixed(1)} here. On Lc ${String(tier)}, ${limit.toLowerCase()} can't be more colorful than M ${tierTarget.toFixed(1)} on ${gamut} screens, and <strong>Equal per tier</strong> holds every color on the tier to that, so ${name.toLowerCase()} shows M ${s.colorfulness.toFixed(1)} (${share}).</p>
-      <p class="pop-how">Turn off Equal per tier in Settings → Colorfulness to let each color go as far as the screen allows; the tier is then no longer equally colorful.</p>`;
+      ${EQUAL_OFF}`;
   }
   const reason = variant === "muted" ? `${String(Math.round(state.settings.muted * 100))}% of the default's colorfulness` : aimText(key, s, tierTarget);
   return `<h3>Gamut limit</h3>
@@ -982,7 +1005,7 @@ function held(tier: number): string {
 function lowered(key: string, tier: number, s: Swatch): string {
   const p = current()?.[state.mode];
   if (!p) return "";
-  const html = chips(s, { key, tier, variant: "default" }, p.limits[tier] === key);
+  const html = chips(s, { key, tier, variant: "default" });
   return html ? `<span class="chips stack">${html}</span>` : "";
 }
 
@@ -1469,8 +1492,21 @@ const STEPS = [
   { name: "+M", title: "+M: with colorfulness per hue too, the palette in use" },
 ] as const;
 
-/** The even gap between neighbors of the uniform lineup, per mode, kept until the next solve. */
+/** The even gap last measured per mode, kept while the uniform lineup solves again. */
 const evenGaps = new Map<Mode, number>();
+
+/**
+ * The palette's own scale: the mean gap between neighbors in the uniform lineup, on the identity
+ * tier. While the lineup solves, the last one measured; before any, 9 ΔE.
+ *
+ * @param mode  The mode.
+ * @returns     ΔE.
+ */
+function evenGap(mode: Mode): number {
+  const ring = plain()?.[mode].ring[state.settings.identityTier[mode]];
+  if (ring?.length) evenGaps.set(mode, ring.reduce((x, y) => x + y, 0) / ring.length);
+  return evenGaps.get(mode) ?? 9;
+}
 
 /** The last solve of each step, kept until the next arrives so nothing jumps. */
 const lastSteps = new Map<string, readonly Color[]>();
@@ -1540,10 +1576,7 @@ function drawComparison(el: Element, mode: Mode): void {
     if (palette) lastSteps.set(`${mode}|${String(i)}`, palette.colors);
     return lastSteps.get(`${mode}|${String(i)}`) ?? now;
   });
-  // The palette's own scale: the even gap between neighbors in the uniform lineup.
-  const uniformRing = palettes[0]?.ring[tier];
-  if (uniformRing?.length) evenGaps.set(mode, uniformRing.reduce((x, y) => x + y, 0) / uniformRing.length);
-  const gap = evenGaps.get(mode) ?? 9;
+  const gap = evenGap(mode);
   const twist = turned(mode);
   const angle = turn(mode) ?? 0;
   const target = (p: ModePalette | undefined) => p?.targets[tier] ?? state.settings.colorfulness;
@@ -1627,7 +1660,7 @@ function averageBend(row: Row): number {
 function bendSplit(row: Row): Split {
   let [weight, hue, colorfulness, lightness] = [0, 0, 0, 0];
   for (const c of changes.colors) {
-    const w = (c.bend[row] / 1.41) ** (2 / 0.63);
+    const w = plainSquared(c.bend[row]);
     [weight, hue, colorfulness, lightness] = [weight + w, hue + w * c.splits[row].hue, colorfulness + w * c.splits[row].colorfulness, lightness + w * c.splits[row].lightness];
   }
   return weight ? { hue: hue / weight, colorfulness: colorfulness / weight, lightness: lightness / weight } : { hue: 0, colorfulness: 0, lightness: 0 };

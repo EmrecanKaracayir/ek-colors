@@ -13,7 +13,8 @@ import { popButton, popSource } from "./popover";
  * Hue runs from 0 to WIDTH; PAD on each side holds no data; LEFT and RIGHT are room for row labels
  * and for labels that reach past the padding.
  */
-export const [WIDTH, PAD, LEFT, RIGHT] = [360, 12, 44, 14];
+const [PAD, LEFT, RIGHT] = [12, 44, 14];
+export const WIDTH = 360;
 
 /** How far in from the graph's edges the band starts and ends, for lining things up with it. */
 const share = (units: number) => `${((units / (WIDTH + 2 * PAD + LEFT + RIGHT)) * 100).toFixed(3)}%`;
@@ -100,7 +101,7 @@ export function evenText(ring: readonly number[], names: readonly string[], even
 }
 
 /** How far a palette bends from the nearest uniform one, in zones: Bend up to each limit (gaps). */
-export const ZONES = [
+const ZONES = [
   { upTo: 0.1, name: "Uniform", note: "No difference from the uniform palette anyone could see, even side by side." },
   { upTo: 0.25, name: "Tuned", note: "A typical color differs by about a just-visible step side by side: still the uniform palette, adjusted." },
   { upTo: 0.5, name: "Reshaped", note: "Colors differ clearly side by side: deliberate design choices on top of the uniform palette." },
@@ -256,7 +257,7 @@ export function circleGuides(guides: readonly Guide[]): string {
  * @param id  The system.
  * @returns   HTML.
  */
-export function guideSource(id: string): string {
+function guideSource(id: string): string {
   const chosen = system(id);
   return `<h3>${chosen.name}</h3><p>${chosen.summary}</p><p class="pop-how">${chosen.source}</p><p class="pop-how">Solid lines are pure hues, dashed ones the hues between; each label shows its exact hue. Point at another system above to preview it; click it to keep it.</p>`;
 }

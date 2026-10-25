@@ -11,7 +11,7 @@ import { type Gamut, GAMUTS, type Mode, MODES } from "../palette/settings";
 import { copyText, flash } from "./dom";
 
 /** One answer: where the test stood, and how it was answered (1, 0, or ½ for "can't tell"). */
-export interface Answer {
+interface Answer {
   readonly x: number;
   readonly y: number;
 }
@@ -63,7 +63,7 @@ export function stair(key: string, offset: number): Stair {
  * @param list  The list.
  * @returns     A shuffled copy.
  */
-export function shuffled<T>(list: readonly T[]): T[] {
+function shuffled<T>(list: readonly T[]): T[] {
   const out = [...list];
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -138,7 +138,7 @@ export function record(s: Stair, a: Answer, check: boolean, reach: number, fit: 
  * @param stairs  Every color's staircase.
  * @returns       The share done.
  */
-export function progress(stairs: readonly Stair[]): number {
+function progress(stairs: readonly Stair[]): number {
   return stairs.reduce((sum, s) => sum + (s.done ? 1 : s.answers.length / CAP), 0) / stairs.length;
 }
 
@@ -164,7 +164,7 @@ export function progressBar(stairs: readonly Stair[]): string {
  * @param picked  1, 0 or ½.
  * @param reach   How far it may go either way.
  */
-export function climb(s: Stair, picked: number, reach: number): void {
+function climb(s: Stair, picked: number, reach: number): void {
   if (picked === 0.5) return;
   const direction = picked === 1 ? -1 : 1;
   if (s.last && direction !== s.last) {
@@ -273,7 +273,7 @@ export function savedRuns<P>(key: string, plain: (point: P) => boolean) {
  * @param value  Plain JSON.
  * @returns      The code.
  */
-export function toCode(value: unknown): string {
+function toCode(value: unknown): string {
   return btoa(JSON.stringify(value));
 }
 
@@ -308,7 +308,7 @@ export function decodeRun<P>(code: string, tag: string, point: (value: unknown) 
  * @param run  The run, as read.
  * @returns    True when it is.
  */
-export function plainRun(run: Run<unknown>): boolean {
+function plainRun(run: Run<unknown>): boolean {
   return (
     MODES.includes(run.mode) &&
     GAMUTS.includes(run.gamut) &&
@@ -356,7 +356,7 @@ export type Pick = "left" | "right" | "same";
  * @param event  The key press.
  * @returns      The answer, or null.
  */
-export function pickOf(event: KeyboardEvent): Pick | null {
+function pickOf(event: KeyboardEvent): Pick | null {
   if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return null;
   return ({ ArrowLeft: "left", ArrowRight: "right", ArrowDown: "same" } as const)[event.key as "ArrowLeft"] ?? null;
 }
@@ -393,7 +393,7 @@ export function runsSection(name: string, items: string): string {
 }
 
 /** What a test gives the page's clicks and keys. */
-export interface Controls<C> {
+interface Controls<C> {
   /** Its name: its data attribute and ids. */
   readonly name: string;
 

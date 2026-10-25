@@ -13,7 +13,7 @@ import { refill } from "./dom";
 import { band, evenText, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on every row. */
-export interface HueRow {
+interface HueRow {
   readonly key: string;
   readonly label: string;
   readonly uniform: { readonly hue: number; readonly color: string } | null;
@@ -29,7 +29,7 @@ export interface HueRow {
 }
 
 /** A gap between neighbors, labeled halfway between them. */
-export interface HueGap {
+interface HueGap {
   readonly hue: number;
   readonly gap: number;
 }
@@ -88,7 +88,7 @@ let selected: { key: string; row: Row } = { key: "", row: "current" };
  * @param view  What to show.
  * @returns     SVG.
  */
-export function huesLayers(view: HuesView): string {
+function huesLayers(view: HuesView): string {
   const on = (key: string, row: Row) => selected.key === key && selected.row === row;
   // The gaps: above the uniform row, below the current one; each row's shortest and longest bold,
   // unless they're all the same.
@@ -130,7 +130,7 @@ export function huesLayers(view: HuesView): string {
  * @param view  What to show.
  * @returns     HTML.
  */
-export function huesPanel(view: HuesView): string {
+function huesPanel(view: HuesView): string {
   const r = view.rows.find((row) => row.key === selected.key) ?? view.rows.find((row) => row.anchor);
   if (!r) return `<p class="soft">Solving…</p>`;
   selected = { key: r.key, row: r.key === selected.key ? selected.row : "current" };
@@ -169,7 +169,7 @@ export function huesPanel(view: HuesView): string {
  * @param view  What to show.
  * @returns     Text.
  */
-export function huesReadout(view: HuesView): string {
+function huesReadout(view: HuesView): string {
   const cost = view.cost;
   if (!cost) return "Solving…";
   const names = cost.keys.map((key) => view.rows.find((r) => r.key === key)?.label ?? "");
