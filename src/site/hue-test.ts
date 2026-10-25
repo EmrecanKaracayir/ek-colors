@@ -10,7 +10,7 @@
 import { makeModel, type Model } from "../palette/model";
 import { type Gamut, type Mode, NAMES, type Settings } from "../palette/settings";
 import { boost, type GamutPalette, strongest } from "../palette/solve";
-import { balance, climb, fromCode, type Stair as Staircase, savedRuns, stair, toCode } from "./blind";
+import { ask, balance, CAP, fromCode, progressBar, record, type Stair as Staircase, savedRuns, stair, toCode } from "./blind";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -29,11 +29,14 @@ export interface HueTestContext {
   readonly redraw: () => void;
 }
 
-/** Colors shown per color in one run. */
-const PER_COLOR = 12;
-
 /** How far the test color may move from the palette, in degrees. */
 const REACH = 30;
+
+/** How far to one side a check stands, in degrees. */
+const FAR = 12;
+
+/** How wide a color's settled result may be, either way, in degrees. */
+const HALF = 5;
 
 /** One answer: the hue shown, and whether it leaned toward the next neighbor around the circle. */
 interface Point {
@@ -70,6 +73,9 @@ interface Trial {
 
   /** Whether the neighbor after it is offered on the left. */
   readonly afterLeft: boolean;
+
+  /** Whether it's a check, well to one side, which doesn't move the staircase. */
+  readonly check: boolean;
 }
 
 interface Session {
@@ -91,22 +97,23 @@ let session: Session | null = null;
 /* >-----------------------------------------< Trials >-----------------------------------------< */
 
 /**
- * The next color: one whose staircase isn't done, never the same twice in a row, at the tier that
- * stands for each hue and the colorfulness the palette gives that hue.
+ * The next color: one that isn't done, never the same twice in a row, at the tier that stands for
+ * each hue and the colorfulness the palette gives that hue.
  *
  * @param s     The test so far.
  * @param last  The color before, if any.
  * @returns     The trial, or null when every staircase is done.
  */
 function nextTrial(s: Omit<Session, "trial">, last?: string): Trial | null {
-  const open = s.stairs.filter((t) => t.count < PER_COLOR);
+  const open = s.stairs.filter((t) => !t.done);
   if (!open.length) return null;
   const choices = open.length > 1 ? open.filter((t) => t.key !== last) : open;
   const chosen = choices[Math.floor(Math.random() * choices.length)]!;
-  const hue = chosen.hue + chosen.delta;
+  const { offset, check } = ask(chosen, FAR);
+  const hue = chosen.hue + offset;
   const at = ((hue % 360) + 360) % 360;
   const color = strongest(s.model, s.base, s.mode, at, s.target + boost(s.settings, s.mode, at), s.tier);
-  return { stair: chosen, color, hue, afterLeft: Math.random() < 0.5 };
+  return { stair: chosen, color, hue, afterLeft: Math.random() < 0.5, check };
 }
 
 /**
@@ -215,7 +222,7 @@ export function hueTestPage(ctx: HueTestContext): string {
   const ready = Boolean(ctx.palette) && named;
   return `<section class="intro">
       <h1>Blind hue test</h1>
-      <p>Measures where each ${mode}-mode color looks most like its name, to place it. One color at a time, without its name: say which of its two neighbors it leans toward, or neither. ${String(PER_COLOR * NAMES.length)} colors, about five minutes. Each color's answers close in on the hue where it leans neither way, the middle of its name.</p>
+      <p>Measures where each ${mode}-mode color looks most like its name, to place it. One color at a time, without its name: say which of its two neighbors it leans toward, or neither. Up to ${String(CAP * NAMES.length)} colors, fewer once your answers settle; usually about five minutes. Each color's answers close in on the hue where it leans neither way, the middle of its name, with an easy one now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
         <li>Turn off True Tone and Night Shift, and use your usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
@@ -239,7 +246,8 @@ function stage(ctx: HueTestContext): string {
   const [left, right] = t.afterLeft ? [t.stair.after, t.stair.before] : [t.stair.before, t.stair.after];
   const name = (key: string) => ctx.label(key).toLowerCase();
   return `<section class="test-stage" id="test-stage">
-      <p class="soft">Color ${String(s.points.length + 1)} of ${String(s.stairs.length * PER_COLOR)}. Does it lean more ${name(left)} or more ${name(right)}?</p>
+      ${progressBar(s.stairs)}
+      <p>Does it lean more ${name(left)} or more ${name(right)}?</p>
       <div class="test-single${s.resting ? " resting" : ""}" style="--c:${t.color}" role="img" aria-label="The color to judge"></div>
       <div class="row test-answers">
         <button type="button" data-hue-test="left">More ${name(left)}</button>
@@ -324,7 +332,7 @@ function answer(ctx: HueTestContext, answer: "left" | "right" | "same"): void {
   const t = s.trial;
   const picked = answer === "same" ? 0.5 : (answer === "left") === t.afterLeft ? 1 : 0;
   s.points.push({ key: t.stair.key, x: t.hue, y: picked });
-  climb(t.stair, picked, REACH);
+  record(t.stair, { x: t.hue, y: picked }, t.check, REACH, { center: t.stair.hue, range: REACH + 10, half: HALF });
   const next = nextTrial(s, t.stair.key);
   if (!next) {
     keep([...runs(), { mode: s.mode, gamut: s.gamut, tier: s.tier, when: new Date().toISOString(), points: s.points }]);

@@ -10,7 +10,7 @@
 import { makeModel, type Model } from "../palette/model";
 import type { CurvePoint, Gamut, Mode, Settings } from "../palette/settings";
 import { boost, type GamutPalette, strongest } from "../palette/solve";
-import { balance, climb, fromCode, type Stair as Staircase, savedRuns, stair, toCode } from "./blind";
+import { ask, balance, CAP, type Fit, fromCode, progressBar, record, type Stair as Staircase, savedRuns, stair, toCode } from "./blind";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -29,11 +29,14 @@ export interface TestContext {
   readonly redraw: () => void;
 }
 
-/** Pairs per hue in one run. */
-const PER_HUE = 12;
-
 /** How far the test color may move from the palette, in CAM16 M. */
 const REACH = 16;
+
+/** How far to one side a check stands, in CAM16 M. */
+const FAR = 12;
+
+/** How a hue's answers are read: equal colorfulness within ±24 M, settled within ±5. */
+const FIT: Fit = { center: 0, range: 24, half: 5 };
 
 /** One answered pair: how much more colorful the test color was, and whether it was picked. */
 interface Point {
@@ -70,6 +73,9 @@ interface Pair {
 
   /** Whether the test color is on the left. */
   readonly left: boolean;
+
+  /** Whether it's a check, well to one side, which doesn't move the staircase. */
+  readonly check: boolean;
 }
 
 interface Session {
@@ -90,25 +96,26 @@ let session: Session | null = null;
 /* >-----------------------------------------< Trials >-----------------------------------------< */
 
 /**
- * The next pair: a hue whose staircase isn't done, never the same hue twice in a row, against
- * another hue at the palette's colorfulness, on a random side.
+ * The next pair: a hue that isn't done, never the same hue twice in a row, against another hue at
+ * the palette's colorfulness, on a random side.
  *
  * @param s     The test so far.
  * @param last  The hue of the pair before, if any.
  * @returns     The pair, or null when every staircase is done.
  */
 function nextPair(s: Omit<Session, "pair">, last?: string): Pair | null {
-  const open = s.stairs.filter((t) => t.count < PER_HUE);
+  const open = s.stairs.filter((t) => !t.done);
   if (!open.length) return null;
   const choices = open.length > 1 ? open.filter((t) => t.key !== last) : open;
   const stair = choices[Math.floor(Math.random() * choices.length)]!;
   const others = s.stairs.filter((t) => t.key !== stair.key);
   const other = others[Math.floor(Math.random() * others.length)]!;
   const color = (hue: number, m: number) => strongest(s.model, s.base, s.mode, hue, Math.max(0, m), s.tier);
-  const test = color(stair.hue, s.target + stair.delta);
+  const { offset, check } = ask(stair, FAR);
+  const test = color(stair.hue, s.target + offset);
   const ref = color(other.hue, s.target);
   const x = s.model.cam(s.mode, test).m - s.model.cam(s.mode, ref).m;
-  return { stair, test, other: ref, x, left: Math.random() < 0.5 };
+  return { stair, test, other: ref, x, left: Math.random() < 0.5, check };
 }
 
 /**
@@ -149,7 +156,7 @@ function start(ctx: TestContext): boolean {
  * @returns       The point, or null with too few answers.
  */
 function equal(points: readonly Point[]) {
-  const found = balance(points, 0, 24);
+  const found = balance(points, FIT.center, FIT.range);
   return found && { equal: found.at, low: found.low, high: found.high, sure: found.sure };
 }
 
@@ -272,7 +279,7 @@ export function testPage(ctx: TestContext): string {
   const hues = ctx.palette?.[ctx.mode].colors.filter((c) => c.key !== "brown").length ?? 8;
   return `<section class="intro">
       <h1>Blind curve test</h1>
-      <p>Measures how colorful each ${mode}-mode hue looks to you, to set the curve. Pairs of colors, one at a time, without names: pick the one that looks more colorful. ${String(PER_HUE * hues)} pairs, about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest.</p>
+      <p>Measures how colorful each ${mode}-mode hue looks to you, to set the curve. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once your answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
         <li>Turn off True Tone and Night Shift, and use your usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
@@ -293,7 +300,8 @@ function stage(): string {
   const pair = s.pair;
   const [a, b] = pair.left ? [pair.test, pair.other] : [pair.other, pair.test];
   return `<section class="test-stage" id="test-stage">
-      <p class="soft">Pair ${String(s.points.length + 1)} of ${String(s.stairs.length * PER_HUE)}. Which looks more colorful?</p>
+      ${progressBar(s.stairs)}
+      <p>Which looks more colorful?</p>
       <div class="test-pair${s.resting ? " resting" : ""}">
         <button type="button" class="test-swatch" data-test="left" style="--c:${a}" aria-label="Left"></button>
         <button type="button" class="test-swatch" data-test="right" style="--c:${b}" aria-label="Right"></button>
@@ -385,7 +393,7 @@ function answer(ctx: TestContext, answer: "left" | "right" | "same"): void {
   const pair = s.pair;
   const picked = answer === "same" ? 0.5 : (answer === "left") === pair.left ? 1 : 0;
   s.points.push({ key: pair.stair.key, hue: pair.stair.hue, x: pair.x, y: picked });
-  climb(pair.stair, picked, REACH);
+  record(pair.stair, { x: pair.x, y: picked }, pair.check, REACH, FIT);
   const next = nextPair(s, pair.stair.key);
   if (!next) {
     keep([...runs(), { mode: s.mode, gamut: s.gamut, tier: s.tier, when: new Date().toISOString(), points: s.points }]);

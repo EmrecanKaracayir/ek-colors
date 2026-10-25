@@ -199,7 +199,8 @@ WCAG level              ≥ 7 AAA · ≥ 4.5 AA · ≥ 3 AA large · else below<
 
     <section class="step">
       <h2>11. The blind curve test</h2>
-      <p><strong>Pairs.</strong> Per hue, a staircase on Δ, the test color's offset from the palette (start ±8, alternating; bounded to ±16). Each pair shows the test hue at T + Δ against a different, randomly chosen hue at T, on the identity tier, sides random, a 300 ms blank between pairs, 12 pairs per hue. Picked as more colorful → Δ −= step; not picked → Δ += step; "can't tell" → no move. The step is 4, then 2 after two reversals, then 1 after four.</p>
+      <p><strong>Pairs.</strong> Per hue, a staircase on Δ, the test color's offset from the palette (start ±8, alternating; bounded to ±16). Each pair shows the test hue at T + Δ against a different, randomly chosen hue at T, on the identity tier, sides random, a 300 ms blank between pairs. Picked as more colorful → Δ −= step; not picked → Δ += step; "can't tell" → no move. The step is 4, then 2 after two reversals, then 1 after four.</p>
+      <p><strong>Checks and stopping.</strong> Every third pair for a hue is a check at Δ ± 12, to a random side, which doesn't move the staircase: a real observer answers it easily, a guess doesn't. A hue is done at 16 answers, or sooner once it settles: at least 8 answers, a sure result whose range is within ±5 either way, and log L(μ̂) − log L₀ ≥ 4, stricter than the final 1.92 since it's checked after every answer. Progress is the mean over hues of 1 when done, else answers/16. In simulation a consistent observer averages about 12–13 answers per hue, and random answers almost never settle.</p>
       <p><strong>Equal point.</strong> Each answer is (x, y) with x = measured M<sub>test</sub> − M<sub>other</sub> and y ∈ {1, ½, 0}. Fitted by maximum likelihood to</p>
 <pre class="formula">P(test picked | x) = 1 / (1 + e^(−(x − μ)/s))
 μ ∈ [−24, 24] step 0.5,   s ∈ {1.5, 2.5, 4, 6, 10, 20, 40}
@@ -212,7 +213,7 @@ unsure if the range reaches ±24, or log L(μ̂) − log L₀ &lt; 1.92</pre>
 
     <section class="step">
       <h2>12. The blind hue test</h2>
-      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, alternating; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, 12 per color, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps as in step 11.</p>
+      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, alternating; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials, eight named colors only. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 11, with the range within ±5°.</p>
       <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 11, over μ within ±40° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
     </section>`;
 }

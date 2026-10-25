@@ -1,9 +1,10 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< BLIND >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| What the blind tests share: a staircase per color that closes in on where the answers turn, a    |
-| logistic fit that reads that point with how sure it is, and finished runs kept in this browser   |
-| and passed between people as short codes.                                                        |
+| What the blind tests share: a staircase per color that closes in on where the answers turn, with |
+| an easy check question now and then; a logistic fit that reads that point with how sure it is; a |
+| color done once it settles or reaches the cap; and finished runs kept in this browser and passed |
+| between people as short codes.                                                                   |
 \*------------------------------------------------------------------------------------------------*/
 
 /** One answer: where the test stood, and how it was answered (1, 0, or ½ for "can't tell"). */
@@ -12,7 +13,19 @@ export interface Answer {
   readonly y: number;
 }
 
-/** One color's staircase: where it is, how big a step it takes, and how often it has turned. */
+/** Most answers a color gets in one run. */
+export const CAP = 16;
+
+/** Fewest answers before a color can settle. */
+const MIN = 8;
+
+/** Every this many questions for a color, one is a check well to one side of where it stands. */
+const CHECK_EVERY = 3;
+
+/**
+ * One color's staircase: where it is, how big a step it takes, how often it has turned, its answers
+ * in this run, and whether it's done.
+ */
 export interface Stair {
   readonly key: string;
   delta: number;
@@ -20,6 +33,15 @@ export interface Stair {
   turns: number;
   last: number;
   count: number;
+  done: boolean;
+  readonly answers: Answer[];
+}
+
+/** How a color's answers are read: the range searched and how narrow its result must be to settle. */
+export interface Fit {
+  readonly center: number;
+  readonly range: number;
+  readonly half: number;
 }
 
 /**
@@ -30,7 +52,69 @@ export interface Stair {
  * @returns       The staircase.
  */
 export function stair(key: string, offset: number): Stair {
-  return { key, delta: offset, step: 4, turns: 0, last: 0, count: 0 };
+  return { key, delta: offset, step: 4, turns: 0, last: 0, count: 0, done: false, answers: [] };
+}
+
+/**
+ * Where a color's next question stands: at its staircase, or every third time a check `far` to a
+ * random side, which a real observer answers easily and a guess doesn't.
+ *
+ * @param s    The staircase.
+ * @param far  How far to one side a check stands.
+ * @returns    The offset to show and whether it's a check.
+ */
+export function ask(s: Stair, far: number): { offset: number; check: boolean } {
+  const check = s.count % CHECK_EVERY === CHECK_EVERY - 1;
+  return { offset: check ? s.delta + (Math.random() < 0.5 ? -far : far) : s.delta, check };
+}
+
+/**
+ * Records an answer: a check doesn't move the staircase, the rest do. The color is done at the cap,
+ * or sooner once it settles: enough answers, a narrow result, and answers that clearly depend on
+ * what was shown (beating a flat guess by 4, stricter than a final result's 1.92, since it's
+ * checked after every answer).
+ *
+ * @param s       The staircase.
+ * @param a       The answer, x as the fit reads it.
+ * @param check   Whether it was a check.
+ * @param reach   How far the staircase may go either way.
+ * @param fit     How the answers are read.
+ */
+export function record(s: Stair, a: Answer, check: boolean, reach: number, fit: Fit): void {
+  s.answers.push(a);
+  if (check) s.count++;
+  else climb(s, a.y, reach);
+  if (s.count >= CAP) {
+    s.done = true;
+    return;
+  }
+  if (s.answers.length < MIN) return;
+  const found = balance(s.answers, fit.center, fit.range);
+  s.done = Boolean(found?.sure && (found.high - found.low) / 2 <= fit.half && found.gain >= 4);
+}
+
+/**
+ * How far a run is, from 0 to 1: a done color counts in full, the others by their answers so far.
+ *
+ * @param stairs  Every color's staircase.
+ * @returns       The share done.
+ */
+export function progress(stairs: readonly Stair[]): number {
+  return stairs.reduce((sum, s) => sum + (s.done ? 1 : s.count / CAP), 0) / stairs.length;
+}
+
+/**
+ * The progress bar shown during a run.
+ *
+ * @param stairs  Every color's staircase.
+ * @returns       HTML.
+ */
+export function progressBar(stairs: readonly Stair[]): string {
+  const share = progress(stairs);
+  const done = stairs.filter((s) => s.done).length;
+  return `<div class="test-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${String(Math.round(share * 100))}">
+      <span style="--p:${share.toFixed(4)}"></span></div>
+    <p class="soft">${String(Math.round(share * 100))}% · ${String(done)} of ${String(stairs.length)} colors done</p>`;
 }
 
 /**
@@ -87,8 +171,9 @@ export function balance(answers: readonly Answer[], center: number, range: numbe
   const mean = Math.min(0.99, Math.max(0.01, answers.reduce((s, a) => s + a.y, 0) / answers.length));
   const flat = answers.reduce((s, a) => s + a.y * Math.log(mean) + (1 - a.y) * Math.log(1 - mean), 0);
   // A range that runs off the end can't be pinned down either.
-  const sure = low > center - range && high < center + range && peak.likelihood - flat >= 1.92;
-  return { at: peak.at, low, high, sure };
+  const gain = peak.likelihood - flat;
+  const sure = low > center - range && high < center + range && gain >= 1.92;
+  return { at: peak.at, low, high, sure, gain };
 }
 
 /**
