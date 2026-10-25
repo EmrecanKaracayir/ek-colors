@@ -10,7 +10,7 @@
 
 import type { CurvePoint, Mode } from "../palette/settings";
 import { boost } from "../palette/solve";
-import { band, INSETS, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
+import { band, inGaps, INSETS, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, pointAt, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -27,7 +27,7 @@ export interface CurveView {
    * What the curve costs: how far each color moved from equal colorfulness on the tier that stands
    * for each hue, in colorfulness and as a color difference. Null while it solves.
    */
-  readonly cost: readonly { readonly label: string; readonly added: number; readonly difference: number }[] | null;
+  readonly cost: readonly { readonly label: string; readonly added: number; readonly difference: number; readonly gap: number }[] | null;
 
   /** The chosen reference system and its guides. */
   readonly guide: string;
@@ -126,13 +126,13 @@ function valuesPanel(view: CurveView): string {
 export function curveReadout(view: CurveView): string {
   if (!view.cost) return "Solving…";
   const moved = view.cost.filter((c) => c.difference >= 0.05).toSorted((a, b) => b.difference - a.difference);
-  if (!moved.length) return "Colorfulness: every color is equally colorful, as the model says.";
+  if (!moved.length) return "Every color is equally colorful, as the model says.";
   const most = moved[0]!;
   // A color the curve doesn't touch can still move: the others re-space around the ones it does.
   const each = moved
     .map((c) => `${c.label} ${c.added ? `${c.added > 0 ? "+" : "−"}${String(Math.abs(c.added))} M` : "re-spaced"} → ${c.difference.toFixed(1)}`)
     .join(", ");
-  return `Colorfulness: up to ${most.difference.toFixed(1)} ΔE from equal (${most.label}): ${visibility(most.difference)}. ${each}.`;
+  return `Moves ${most.label} most: ${most.difference.toFixed(1)} ΔE, ${inGaps(most.difference / most.gap) || "under 0.1 gap"}, ${visibility(most.difference)}. Each (ΔE): ${each}.`;
 }
 
 /**

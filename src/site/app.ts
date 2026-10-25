@@ -8,13 +8,13 @@
 
 import { CONFIG } from "../config";
 import { toCsv, toJson, toMarkdown } from "../palette/formats";
-import { apca, makeModel, type Model, wcag, wcagLevel } from "../palette/model";
+import { apca, makeModel, type Model, parts, wcag, wcagLevel } from "../palette/model";
 import { anchorHue, guides, SYSTEMS } from "../palette/references";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Gamut, GAMUTS, type Mode, NAMES, type Settings } from "../palette/settings";
 import { boost, type Color, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bandStops, bindCurves, curveEditor, curveLayers, curveReadout, type CurveView } from "./curve";
 import { type Context, explain, updateDemo } from "./explain";
-import { bindGuides } from "./graph";
+import { bindGuides, evenness, inGaps, visibility } from "./graph";
 import { bindHues, huesEditor, huesLayers, huesPanel, huesReadout, type HuesView } from "./hues";
 import { technical } from "./technical";
 import { bindHueTest, type HueTestContext, hueTestPage } from "./hue-test";
@@ -297,7 +297,7 @@ function spacingCost(mode: Mode): HuesView["cost"] {
   const gaps = Object.fromEntries(
     hued.colors.slice(0, n).map((c, i) => [c.key, [ring[(i - 1 + n) % n]! - uniform, ring[i]! - uniform] as const]),
   );
-  return { uniform, gaps, ring };
+  return { uniform, gaps, ring, keys: hued.colors.slice(0, n).map((c) => c.key) };
 }
 
 /**
@@ -317,7 +317,8 @@ function colorfulnessCost(mode: Mode): CurveView["cost"] {
       const [a, b] = [c.tiers[tier]?.default, before.colors.find((o) => o.key === c.key)?.tiers[tier]?.default];
       if (!a || !b) return [];
       return [{ label: label(c.key), added: Math.round(a.colorfulness - b.colorfulness), difference: model().distance(mode, a.color, b.color) }];
-    });
+    })
+    .map((c) => ({ ...c, gap: evenGaps.get(mode) ?? 9 }));
 }
 
 /**
@@ -919,7 +920,7 @@ function tune(): string {
     </section>
     <div id="tune-preview" class="strip"></div>
     <section class="group">
-      <h2>Hues</h2>
+      <h2>Hue (H)</h2>
       ${number("hues", "How many hues", [4, 16, 1])}
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
       <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
@@ -937,7 +938,7 @@ function tune(): string {
       ${huesEditor(huesView())}
     </section>
     <section class="group">
-      <h2>Colorfulness</h2>
+      <h2>Colorfulness (M)</h2>
       <p class="soft">One CAM16 colorfulness every color aims at, in both modes. A color the screen can't make that colorful goes as far as it can.</p>
       ${number("colorfulness", "Target M", [10, 80, 1], true)}
       ${number("muted", "Muted share", [0.1, 0.9, 0.05], true)}
@@ -982,10 +983,24 @@ function tune(): string {
 
 /** The rows of the strip: each step of the palette, added one at a time. */
 const STEPS = [
-  { name: "Uniform", title: "The uniform lineup: nothing placed, colorfulness the same for every hue" },
-  { name: "+ Hue", title: "With colors placed by hand" },
-  { name: "+ Colorfulness", title: "With colorfulness per hue too: the palette in use" },
+  { name: "Uniform", title: "Uniform: these settings with nothing placed and colorfulness the same for every hue" },
+  { name: "+H", title: "+H: with colors placed by hand" },
+  { name: "+M", title: "+M: with colorfulness per hue too, the palette in use" },
 ] as const;
+
+/** The even gap between neighbors of the uniform lineup, per mode, kept until the next solve. */
+const evenGaps = new Map<Mode, number>();
+
+/**
+ * What a change is made of, in words.
+ *
+ * @param split  Its parts' shares.
+ * @returns      E.g. "hue 83%, colorfulness 17%, lightness 0%".
+ */
+function shares(split: ReturnType<typeof parts>): string {
+  const percent = (x: number) => `${String(Math.round(x * 100))}%`;
+  return `hue ${percent(split.hue)}, colorfulness ${percent(split.colorfulness)}, lightness ${percent(split.lightness)}`;
+}
 
 /** The last solve of each step, kept until the next arrives so nothing jumps. */
 const lastSteps = new Map<string, readonly Color[]>();
@@ -1006,30 +1021,48 @@ function drawComparison(el: Element, mode: Mode): void {
     if (solved) lastSteps.set(`${mode}|${String(i)}`, solved);
     return lastSteps.get(`${mode}|${String(i)}`) ?? now;
   });
-  // How far each step moved the most-moved color: placing, the curve, and both (CAM16-UCS ΔE).
-  const moved = [0, 0, 0];
+  // The palette's own scale: the even gap between neighbors in the uniform lineup.
+  const ring = plain()?.[mode].ring[tier];
+  if (ring?.length) evenGaps.set(mode, ring.reduce((x, y) => x + y, 0) / ring.length);
+  const gap = evenGaps.get(mode) ?? 9;
+  const most = { name: "", moved: -1, split: { lightness: 0, colorfulness: 0, hue: 0 } };
   const items = now.map((c) => {
     if (c.key === "brown") return "";
     const found = [...steps, now].map((colors) => colors.find((b) => b.key === c.key)?.tiers[tier]?.default ?? c.tiers[tier]?.default);
     if (found.some((s) => !s)) return "";
     const swatches = found as Swatch[];
     const [first, hued, last] = swatches as [Swatch, Swatch, Swatch];
-    [[first, hued], [hued, last], [first, last]].forEach(([a, b], i) => (moved[i] = Math.max(moved[i]!, model().distance(mode, a!.color, b!.color))));
+    // How far it moved from the uniform lineup, and what that change is made of.
+    const moved = model().distance(mode, first.color, last.color);
+    const split = parts(model().cam(mode, first.color), model().cam(mode, last.color));
+    if (moved > most.moved) Object.assign(most, { name: label(c.key), moved, split });
     const turned = Math.round((((hued.hue - first.hue + 540) % 360) - 180));
     const added = Math.round(boost(state.settings, mode, last.hue));
-    const marks = [turned ? `${turned > 0 ? "+" : ""}${String(turned)}°` : "", added ? `${added > 0 ? "+" : ""}${String(added)}` : ""].filter(Boolean);
+    const edits = [turned ? `placed ${turned > 0 ? "+" : ""}${String(turned)}°` : "", added ? `colorfulness ${added > 0 ? "+" : ""}${String(added)} M` : ""].filter(Boolean);
+    const title = `${label(c.key)} moved ${moved.toFixed(1)} ΔE from the uniform lineup: ${inGaps(moved / gap) || "nothing"}, ${visibility(moved)}. Made of ${shares(split)}.${edits.length ? ` Edits: ${edits.join(", ")}.` : ""}`;
     const fills = swatches.map((s, i) => `<span class="fill" data-row="${String(i)}" style="--f:${s.color}"></span>`).join("");
     const rows = swatches.map((s, i) => `--f${String(i)}:${s.color}`).join(";");
-    return `<span class="strip-item${marks.length ? " changed" : ""}" style="--c:${last.color};${rows}" title="${label(c.key)}: ${swatches.map((s) => s.color).join(" → ")}">
-      ${fills}<span class="cover" aria-hidden="true"></span><span class="mono"><span class="name">${label(c.key)}</span> ${marks.join(" ")}</span></span>`;
+    return `<span class="strip-item${moved >= 2 ? " changed" : ""}" style="--c:${last.color};${rows}" title="${title}">
+      ${fills}<span class="cover" aria-hidden="true"></span><span class="mono"><span class="name">${label(c.key)}</span> ${inGaps(moved / gap).replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`)}</span></span>`;
   });
-  const value = (d: number) => `<span class="${d >= 2 ? "noticeable" : ""}">${d.toFixed(1)}</span>`;
-  const cost = `<span class="strip-cost mono" title="How far each step moved the most-moved color (CAM16-UCS ΔE); about 2 is the smallest difference seen side by side.">
-      <span data-row="0">ΔE</span><span data-row="1">${value(moved[0]!)}</span><span data-row="2">${value(moved[1]!)}</span><span class="total">Total ${value(moved[2]!)}</span></span>`;
+  // The closest neighbors in the palette in use, against the even gap.
+  const final = current()?.[mode];
+  const finalRing = final?.ring[tier] ?? [];
+  const closest = finalRing.indexOf(Math.min(...finalRing));
+  const pair = closest < 0 ? null : [final!.colors[closest]!.key, final!.colors[(closest + 1) % finalRing.length]!.key];
+  const closer = closest < 0 ? 0 : 1 - finalRing[closest]! / gap;
+  const summary =
+    most.moved >= 0
+      ? `Most moved: <strong>${most.name}</strong>, ${inGaps(most.moved / gap) || "nothing"} (${shares(most.split)}).${
+        pair ? ` Evenness in use: ${label(pair[0]!)}–${label(pair[1]!)} ${closer > 0.005 ? `${String(Math.round(closer * 100))}% closer than even` : "as even as the rest"}, ${evenness(closer)}.` : ""
+      }`
+    : "";
+  const legend = `ΔE is how different two colors look (CAM16-UCS). The palette keeps neighbors one gap apart, ${gap.toFixed(1)} ΔE here, so moves are measured in gaps. Under 2 ΔE can't be seen side by side, 2 to 5 is visible side by side, 5 to 10 is a different shade, over 10 a different color. Evenness: under 10% closer than even is fine, 10 to 25% worth watching, over 25% getting confusable.`;
   const names = STEPS.map(
     (step, i) => `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" title="${step.title}. Click to keep it shown; ↑ and ↓ then switch rows.">${step.name}</button>`,
   ).join("");
-  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}${cost}</div>`;
+  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div>
+    <p class="strip-summary soft" title="${legend}">${summary}</p>`;
   if (pinned !== null && !el.classList.contains("focused")) showRow(pinned);
 }
 

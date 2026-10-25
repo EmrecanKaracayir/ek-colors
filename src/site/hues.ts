@@ -8,7 +8,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { composition } from "../palette/model";
-import { band, INSETS, signed, visibility, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, stops, viewBox } from "./graph";
+import { band, evenness, INSETS, signed, type Guide, guideLayer, guidePicker, guideSource, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on both rows. */
 export interface HueRow {
@@ -49,6 +49,9 @@ export interface HuesView {
     readonly uniform: number;
     readonly gaps: Readonly<Record<string, readonly [number, number]>>;
     readonly ring: readonly number[];
+
+    /** The colors in the ring's order: gap i is between keys i and i + 1. */
+    readonly keys: readonly string[];
   } | null;
 }
 
@@ -147,8 +150,13 @@ export function huesPanel(view: HuesView): string {
 export function huesReadout(view: HuesView): string {
   const cost = view.cost;
   if (!cost) return "Solving…";
-  const worst = Math.max(...cost.ring.map((d) => Math.abs(d - cost.uniform)));
-  return `Spacing: neighbor gaps ${Math.min(...cost.ring).toFixed(1)} to ${Math.max(...cost.ring).toFixed(1)} ΔE (uniform ${cost.uniform.toFixed(1)}). The worst gap is off by ${worst.toFixed(1)} ΔE: ${visibility(worst)}.`;
+  const i = cost.ring.indexOf(Math.min(...cost.ring));
+  const name = (key: string | undefined) => view.rows.find((r) => r.key === key)?.label ?? "";
+  const closer = 1 - cost.ring[i]! / cost.uniform;
+  const pair = `${name(cost.keys[i])}–${name(cost.keys[(i + 1) % cost.keys.length])}`;
+  return closer > 0.005
+    ? `Evenness from placing alone, before colorfulness per hue: the closest pair, ${pair}, is ${cost.ring[i]!.toFixed(1)} ΔE apart, ${String(Math.round(closer * 100))}% closer than the even gap of ${cost.uniform.toFixed(1)}: ${evenness(closer)}.`
+    : `Evenness from placing alone: every pair is as far apart as the even gap of ${cost.uniform.toFixed(1)} ΔE.`;
 }
 
 /**

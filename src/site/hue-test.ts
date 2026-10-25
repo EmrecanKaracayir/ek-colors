@@ -229,7 +229,7 @@ export function hueTestPage(ctx: HueTestContext): string {
         <li>Go with your first impression. If it leans neither way, pick "Neither".</li>
       </ul>
       ${named ? "" : `<p class="soft">The test needs the eight named colors; set How many hues to 8.</p>`}
-      <p class="row"><button type="button" data-hue-test="start" ${ready ? "" : "disabled"}>${!named ? "Needs eight colors" : ctx.palette ? (done.length ? "Take it again" : "Start") : "Solving the palette…"}</button><a href="#tune">Back to the hues</a><span class="soft">Tests ${mode} mode; switch Light and Dark above for the other.</span></p>
+      <p class="row"><button type="button" data-hue-test="start" ${ready ? "" : "disabled"}>${!named ? "Needs eight colors" : ctx.palette ? (done.length ? "Take it again" : "Start") : "Solving the palette…"}</button><a href="#tune">Back to hue</a><span class="soft">Tests ${mode} mode; switch Light and Dark above for the other.</span></p>
     </section>
     ${done.length ? results(ctx) : ""}`;
 }

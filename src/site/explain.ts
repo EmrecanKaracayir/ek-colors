@@ -406,6 +406,18 @@ export function explain(ctx: Context): string {
     </section>
 
     <section class="step">
+      <h2>Reading changes</h2>
+      <p>Placing a hue (H) or changing colorfulness per hue (M) moves colors away from the uniform lineup. How far is measured in ΔE, how different two colors look in CAM16-UCS, and read against the palette's own scale: neighbors sit one gap apart, about 9 to 10 ΔE. The strip at the top of Settings shows how far each color moved, in gaps.</p>
+      <div class="scroll"><table class="roles"><thead><tr><th>Moved</th><th>In gaps</th><th>What it means</th></tr></thead><tbody>
+        <tr><td class="mono">under 2 ΔE</td><td class="mono">under 0.2</td><td>Can't be seen even side by side</td></tr>
+        <tr><td class="mono">2 to 5</td><td class="mono">0.2 to 0.5</td><td>Visible side by side, not on its own</td></tr>
+        <tr><td class="mono">5 to 10</td><td class="mono">0.5 to 1</td><td>A different shade, part of the way to its neighbor</td></tr>
+        <tr><td class="mono">over 10</td><td class="mono">over 1</td><td>A different color</td></tr>
+      </tbody></table></div>
+      <p>Moving a color is what placing is for, so moving isn't the risk. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under 10% closer is fine, 10 to 25% is worth watching, and over 25% they're getting confusable. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole. These are rough guides; eyes and screens differ, and they're measured on the tier that stands for each hue.</p>
+    </section>
+
+    <section class="step">
       <h2>Muted and brown</h2>
       <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.muted * 100))}% of the default's colorfulness: quieter, never weaker in contrast. ${s.brown === null ? "" : `Brown is a warm orange at ${String(Math.round(s.brown * 100))}% colorfulness and has no muted version.`}</p>
     </section>

@@ -27,17 +27,41 @@ const share = (units: number) => `${((units / (WIDTH + 2 * PAD + LEFT + RIGHT)) 
 export const INSETS = `--graph-inset:${share(LEFT)};--graph-inset-end:${share(RIGHT)}`;
 
 /**
- * How visible a color difference is (CAM16-UCS ΔE): about 2 is the smallest difference people see
- * with two colors side by side.
+ * How a color difference looks (CAM16-UCS ΔE), against the palette's own scale: neighboring colors
+ * are about 9 to 10 apart. Rough guides, not exact limits.
  *
  * @param difference  ΔE.
  * @returns           Words.
  */
 export function visibility(difference: number): string {
-  if (difference < 2) return "below notice";
-  if (difference < 3) return "just noticeable";
-  if (difference < 5) return "noticeable";
-  return "clearly visible";
+  if (difference < 2) return "can't be seen side by side";
+  if (difference < 5) return "visible side by side";
+  if (difference < 10) return "a different shade";
+  return "a different color";
+}
+
+/**
+ * A difference as a share of the gap between neighboring colors.
+ *
+ * @param share  The difference divided by the gap.
+ * @returns      E.g. "0.5 gap", "1.2 gaps", or "" when it's under 0.05.
+ */
+export function inGaps(share: number): string {
+  const rounded = Math.round(share * 10) / 10;
+  if (rounded < 0.1) return share >= 0.05 ? "0.1 gap" : "";
+  return `${rounded.toFixed(1)} gap${rounded > 1 ? "s" : ""}`;
+}
+
+/**
+ * How worrying it is that two neighbors sit closer than the even gap.
+ *
+ * @param closer  How much closer, as a share of the even gap.
+ * @returns       Words.
+ */
+export function evenness(closer: number): string {
+  if (closer < 0.1) return "fine";
+  if (closer < 0.25) return "worth watching";
+  return "getting confusable";
 }
 
 /**

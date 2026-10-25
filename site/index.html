@@ -213,6 +213,8 @@
   .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 9rem 13rem; }
   .strip { border-bottom: 1px solid transparent; }
   .strip.docked { border-bottom-color: var(--line); }
+  .strip-summary { grid-column: 2; margin: 0; font-size: 0.75rem; max-width: none; cursor: help; }
+  .strip-summary strong { color: var(--fg); font-weight: 600; }
   .strip-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(3.5rem, 1fr)); gap: 0.5rem; }
   .strip-labels { display: grid; grid-template-rows: repeat(3, 1rem); align-items: center; font-size: 0.75rem; color: var(--soft); text-align: right; }
   .strip-labels button { font: inherit; color: inherit; text-align: right; background: none; border: 0; padding: 0 0.25rem; border-radius: 0.25rem; cursor: pointer; }
@@ -229,9 +231,6 @@
   .strip-item .fill:first-child { border-radius: 0.5rem 0.5rem 0 0; }
   .strip-item .fill:nth-last-child(2) { border-radius: 0 0 0.5rem 0.5rem; margin-bottom: 0.25rem; }
   .strip-item .mono { font-size: 0.6875rem; color: var(--c); font-weight: 500; }
-  .strip-cost { display: grid; grid-template-rows: repeat(3, 1rem) auto; align-items: center; font-size: 0.6875rem; color: var(--soft); }
-  .strip-cost .noticeable { color: var(--fg); font-weight: 700; }
-  .strip-cost .total { margin-top: 0.25rem; }
 
   /* How it works */
   .step { max-width: 46rem; }
@@ -346,8 +345,9 @@
     .strip-labels { grid-template-rows: repeat(3, 0.75rem); font-size: 0.625rem; }
     .strip-item .fill { height: 0.75rem; }
     .strip-item .name { display: none; }
+    .strip-item .unit { display: none; }
+    .strip-summary { font-size: 0.625rem; }
     .strip-item .mono { font-size: 0.625rem; min-height: 0.8rem; }
-    .strip-cost { grid-template-rows: repeat(3, 0.75rem) auto; font-size: 0.625rem; }
     .strip-item .cover { height: 2.25rem; }
   }
   @media (prefers-reduced-motion: reduce) { body, .strip-item .cover { transition: none; } }
@@ -381,6 +381,6 @@
 </header>
 <p id="beyond" class="beyond" role="note" hidden>Your screen can't show these colors exactly; it shows the closest it can.</p>
 <main></main>
-<script type="module" src="app.js?v=afadc87c17"></script>
+<script type="module" src="app.js?v=a5a0083b27"></script>
 </body>
 </html>

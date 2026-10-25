@@ -131,6 +131,31 @@ function colorAt(
   return serialize({ ...inSpace, coords: coords as [number, number, number] });
 }
 
+/* >---------------------------------------< Difference >---------------------------------------< */
+
+/**
+ * What a color difference is made of: lightness, colorfulness and hue, as shares of the whole. In
+ * CAM16-UCS's plain distance the three parts combine exactly, √(ΔJ² + ΔM² + ΔH²); the ΔE shown
+ * compresses that distance, so its parts are given as shares rather than amounts.
+ *
+ * @param a  One color.
+ * @param b  The other.
+ * @returns  Each part's share, adding up to 1.
+ */
+export function parts(
+  a: Cam16,
+  b: Cam16,
+): { lightness: number; colorfulness: number; hue: number } {
+  const ucs = (m: number) => Math.log(1 + 0.0228 * m) / 0.0228;
+  const [ma, mb] = [ucs(a.m), ucs(b.m)];
+  const turn = (((((b.hue - a.hue) % 360) + 540) % 360) - 180) * (Math.PI / 180);
+  const lightness = (b.jstar - a.jstar) ** 2;
+  const colorfulness = (mb - ma) ** 2;
+  const hue = (2 * Math.sqrt(ma * mb) * Math.sin(turn / 2)) ** 2;
+  const whole = lightness + colorfulness + hue || 1;
+  return { lightness: lightness / whole, colorfulness: colorfulness / whole, hue: hue / whole };
+}
+
 /* >----------------------------------------< Contrast >----------------------------------------< */
 
 /**
