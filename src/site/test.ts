@@ -1,10 +1,10 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| The blind curve test: pairs of colors on the same tier, one a little more or less colorful than  |
-| the palette, shown without names in random order. Each hue has its own staircase that closes in  |
-| on the point where it looks as colorful as the others; those points, with how sure each one is,  |
-| fit the curve.                                                                                   |
+| The blind colorfulness test: pairs of colors on the same tier, one a little more or less         |
+| colorful than the palette, shown without names in random order. Each hue has its own staircase   |
+| that closes in on the point where it looks as colorful as the others; those points, with how     |
+| sure each one is, fit the curve.                                                                 |
 \*------------------------------------------------------------------------------------------------*/
 
 import { makeModel, type Model } from "../palette/model";
@@ -278,14 +278,14 @@ export function testPage(ctx: TestContext): string {
   const done = runs().filter((r) => r.mode === ctx.mode);
   const hues = ctx.palette?.[ctx.mode].colors.filter((c) => c.key !== "brown").length ?? 8;
   return `<section class="intro">
-      <h1>Blind curve test</h1>
-      <p>Measures how colorful each ${mode}-mode hue looks to you, to set the curve. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once your answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
+      <h1>Blind colorfulness test</h1>
+      <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once your answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
         <li>Turn off True Tone and Night Shift, and use your usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>
         <li>Go with your first impression. If you truly can't tell, pick "Can't tell".</li>
       </ul>
-      <p class="row"><button type="button" data-test="start" ${ctx.palette ? "" : "disabled"}>${ctx.palette ? (done.length ? "Take it again" : "Start") : "Solving the palette…"}</button><a href="#tune">Back to the curve</a><span class="soft">Tests ${mode} mode; switch Light and Dark above for the other.</span></p>
+      <p class="row"><button type="button" data-test="start" ${ctx.palette ? "" : "disabled"}>${ctx.palette ? (done.length ? "Take it again" : "Start") : "Solving the palette…"}</button><a href="#tune">Back to colorfulness</a><span class="soft">Tests ${mode} mode; switch Light and Dark above for the other.</span></p>
     </section>
     ${done.length ? results(ctx) : ""}`;
 }

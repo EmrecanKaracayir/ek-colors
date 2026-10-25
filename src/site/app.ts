@@ -919,16 +919,6 @@ function tune(): string {
     </section>
     <div id="tune-preview" class="strip"></div>
     <section class="group">
-      <h2>Colorfulness</h2>
-      <p class="soft">One CAM16 colorfulness every color aims at, in both modes. A color the screen can't make that colorful goes as far as it can.</p>
-      ${number("colorfulness", "Target M", [10, 80, 1], true)}
-      ${number("muted", "Muted share", [0.1, 0.9, 0.05], true)}
-      <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
-      <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
-      <label class="field" for="set-brown-on"><span>Brown</span><input id="set-brown-on" type="checkbox" data-action="brown" ${s.brown === null ? "" : "checked"}></label>
-      ${s.brown === null ? "" : number("brown", "Brown share", [0.1, 1, 0.05], true)}
-    </section>
-    <section class="group">
       <h2>Hues</h2>
       ${number("hues", "How many hues", [4, 16, 1])}
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
@@ -947,9 +937,17 @@ function tune(): string {
       ${huesEditor(huesView())}
     </section>
     <section class="group">
-      <h2>Curve</h2>
+      <h2>Colorfulness</h2>
+      <p class="soft">One CAM16 colorfulness every color aims at, in both modes. A color the screen can't make that colorful goes as far as it can.</p>
+      ${number("colorfulness", "Target M", [10, 80, 1], true)}
+      ${number("muted", "Muted share", [0.1, 0.9, 0.05], true)}
+      <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
+      <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
+      <label class="field" for="set-brown-on"><span>Brown</span><input id="set-brown-on" type="checkbox" data-action="brown" ${s.brown === null ? "" : "checked"}></label>
+      ${s.brown === null ? "" : number("brown", "Brown share", [0.1, 1, 0.05], true)}
+      <h3>Per hue</h3>
       <p class="soft">${label(state.mode)} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Its points add up.</p>
-      <p><a href="#curve-test" class="button">Measure it with the blind curve test</a></p>
+      <p><a href="#curve-test" class="button">Measure it with the blind colorfulness test</a></p>
       ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
     </section>
     <section class="group">
@@ -984,9 +982,9 @@ function tune(): string {
 
 /** The rows of the strip: each step of the palette, added one at a time. */
 const STEPS = [
-  { name: "Uniform", title: "The uniform lineup: nothing placed, no curve" },
+  { name: "Uniform", title: "The uniform lineup: nothing placed, colorfulness the same for every hue" },
   { name: "+ Hue", title: "With colors placed by hand" },
-  { name: "+ Curve", title: "With the curve too: the palette in use" },
+  { name: "+ Colorfulness", title: "With colorfulness per hue too: the palette in use" },
 ] as const;
 
 /** The last solve of each step, kept until the next arrives so nothing jumps. */

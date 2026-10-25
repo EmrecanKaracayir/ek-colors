@@ -65,8 +65,9 @@ palette is written to `out/`:
 
 ## Site
 
-`site/` is the live site: an overview, every tier, a page per color, how it works, a blind test
-that measures how colorful each hue looks to you and fits the curve, all the settings, and export. After changing `src/`, rebuild it:
+`site/` is the live site: an overview, every tier, a page per color, how it works, two blind tests
+(one finds where each color looks most like its name, the other how colorful each hue looks to
+you), all the settings, and export. After changing `src/`, rebuild it:
 
 ```sh
 pnpm build
