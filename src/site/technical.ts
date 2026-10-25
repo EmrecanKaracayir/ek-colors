@@ -10,7 +10,7 @@ import { argbFromHex, lstarFromArgb } from "@material/material-color-utilities";
 
 import { LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
 import { anchorHue, anchorSource } from "../palette/references";
-import { MODE_NAMES, MODES, NAMES } from "../palette/settings";
+import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../palette/settings";
 import project from "../../package.json";
 import { autoIdentity, CLOSEST, hueKeys, identityOf, TEXT_MINIMUM, textScore } from "../palette/solve";
 import type { Context } from "./explain";
@@ -19,6 +19,7 @@ import { escape } from "./graph";
 /* >-----------------------------------------< Values >-----------------------------------------< */
 
 const fixed = (x: number, d = 3) => x.toFixed(d);
+const pct = (x: number) => `${String(Math.round(x * 100))}%`;
 
 /**
  * The CAM16 viewing parameters each mode is solved under, for the table.
@@ -75,6 +76,15 @@ export function technical(ctx: Context): string {
     per tier, per extra: default ← strongest(its hue, T × its share), muted as above
 variants for the H and M switches: the same solve without placed hues, without the curve, or both (step 9)</pre>
       <p>Every color is produced by one primitive: <code>strongest(h, M, Lc)</code>, the most colorful color of CAM16 hue h, up to colorfulness M, whose APCA contrast against the mode's base is exactly Lc.</p>
+      <p>Settings from the site, from a paste or from storage are checked first, and older ones brought up to date; the config the command line solves isn't checked:</p>
+<pre class="formula">hues ${fixed(LIMITS.hues[0], 0)}–${fixed(LIMITS.hues[1], 0)} • M_target ${fixed(LIMITS.colorfulness[0], 0)}–${fixed(LIMITS.colorfulness[1], 0)} • muted share ${pct(LIMITS.muted[0])}–${pct(LIMITS.muted[1])} • lux ${fixed(LIMITS.lux[0], 0)}–${fixed(LIMITS.lux[1], 0)}
+curve amount −${fixed(-LIMITS.amount[0], 0)}…+${fixed(LIMITS.amount[1], 0)} M, width ${fixed(LIMITS.width[0], 0)}–${fixed(LIMITS.width[1], 0)}° • extra share ${pct(LIMITS.share[0])}–${pct(LIMITS.share[1])} • hue windows ${fixed(LIMITS.hueWindow[0], 0)}–${fixed(LIMITS.hueWindow[1], 0)}°
+tiers        at least one, each one of Lc ${Object.keys(ROLES).join(", ")}
+identity     set by hand to a tier that isn't solved → automatic
+bases        L*(light base) > L*(dark base)
+name         at most 60 characters
+placed hues  kept only for keys of the current number of hues
+older shapes upgraded: one identity tier for both modes → one per mode; Lc 60 light with Lc 45 dark → automatic</pre>
     </section>
 
     <section class="step">
@@ -119,7 +129,7 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
   return x if APCA(x, base) ≥ Lc after rounding, else none</pre>
       <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces, typically a few tenths of an Lc. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
       <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together are just at their minimum for text. It's measured on a grey, so it's known before any color is solved:</p>
-<pre class="formula">g(Lc)     = the 8-bit grey nearest the base with APCA(g, base) ≥ Lc
+<pre class="formula">g(Lc)     = the 8-bit grey nearest the base with APCA(g, base) ≥ Lc, or the furthest grey if none
 score(Lc) = (APCA(g, base) / ${String(TEXT_MINIMUM.apca)} + WCAG(g, base) / ${String(TEXT_MINIMUM.wcag)}) / 2     // 1: both just at their minimum for text
 identity  = the tier with score nearest 1, the lower on a tie
 ${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textScore(s.bases[m], t).toFixed(2)}`).join(" • ")}   → Lc ${String(autoIdentity(s.bases[m], s.tiers))}${s.identityTier[m] === "auto" ? "" : `, set by hand to Lc ${String(identityOf(s, m))}`}`).join("\n")}</pre>
@@ -137,12 +147,14 @@ ${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textS
 <pre class="formula">reach(h, Lc)  = M of strongest(h, 200, Lc)               // how far the gamut lets h go
 T(Lc)         = min(M_target, min over hues of reach(h, Lc))   // with equal per tier on; before the curve
 limit(Lc)     = the hue with the smallest reach, if it's below M_target
-target(h, Lc) = T(Lc) + curve(h)</pre>
+target(h, Lc) = max(0, T(Lc) + curve(h))                  // a curve can't go below grey</pre>
+      <p>The reach is measured at the hues the tier starts from: the starting hues on the identity tier, the identity tier's spaced hues on every other tier.</p>
       <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. The ceiling is measured before the curve: a hue the curve asks more of than it can reach on a tier stops at its reach (Gamut limit) rather than the whole tier dropping to make room for it. Each swatch is labeled from these numbers:</p>
-<pre class="formula">Gamut limit    measured M &lt; target − 1                       // the screen holds it below its own aim
-Sets the tier  the color is limit(Lc)                          // the tier was lowered to its reach
-Lowered        limit(Lc) is another color, and not Gamut limit
-own aim        hue: M_target + curve(h)      extra: M_target × share</pre>
+<pre class="formula">Gamut limit    measured M &lt; aim − 1                          // the screen holds it below its aim
+aim            hue: target(h, Lc)   extra: T(Lc) × share   muted: M(default) × muted share
+Sets the tier  the color is limit(Lc), default only           // the tier was lowered to its reach
+Lowered        limit(Lc) is another color, not Gamut limit, default only
+own aim        hue: M_target + curve(h)      extra: M_target × share   // what Lowered says it would be</pre>
     </section>
 
     <section class="step">

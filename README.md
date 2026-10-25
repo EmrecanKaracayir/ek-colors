@@ -16,7 +16,8 @@ What follows describes EK Palette; every number in it is a setting.
 
 ## What it makes
 
-- **Hues:** red, orange, yellow, green, mint, blue, purple and pink, evenly spaced.
+- **Hues:** red, orange, yellow, green, mint, blue, purple and pink. They start evenly different,
+  then seven of them are placed where their names fit best.
 - **Extra colors:** any number beside the hues, each on its own hue at a share of the colorfulness.
   EK Palette has one, brown.
 - **Modes:** light on `#EBEBEB`, dark on `#181818`.
@@ -52,7 +53,10 @@ WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
    sees more or less than the model says. A blind test on the site measures it.
 5. **Evenly different.** The hues start evenly apart in angle from the anchor, yellow, the same in
    both modes, then move a few degrees each until neighbors are equally different in CAM16-UCS:
-   the uniform lineup. The anchor fixes where the lineup sits, since turning the whole lineup
+   the uniform lineup. They're spaced on the identity tier first, up to 20° each, then on every
+   other tier, up to 6° from there. The identity tier is the one that stands for each hue: the
+   tier where APCA and WCAG 2 together are just at their minimum for text (Lc 60 on the light
+   base, Lc 45 on the dark one), or one set by hand. The anchor fixes where the lineup sits, since turning the whole lineup
    leaves its differences almost unchanged; it can be the yellow of CAM16, Munsell, NCS, unique-hue
    studies or the World Color Survey's focal colors, or any hue.
 6. **Placed by name.** Any hue can be placed where its name fits best, and the rest re-space around
@@ -72,7 +76,8 @@ pnpm solve
 ```
 
 Edit `src/config.ts` and solve again. It starts from the defaults in `src/palette/settings.ts`,
-which have no extra colors. `CONFIG` is EK Palette: the defaults with its own tuning, its placed
+which have no extra colors. The site checks every setting against its range (`LIMITS` there) and
+that the light base is lighter than the dark one; `pnpm solve` doesn't, so keep to them. `CONFIG` is EK Palette: the defaults with its own tuning, its placed
 hues, its curve per mode and brown, for example:
 
 ```ts
@@ -84,7 +89,7 @@ export const CONFIG: Settings = {
 };
 ```
 
-The palette is written to `out/`:
+The palette is written to `out/`, the Markdown and CSS titled with its `name`:
 
 - `palette.json`: the settings and everything solved
 - `palette.csv`: one row per color
@@ -94,19 +99,23 @@ The palette is written to `out/`:
 
 ## Site
 
-`site/` is the live site: an overview, every tier, a page per color, how it works, the algorithm
-with every formula, references, and settings, with the two blind tests (one finds where each color
-looks most like its name, the other how colorful each hue looks), export as JSON, CSV, Markdown or CSS,
-and what the site is. After changing `src/`, rebuild it:
+`site/` is the live site: an overview, every tier, a page per color, the comparison with EK Palette
+(or with Codemos, its predecessor, on Shift+C), how it works, the algorithm with every formula,
+references, and settings. Settings names the palette, resets it to EK Palette, copies and pastes
+its settings, and holds the two blind tests (one finds where each color looks most like its name,
+the other how colorful each hue looks), export as JSON, CSV, Markdown or CSS, and what the site is.
+Changes stay in the browser. After changing `src/`, rebuild it:
 
 ```sh
 pnpm build
 ```
 
 Its icon, iPhone home-screen icon and link preview card are drawn from EK Palette in `out/`, with
-Chrome; after EK Palette changes, draw them again:
+Google Chrome (`CHROME` names it when it isn't in the usual place on a Mac); after EK Palette
+changes, solve and draw them again:
 
 ```sh
+pnpm solve
 pnpm art
 ```
 

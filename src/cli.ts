@@ -35,6 +35,6 @@ for (const mode of MODES) {
     return `${c.key} ${s.color}${s.short ? "*" : ""}`;
   });
   console.log(
-    `${mode} Lc ${String(tier)}: ${colors.join(" ")} · ring ${palette.standard[mode].ring[tier]!.join(" ")}`,
+    `${mode} Lc ${String(tier)}: ${colors.join(" ")} • ring ${palette.standard[mode].ring[tier]!.join(" ")}`,
   );
 }

@@ -332,7 +332,7 @@ function reach(ctx: Context): string {
           : `On ${GAMUT_NAMES[ctx.gamut]}, every hue reaches the target on Lc ${String(lc)}.`
     }</p>
     <p class="legend-row soft">${GAMUTS.map(key).join("")}
-      <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span>${limited ? "<span>↓ Held back to this tier</span>" : ""}</p>`;
+      <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span>${limited ? "<span>↓ Lowered</span>" : ""}</p>`;
 }
 
 /**
@@ -525,6 +525,9 @@ export function explain(ctx: Context): string {
   const swatches = (count + extras) * s.tiers.length * 2 * 2 * GAMUTS.length;
   const anchor = anchorSource(s);
   const hueOptions = hues(ctx).map((h) => [h.key, ctx.label(h.key)] as const);
+  // The even difference between neighbors on the identity tier, as the strip measures gaps.
+  const ring = ctx.palette?.[ctx.mode].ring[identityOf(s, ctx.mode)] ?? [];
+  const gap = ring.length ? ring.reduce((x, y) => x + y, 0) / ring.length : 0;
   return `<section class="intro">
       <h1>How it works</h1>
       <p><strong>EK Colors</strong> solves color palettes instead of picking them by eye. A small program builds a palette from a handful of rules, so every color can be explained, and solved again when a rule changes. It starts from <strong>EK Palette</strong>, the palette it was made for; change the settings and it solves a palette of its own. This page walks through the rules one at a time; every demo runs the same code as the solver.</p>
@@ -538,7 +541,7 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Color depends on the room</h2>
-      <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light.</p>
+      <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light. The light mode's base is always lighter than the dark mode's.</p>
       <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. Both come from the sRGB standard: its typical room and its reference room. CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
       <div class="demo"><div class="demo-out wide">${room(ctx)}</div></div>
       <p>So the same target needs different screen colors in each mode. Both of these aim at the same colorfulness. The dark-mode one gets more color on the screen, because a dim room makes colors look quieter.</p>
@@ -617,7 +620,7 @@ export function explain(ctx: Context): string {
     <section class="step">
       <h2>Reading changes</h2>
       <p>Placed hues and colorfulness per hue are edits on top of the uniform lineup. The <strong>H</strong> and <strong>M</strong> switches in the header turn them off and on across the pages, so the palette can be seen with and without them.</p>
-      <p>At the top of Settings, a strip shows the palette a step at a time. <strong>Uniform</strong> is the evenly spaced lineup. <strong>Turned</strong> is the same lineup turned around the circle to best match the placed hues; turning keeps it uniform. <strong>+H</strong> adds the placed hues, and <strong>+M</strong> colorfulness per hue. How far the edits take the palette from the turned lineup is its <strong>bend</strong>, in gaps: one gap is the even difference between neighbors, about 10 ΔE, ΔE being how different two colors look in CAM16-UCS. Here's the strip for this palette; point at a swatch or a row for its numbers, and click a number for what it means.</p>
+      <p>At the top of Settings, a strip shows the palette a step at a time. <strong>Uniform</strong> is the evenly spaced lineup. <strong>Turned</strong> is the same lineup turned around the circle to best match the placed hues; turning keeps it uniform. <strong>+H</strong> adds the placed hues, and <strong>+M</strong> colorfulness per hue. How far the edits take the palette from the turned lineup is its <strong>bend</strong>, in gaps: one gap is the even difference between neighbors${gap ? `, ${gap.toFixed(1)} ΔE in ${ctx.mode} mode here` : ""}, ΔE being how different two colors look in CAM16-UCS. Here's the strip for this palette; point at a swatch or a row for its numbers, and click a number for what it means.</p>
       <div class="demo"><div id="palette-strip" class="strip"></div></div>
       ${zoneTable()}
       <p>Bending colors is what placing is for, so bend isn't the risk in itself. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under 10% closer is fine, 10 to 25% is worth watching, and over 25% they're getting confusable. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole.</p>
@@ -645,10 +648,12 @@ export function explain(ctx: Context): string {
       <h2>Three kinds of screen</h2>
       <p>Screens differ in how much color they can show, their gamut; the Gamut switch in the header picks one of the three. <strong>Standard</strong> is what every screen shows. <strong>Wide</strong> is what most new phones and computers show, iPhones and Macs included. <strong>Ultra</strong> is the widest, which few screens fully reach yet.</p>
       <p>The palette is solved once per kind, each on its own. A wider screen keeps more color on the tiers where the standard one runs out, as the chart above shows. A website gives every screen the widest palette it can show.</p>
+      <p>A dot on the Gamut switch marks the kind this screen shows. Picking a wider one still shows its palette, as closely as this screen can, with a note in red that the colors aren't exact.</p>
     </section>
 
     <section class="step">
       <h2>Every rule is a setting</h2>
-      <p>The bases and rooms, the number of hues, the anchor and placed hues, the target colorfulness and its curve per hue, the tiers, the muted share and the extra colors are all settings. Change one in Settings and watch the palette follow; Export, at the end of Settings, gives it as JSON, CSV, Markdown or CSS.</p>
+      <p>The bases and rooms, the number of hues, the anchor and placed hues, the target colorfulness, whether tiers are equally colorful and the curve per hue, the tiers and the identity tier per mode, the muted share and the extra colors are all settings. Change one in Settings and watch the palette follow; the changes stay in this browser.</p>
+      <p>Settings also names the palette, resets it to EK Palette, and copies its settings to paste elsewhere. Compare shows a changed palette next to EK Palette. Export, near the end of Settings, gives the palette as JSON, CSV, Markdown or CSS, titled with its name.</p>
     </section>`;
 }

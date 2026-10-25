@@ -39,7 +39,7 @@ const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies 
 
 /* >-----------------------------------< Viewing conditions >-----------------------------------< */
 
-/** Lux to the luminance the eye adapts to (cd/m²): E / π × 0.184, a 20% gray (L* 50) lit by E lux. */
+/** Lux to the luminance the eye adapts to (cd/m²): E / π × 0.184, an 18% gray (L* 50) lit by E lux. */
 export const LUX_TO_ADAPTING = 0.0586;
 
 /**
