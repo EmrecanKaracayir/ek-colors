@@ -92,7 +92,9 @@ function slider(ctx: Context, id: string, label: string, [min, max, step]: reado
  * @returns        HTML.
  */
 function choice(ctx: Context, id: string, label: string, options: readonly (readonly [string, string])[], demo: string): string {
-  const now = setting(ctx, id);
+  // A choice that isn't offered any more, like a tier switched off, shows where the control starts.
+  const set = setting(ctx, id);
+  const now = options.some(([v]) => v === set) ? set : String(STARTS[id]?.(ctx) ?? "");
   return `<label for="${id}">${label} <select id="${id}" data-demo="${demo}">${options
     .map(([v, text]) => `<option value="${v}" ${v === now ? "selected" : ""}>${text}</option>`)
     .join("")}</select></label>`;
@@ -197,11 +199,23 @@ function modes(ctx: Context): string {
   if (!first) return "Solving…";
   const lc = ctx.settings.identityTier.light;
   const m = model(ctx.settings, ctx.gamut);
-  const reach = (mode: Mode) => m.cam(mode, strongest(m, ctx.settings.bases[mode], mode, first.hue, 200, lc)).m;
+  const reach = (mode: Mode) => {
+    try {
+      return m.cam(mode, strongest(m, ctx.settings.bases[mode], mode, first.hue, 200, lc)).m;
+    } catch {
+      return 0;
+    }
+  };
   // As colorful as both modes can be here, so each sits exactly on it.
   const target = Math.floor(Math.min(30, reach("light"), reach("dark")));
+  let colors: Record<Mode, string>;
+  try {
+    colors = { light: strongest(m, ctx.settings.bases.light, "light", first.hue, target, lc), dark: strongest(m, ctx.settings.bases.dark, "dark", first.hue, target, lc) };
+  } catch {
+    return `<p class="soft">No color at this hue reaches Lc ${String(lc)} on both bases.</p>`;
+  }
   const pair = MODES.map((mode) => {
-    const color = strongest(m, ctx.settings.bases[mode], mode, first.hue, target, lc);
+    const color = colors[mode];
     const cam = m.cam(mode, color);
     return `<figure class="on-base" style="--base:${ctx.settings.bases[mode]};--c:${color};--ink:var(--fg-${mode})">
       <span class="demo-swatch"></span><span class="on-base-sample">Aa</span>

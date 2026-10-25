@@ -268,7 +268,12 @@ function curved(): boolean {
 function variant(settings: Settings): GamutPalette | null {
   const key = `${JSON.stringify(solvedPart(settings))}|${state.gamut}`;
   const id = asked.get(key);
-  if (id !== undefined) return state.baselines.get(id) ?? null;
+  if (id !== undefined) {
+    // Used again, so it moves to the back of the line for letting go: the least used go first.
+    asked.delete(key);
+    asked.set(key, id);
+    return state.baselines.get(id) ?? null;
+  }
   asks++;
   asked.set(key, asks);
   queue.push({ id: asks, settings, gamut: state.gamut });
@@ -2228,6 +2233,17 @@ document.addEventListener("click", (event) => {
   render();
 });
 
+/**
+ * Whether a number field holds no number, or one outside its range. Values between its steps are
+ * fine: a drag can set any whole degree.
+ *
+ * @param el  The field.
+ * @returns   True when its value should wait.
+ */
+function outOfRange(el: HTMLInputElement): boolean {
+  return el.value === "" || el.validity.badInput || el.validity.rangeUnderflow || el.validity.rangeOverflow;
+}
+
 document.addEventListener("input", (event) => {
   const el = event.target as HTMLInputElement;
   if (el.dataset.demo) return void updateDemo(context(), el);
@@ -2254,7 +2270,7 @@ document.addEventListener("input", (event) => {
     return;
   }
   if (el.hasAttribute("data-anchor-hue")) {
-    if (el.value === "" || !el.checkValidity()) return;
+    if (outOfRange(el)) return;
     write("anchor", allowed(anchored(), Number(el.value)));
     syncAnchor();
     updateTune();
@@ -2268,8 +2284,8 @@ document.addEventListener("input", (event) => {
     write(path, el.value.toUpperCase());
     document.documentElement.style.setProperty(`--base-${path.split(".")[1]!}`, el.value);
   } else {
-    // A value outside its field's range or step waits: it may be half typed.
-    if (el.value === "" || !el.checkValidity()) return;
+    // A value outside its field's range waits: it may be half typed.
+    if (outOfRange(el)) return;
     write(path, Number(el.value));
     for (const twin of document.querySelectorAll<HTMLInputElement>(`[data-set="${path}"]`)) if (twin !== el) twin.value = el.value;
   }

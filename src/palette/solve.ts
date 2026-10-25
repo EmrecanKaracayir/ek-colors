@@ -370,13 +370,13 @@ export const PAGES = [
 
 /**
  * The extra colors' keys: each name in lowercase words joined by hyphens, numbered when it would
- * repeat a hue's key, another extra's, a page's or a mode's.
+ * repeat a hue's key, another extra's or a page's.
  *
  * @param settings  The settings.
  * @returns         One key per extra color, in order.
  */
 export function extraKeys(settings: Pick<Settings, "hues" | "extras">): string[] {
-  const used = new Set([...PAGES, ...MODES, ...hueKeys(settings.hues)]);
+  const used = new Set([...PAGES, ...hueKeys(settings.hues)]);
   return settings.extras.map((extra) => {
     // Accents are dropped and a dotless ı is an i, so "Çivit" becomes "civit".
     const word =
@@ -453,8 +453,11 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const base = settings.bases[mode];
   const { keys, start, fixed, sep } = seeds(settings);
   const extras = extraKeys(settings);
-  // With few hues, the identity tier may move each only up to halfway to its even neighbor.
-  const identityReach = Math.min(settings.hueWindow.identity, 180 / settings.hues);
+  // With other than eight hues, the identity tier may move each only up to halfway to its even neighbor.
+  const identityReach =
+    settings.hues === NAMES.length
+      ? settings.hueWindow.identity
+      : Math.min(settings.hueWindow.identity, 180 / settings.hues);
 
   // On an equal tier, the target drops to what its least colorful hue can reach.
   const ceiling = (tier: number, hues: readonly number[]) => {
