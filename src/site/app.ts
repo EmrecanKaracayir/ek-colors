@@ -1163,7 +1163,7 @@ interface Dot {
   /** What the pointer shows on it, e.g. "Red" or "Red, muted". */
   readonly name: string;
 
-  /** An extra color sits among the hues without being spaced, so it's drawn as a diamond to tell it apart. */
+  /** A custom color sits among the hues without being spaced, so it's drawn as a diamond to tell it apart. */
   readonly extra?: boolean;
 }
 
@@ -1194,7 +1194,7 @@ function circle(dots: readonly Dot[]): string {
       return `<rect x="${(x - r / Math.SQRT2).toFixed(1)}" y="${(y - r / Math.SQRT2).toFixed(1)}" width="${(r * Math.SQRT2).toFixed(1)}" height="${(r * Math.SQRT2).toFixed(1)}" rx="${String(r / 4)}" transform="rotate(45 ${cx} ${cy})" ${paint}></rect>`;
     return `<circle cx="${cx}" cy="${cy}" r="${String(r)}" ${paint}></circle>`;
   });
-  const legend = dots.some((d) => d.extra) ? `<figcaption class="circle-key"><span class="diamond" aria-hidden="true"></span> Extra colors</figcaption>` : "";
+  const legend = dots.some((d) => d.extra) ? `<figcaption class="circle-key"><span class="diamond" aria-hidden="true"></span> Custom colors</figcaption>` : "";
   // The same dots as a table, for reading the numbers, and for screen readers in place of the drawing.
   const rows = dots.map((d) => `<tr><th scope="row"><span class="dot" style="--c:${d.color}"></span> ${d.name}</th><td class="mono num">${d.hue.toFixed(1)}°</td><td class="mono num">${d.m.toFixed(1)}</td></tr>`).join("");
   const table = `<details class="circle-table" id="circle-table"><summary>Show as a table</summary><div class="scroll"><table><thead><tr><th scope="col">Color</th><th scope="col" class="num">Hue</th><th scope="col" class="num">Colorfulness <span class="unit">M</span></th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
@@ -1252,7 +1252,7 @@ function overview(): string {
   const icon = iconSvg(settings.bases.light, settings.bases.dark, list.filter((c) => !c.extra).map((c) => c.tiers[tier]!.default), 'class="palette-icon" aria-hidden="true"');
   return `<section class="intro">
       <h1 class="named">${icon}<span>${paletteName()}</span></h1>
-      <p>${extras.length ? `${String(hues)} + ${String(extras.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the extra ${extras.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
+      <p>${extras.length ? `${String(hues)} + ${String(extras.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the custom ${extras.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
     </section>
     <section class="glance">
       <h2>At a glance <span class="soft">• Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>
@@ -1807,7 +1807,7 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
       <div>${circle([...dots(other, true), ...dots(mine, false)])}</div>
       <div class="legend">
         <p><span class="key hollow"></span> ${other.name} <span class="key"></span> ${name}</p>
-        <p class="soft">Distance from the center is colorfulness. ${name}'s hues share one ring${offRing ? ", apart from those colorfulness per hue moves on purpose" : ""}${mine.colors.some((c) => c.extra) ? ", and its extra colors sit at their share of it" : ""}${scatter}.</p>
+        <p class="soft">Distance from the center is colorfulness. ${name}'s hues share one ring${offRing ? ", apart from those colorfulness per hue moves on purpose" : ""}${mine.colors.some((c) => c.extra) ? ", and its custom colors sit at their share of it" : ""}${scatter}.</p>
       </div>
     </section>
     ${
@@ -2193,7 +2193,7 @@ function tune(): string {
     </section>
     <section class="group" id="colorfulness-section">
       <h2>Colorfulness (M)</h2>
-      <p class="soft">One CAM16 colorfulness every hue aims at, in both modes, before colorfulness per hue adds or takes away; extra colors aim at their share of it. A color the screen can't make that colorful goes as far as it can.</p>
+      <p class="soft">One CAM16 colorfulness every hue aims at, in both modes, before colorfulness per hue adds or takes away; custom colors aim at their share of it. A color the screen can't make that colorful goes as far as it can.</p>
       ${number("colorfulness", "Target M", [...LIMITS.colorfulness, 1], { slider: true })}
       ${number("muted", "Muted share", [...LIMITS.muted, 0.05], { slider: true, percent: true })}
       <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
@@ -2904,7 +2904,7 @@ function exportSection(): string {
   const tab = (f: Format, t: string) => `<button type="button" data-format="${f}" aria-pressed="${String(state.format === f)}">${t}</button>`;
   return `<section class="group" id="export-section">
       <h2>Export</h2>
-      <p class="soft">Every gamut, both modes, every tier, default and muted, extra colors included. JSON keeps the settings too, so they can be pasted back into Settings.</p>
+      <p class="soft">Every gamut, both modes, every tier, default and muted, custom colors, Gray and neutral colors included. JSON keeps the settings too, so they can be pasted back into Settings.</p>
       <div class="row"><div class="segmented" role="group" aria-label="Format">${tab("json", "JSON")}${tab("csv", "CSV")}${tab("md", "Markdown")}${tab("css", "CSS")}</div>
       <button type="button" data-action="copy">Copy</button><span id="export-copied" class="soft" role="status"></span></div>
       <pre id="export-text" class="code-view" tabindex="0" aria-label="The export"><code>${highlight(exportText(), state.format)}</code></pre>

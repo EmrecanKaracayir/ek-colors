@@ -218,7 +218,7 @@ export function toCss(settings: Settings, palette: Palette): string {
     "/*",
     ` * ${settings.name || "Palette"}, solved with EK Colors.`,
     " * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version, --gray-60 a gray",
-    " * on it, and --neutral-60, when a base is tinted, a neutral that follows its tint. Light and dark",
+    " * on it, and --neutral-60, when a base has a hue, a neutral color in that hue. Light and dark",
     " * follow color-scheme: the system's, or color-scheme: light or dark set on the page. Screens",
     " * that show a wider gamut get its colors.",
     " */",

@@ -536,7 +536,7 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>What it makes</h2>
-      <p>${String(count)} hues${extras ? ` and ${String(extras)} extra ${extras === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all. They all follow the same rules, so the rules only have to be learned once.</p>
+      <p>${String(count)} hues${extras ? ` and ${String(extras)} custom ${extras === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all, with Gray on every tier${s.neutrals.length ? ` and ${String(s.neutrals.length)} neutral ${s.neutrals.length === 1 ? "color" : "colors"}` : ""} beside them. They all follow the same rules, so the rules only have to be learned once.</p>
     </section>
 
     <section class="step">
@@ -627,7 +627,7 @@ export function explain(ctx: Context): string {
     </section>
 
     <section class="step">
-      <h2>Muted and extra colors</h2>
+      <h2>Muted and custom colors</h2>
       <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.muted * 100))}% of the default's colorfulness: quieter, never weaker in contrast. Every tier of one color:</p>
       <div class="demo">
         <div class="demo-controls">
@@ -641,13 +641,14 @@ export function explain(ctx: Context): string {
         </div>
         <div id="demo-ladder-out" class="demo-out wide">${ladder(ctx)}</div>
       </div>
-      <p><strong>Extra colors</strong> sit beside the hues${extras ? `, like ${s.extras.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Extra colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed.</p>
+      <p><strong>Custom colors</strong> sit beside the hues${extras ? `, like ${s.extras.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Custom colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed, under Extra colors.</p>
     </section>
 
     <section class="step">
       <h2>Neutrals</h2>
       <p>Every palette has <strong>Gray</strong> on every tier: no hue at all, red, green and blue the same, exactly on the tier's contrast against the base, as every color is.</p>
-      <p>A <strong>neutral color</strong> takes the base's hue at a share of the base's own colorfulness, so it belongs with a base of that hue. On warm paper, text in a warm neutral sits on the page instead of looking cold on it. Between M ${String(NEUTRAL_BAND[0])} and ${String(NEUTRAL_BAND[1])} it shows the hue yet reads as a neutral; fainter, it reads as gray; stronger, as a color. A palette can have several, each with its own share, added in Settings under Extra colors. Each mode follows its own base, and a base under M ${String(NEUTRAL_BAND[0])}, gray or nearly, has no hue to follow, so its neutral colors are Gray. Gray and each neutral color have pages of their own beside the colors'.</p>
+      <p>A <strong>neutral color</strong> takes the base's hue at a share of the base's own colorfulness, so it belongs with a base of that hue. On warm paper, text in a warm neutral sits on the page instead of looking cold on it. A color's colorfulness puts it in a zone: under M ${String(NEUTRAL_BAND[0])} it reads as gray, from M ${String(NEUTRAL_BAND[0])} to ${String(NEUTRAL_BAND[1])} it shows the hue yet reads as a neutral, and past that it reads as a color. The limits come from color difference: M ${String(NEUTRAL_BAND[0])} is just visibly different from Gray side by side, and M ${String(NEUTRAL_BAND[1])} is a different shade of it. In Settings, a bar under every colorfulness slider shows the zones, and its readout explains them.</p>
+      <p>A palette can have several neutral colors, each with its own share, added in Settings under Extra colors. Each mode follows its own base. A base under M ${String(NEUTRAL_BAND[0])}, gray or nearly, has no hue to give, so in that mode its neutral colors are Gray; when both bases are gray, there are none to add. Gray and each neutral color have pages of their own beside the colors'.</p>
     </section>
 
     <section class="step">
@@ -659,7 +660,7 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Every rule is a setting</h2>
-      <p>The bases and rooms, the number of hues, the anchor and placed hues, the target colorfulness, whether tiers are equally colorful and the curve per hue, the tiers and the identity tier per mode, the muted share and the extra colors are all settings. Change one in Settings and watch the palette follow; the changes stay in this browser.</p>
+      <p>The bases and rooms, the number of hues, the anchor and placed hues, the target colorfulness, whether tiers are equally colorful and the curve per hue, the tiers and the identity tier per mode, the muted share, and the custom and neutral colors are all settings. Change one in Settings and watch the palette follow; the changes stay in this browser.</p>
       <p>Settings also names the palette, resets it to EK Palette, and copies its settings to paste elsewhere. Compare shows a changed palette next to EK Palette. Export, near the end of Settings, gives the palette as JSON, CSV, Markdown or CSS, titled with its name.</p>
     </section>`;
 }

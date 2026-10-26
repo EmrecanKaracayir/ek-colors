@@ -328,7 +328,7 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
     tiers: solved,
     identityTier,
     muted: number(s.muted, "Muted share", LIMITS.muted),
-    extras: list(s.extras, "The extra colors").map((e, i) =>
+    extras: list(s.extras, "The custom colors").map((e, i) =>
       extra(e, `Custom color ${String(i + 1)}`),
     ),
     neutrals: list(s.neutrals, "The neutral colors").map((n, i) =>

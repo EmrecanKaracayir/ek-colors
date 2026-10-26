@@ -1,7 +1,7 @@
 # EK Colors
 
 Accessible color palettes that are solved, not picked. EK Colors builds a palette from a handful of
-rules: hues and any extra colors, for light and dark, on six contrast tiers, for three kinds of
+rules: hues, custom colors and neutrals, for light and dark, on six contrast tiers, for three kinds of
 screen. Every color sits exactly on its contrast, the hues look equally colorful, and each is as
 different from its neighbors as they are from theirs.
 
@@ -18,10 +18,10 @@ What follows describes EK Palette; every number in it is a setting.
 
 - **Hues:** red, orange, yellow, green, mint, blue, purple and pink. They start evenly different,
   then seven of them are placed where their names fit best.
-- **Extra colors:** any number beside the hues, each on its own hue at a share of the colorfulness.
+- **Custom colors:** any number beside the hues, each on its own hue at a share of the colorfulness.
   EK Palette has one, brown.
-- **Neutrals:** a gray on every tier, and neutral colors that follow a tinted base's tint.
-  EK Palette has one, Neutral.
+- **Neutrals:** Gray on every tier, and neutral colors that take the base's hue at a share of its
+  colorfulness. EK Palette's bases are gray, so it has Gray alone.
 - **Modes:** light on `#EBEBEB`, dark on `#181818`.
 - **Tiers:** one color per APCA contrast against the base:
 
@@ -64,12 +64,13 @@ WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
 6. **Placed by name.** Any hue can be placed where its name fits best, and the rest re-space around
    it, keeping their order. A second blind test finds the middle of each name. How far placing and
    the curve bend the palette from the uniform lineup is measured in gaps between neighbors.
-7. **Muted and extra colors.** Muted is the same hue and tier at a share of the colorfulness. Each
-   extra color is the most colorful color of its hue, up to its share of the tier's colorfulness,
-   exactly on the tier; extras aren't spaced with the hues.
-8. **Neutrals.** A gray on every tier, its red, green and blue the same, exactly on the tier. Each
-   neutral color follows its mode's base: the base's hue at a share of its own colorfulness. M 4–8
-   is tinted yet neutral, right for text and lines.
+7. **Muted and custom colors.** Muted is the same hue and tier at a share of the colorfulness. Each
+   custom color is the most colorful color of its hue, up to its share of the tier's colorfulness,
+   exactly on the tier; custom colors aren't spaced with the hues.
+8. **Neutrals.** Gray on every tier, its red, green and blue the same, exactly on the tier. Each
+   neutral color takes its mode's base's hue at a share of the base's colorfulness; a base needs
+   at least M 4 to have a hue to give. A color's colorfulness puts it in a zone: under M 4 it reads
+   as gray, from M 4 to 12 as a neutral, past that as a color.
 
 ## Use
 
@@ -81,9 +82,10 @@ pnpm solve
 ```
 
 Edit `src/config.ts` and solve again. It starts from the defaults in `src/palette/settings.ts`,
-which have no extra colors. The site checks every setting against its range (`LIMITS` there) and
-that the light base is lighter than the dark one; `pnpm solve` doesn't, so keep to them. `CONFIG` is EK Palette: the defaults with its own tuning, its placed
-hues, its curve per mode and brown, for example:
+which have no custom or neutral colors. The site checks every setting against its range (`LIMITS`
+there) and that the light base is lighter than the dark one; `pnpm solve` doesn't, so keep to them.
+`CONFIG` is EK Palette: the defaults with its own tuning, its placed hues, its curve per mode and
+brown, for example:
 
 ```ts
 export const CONFIG: Settings = {

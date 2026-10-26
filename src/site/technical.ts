@@ -73,17 +73,20 @@ export function technical(ctx: Context): string {
     other tiers:   T ← target ceiling; hues ← space(identity hues, ±${String(s.hueWindow.tier)}°)
     per tier, per hue: default ← strongest(h, T + curve(h))
                        muted   ← strongest(h, M(default) × muted share)
-    per tier, per extra: default ← strongest(its hue, T × its share), muted as above
-variants for the H and M switches: the same solve without placed hues, without the curve, or both (step 9)</pre>
+    per tier, per custom color: default ← strongest(its hue, T × its share), muted as above
+    per tier: gray ← the 8-bit gray on Lc; per neutral color: strongest(hue(base), M(base) × its share)
+variants for the H and M switches: the same solve without placed hues, without the curve, or both (step 9)
+the hues are kept, so custom colors, neutral colors and the muted share are placed on them anew (step 11)</pre>
       <p>Every color is produced by one primitive: <code>strongest(h, M, Lc)</code>, the most colorful color of CAM16 hue h, up to colorfulness M, whose APCA contrast against the mode's base is exactly Lc.</p>
       <p>Settings from the site, from a paste or from storage are checked first, and older ones brought up to date; the config the command line solves isn't checked:</p>
 <pre class="formula">hues ${fixed(LIMITS.hues[0], 0)} or more • M_target ${fixed(LIMITS.colorfulness[0], 0)}–${fixed(LIMITS.colorfulness[1], 0)} • muted share ${pct(LIMITS.muted[0])}–${pct(LIMITS.muted[1])} • lux ${fixed(LIMITS.lux[0], 0)}–${fixed(LIMITS.lux[1], 0)}
-curve amount −${fixed(-LIMITS.amount[0], 0)}…+${fixed(LIMITS.amount[1], 0)} M, width ${fixed(LIMITS.width[0], 0)}–${fixed(LIMITS.width[1], 0)}° • extra share ${pct(LIMITS.share[0])}–${pct(LIMITS.share[1])} • hue windows ${fixed(LIMITS.hueWindow[0], 0)}–${fixed(LIMITS.hueWindow[1], 0)}°
+curve amount −${fixed(-LIMITS.amount[0], 0)}…+${fixed(LIMITS.amount[1], 0)} M, width ${fixed(LIMITS.width[0], 0)}–${fixed(LIMITS.width[1], 0)}° • share ${pct(LIMITS.share[0])} or more, for custom and neutral colors • hue windows ${fixed(LIMITS.hueWindow[0], 0)}–${fixed(LIMITS.hueWindow[1], 0)}°
 tiers        at least one, each one of Lc ${Object.keys(ROLES).join(", ")}
 identity     set by hand to a tier that isn't solved → automatic
 bases        L*(light base) > L*(dark base)
 name         at most 60 characters
 placed hues  kept only for keys of the current number of hues
+neutrals     none while both bases are under M ${String(NEUTRAL_BAND[0])}: nothing to follow
 older shapes upgraded: one identity tier for both modes → one per mode; Lc 60 light with Lc 45 dark → automatic</pre>
     </section>
 
@@ -151,10 +154,10 @@ target(h, Lc) = max(0, T(Lc) + curve(h))                  // a curve can't go be
       <p>The reach is measured at the hues the tier starts from: the starting hues on the identity tier, the identity tier's spaced hues on every other tier.</p>
       <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. The ceiling is measured before the curve: a hue the curve asks more of than it can reach on a tier stops at its reach (Gamut limit) rather than the whole tier dropping to make room for it. Each swatch is labeled from these numbers:</p>
 <pre class="formula">Gamut limit    measured M &lt; aim − 1                          // the screen holds it below its aim
-aim            hue: target(h, Lc)   extra: T(Lc) × share   muted: M(default) × muted share
+aim            hue: target(h, Lc)   custom: T(Lc) × share   muted: M(default) × muted share
 Sets the tier  the color is limit(Lc), default only           // the tier was lowered to its reach
 Lowered        limit(Lc) is another color, not Gamut limit, default only
-own aim        hue: M_target + curve(h)      extra: M_target × share   // what Lowered says it would be</pre>
+own aim        hue: M_target + curve(h)      custom: M_target × share   // what Lowered says it would be</pre>
     </section>
 
     <section class="step">
@@ -211,21 +214,23 @@ hue          = (2 · √(M*₁ · M*₂) · sin(Δh / 2))²      // the chord th
     </section>
 
     <section class="step">
-      <h2>8. Muted and extra colors</h2>
+      <h2>8. Muted, custom and neutral colors</h2>
 <pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) × ${String(s.muted)}, Lc)     // same hue, same tier
-extra(e, Lc) = strongest(hue(e), T(Lc) × share(e), Lc)               // not spaced${s.extras.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
+custom(c, Lc) = strongest(hue(c), T(Lc) × share(c), Lc)             // not spaced${s.extras.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
       <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a base with a hue each neutral color, which takes it:</p>
 <pre class="formula">gray(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
 tinted       = M(base) ≥ ${String(NEUTRAL_BAND[0])}                       // a pure gray still has M 1–2 in CAM16
 neutral(n, Lc) = strongest(hue(base), M(base) × share(n), Lc)    // only on a tinted base
-zones        = Gray under M ${String(NEUTRAL_BAND[0])}, Neutral M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}, Color past it; a new neutral color starts at M ${String(NEUTRAL_START)}
+zones        = Gray under M ${String(NEUTRAL_BAND[0])}, Neutral M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}, Color past it, for custom colors too; a new neutral color starts at M ${String(NEUTRAL_START)}
+from Gray    = ΔE(a*, b*) to the tier's gray, the tint alone       // M ${String(NEUTRAL_BAND[0])} ≈ ΔE 2–4, M ${String(NEUTRAL_BAND[1])} ≈ ΔE 5.5–6.5
 new share    = min(1, ${String(NEUTRAL_START)} / M(base)), the more colorful tinted base; 1 when neither is tinted
-exported     = a gray mode's neutral colors are its grays, so every name holds a color in both modes</pre>
+exported     = a gray mode's neutral colors are its grays, so every name holds a color in both modes
+two gray bases = no neutral colors at all; Gray alone</pre>
     </section>
 
     <section class="step">
       <h2>9. Variants for the H and M switches</h2>
-      <p>The H and M switches in the header, and the rows of the strip in Settings, show the palette without some of its edits. Each variant is a full solve of changed settings, in a second worker so the palette on screen never waits for it:</p>
+      <p>The H and M switches in the header, and the rows of the strip in Settings, show the palette without some of its edits. Each variant is a solve of changed settings, in a second worker so the palette on screen never waits for it:</p>
 <pre class="formula">H on,  M on    the palette as set
 H on,  M off   without the curve                          // "+H" row
 H off, M on    with nothing placed
@@ -248,6 +253,7 @@ APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA • ≥ 4.5 AA • ≥ 3 AA large • else below</pre>
       <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.extras.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker; the header shows how long the one on screen took.</p>
+      <p>The hues are the costly part, and custom colors, neutral colors and the muted share don't move them. So each worker keeps the hues of its last few solves, keyed by every setting but those, and a change to them only places the colors on the kept hues again: a few milliseconds instead of a whole solve, so they follow a slider as it moves.</p>
     </section>
 
     <section class="step">

@@ -34,6 +34,8 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Custom colors, neutral colors and the muted share reuse the hues already solved: a change to them
   takes milliseconds instead of a whole solve, and follows a slider as it moves.
 - The add and measure buttons sit centered over the fields, and names fill their row.
+- How it works, the algorithm page and the README describe custom and neutral colors, the zones and
+  the kept hues; extra colors are custom colors wherever a color is meant.
 
 ### Fixed
 
@@ -41,6 +43,7 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the new one arrives, a redraw keeps the strip as it was, and the browser's own scroll correction,
   which moved the page after a redraw, is off there.
 - The value panels beside the hue and curve graphs line up with the top of the graph.
+- The algorithm page's list of limits gave the share's as "0%–Infinity%"; it says "0% or more".
 
 ## [2.2.4] - 2026-10-26
 

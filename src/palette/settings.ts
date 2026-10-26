@@ -4,8 +4,8 @@
 | Everything a palette is solved from, with EK Colors' defaults: the bases and the room each mode  |
 | is seen in, the colorfulness target, whether tiers are equally colorful, the curve over hue per  |
 | mode, how many hues and where they're anchored and placed, the APCA tiers and the identity tier  |
-| per mode, how far hues may move, the muted share, any extra colors, and the reference system     |
-| drawn as guides.                                                                                 |
+| per mode, how far hues may move, the muted share, any custom and neutral colors, and the         |
+| reference system drawn as guides.                                                                |
 \*------------------------------------------------------------------------------------------------*/
 
 /* >-----------------------------------------< Types >------------------------------------------< */
