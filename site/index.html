@@ -392,6 +392,7 @@
   .guide-row { grid-column: 2; display: flex; gap: var(--space-4); align-items: center; margin: 0 var(--graph-inset-end, 0) calc(-1 * var(--space-5)) var(--graph-inset, 0); }
   .guide-picker { flex: 1; display: flex; min-width: 0; }
   .graph-caption.readout { font-size: var(--type-md); color: var(--fg); }
+  .readout.stale { opacity: 0.5; }
   .graph-caption.hint { font-size: var(--type-sm); color: var(--soft); }
   .graph-help summary { cursor: pointer; color: var(--fg); width: fit-content; }
   .graph-help ul { margin: var(--space-2) 0 0; padding-left: var(--space-6); display: grid; gap: var(--space-1); }
@@ -746,6 +747,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=2530b60031"></script>
+<script type="module" src="app.js?v=a1f1b32343"></script>
 </body>
 </html>

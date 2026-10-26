@@ -9,7 +9,7 @@
 
 import type { Guide } from "../palette/references";
 import { composition, hueTurn, wrapHue } from "../palette/model";
-import { refill } from "./dom";
+import { readout, refill } from "./dom";
 import { againstEven, band, evenText, inGaps, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on every row. */
@@ -240,7 +240,7 @@ export function refreshHues(view: HuesView, panel = false): void {
   if (!editor) return;
   refill(editor.querySelector(".hues-layers")!, huesLayers(view));
   editor.querySelector("linearGradient")!.innerHTML = stops(view.band);
-  editor.querySelector(".hues-readout")!.innerHTML = huesReadout(view);
+  readout(editor.querySelector(".hues-readout")!, huesReadout(view), !view.cost);
   const values = editor.querySelector(".hues-values")!;
   if (panel || !values.contains(document.activeElement)) refill(values, huesPanel(view));
 }

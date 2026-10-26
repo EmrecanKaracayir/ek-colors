@@ -6,6 +6,23 @@
 \*------------------------------------------------------------------------------------------------*/
 
 /**
+ * Writes a readout, except while the palette solves: then its last text stays, dimmed, so it
+ * keeps its height and nothing below it moves.
+ *
+ * @param el       The readout.
+ * @param html     Its new contents.
+ * @param solving  Whether the palette is still solving.
+ */
+export function readout(el: Element, html: string, solving: boolean): void {
+  if (solving && el.textContent) {
+    el.classList.add("stale");
+    return;
+  }
+  el.classList.remove("stale");
+  el.innerHTML = html;
+}
+
+/**
  * Draws an element's contents again. Whatever control had the focus inside it gets it back, found
  * by its id, or else by its data attributes, so redrawing never sends a keyboard user to the top of
  * the page; a disclosure that was open, found by its id, stays open.

@@ -12,7 +12,7 @@ import { type CurvePoint, LIMITS, type Mode } from "../palette/settings";
 import type { Guide } from "../palette/references";
 import { hueTurn, wrapHue } from "../palette/model";
 import { boost } from "../palette/solve";
-import { refill } from "./dom";
+import { readout, refill } from "./dom";
 import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, signedWhole, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
@@ -166,7 +166,7 @@ export function refreshCurve(view: CurveView, panel = false): void {
   if (!editor) return;
   refill(editor.querySelector(".curve-layers")!, curveLayers(view));
   editor.querySelector("linearGradient")!.innerHTML = stops(view.band);
-  editor.querySelector(".curve-readout")!.innerHTML = curveReadout(view);
+  readout(editor.querySelector(".curve-readout")!, curveReadout(view), !view.cost);
   if (panel) return refill(editor.querySelector(".curve-values")!, valuesPanel(view));
   const chosen = points[selected[mode]];
   if (!chosen) return;
