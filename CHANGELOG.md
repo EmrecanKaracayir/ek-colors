@@ -7,6 +7,8 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-27
+
 ### Added
 
 - Neutrals: Gray on every tier in every palette, its red, green and blue the same, exactly on the
@@ -225,7 +227,8 @@ The first release as EK Colors, the project Codemos palette grew into.
 - Export as JSON, CSV, Markdown or CSS, the CSS with `light-dark()` custom properties per gamut.
 - Settings can be copied, and pasted back in with each field checked, with Undo paste.
 
-[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.4...HEAD
+[Unreleased]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.4...v2.3.0
 [2.2.4]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/EmrecanKaracayir/ek-colors/compare/v2.2.1...v2.2.2
