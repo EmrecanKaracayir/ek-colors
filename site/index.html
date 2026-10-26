@@ -354,15 +354,17 @@
   .color-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--space-8); align-items: start; }
   .color-column { display: grid; gap: var(--space-6); align-content: start; min-width: 0; }
   .color-column > h3 { margin: 0; }
-  .gray-row p { margin: 0; }
   /* Under a share's slider: where the band for text and lines is, and the colorfulness it gives. */
   .field.with-after .share-band { grid-column: 2; position: relative; height: 0.25rem; margin-top: calc(-1 * var(--space-4)); border-radius: var(--radius-pill); background: var(--line); }
   .band-zone { position: absolute; top: 0; bottom: 0; border-radius: inherit; background: color-mix(in oklch, var(--fg) 45%, transparent); }
   .field.with-after .share-m { grid-column: 2 / -1; margin-top: calc(-1 * var(--space-4)); font-size: var(--type-sm); }
   .share-m.tint-strong { color: var(--fair); }
-  .extra-title { display: flex; gap: var(--space-5); align-items: baseline; justify-content: space-between; margin: 0; }
-  .extra-name { display: inline-flex; gap: var(--space-4); align-items: center; }
-  .extra-name .soft { font-weight: 400; font-size: var(--type-md); }
+  .extra-title { display: flex; gap: var(--space-4); align-items: center; margin: 0; }
+  .extra-title .soft { font-weight: 400; font-size: var(--type-md); }
+  .extra-title .link { margin-inline-start: auto; }
+  .extra-title input.extra-name { flex: 1; min-width: 0; font: inherit; color: inherit; background: none; border: 0; border-bottom: 1px dotted var(--soft); border-radius: 0; padding: 0; }
+  .extra-title input.extra-name:focus { border-bottom-style: solid; outline: none; }
+  .extra-title input.extra-name:focus-visible { border-bottom-color: var(--fg); }
   .demo .strip { position: static; padding-block: 0; background: none; }
   .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem) - 1px); z-index: 4; background: var(--bg); border-bottom: 1px solid transparent; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-5); align-items: start; padding-block: var(--space-5); }
   .graph-editor { max-width: 56rem; display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: var(--space-5) var(--space-7); align-items: center; }
@@ -738,6 +740,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=d3255f896e"></script>
+<script type="module" src="app.js?v=1cb8672e0e"></script>
 </body>
 </html>

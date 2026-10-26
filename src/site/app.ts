@@ -1526,7 +1526,7 @@ function colorChips(current: string): string {
   const chip = (key: string, color: string) =>
     `<a href="#${key}" style="--c:${color}"${key === current ? ' aria-current="page"' : ""}><span class="dot"></span>${label(key)}</a>`;
   const hues = colors(tier).map((x) => chip(x.key, x.tiers[tier]!.default.color));
-  // A mode whose base is a pure gray has only the grays: its neutral colors would be the same.
+  // A mode whose base is gray or close to it has only the grays: its neutral colors would be the same.
   const neutrals = p ? [chip(GRAY, p.grays[tier]!.color), ...(p.tinted ? p.neutrals.map((n) => chip(n.key, n.tiers[tier]!.color)) : [])] : [];
   return `<nav class="chips" aria-label="Colors">${hues.join("")}${neutrals.length ? `<span class="chips-gap" aria-hidden="true"></span>${neutrals.join("")}` : ""}</nav>`;
 }
@@ -1584,7 +1584,7 @@ function neutralPage(key: string): string {
   const neutral = p.neutrals.find((n) => n.key === key);
   if (neutral && !p.tinted)
     return `${colorChips(key)}
-      <section class="intro"><h1>${label(key)}</h1><p>The ${mode} base, ${p.base}, is a pure gray, so its neutral colors are the <a href="#gray">grays</a>. On a tinted base, ${label(key)} follows its tint.</p></section>`;
+      <section class="intro"><h1>${label(key)}</h1><p>The ${mode} base, ${p.base}, is gray or close to it, under M ${String(NEUTRAL_BAND[0])}, so its neutral colors are the <a href="#gray">grays</a>. On a tinted base, ${label(key)} follows its tint.</p></section>`;
   const tiers = neutral ? neutral.tiers : p.grays;
   const identity = tiers[tier]!;
   const base = baseTint(mode);
@@ -1601,14 +1601,14 @@ function neutralPage(key: string): string {
 }
 
 /**
- * How colorful a mode's base is, which a neutral color takes its share of; 0 for a pure gray.
+ * How colorful a mode's base is, which a neutral color takes its share of; 0 for a gray base.
  *
  * @param mode  The mode.
  * @returns     CAM16 M.
  */
 function baseTint(mode: Mode): number {
   const base = state.settings.bases[mode];
-  return tinted(base) ? model().cam(mode, base).m : 0;
+  return tinted(model(), mode, base) ? model().cam(mode, base).m : 0;
 }
 
 /**
@@ -1888,7 +1888,7 @@ function shareInfo(path: string): string {
   const of = neutral ? baseTint(state.mode) : state.settings.colorfulness;
   const [low, high] = NEUTRAL_BAND;
   if (of <= 0)
-    return `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is pure gray, so this is the grays.</span>`;
+    return `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is gray or close to it, so this is the grays.</span>`;
   const m = share * of;
   // The band as shares of this slider, its edges rounded inward to 4% when that leaves a band.
   let [from, to] = [low / of, high / of];
@@ -1896,7 +1896,8 @@ function shareInfo(path: string): string {
   if (inner < outer) [from, to] = [inner, outer];
   const zone = from < 1 ? `<span class="band-zone" style="left:${(from * 100).toFixed(2)}%;width:${((Math.min(to, 1) - from) * 100).toFixed(2)}%"></span>` : "";
   const where = m >= low && m <= high ? " • text and lines" : neutral && m > 12 ? " • reads as a color" : !neutral && m <= high ? " • as faint as a neutral" : "";
-  return `<span class="share-band" aria-hidden="true" title="M ${String(low)}–${String(high)}: for text and lines">${zone}</span><span class="share-m soft${neutral && m > 12 ? " tint-strong" : ""}" data-readout="${path}">M ${m.toFixed(1)}${neutral ? ` in ${state.mode} mode` : ""}${where}</span>`;
+  const band = zone ? `<span class="share-band" aria-hidden="true" title="M ${String(low)}–${String(high)}: for text and lines">${zone}</span>` : "";
+  return `${band}<span class="share-m soft${neutral && m > 12 ? " tint-strong" : ""}" data-readout="${path}">M ${m.toFixed(1)}${neutral ? ` in ${state.mode} mode` : ""}${where}</span>`;
 }
 
 /**
@@ -1954,16 +1955,15 @@ function write(path: string, value: unknown): void {
 function extraFields(i: number): string {
   const name = escape(state.settings.extras[i]!.name);
   return `<div class="extra" data-extra="${String(i)}">
-    <h3 class="extra-title">${extraTitle(i)}<button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
-    <label class="field wide" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
-    ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true })}
-    ${shareField(`extras.${String(i)}.share`, "Colorfulness share")}
+    <h3 class="extra-title">${extraDot(i)}<input class="extra-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false" aria-label="Name"><button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
+    ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` })}
+    ${shareField(`extras.${String(i)}.share`, "Share")}
   </div>`;
 }
 
 /**
- * One neutral color's settings: its name and its share of the base's tint, under a title showing
- * its color on the identity tier.
+ * One neutral color's settings: its name, beside a dot of its color on the identity tier, and its
+ * share of the base's tint.
  *
  * @param i  Which neutral color.
  * @returns  HTML.
@@ -1971,23 +1971,22 @@ function extraFields(i: number): string {
 function neutralFields(i: number): string {
   const name = escape(state.settings.neutrals[i]!.name);
   return `<div class="extra" data-neutral="${String(i)}">
-    <h3 class="extra-title">${neutralTitle(i)}<button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}">Remove</button></h3>
-    <label class="field wide" for="set-neutrals-${String(i)}-name"><span>Name</span><input id="set-neutrals-${String(i)}-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false"></label>
-    ${shareField(`neutrals.${String(i)}.share`, "Share of the base's tint")}
+    <h3 class="extra-title">${neutralDot(i)}<input class="extra-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false" aria-label="Name"><button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}">Remove</button></h3>
+    ${shareField(`neutrals.${String(i)}.share`, "Share")}
   </div>`;
 }
 
 /**
- * A neutral color's title: a dot of its color on the identity tier and its name.
+ * A neutral color's dot: its color on the identity tier.
  *
  * @param i  Which neutral color.
  * @returns  HTML.
  */
-function neutralTitle(i: number): string {
+function neutralDot(i: number): string {
   const key = colorKeys(state.settings).neutrals[i]!;
   const tier = identityOf(state.settings, state.mode);
   const color = currentMode()?.neutrals.find((n) => n.key === key)?.tiers[tier]?.color ?? "transparent";
-  return `<span class="extra-name"><span class="dot" style="--c:${color}"></span>${label(key)}<span class="soft">follows the base</span></span>`;
+  return `<span class="dot" style="--c:${color}"></span>`;
 }
 
 /**
@@ -1996,7 +1995,7 @@ function neutralTitle(i: number): string {
  * @returns  True when a base is tinted.
  */
 function anyTinted(): boolean {
-  return MODES.some((m) => tinted(state.settings.bases[m]));
+  return MODES.some((m) => tinted(model(), m, state.settings.bases[m]));
 }
 
 /**
@@ -2007,22 +2006,30 @@ function anyTinted(): boolean {
 function grayRow(): string {
   const tier = identityOf(state.settings, state.mode);
   const color = currentMode()?.grays[tier]?.color ?? "transparent";
-  return `<div class="extra gray-row"><h3 class="extra-title"><span class="extra-name"><span class="dot" style="--c:${color}"></span>Gray<span class="soft">every palette has it</span></span></h3>
-    <p class="soft">Red, green and blue the same, on every tier.</p></div>`;
+  return `<h3 class="extra-title gray-row"><span class="dot" style="--c:${color}"></span>Gray<span class="soft">red, green and blue the same</span></h3>`;
 }
 
 /**
- * An extra color's title: a dot of its color on the identity tier, its name, and its hue's reading.
+ * An extra color's dot: its color on the identity tier.
  *
  * @param i  Which extra color.
  * @returns  HTML.
  */
-function extraTitle(i: number): string {
-  const extra = state.settings.extras[i]!;
+function extraDot(i: number): string {
   const key = extraKeys(state.settings)[i]!;
   const tier = identityOf(state.settings, state.mode);
   const color = current()?.[state.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
-  return `<span class="extra-name"><span class="dot" style="--c:${color}"></span>${label(key)}<span class="soft">${extra.hue.toFixed(1)}° • ${composition(extra.hue)}</span></span>`;
+  return `<span class="dot" style="--c:${color}"></span>`;
+}
+
+/**
+ * How an extra color's hue reads.
+ *
+ * @param i  Which extra color.
+ * @returns  Text.
+ */
+function hueNote(i: number): string {
+  return composition(state.settings.extras[i]!.hue);
 }
 
 /**
@@ -2082,15 +2089,15 @@ function tune(): string {
       <div class="color-columns">
         <div class="color-column">
           <h3>Custom colors</h3>
-          <p class="soft">Each stays on its own hue at a share of the tier's colorfulness, with a muted version too. They aren't spaced with the hues or measured by the blind tests.</p>
+          <p class="soft">Each on its own hue at a share of the colorfulness, with a muted version.</p>
           ${s.extras.map((_, i) => extraFields(i)).join("")}
           <p><button type="button" data-action="add-extra">Add a custom color</button></p>
         </div>
         <div class="color-column">
           <h3>Neutral colors</h3>
-          <p class="soft">Gray comes with every palette. Each neutral color follows its mode's base: the base's hue at a share of its colorfulness, so text and lines belong to a tinted page. On a pure-gray base they're the grays.</p>
+          <p class="soft">Gray, and colors that follow each base's tint.</p>
           ${grayRow()}
-          <p class="soft" id="neutrals-untinted"${anyTinted() ? " hidden" : ""}>Both bases are pure gray, so the grays are their neutrals. Tint a base, in Viewing below, to add neutral colors that follow it.</p>
+          <p class="soft" id="neutrals-untinted"${anyTinted() ? " hidden" : ""}>Both bases are gray or close to it, so the grays are their neutrals. Tint a base to M ${String(NEUTRAL_BAND[0])} or more, in Viewing below, to add neutral colors that follow it.</p>
           <div id="neutrals-list"${anyTinted() ? "" : " hidden"}>
             ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
             <p><button type="button" data-action="add-neutral">Add a neutral color</button></p>
@@ -2688,15 +2695,15 @@ function updateTune(): void {
   if (name) name.placeholder = defaultName();
   updateStrip();
   updateExport();
-  for (const title of document.querySelectorAll("[data-neutral] .extra-title")) {
-    const i = Number(title.closest<HTMLElement>("[data-neutral]")!.dataset.neutral);
-    title.querySelector(".extra-name")!.outerHTML = neutralTitle(i);
+  for (const block of document.querySelectorAll<HTMLElement>("[data-neutral]")) {
+    block.querySelector(".extra-title .dot")!.outerHTML = neutralDot(Number(block.dataset.neutral));
   }
   document.querySelector(".gray-row")?.replaceWith(document.createRange().createContextualFragment(grayRow()));
   updateShares();
-  for (const title of document.querySelectorAll("[data-extra] .extra-title")) {
-    const i = Number(title.closest<HTMLElement>("[data-extra]")!.dataset.extra);
-    title.querySelector(".extra-name")!.outerHTML = extraTitle(i);
+  for (const block of document.querySelectorAll<HTMLElement>("[data-extra]")) {
+    const i = Number(block.dataset.extra);
+    block.querySelector(".extra-title .dot")!.outerHTML = extraDot(i);
+    block.querySelector("[data-hue-note]")!.textContent = hueNote(i);
   }
   if (document.querySelector(".hues-editor")) refreshHues(huesView());
   for (const m of MODES) refreshCurve(curveView(m));
@@ -3163,7 +3170,7 @@ document.addEventListener("input", (event) => {
   // automatic identity tier is measured on the bases.
   if (path.startsWith("bases.") || path.startsWith("rooms.")) syncAnchor();
   if (path.startsWith("bases.")) for (const m of MODES) $(`#set-identity-${m} option[value="auto"]`).textContent = automaticName(m);
-  // Neutral colors can be added once a base is tinted; on pure grays they'd be the grays.
+  // Neutral colors can be added once a base is tinted; on gray bases they'd be the grays.
   if (path.startsWith("bases.")) {
     $<HTMLElement>("#neutrals-untinted").hidden = anyTinted();
     $<HTMLElement>("#neutrals-list").hidden = !anyTinted();

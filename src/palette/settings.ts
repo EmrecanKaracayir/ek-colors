@@ -70,7 +70,7 @@ export interface CurvePoint {
 
 /**
  * A neutral color: it follows its mode's base, on the base's hue at a share of the base's own
- * colorfulness. On a base that's a pure gray it's the grays.
+ * colorfulness. On a base that's gray or close to it, it's the grays.
  */
 export interface Neutral {
   /** What it's called. */

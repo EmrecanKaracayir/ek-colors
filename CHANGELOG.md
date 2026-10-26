@@ -11,8 +11,8 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Neutrals: a gray on every tier, its red, green and blue the same, exactly on the tier's contrast,
   in every palette. Neutral colors follow their mode's base: its hue at a share of its own
-  colorfulness. EK Palette has one, Neutral; add more with "Add a neutral color". On a pure-gray
-  base they're the grays. Gray and each neutral color have pages beside the colors' and come in
+  colorfulness, added with "Add a neutral color" once a base is tinted, at M 4 or more; a base
+  under that reads as gray, and its neutral colors are the grays. Gray and each neutral color have pages beside the colors' and come in
   every export, as `--gray-60` and, when a base is tinted, `--neutral-60`.
 - Extra colors are split into custom colors and neutral colors, side by side in Settings.
 - A share's slider has an exact field to a tenth of a percent, shows the colorfulness it gives,

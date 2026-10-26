@@ -65,10 +65,10 @@ export interface ModePalette {
   /** Per tier, the gray on it: no color at all, its red, green and blue the same. */
   readonly grays: Readonly<Record<number, Swatch>>;
 
-  /** Whether the base is tinted: its red, green and blue differ. */
+  /** Whether the base is tinted: at least M 4, the band's bottom. */
   readonly tinted: boolean;
 
-  /** Each neutral color per tier: on a tinted base it follows the base, on a pure gray it's the grays. */
+  /** Each neutral color per tier: on a tinted base it follows the base, on a gray base it's the grays. */
   readonly neutrals: readonly NeutralColor[];
 }
 
@@ -308,15 +308,16 @@ export function grayOn(base: string, tier: number): string {
 }
 
 /**
- * Whether a base has a tint: its red, green and blue differ. A pure gray still has a little
- * colorfulness in CAM16, so this is judged on the screen's color instead.
+ * Whether a base has a tint its neutral colors can follow: it's at least as colorful as the band's
+ * bottom. A fainter base, a pure gray among them, reads as gray, and so do its neutral colors.
  *
- * @param base  The background, as hex.
- * @returns     True when it's tinted.
+ * @param model  The color model.
+ * @param mode   The base's mode, for its room.
+ * @param base   The background, as hex.
+ * @returns      True when it's tinted.
  */
-export function tinted(base: string): boolean {
-  const [r, g, b] = [1, 3, 5].map((i) => base.slice(i, i + 2).toUpperCase());
-  return r !== g || g !== b;
+export function tinted(model: Model, mode: Mode, base: string): boolean {
+  return model.cam(mode, base).m >= NEUTRAL_BAND[0];
 }
 
 /** The grays' key, as their page and exports name them; no other color can take it. */
@@ -668,7 +669,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   const onTiers = (make: (tier: number) => Swatch) =>
     Object.fromEntries(settings.tiers.map((t) => [t, make(t)]));
   const grays = onTiers((t) => swatch(model, base, mode, grayOn(base, t), 0));
-  const tint = tinted(base) ? model.cam(mode, base) : null;
+  const tint = tinted(model, mode, base) ? model.cam(mode, base) : null;
   const neutralKeys = colorKeys(settings).neutrals;
   const neutrals = settings.neutrals.map((n, i) => ({
     key: neutralKeys[i]!,

@@ -25,7 +25,7 @@ interface NeutralRow {
 
 /**
  * The neutrals as exported: gray always, and each neutral color whenever either mode's base is
- * tinted. A mode whose base is a pure gray gives the grays for its neutrals, so every name holds a
+ * tinted. A mode whose base is gray or close to it gives the grays for its neutrals, so every name holds a
  * color in both modes.
  *
  * @param palette  One gamut's palette.

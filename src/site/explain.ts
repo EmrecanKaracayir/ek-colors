@@ -647,7 +647,7 @@ export function explain(ctx: Context): string {
     <section class="step">
       <h2>Neutrals</h2>
       <p>Every palette also gets a <strong>gray</strong> on every tier: its red, green and blue the same, exactly on the tier's contrast against the base, as every color is. Text, quiet text and lines usually come from these.</p>
-      <p>When a mode's base is tinted, its <strong>neutral colors</strong> follow it: the base's hue, at a share of the base's own colorfulness. On warm paper, text and lines then belong to the page instead of looking cold on it. Between M ${String(NEUTRAL_BAND[0])} and ${String(NEUTRAL_BAND[1])} a neutral is tinted yet neutral, right for text and lines; fainter, the tint hardly shows; stronger, text starts to read as a color. A palette can have several, each with its own share, added in Settings beside the extra colors. A pure-gray base's neutral colors are its grays. Gray and each neutral color have pages of their own beside the colors'.</p>
+      <p>When a mode's base is tinted, its <strong>neutral colors</strong> follow it: the base's hue, at a share of the base's own colorfulness. On warm paper, text and lines then belong to the page instead of looking cold on it. Between M ${String(NEUTRAL_BAND[0])} and ${String(NEUTRAL_BAND[1])} a neutral is tinted yet neutral, right for text and lines; fainter, the tint hardly shows; stronger, text starts to read as a color. A palette can have several, each with its own share, added in Settings beside the extra colors. A base under M ${String(NEUTRAL_BAND[0])}, a pure gray or close to it, reads as gray, and its neutral colors are its grays. Gray and each neutral color have pages of their own beside the colors'.</p>
     </section>
 
     <section class="step">
