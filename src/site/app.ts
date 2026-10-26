@@ -1847,7 +1847,7 @@ function number(
   path: string,
   title: string,
   [min, max, step]: readonly [number, number, number],
-  { slider = false, percent = false, sliderMax, after = "", decimals = 6 }: { slider?: boolean; percent?: boolean; sliderMax?: number; after?: string; decimals?: number } = {},
+  { slider = false, percent = false, sliderMax, band, after = "", decimals = 6 }: { slider?: boolean; percent?: boolean; sliderMax?: number; band?: string; after?: string; decimals?: number } = {},
 ): string {
   const scale = percent ? 100 : 1;
   const shown = (x: number) => String(Math.round(x * scale * 10 ** decimals) / 10 ** decimals);
@@ -1858,7 +1858,7 @@ function number(
   const sliding = sliderMax === undefined ? bound : `${common} max="${shown(sliderMax)}" step="any"`;
   const field = `<input id="${id}" type="number" ${bound}${percent ? ` aria-label="${title}, percent"` : ""}>`;
   return `<label class="field${after ? " with-after" : ""}" for="${id}"><span>${title}</span>
-    ${slider ? `<input type="range" ${sliding} aria-label="${title}">` : ""}
+    ${slider ? (band === undefined ? `<input type="range" ${sliding} aria-label="${title}">` : `<span class="slider-cell"><input type="range" ${sliding} aria-label="${title}">${band}</span>`) : ""}
     ${percent ? `<span class="with-unit">${field}<span aria-hidden="true">%</span></span>` : field}${after}
   </label>`;
 }
@@ -1872,7 +1872,8 @@ function number(
  * @returns      HTML.
  */
 function shareField(path: string, title: string): string {
-  return number(path, title, [0, Infinity, 0.001], { slider: true, percent: true, sliderMax: 1, after: shareInfo(path), decimals: 1 });
+  const { band, readout } = shareInfo(path);
+  return number(path, title, [0, Infinity, 0.001], { slider: true, percent: true, sliderMax: 1, band, after: readout, decimals: 1 });
 }
 
 /**
@@ -1880,15 +1881,15 @@ function shareField(path: string, title: string): string {
  * An extra color's share is of the palette's colorfulness; a neutral color's, of the mode's base.
  *
  * @param path  The share's setting.
- * @returns     HTML.
+ * @returns     The band, for under the slider, and the readout, for under the field; HTML.
  */
-function shareInfo(path: string): string {
+function shareInfo(path: string): { band: string; readout: string } {
   const share = Number(read(path) ?? 0);
   const neutral = path.startsWith("neutrals.");
   const of = neutral ? baseTint(state.mode) : state.settings.colorfulness;
   const [low, high] = NEUTRAL_BAND;
   if (of <= 0)
-    return `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is gray or close to it, so this is the grays.</span>`;
+    return { band: "", readout: `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is gray or close to it, so this is the grays.</span>` };
   const m = share * of;
   // The band as shares of this slider, its edges rounded inward to 4% when that leaves a band.
   let [from, to] = [low / of, high / of];
@@ -1897,7 +1898,7 @@ function shareInfo(path: string): string {
   const zone = from < 1 ? `<span class="band-zone" style="left:${(from * 100).toFixed(2)}%;width:${((Math.min(to, 1) - from) * 100).toFixed(2)}%"></span>` : "";
   const where = m >= low && m <= high ? " • text and lines" : neutral && m > 12 ? " • reads as a color" : !neutral && m <= high ? " • as faint as a neutral" : "";
   const band = zone ? `<span class="share-band" aria-hidden="true" title="M ${String(low)}–${String(high)}: for text and lines">${zone}</span>` : "";
-  return `${band}<span class="share-m soft${neutral && m > 12 ? " tint-strong" : ""}" data-readout="${path}">M ${m.toFixed(1)}${neutral ? ` in ${state.mode} mode` : ""}${where}</span>`;
+  return { band, readout: `<span class="share-m soft${neutral && m > 12 ? " tint-strong" : ""}" data-readout="${path}">M ${m.toFixed(1)}${neutral ? ` in ${state.mode} mode` : ""}${where}</span>` };
 }
 
 /**
@@ -1909,7 +1910,9 @@ function updateShares(): void {
     const path = field.querySelector<HTMLInputElement>("[data-set]")?.dataset.set;
     if (!path?.endsWith(".share")) continue;
     field.querySelectorAll(".share-band, .share-m").forEach((el) => el.remove());
-    field.insertAdjacentHTML("beforeend", shareInfo(path));
+    const { band, readout } = shareInfo(path);
+    field.querySelector(".slider-cell")?.insertAdjacentHTML("beforeend", band);
+    field.insertAdjacentHTML("beforeend", readout);
   }
 }
 
@@ -2088,17 +2091,21 @@ function tune(): string {
       <p class="soft">Colors beside the evenly spaced hues, on every tier. The band on each share marks where its colorfulness is M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}: tinted yet neutral, right for text and lines.</p>
       <div class="color-columns">
         <div class="color-column">
-          <h3>Custom colors</h3>
-          <p class="soft">Each on its own hue at a share of the colorfulness, with a muted version.</p>
+          <div class="column-head">
+            <h3>Custom colors</h3>
+            <p class="soft">Each on its own hue at a share of the colorfulness, with a muted version.</p>
+          </div>
           ${s.extras.map((_, i) => extraFields(i)).join("")}
           <p><button type="button" data-action="add-extra">Add a custom color</button></p>
         </div>
         <div class="color-column">
-          <h3>Neutral colors</h3>
-          <p class="soft">Gray, and colors that follow each base's tint.</p>
+          <div class="column-head">
+            <h3>Neutral colors</h3>
+            <p class="soft">Gray, and colors that follow each base's tint.</p>
+          </div>
           ${grayRow()}
           <p class="soft" id="neutrals-untinted"${anyTinted() ? " hidden" : ""}>Both bases are gray or close to it, so the grays are their neutrals. Tint a base to M ${String(NEUTRAL_BAND[0])} or more, in Viewing below, to add neutral colors that follow it.</p>
-          <div id="neutrals-list"${anyTinted() ? "" : " hidden"}>
+          <div id="neutrals-list" class="color-list"${anyTinted() ? "" : " hidden"}>
             ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
             <p><button type="button" data-action="add-neutral">Add a neutral color</button></p>
           </div>
