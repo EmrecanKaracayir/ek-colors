@@ -13,7 +13,7 @@ import { composition, deltaE, hueTurn, lightness, makeModel, type Model, parts, 
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
 import { readSettings, SettingsError } from "../palette/check";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
-import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, PAGES, tinted, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, PAGES, tinted, withNeutrals, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { announce, copyText, flash, markField, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
@@ -90,7 +90,7 @@ const state = {
 function load(): Settings {
   try {
     const saved = localStorage.getItem(STORE);
-    if (saved) return readSettings(JSON.parse(saved), CONFIG);
+    if (saved) return withNeutrals(readSettings(JSON.parse(saved), CONFIG));
   } catch {
     // Storage can be blocked, and settings that no longer make sense are dropped; the defaults do.
   }
@@ -1939,7 +1939,7 @@ function write(path: string, value: unknown): void {
   // A number in the path is an index into a list; a missing step is made as a list or an object to match.
   keys.slice(0, -1).forEach((k, i) => (o = (o[k] ??= /^\d+$/.test(keys[i + 1]!) ? [] : {}) as Record<string, unknown>));
   o[keys.at(-1)!] = value;
-  state.settings = next as unknown as Settings;
+  state.settings = withNeutrals(next as unknown as Settings);
   // A change after a paste keeps it: there's nothing left to undo.
   if (state.undo) {
     state.undo = null;
@@ -3017,7 +3017,7 @@ document.addEventListener("click", (event) => {
     if (typeof pasted === "string") state.paste = { ...state.paste, problem: pasted };
     else {
       state.undo = state.settings;
-      state.settings = pasted;
+      state.settings = withNeutrals(pasted);
       state.paste = { open: false, text: "", problem: "" };
       save();
       solve();
@@ -3180,10 +3180,12 @@ document.addEventListener("input", (event) => {
   // automatic identity tier is measured on the bases.
   if (path.startsWith("bases.") || path.startsWith("rooms.")) syncAnchor();
   if (path.startsWith("bases.")) for (const m of MODES) $(`#set-identity-${m} option[value="auto"]`).textContent = automaticName(m);
-  // Neutral colors can be added once a base is tinted; on gray bases they'd be the grays.
+  // Neutral colors can be added once a base is tinted; on gray bases there are none.
   if (path.startsWith("bases.")) {
     $<HTMLElement>("#neutrals-untinted").hidden = anyTinted();
     $<HTMLElement>("#neutrals-list").hidden = !anyTinted();
+    // Two gray bases have no neutral colors, so their blocks go with them.
+    if (!state.settings.neutrals.length) document.querySelectorAll("[data-neutral]").forEach((el) => el.remove());
   }
   if (path.startsWith("curve.") || path.startsWith("extras.")) updateTune();
   if (path === "hues") $("#hues-note").innerHTML = huesNote(state.settings.hues);

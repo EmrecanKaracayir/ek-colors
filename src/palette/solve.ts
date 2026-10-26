@@ -320,6 +320,21 @@ export function tinted(model: Model, mode: Mode, base: string): boolean {
   return model.cam(mode, base).m >= NEUTRAL_BAND[0];
 }
 
+/**
+ * The settings with neutral colors only while a base is tinted. On two gray bases a neutral color
+ * would be the grays, so there are none.
+ *
+ * @param settings  The palette's settings.
+ * @returns         The same settings, without neutral colors when neither base is tinted.
+ */
+export function withNeutrals(settings: Settings): Settings {
+  if (settings.neutrals.length === 0) return settings;
+  const model = makeModel(settings);
+  return MODES.some((m) => tinted(model, m, settings.bases[m]))
+    ? settings
+    : { ...settings, neutrals: [] };
+}
+
 /** The grays' key, as their page and exports name them; no other color can take it. */
 export const GRAY = "gray";
 
