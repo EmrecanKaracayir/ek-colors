@@ -142,18 +142,19 @@ export function zone(bend: number): (typeof ZONES)[number] {
 const along = (bend: number) => Math.sqrt(Math.min(bend, 1.5) / 1.5) * 100;
 
 /**
- * A bend on a bar of its zones, with a mark where it falls.
+ * A bend on a bar of its zones, with a mark where it falls; with no bend yet, the bar alone.
  *
- * @param bend   Gaps.
+ * @param bend   Gaps, or null before there's one.
  * @param large  Whether it's the large one, with the zones named under it.
  * @returns      HTML.
  */
-export function bendMeter(bend: number, large = false): string {
+export function bendMeter(bend: number | null, large = false): string {
   const edges = [0, ...ZONES.map((z) => along(z.upTo))];
   const parts = ZONES.map((_, i) => `<span style="flex-basis:${(edges[i + 1]! - edges[i]!).toFixed(2)}%"></span>`).join("");
   const names = large
     ? `<span class="meter-names">${ZONES.map((z, i) => `<span style="left:${((edges[i]! + edges[i + 1]!) / 2).toFixed(2)}%">${z.name}</span>`).join("")}</span>`
     : "";
+  if (bend === null) return `<span class="bend-meter${large ? " large" : ""}" aria-hidden="true"><span class="meter-zones">${parts}</span>${names}</span>`;
   return `<span class="bend-meter${large ? " large" : ""}" role="img" aria-label="Bend ${bend.toFixed(2)} gap: ${zone(bend).name}"><span class="meter-zones">${parts}</span><span class="meter-mark" style="left:${along(bend).toFixed(2)}%"></span>${names}</span>`;
 }
 

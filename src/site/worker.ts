@@ -6,7 +6,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import type { Gamut, Settings } from "../palette/settings";
-import { type GamutPalette, solveGamut } from "../palette/solve";
+import { type GamutCore, type GamutPalette, solveGamut } from "../palette/solve";
 
 export interface Request {
   readonly id: number;
@@ -18,12 +18,15 @@ export type Response =
   | { readonly id: number; readonly gamut: Gamut; readonly palette: GamutPalette; readonly took: number }
   | { readonly id: number; readonly error: string };
 
+// The hues of recent settings, so a change to a custom or neutral color reuses them.
+const cores = new Map<string, GamutCore>();
+
 addEventListener("message", (event: MessageEvent<Request>) => {
   const { id, settings, gamut } = event.data;
   const start = performance.now();
   let response: Response;
   try {
-    response = { id, gamut, palette: solveGamut(settings, gamut), took: performance.now() - start };
+    response = { id, gamut, palette: solveGamut(settings, gamut, cores), took: performance.now() - start };
   } catch (error) {
     response = { id, error: error instanceof Error ? error.message : String(error) };
   }

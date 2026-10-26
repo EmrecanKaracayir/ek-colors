@@ -125,6 +125,24 @@ export function hidePopover(): void {
   close();
 }
 
+/**
+ * Writes the open popover's content again when what it explains has changed, if it's one of the
+ * given source's; disclosures that were open stay open, and the focus stays where it is.
+ *
+ * @param prefix  The source's prefix.
+ */
+export function refreshPopover(prefix: string): void {
+  if (open === null || !open.startsWith(`${prefix}:`)) return;
+  const html = sources.get(prefix)?.(open.slice(prefix.length + 1));
+  if (!html) return close();
+  const expanded = [...panel.querySelectorAll("details")].map((d) => d.open);
+  panel.innerHTML = html;
+  panel.querySelectorAll("details").forEach((d, i) => (d.open = expanded[i] ?? false));
+  const title = panel.querySelector("h3");
+  if (title) title.id = "popover-title";
+  place();
+}
+
 /* >-----------------------------------------< Events >-----------------------------------------< */
 
 document.addEventListener("click", (event) => {

@@ -12,11 +12,14 @@ import { type CurvePoint, LIMITS, type Mode } from "../palette/settings";
 import type { Guide } from "../palette/references";
 import { hueTurn, wrapHue } from "../palette/model";
 import { boost } from "../palette/solve";
-import { readout, refill } from "./dom";
+import { refill } from "./dom";
 import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, signedWhole, stops, viewBox, WIDTH } from "./graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
+  /** Whether everything shown comes from the current settings; until then the readout keeps its last text. */
+  readonly settled: boolean;
+
   readonly mode: Mode;
   readonly points: readonly CurvePoint[];
 
@@ -134,6 +137,25 @@ function valuesPanel(view: CurveView): string {
     ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, MAX_WIDTH, 5])}`;
 }
 
+/** The readout last written from settled results, kept while new ones arrive. */
+const lastReadout = new Map<string, string>();
+
+/**
+ * The readout to show: written anew once everything shown is settled, otherwise the last one, so
+ * it never mixes old and new results or changes length mid-solve.
+ *
+ * @param view  What to show.
+ * @returns     HTML.
+ */
+function readoutText(view: CurveView): string {
+  const key = String(view.mode);
+  const kept = lastReadout.get(key);
+  if (!view.settled && kept !== undefined) return kept;
+  const text = curveReadout(view);
+  if (view.settled) lastReadout.set(key, text);
+  return text;
+}
+
 /**
  * What the curve costs, under the graph.
  *
@@ -166,7 +188,7 @@ export function refreshCurve(view: CurveView, panel = false): void {
   if (!editor) return;
   refill(editor.querySelector(".curve-layers")!, curveLayers(view));
   editor.querySelector("linearGradient")!.innerHTML = stops(view.band);
-  readout(editor.querySelector(".curve-readout")!, curveReadout(view), !view.cost);
+  editor.querySelector(".curve-readout")!.innerHTML = readoutText(view);
   if (panel) return refill(editor.querySelector(".curve-values")!, valuesPanel(view));
   const chosen = points[selected[mode]];
   if (!chosen) return;
@@ -201,7 +223,7 @@ export function curveEditor(view: CurveView, drawField: Field): string {
       ${hueScale(HEIGHT)}
       <g class="curve-layers">${curveLayers(view)}</g>
     </svg>
-    <p class="graph-caption readout curve-readout">${curveReadout(view)}</p>
+    <p class="graph-caption readout curve-readout">${readoutText(view)}</p>
     <p class="graph-caption hint">Each point adds colorfulness around its center, easing to none at its width; drag a point to move it.</p>
     <details class="graph-caption hint graph-help" id="curve-help-${mode}"><summary>Keyboard and mouse</summary><ul>
       <li>Add a point: the + button, or double-click the graph.</li>

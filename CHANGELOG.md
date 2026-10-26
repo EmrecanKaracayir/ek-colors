@@ -9,20 +9,38 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Neutrals: a gray on every tier, its red, green and blue the same, exactly on the tier's contrast,
-  in every palette. Neutral colors follow their mode's base: its hue at a share of its own
-  colorfulness, added with "Add a neutral color" once a base is tinted, at M 4 or more; a base
-  under that reads as gray, and its neutral colors are the grays. Two gray bases have none. Gray and each neutral color have pages beside the colors' and come in
-  every export, as `--gray-60` and, when a base is tinted, `--neutral-60`.
-- Extra colors are split into custom colors and neutral colors, side by side in Settings.
-- A share's slider has an exact field to a tenth of a percent, shows the colorfulness it gives,
-  and marks where M 4–8 falls: tinted yet neutral, right for text and lines.
+- Neutrals: Gray on every tier in every palette, its red, green and blue the same, exactly on the
+  tier's contrast. Neutral colors take the base's hue at a share of the base's colorfulness, each
+  mode following its own base; they can be added with "Add a neutral color" once a base has a hue,
+  at M 4 or more. A base under that reads as gray, and two gray bases have no neutral colors. Gray
+  and each neutral color have pages beside the colors' and come in every export, as `--gray-60`
+  and, when a base has a hue, `--neutral-60`.
+- Extra colors are split into custom colors and neutral colors, side by side in Settings, with what
+  each is for said above them. New ones are named Custom and Neutral, Custom 2 and Neutral 2, and so on.
+- A colorfulness slider has an exact field to a tenth of a percent and a bar of zones under it:
+  Gray under M 4, Neutral from M 4 to 12, Color past it. Its readout names the zone, and opens a
+  popover with the zones, where they come from, and the color's distance from Gray on every tier.
+  At 0% it says Exactly Gray.
+- One slider and one checkbox of the site's own for every slider and checkbox: the same in every
+  browser, at least 3:1 contrast, a focus ring on the thumb or box, and spoken values that say what
+  a share means. High-contrast screens keep the system's own.
+- Before the first solve, the strip says Solving and shows dashes for its numbers.
 
 ### Changed
 
 - American spelling throughout: gray, not grey. Quoted titles keep their own spelling.
 - A custom color's share has no limits: 0 and up, past 100% for a color stronger than the palette's
   colorfulness, as far as the screen allows.
+- Custom colors, neutral colors and the muted share reuse the hues already solved: a change to them
+  takes milliseconds instead of a whole solve, and follows a slider as it moves.
+- The add and measure buttons sit centered over the fields, and names fill their row.
+
+### Fixed
+
+- Settings no longer jumps while the palette solves: what's on screen keeps its last result until
+  the new one arrives, a redraw keeps the strip as it was, and the browser's own scroll correction,
+  which moved the page after a redraw, is off there.
+- The value panels beside the hue and curve graphs line up with the top of the graph.
 
 ## [2.2.4] - 2026-10-26
 

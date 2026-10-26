@@ -13,13 +13,13 @@ import { composition, deltaE, hueTurn, lightness, makeModel, type Model, parts, 
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
 import { readSettings, SettingsError } from "../palette/check";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
-import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, PAGES, tinted, withNeutrals, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, NEUTRAL_START, PAGES, tinted, withNeutrals, huesKey, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { announce, copyText, flash, markField, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
 import { bendMeter, bindGuides, CIRCLE, circleGuides, escape, evenness, guidePicker, evenText, inGaps, signed, signedWhole, THRESHOLDS, visibility, zone, zoneTable } from "./graph";
 import { type Format, highlight } from "./highlight";
-import { hidePopover, popButton, popSource } from "./popover";
+import { hidePopover, popButton, popSource, refreshPopover } from "./popover";
 import { iconSvg } from "./icon";
 import { bindHues, huesEditor, type HuesView, refreshHues } from "./hues";
 import { references } from "./sources";
@@ -161,6 +161,9 @@ let timer = 0;
 /** Whether the worker is solving a request that hasn't answered yet. */
 let busy = false;
 
+/** The hues the worker's request in hand depends on: a newer change with the same ones is quick to wait for. */
+let busyHues = "";
+
 /** The pending read-out of a finished solve. */
 let settled = 0;
 
@@ -200,6 +203,7 @@ function solved(event: MessageEvent<Response>): void {
  */
 function post(gamut: Gamut): void {
   busy = true;
+  busyHues = huesKey(state.settings);
   worker.postMessage({ id: latest, settings: state.settings, gamut } satisfies Request);
 }
 
@@ -218,8 +222,9 @@ function solve(wait = 0): void {
   status();
   timer = window.setTimeout(() => {
     // A solve still running is for older settings: it's stopped rather than waited for, so many
-    // hues never hold up the next change.
-    if (busy) {
+    // hues never hold up the next change. One with the same hues only places colors on them, which
+    // takes milliseconds; stopping it would also lose the hues the worker keeps.
+    if (busy && busyHues !== huesKey(state.settings)) {
       worker.terminate();
       worker = spawn(solved);
     }
@@ -317,20 +322,42 @@ function curved(): boolean {
   return Object.values(state.settings.curve).some((points) => points.some((p) => !p.off && p.amount !== 0));
 }
 
+/** The last solved palette for each use of a variant, shown while that use's new one solves. */
+const lastSolved = new Map<string, GamutPalette>();
+
+/** The uses showing a stand-in right now. */
+const standingIn = new Set<string>();
+
 /**
- * A variant of the settings on the gamut tier on screen, asked for once and kept.
+ * Whether everything on screen comes from the current settings: the palette and every variant
+ * shown. Until then a comparison would mix old and new results, so readouts keep their last text.
+ *
+ * @returns  True when nothing is solving or standing in.
+ */
+const upToDate = () => !state.solving && standingIn.size === 0;
+
+/**
+ * A variant of the settings on the gamut tier on screen, asked for once and kept. While it solves,
+ * the last one solved for the same use stands in, so nothing that was drawn goes back to waiting
+ * and nothing below it moves; only the very first time is there nothing yet.
  *
  * @param settings  The variant.
- * @returns         The palette, or null while it solves.
+ * @param use       What it's for, e.g. "plain"; each use has its own stand-in.
+ * @returns         The palette, its stand-in while it solves, or null before either exists.
  */
-function variant(settings: Settings): GamutPalette | null {
+function variant(settings: Settings, use: string): GamutPalette | null {
   const key = `${JSON.stringify(solvedPart(settings))}|${state.gamut}`;
+  const standIn = lastSolved.get(`${use}|${state.gamut}`) ?? null;
   const id = asked.get(key);
   if (id !== undefined) {
     // Used again, so it moves to the back of the line for letting go: the least used go first.
     asked.delete(key);
     asked.set(key, id);
-    return state.baselines.get(id) ?? null;
+    const solved = state.baselines.get(id);
+    if (solved) lastSolved.set(`${use}|${state.gamut}`, solved);
+    if (solved) standingIn.delete(use);
+    else if (standIn) standingIn.add(use);
+    return solved ?? standIn;
   }
   asks++;
   asked.set(key, asks);
@@ -339,7 +366,8 @@ function variant(settings: Settings): GamutPalette | null {
   for (const dropped of queue.splice(0, Math.max(0, queue.length - QUEUED)))
     for (const [k, v] of asked) if (v === dropped.id) asked.delete(k);
   if (!solvingVariant) nextVariant();
-  return null;
+  if (standIn) standingIn.add(use);
+  return standIn;
 }
 
 /**
@@ -353,7 +381,7 @@ function variant(settings: Settings): GamutPalette | null {
 function edited(h: boolean, m: boolean): GamutPalette | null {
   const [noCurve, noPlaced] = [!m && curved(), !h && Object.keys(state.settings.placed).length > 0];
   if (!noCurve && !noPlaced) return inUse();
-  return variant({ ...(noCurve ? flat() : state.settings), ...(noPlaced ? { placed: {} } : {}) });
+  return variant({ ...(noCurve ? flat() : state.settings), ...(noPlaced ? { placed: {} } : {}) }, `edited ${String(h)} ${String(m)}`);
 }
 
 /** Without the curve: it only depends on settings other than the curve, so moving the curve never waits for it. */
@@ -424,7 +452,7 @@ function turned(mode: Mode): {
   if (angle === null || !even) return null;
   const s = state.settings;
   const tier = identityOf(s, mode);
-  const solved = angle === 0 ? even : variant({ ...flat(), placed: {}, anchor: Math.round((anchorHue(s) + angle) * 10) / 10 })?.[mode];
+  const solved = angle === 0 ? even : variant({ ...flat(), placed: {}, anchor: Math.round((anchorHue(s) + angle) * 10) / 10 }, "turned")?.[mode];
   const colors = Object.fromEntries(
     even.colors.flatMap((c) => {
       const exact = solved?.colors.find((x) => x.key === c.key)?.tiers[tier]?.default;
@@ -551,7 +579,8 @@ function curveView(mode: Mode): CurveView {
   const dots = (palette?.colors ?? [])
     .filter((c) => !c.extra && c.tiers[tier])
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
-  return { mode, points: s.curve[mode], dots, band, cost: colorfulnessCost(mode), guide: s.guide, guides: guides(s) };
+  return {
+    settled: upToDate(), mode, points: s.curve[mode], dots, band, cost: colorfulnessCost(mode), guide: s.guide, guides: guides(s) };
 }
 
 /**
@@ -626,7 +655,8 @@ function huesView(): HuesView {
     [weight, hue, colorful] = [weight + w, hue + w * split.hue, colorful + w * split.colorfulness];
   }
   const split = weight ? { hue: hue / weight, colorfulness: colorful / weight } : null;
-  return { rows, gaps, band: bandOf(mode), guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend, split };
+  return {
+    settled: upToDate(), rows, gaps, band: bandOf(mode), guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend, split };
 }
 
 /**
@@ -1584,13 +1614,13 @@ function neutralPage(key: string): string {
   const neutral = p.neutrals.find((n) => n.key === key);
   if (neutral && !p.tinted)
     return `${colorChips(key)}
-      <section class="intro"><h1>${label(key)}</h1><p>The ${mode} base, ${p.base}, is gray or close to it, under M ${String(NEUTRAL_BAND[0])}, so its neutral colors are the <a href="#gray">grays</a>. On a tinted base, ${label(key)} follows its tint.</p></section>`;
+      <section class="intro"><h1>${label(key)}</h1><p>The ${mode} base, ${p.base}, is gray or nearly, under M ${String(NEUTRAL_BAND[0])}, so it has no hue to follow and ${label(key)} is <a href="#gray">Gray</a> here. On a base with a hue, ${label(key)} takes that hue.</p></section>`;
   const tiers = neutral ? neutral.tiers : p.grays;
   const identity = tiers[tier]!;
   const base = baseTint(mode);
   const intro = neutral
-    ? `A neutral on every tier that follows the ${mode} base's tint: its hue, ${identity.hue.toFixed(0)}°, at ${percent1(neutral.share)} of its colorfulness, M ${base.toFixed(1)}, so M ${(base * neutral.share).toFixed(1)}. ${tintNote(base * neutral.share)}`
-    : `A gray on every tier: its red, green and blue the same, exactly on each tier's contrast against the ${mode} base, as every color is. Text, quiet text and lines usually come from here. CAM16 still sees a little colorfulness in a pure gray, which is why the table shows some.`;
+    ? `A neutral color on every tier: the ${mode} base's hue, ${identity.hue.toFixed(0)}°, at ${percent1(neutral.share)} of the base's colorfulness, M ${base.toFixed(1)}, so M ${(base * neutral.share).toFixed(1)}. ${tintNote(base * neutral.share)}`
+    : `A gray on every tier, in every palette: no hue at all, exactly on each tier's contrast against the ${mode} base, as every color is. CAM16 still sees a little colorfulness in a pure gray, which is why the table shows some.`;
   const rows = state.settings.tiers.filter((t) => tiers[t]).map((t) => tierRow(tiers[t]!, t, tier, "default", "", !neutral)).join("");
   return `${colorChips(key)}
     <section class="intro hero" style="--c:${identity.color}">
@@ -1612,19 +1642,57 @@ function baseTint(mode: Mode): number {
 }
 
 /**
- * What a neutral's colorfulness means for text and lines: inside the band, fainter, or stronger.
+ * How a neutral's colorfulness reads: its zone, Gray, Neutral or Color, and what that means.
  *
  * @param m  CAM16 M.
  * @returns  A sentence.
  */
 function tintNote(m: number): string {
-  const [low, high] = NEUTRAL_BAND;
-  return m < low
-    ? `That's fainter than M ${String(low)}, so the tint hardly shows.`
-    : m <= high
-      ? `That's within M ${String(low)}–${String(high)}, tinted yet neutral: right for text and lines.`
-      : `That's past M ${String(high)}, so as text it starts to read as a color.`;
+  const zone = SHARE_ZONES[shareZone(m)];
+  return `That's ${zone.name}, ${zone.range}: ${zone.note.charAt(0).toLowerCase()}${zone.note.slice(1)}`;
 }
+
+popSource("share", (path) => {
+  const share = Number(read(path) ?? 0);
+  const neutral = path.startsWith("neutrals.");
+  const { mode } = state;
+  const of = neutral ? baseTint(mode) : state.settings.colorfulness;
+  const m = share * of;
+  const zone = SHARE_ZONES[shareZone(m)];
+  const p = currentMode();
+  const tier = identityOf(state.settings, mode);
+  const i = Number(path.split(".")[1]);
+  const key = neutral ? colorKeys(state.settings).neutrals[i] : extraKeys(state.settings)[i];
+  // Its distance from Gray on each tier, counting only the tint, not any lightness between them.
+  const colorOn = (t: number) => (neutral ? p?.neutrals.find((n) => n.key === key)?.tiers[t]?.color : p?.colors.find((c) => c.key === key)?.tiers[t]?.default.color);
+  const fromGray = (t: number) => {
+    const [color, gray] = [colorOn(t), p?.grays[t]?.color];
+    if (!color || !gray) return undefined;
+    const [a, b] = [model().cam(mode, color), model().cam(mode, gray)];
+    return deltaE(Math.hypot(a.astar - b.astar, a.bstar - b.bstar));
+  };
+  const all = state.settings.tiers.map(fromGray).filter((d) => d !== undefined);
+  const here = fromGray(tier);
+  const distance =
+    state.solving || here === undefined || !all.length
+      ? "Solving…"
+      : `ΔE ${here.toFixed(1)} on Lc ${String(tier)}, the identity tier; ${Math.min(...all).toFixed(1)}–${Math.max(...all).toFixed(1)} across the tiers`;
+  const whole = neutral ? `the ${mode} base's colorfulness, M ${of.toFixed(1)}` : `the palette's colorfulness, M ${of.toFixed(1)}, before a tier lowers it`;
+  const rows = SHARE_ZONES.map((z) => `<div><dt>${z.name}</dt><dd><span class="mono">${z.range}</span> ${z.note}</dd></div>`).join("");
+  return `<h3>${share === 0 ? "Exactly Gray" : zone.name}: M ${m.toFixed(1)}</h3>
+    ${shareMeter(share, of)}
+    <p>${share === 0 ? "At 0% there's no tint at all: it's Gray." : zone.note}</p>
+    <dl class="pop-facts">
+      <div><dt>Share</dt><dd>${percent1(share)} of ${whole}</dd></div>
+      <div><dt>From Gray</dt><dd>${distance}</dd></div>
+    </dl>
+    <p class="pop-how">The bar under the slider shows the same zones, lined up with the thumb.</p>
+    <dl class="pop-facts zones">${rows}</dl>
+    <details class="pop-sources"><summary>Where these limits come from</summary>
+      <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About 2 is what most people notice with two colors side by side on a screen; 5 is where the site calls a difference a different shade. Measured against Gray on four bases, two light and two dark, at every tier: M ${String(NEUTRAL_BAND[0])} is ΔE 2.3–3.9 from it, just past the visible step, and M ${String(NEUTRAL_BAND[1])} is ΔE 5.5–6.4, a little past a different shade.</p>
+      <p>Established tinted neutrals sit inside the range: Radix's slate and Tailwind's zinc peak around M 5–7, and Tailwind's slate, around M 9–14, is at its top, where a gray reads blue.</p>
+      <p>The ΔE figures come from color science; the limits are judgment built on them, not results of a study. Eyes and screens differ.</p></details>`;
+});
 
 /** A share as a percent with one decimal when it has one, e.g. "13.5%" or "100%". */
 const percent1 = (share: number) => `${String(Math.round(share * 1000) / 10)}%`;
@@ -1669,7 +1737,7 @@ function compareEk(): string {
   if (isPreset())
     return `<section class="intro"><h1>Compare</h1>${ekMade()}<p class="notice" role="note">There's nothing to compare yet: these are EK Palette's own settings. Change anything in <a href="#tune">Settings</a>, and the custom palette appears here next to EK Palette.</p></section>`;
   const tier = identityOf(state.settings, mode);
-  const ek = variant(CONFIG)?.[mode];
+  const ek = variant(CONFIG, "EK Palette")?.[mode];
   const intro = `<h1>Compare with EK Palette</h1>${ekMade()}<p>Here are EK Palette's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
   if (!ek) return `<section class="intro">${intro}<p class="soft">Solving EK Palette…</p></section>`;
   const other: Side = { name: "EK Palette", colors: ek.colors.filter((c) => c.tiers[tier]).map((c) => ({ key: c.key, extra: c.extra, swatch: c.tiers[tier]![state.variant] })) };
@@ -1804,8 +1872,11 @@ function jumpTo(id: string): void {
 }
 
 document.addEventListener("click", (event) => {
-  const id = (event.target as Element).closest<HTMLElement>("[data-jump]")?.dataset.jump;
-  if (id) jumpTo(id);
+  const link = (event.target as Element).closest<HTMLElement>("[data-jump]");
+  if (!link) return;
+  jumpTo(link.dataset.jump!);
+  // A link to a field puts the cursor in it.
+  if (link.dataset.focus) document.getElementById(link.dataset.focus)?.focus({ preventScroll: true });
 });
 
 /** Past this many hues, neighbors come too close to tell apart easily. */
@@ -1865,7 +1936,7 @@ function number(
 
 /**
  * A color's share field: a slider over 0–100% and an exact field that takes any share, to a tenth
- * of a percent, with the colorfulness it gives and where the band for text and lines falls.
+ * of a percent, with the colorfulness it gives and where the band, M 4–8, falls.
  *
  * @param path   The setting, e.g. "extras.0.share".
  * @param title  Its label.
@@ -1876,29 +1947,72 @@ function shareField(path: string, title: string): string {
   return number(path, title, [0, Infinity, 0.001], { slider: true, percent: true, sliderMax: 1, band, after: readout, decimals: 1 });
 }
 
+/** Where a color's colorfulness puts it, the same for custom and neutral colors. */
+const SHARE_ZONES = [
+  { name: "Gray", range: `under M ${String(NEUTRAL_BAND[0])}`, note: "Next to Gray, the tint is hard to see: it reads as gray." },
+  { name: "Neutral", range: `M ${String(NEUTRAL_BAND[0])} to ${String(NEUTRAL_BAND[1])}`, note: "The tint shows next to Gray, yet it's still a gray, one in its hue." },
+  { name: "Color", range: `over M ${String(NEUTRAL_BAND[1])}`, note: "Past a tinted gray: it reads as a color of its hue." },
+] as const;
+
 /**
- * What a share gives: its colorfulness and, on the slider, where the band for text and lines is.
+ * The zone a colorfulness falls in.
+ *
+ * @param m  CAM16 M.
+ * @returns  Its index in SHARE_ZONES.
+ */
+const shareZone = (m: number) => (m < NEUTRAL_BAND[0] ? 0 : m <= NEUTRAL_BAND[1] ? 1 : 2);
+
+/**
+ * A share on a bar of the zones, in the slider's own proportions, with a mark where it falls, like
+ * the Bend meter. A zone past the slider's end isn't drawn.
+ *
+ * @param share  The share, 0 to 1 on the slider.
+ * @param of     The colorfulness the share is of, M.
+ * @returns      HTML.
+ */
+function shareMeter(share: number, of: number): string {
+  const edges = [0, ...NEUTRAL_BAND.map((e) => Math.min(e / of, 1)), 1].map((e) => e * 100);
+  const shown = SHARE_ZONES.map((z, i) => ({ z, i, width: edges[i + 1]! - edges[i]! })).filter((x) => x.width > 0);
+  const parts = shown.map(({ i, width }) => `<span class="zone-${String(i)}" style="flex-basis:${width.toFixed(2)}%"></span>`).join("");
+  // A zone too narrow for its name goes unnamed; the zones are listed under the meter anyway.
+  const names = shown
+    .filter(({ width }) => width >= 14)
+    .map(({ z, i }) => `<span style="left:${((edges[i]! + edges[i + 1]!) / 2).toFixed(2)}%">${z.name}</span>`)
+    .join("");
+  const m = share * of;
+  return `<span class="bend-meter large share-meter" role="img" aria-label="M ${m.toFixed(1)}: ${SHARE_ZONES[shareZone(m)].name}"><span class="meter-zones">${parts}</span><span class="meter-mark" style="left:${(Math.min(share, 1) * 100).toFixed(2)}%"></span><span class="meter-names">${names}</span></span>`;
+}
+
+/**
+ * What a share gives: its colorfulness and the zone it's in, and under the slider, the zones.
  * An extra color's share is of the palette's colorfulness; a neutral color's, of the mode's base.
  *
  * @param path  The share's setting.
- * @returns     The band, for under the slider, and the readout, for under the field; HTML.
+ * @returns     The zones' bar, for under the slider, and the readout, for under the field; HTML.
  */
 function shareInfo(path: string): { band: string; readout: string } {
   const share = Number(read(path) ?? 0);
   const neutral = path.startsWith("neutrals.");
   const of = neutral ? baseTint(state.mode) : state.settings.colorfulness;
-  const [low, high] = NEUTRAL_BAND;
   if (of <= 0)
-    return { band: "", readout: `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is gray or close to it, so this is the grays.</span>` };
+    return { band: "", readout: `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is gray or nearly, so this is Gray here.</span>` };
   const m = share * of;
-  // The band as shares of this slider, its edges rounded inward to 4% when that leaves a band.
-  let [from, to] = [low / of, high / of];
-  const [inner, outer] = [Math.ceil(from * 25 - 1e-9) / 25, Math.floor(to * 25 + 1e-9) / 25];
-  if (inner < outer) [from, to] = [inner, outer];
-  const zone = from < 1 ? `<span class="band-zone" style="left:${(from * 100).toFixed(2)}%;width:${((Math.min(to, 1) - from) * 100).toFixed(2)}%"></span>` : "";
-  const where = m >= low && m <= high ? " • text and lines" : neutral && m > 12 ? " • reads as a color" : !neutral && m <= high ? " • as faint as a neutral" : "";
-  const band = zone ? `<span class="share-band" aria-hidden="true" title="M ${String(low)}–${String(high)}: for text and lines">${zone}</span>` : "";
-  return { band, readout: `<span class="share-m soft${neutral && m > 12 ? " tint-strong" : ""}" data-readout="${path}">M ${m.toFixed(1)}${neutral ? ` in ${state.mode} mode` : ""}${where}</span>` };
+  // The zones as shares of this slider, each from where its limit falls; one past the slider's end
+  // isn't drawn.
+  const edges = [0, ...NEUTRAL_BAND.map((e) => e / of), Infinity];
+  const segments = SHARE_ZONES.map((_, i) => {
+    const [from, to] = [edges[i]!, Math.min(edges[i + 1]!, 1)];
+    if (from >= to) return "";
+    const ends = `${i === 0 ? " start" : ""}${edges[i + 1]! >= 1 ? " end" : ""}`;
+    return `<span class="zone-${String(i)}${ends}" style="--from:${from.toFixed(4)};--to:${to.toFixed(4)}"></span>`;
+  });
+  const band = `<span class="share-zones" aria-hidden="true">${segments.join("")}</span>`;
+  // At 0 it's Gray itself, and a neutral color past the range has stopped being one: both amber.
+  const same = share === 0;
+  const zone = SHARE_ZONES[shareZone(m)];
+  const warn = same || (neutral && zone.name === "Color");
+  const text = `M ${m.toFixed(1)} • ${same ? "Exactly Gray" : zone.name}`;
+  return { band, readout: `<span class="share-m soft${warn ? " tint-strong" : ""}" data-readout="${path}">${popButton(`share:${path}`, text, `${text}: what it means`, "metric")}</span>` };
 }
 
 /**
@@ -1909,11 +2023,12 @@ function updateShares(): void {
   for (const field of document.querySelectorAll<HTMLElement>(".field.with-after")) {
     const path = field.querySelector<HTMLInputElement>("[data-set]")?.dataset.set;
     if (!path?.endsWith(".share")) continue;
-    field.querySelectorAll(".share-band, .share-m").forEach((el) => el.remove());
+    field.querySelectorAll(".share-zones, .share-m").forEach((el) => el.remove());
     const { band, readout } = shareInfo(path);
     field.querySelector(".slider-cell")?.insertAdjacentHTML("beforeend", band);
     field.insertAdjacentHTML("beforeend", readout);
   }
+  refreshPopover("share");
 }
 
 /**
@@ -1959,9 +2074,9 @@ function extraFields(i: number): string {
   const name = escape(state.settings.extras[i]!.name);
   return `<div class="extra" data-extra="${String(i)}">
     <h3 class="extra-title"><span class="extra-name">${extraDot(i)}${label(extraKeys(state.settings)[i]!)}</span><button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
-    <label class="field wide" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
+    <label class="field fill" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
     ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` })}
-    ${shareField(`extras.${String(i)}.share`, "Share")}
+    ${shareField(`extras.${String(i)}.share`, "Colorfulness")}
   </div>`;
 }
 
@@ -1976,8 +2091,8 @@ function neutralFields(i: number): string {
   const name = escape(state.settings.neutrals[i]!.name);
   return `<div class="extra" data-neutral="${String(i)}">
     <h3 class="extra-title"><span class="extra-name">${neutralDot(i)}${label(colorKeys(state.settings).neutrals[i]!)}</span><button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}">Remove</button></h3>
-    <label class="field wide" for="set-neutrals-${String(i)}-name"><span>Name</span><input id="set-neutrals-${String(i)}-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false"></label>
-    ${shareField(`neutrals.${String(i)}.share`, "Share")}
+    <label class="field fill" for="set-neutrals-${String(i)}-name"><span>Name</span><input id="set-neutrals-${String(i)}-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false"></label>
+    ${shareField(`neutrals.${String(i)}.share`, "Colorfulness")}
   </div>`;
 }
 
@@ -2004,14 +2119,14 @@ function anyTinted(): boolean {
 }
 
 /**
- * The gray that every palette has, shown first among the neutral colors: it can't be removed.
+ * The gray that every palette has, shown first among the neutral colors; it has no Remove.
  *
  * @returns  HTML.
  */
 function grayRow(): string {
   const tier = identityOf(state.settings, state.mode);
   const color = currentMode()?.grays[tier]?.color ?? "transparent";
-  return `<h3 class="extra-title gray-row"><span class="dot" style="--c:${color}"></span>Gray<span class="soft">red, green and blue the same</span></h3>`;
+  return `<h3 class="extra-title gray-row"><span class="extra-name"><span class="dot" style="--c:${color}"></span>Gray</span></h3>`;
 }
 
 /**
@@ -2063,7 +2178,7 @@ function tune(): string {
       ${number("hues", "How many hues", [...LIMITS.hues, 1])}<div id="hues-note">${huesNote(state.settings.hues)}</div>
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
       <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
-      <p><a href="#hue-test" class="button">Measure it with the blind hue test</a></p>
+      <div class="action-row"><p><a href="#hue-test" class="button">Measure it with the blind hue test</a></p></div>
       <label class="field wide" for="set-anchor"><span>Anchor</span><select id="set-anchor" data-anchor="from">${[
         ...SYSTEMS.map((r) => [r.id, `${r.name} yellow`] as const),
         ["hand", "Set by hand"] as const,
@@ -2085,31 +2200,33 @@ function tune(): string {
       <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
       <h3>Per hue</h3>
       <p class="soft">${MODE_NAMES[state.mode]} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Its points add up.</p>
-      <p><a href="#curve-test" class="button">Measure it with the blind colorfulness test</a></p>
+      <div class="action-row"><p><a href="#curve-test" class="button">Measure it with the blind colorfulness test</a></p></div>
       ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
     </section>
     <section class="group" id="extras-section">
       <h2>Extra colors</h2>
-      <p class="soft">Colors beside the evenly spaced hues, on every tier. The band on each share marks where its colorfulness is M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}: tinted yet neutral, right for text and lines.</p>
+      <p class="soft">Colors beside the evenly spaced hues, on every tier. Neutral colors follow each mode's own base, so light and dark can differ. The bar under each colorfulness slider shows where a color reads as gray (under M ${String(NEUTRAL_BAND[0])}), as a neutral (M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}) or as a color.</p>
       <div class="color-columns">
         <div class="color-column">
           <div class="column-head">
             <h3>Custom colors</h3>
-            <p class="soft">Each on its own hue at a share of the colorfulness, with a muted version.</p>
+            <p class="soft">Each keeps a hue of its own, such as a brand color, at a share of the palette's colorfulness, with a muted version.</p>
           </div>
           ${s.extras.map((_, i) => extraFields(i)).join("")}
-          <p><button type="button" data-action="add-extra">Add a custom color</button></p>
+          <div class="action-row">
+            <p><button type="button" data-action="add-extra">Add a custom color</button></p>
+          </div>
         </div>
         <div class="color-column">
           <div class="column-head">
             <h3>Neutral colors</h3>
-            <p class="soft">Gray, and colors that follow each base's tint.</p>
+            <p class="soft">Mostly for text. Gray is in every palette; each neutral color takes the base's hue at a share of the base's colorfulness.</p>
           </div>
           ${grayRow()}
-          <p class="soft" id="neutrals-untinted"${anyTinted() ? " hidden" : ""}>Both bases are gray or close to it, so the grays are their neutrals. Tint a base to M ${String(NEUTRAL_BAND[0])} or more, in Viewing below, to add neutral colors that follow it.</p>
-          <div id="neutrals-list" class="color-list"${anyTinted() ? "" : " hidden"}>
-            ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
-            <p><button type="button" data-action="add-neutral">Add a neutral color</button></p>
+          ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
+          <div class="action-row">
+            <p><button type="button" data-action="add-neutral"${anyTinted() ? "" : " disabled"}>Add a neutral color</button></p>
+            <p class="soft" id="neutrals-untinted"${anyTinted() ? " hidden" : ""}>Both bases are gray or nearly, so there's no hue to follow. Give a base a hue in <button type="button" class="link" data-jump="viewing-section" data-focus="set-base-${state.mode}">Viewing</button> to add one.</p>
           </div>
         </div>
       </div>
@@ -2282,6 +2399,12 @@ function drawComparison(el: Element, mode: Mode): void {
     return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
       ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span><span class="sep" aria-hidden="true"> • </span><span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
   });
+  // While new results arrive, a strip that can't be drawn whole keeps what it showed, so it never
+  // falls back to empty and moves what's below it.
+  const whole = colors.length === now.filter((c) => !c.extra).length;
+  // A palette with nothing on this tier is from older settings, even before the new solve starts.
+  const current = now.length > 0 && now.every((c) => c.extra || c.tiers[tier]);
+  if (!whole && (!upToDate() || !current) && el.querySelector(".strip-items")) return;
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
   // The turn's angle stays off the row's name, which would widen the names' column for one row.
@@ -2291,7 +2414,7 @@ function drawComparison(el: Element, mode: Mode): void {
   }).join("");
   // Drawn again, the row keeps where it was scrolled to.
   const scrolled = el.querySelector(".strip-items")?.scrollLeft ?? 0;
-  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${items.join("")}</div><div class="strip-metrics mono">${metrics()}</div>`;
+  el.innerHTML = `<span class="strip-labels">${names}</span><div class="strip-items">${colors.length ? items.join("") : `<span class="strip-solving">Solving…</span>`}</div><div class="strip-metrics mono">${metrics()}</div>`;
   const row = el.querySelector<HTMLElement>(".strip-items")!;
   row.scrollLeft = scrolled;
   fadeEdges(row);
@@ -2413,6 +2536,17 @@ function furthest(values: readonly number[]): number {
 function metrics(): string {
   const color = focusKey ? changes.colors.find((c) => c.key === focusKey) : undefined;
   const rows: Row[] = [1, 2, 3];
+  const heads = [
+    popButton("metric:bend:head", "Bend", "What Bend means", "metric head"),
+    popButton("metric:even:head", "Even", "What Even means", "metric head even"),
+    popButton("metric:colorful:head", "M", "What M means", "metric head colorful"),
+  ];
+  // Before the first solve there's nothing to measure: dashes, and the bar with no mark.
+  if (!changes.colors.length) {
+    const dash = (kind: string) => `<span class="metric${kind}">–</span>`;
+    const cells = rows.flatMap(() => [dash(""), dash(" even"), dash(" colorful")]);
+    return `${heads.join("")}${cells.join("")}<span class="metric-scope">${bendMeter(null)}<span class="scope-text">–</span></span>`;
+  }
   const cells = rows.flatMap((row) => {
     if (color) {
       const mine = offsets(row).filter((o) => o.keys.includes(color.key)).map((o) => o.off);
@@ -2429,11 +2563,6 @@ function metrics(): string {
       popButton(`metric:colorful:${String(row)}`, percent(furthest(changes.colors.map((c) => c.colorful[row]))), `How equally colorful ${STEPS[row].name} is`, "metric colorful"),
     ];
   });
-  const heads = [
-    popButton("metric:bend:head", "Bend", "What Bend means", "metric head"),
-    popButton("metric:even:head", "Even", "What Even means", "metric head even"),
-    popButton("metric:colorful:head", "M", "What M means", "metric head colorful"),
-  ];
   // Below, the palette's bend on its zones; or the color pointed at, on the same scale.
   const bend = color ? color.bend[3] / changes.gap : averageBend(3);
   const scope = color
@@ -2865,6 +2994,9 @@ function render(): void {
   fitHeader();
   for (const b of document.querySelectorAll<HTMLElement>("[data-edit]")) b.setAttribute("aria-pressed", String(state.edits[b.dataset.edit as "h" | "m"]));
   const first = colors()[0]?.key ?? "red";
+  // Settings drawn again keeps its strip as it is, drawn, pinned and with its margin, rather than an
+  // empty one that grows back and moves the page below it.
+  const keptStrip = view === "tune" && document.querySelector("#tiers-section") ? document.querySelector("#palette-strip") : null;
   refill(
     $("main"),
     view === "overview" ? overview()
@@ -2878,6 +3010,7 @@ function render(): void {
     : view === "hue-test" ? hueTestPage(hueTestContext())
     : color(view === "colors" ? first : view),
   );
+  if (keptStrip) document.querySelector("#palette-strip")?.replaceWith(keptStrip);
   if (view === "tune") updateTune();
   if (view === "how") updateStrip();
   document.title = pageTitle(view === "colors" ? first : view);
@@ -3070,9 +3203,11 @@ document.addEventListener("click", (event) => {
   }
   if (action === "add-extra") {
     const names = new Set(state.settings.extras.map((e) => e.name));
-    let n = state.settings.extras.length + 1;
-    while (names.has(`Extra ${String(n)}`)) n++;
-    write("extras", [...state.settings.extras, { name: `Extra ${String(n)}`, hue: 0, share: 0.6 }]);
+    // The first free name: Custom, Custom 2, …
+    let n = 1;
+    const name = (k: number) => (k === 1 ? "Custom" : `Custom ${String(k)}`);
+    while (names.has(name(n))) n++;
+    write("extras", [...state.settings.extras, { name: name(n), hue: 0, share: 0.6 }]);
     solve();
   }
   if (action === "remove-extra") {
@@ -3081,12 +3216,12 @@ document.addEventListener("click", (event) => {
   }
   if (action === "add-neutral") {
     const names = new Set(state.settings.neutrals.map((n) => n.name));
-    let n = state.settings.neutrals.length + 1;
+    let n = 1;
     const name = (k: number) => (k === 1 ? "Neutral" : `Neutral ${String(k)}`);
     while (names.has(name(n))) n++;
-    // It starts at the top of the band on the more colorful tinted base, or all of a fainter tint.
+    // It starts at M 8 on the more colorful tinted base, or all of a fainter tint.
     const strongest = Math.max(...MODES.map(baseTint));
-    write("neutrals", [...state.settings.neutrals, { name: name(n), share: strongest > 0 ? Math.min(1, Math.floor((NEUTRAL_BAND[1] / strongest) * 1000) / 1000) : 1 }]);
+    write("neutrals", [...state.settings.neutrals, { name: name(n), share: strongest > 0 ? Math.min(1, Math.floor((NEUTRAL_START / strongest) * 1000) / 1000) : 1 }]);
     solve();
   }
   if (action === "remove-neutral") {
@@ -3183,14 +3318,18 @@ document.addEventListener("input", (event) => {
   // Neutral colors can be added once a base is tinted; on gray bases there are none.
   if (path.startsWith("bases.")) {
     $<HTMLElement>("#neutrals-untinted").hidden = anyTinted();
-    $<HTMLElement>("#neutrals-list").hidden = !anyTinted();
+    $<HTMLButtonElement>('[data-action="add-neutral"]').disabled = !anyTinted();
     // Two gray bases have no neutral colors, so their blocks go with them.
     if (!state.settings.neutrals.length) document.querySelectorAll("[data-neutral]").forEach((el) => el.remove());
   }
-  if (path.startsWith("curve.") || path.startsWith("extras.")) updateTune();
+  if (path.startsWith("curve.")) updateTune();
+  // A custom color's hue reads right away; its color, the strip and the export follow the solve.
+  if (path.startsWith("extras.")) for (const note of document.querySelectorAll<HTMLElement>("[data-hue-note]")) note.textContent = hueNote(Number(note.dataset.hueNote));
   if (path === "hues") $("#hues-note").innerHTML = huesNote(state.settings.hues);
   if (path.endsWith(".share") || path === "colorfulness" || path.startsWith("bases.")) updateShares();
-  solve(150);
+  // Custom and neutral colors and the muted share sit on the hues already solved, so they solve at
+  // once, even mid-drag; anything that moves the hues waits for the slider to rest.
+  solve(path.startsWith("extras.") || path.startsWith("neutrals.") || path === "muted" ? 0 : 150);
 });
 
 // The palette's name loses its outer spaces once it's done being typed.
@@ -3218,7 +3357,7 @@ document.addEventListener("change", (event) => {
   const el = event.target as HTMLInputElement;
   if (el.dataset.extraName === undefined) return;
   const i = Number(el.dataset.extraName);
-  el.value = el.value.trim() || `Extra ${String(i + 1)}`;
+  el.value = el.value.trim() || (i === 0 ? "Custom" : `Custom ${String(i + 1)}`);
   write(`extras.${String(i)}.name`, el.value);
   updateTune();
   solve();

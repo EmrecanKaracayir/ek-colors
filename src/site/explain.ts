@@ -646,8 +646,8 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>Neutrals</h2>
-      <p>Every palette also gets a <strong>gray</strong> on every tier: its red, green and blue the same, exactly on the tier's contrast against the base, as every color is. Text, quiet text and lines usually come from these.</p>
-      <p>When a mode's base is tinted, its <strong>neutral colors</strong> follow it: the base's hue, at a share of the base's own colorfulness. On warm paper, text and lines then belong to the page instead of looking cold on it. Between M ${String(NEUTRAL_BAND[0])} and ${String(NEUTRAL_BAND[1])} a neutral is tinted yet neutral, right for text and lines; fainter, the tint hardly shows; stronger, text starts to read as a color. A palette can have several, each with its own share, added in Settings beside the extra colors. A base under M ${String(NEUTRAL_BAND[0])}, a pure gray or close to it, reads as gray, and its neutral colors are its grays. Gray and each neutral color have pages of their own beside the colors'.</p>
+      <p>Every palette has <strong>Gray</strong> on every tier: no hue at all, red, green and blue the same, exactly on the tier's contrast against the base, as every color is.</p>
+      <p>A <strong>neutral color</strong> takes the base's hue at a share of the base's own colorfulness, so it belongs with a base of that hue. On warm paper, text in a warm neutral sits on the page instead of looking cold on it. Between M ${String(NEUTRAL_BAND[0])} and ${String(NEUTRAL_BAND[1])} it shows the hue yet reads as a neutral; fainter, it reads as gray; stronger, as a color. A palette can have several, each with its own share, added in Settings under Extra colors. Each mode follows its own base, and a base under M ${String(NEUTRAL_BAND[0])}, gray or nearly, has no hue to follow, so its neutral colors are Gray. Gray and each neutral color have pages of their own beside the colors'.</p>
     </section>
 
     <section class="step">

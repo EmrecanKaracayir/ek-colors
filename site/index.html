@@ -73,6 +73,8 @@
     --radius-control: 0.5rem;
     /* A field's height: a line of control text and its padding and border. */
     --control-height: calc(var(--type-md) * 1.5 + 2 * var(--space-3) + 2px);
+    /* A slider's thumb; its center travels from half of it to half of it from each end. */
+    --thumb: 1.25rem;
     --radius-panel: 0.75rem;
     --radius-pill: 999px;
     /* The export's syntax colors: EK Palette on each mode's identity tier, Lc 60 light and Lc 45 dark, as solved. */
@@ -170,7 +172,7 @@
   :is(.tool-info, .guide-info, .icon-button) { flex: none; width: 1.5rem; height: 1.5rem; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--soft); font-size: var(--type-md); line-height: 1; }
   :is(.tool-info, .guide-info, .icon-button):is(:hover:not(:disabled), [aria-expanded="true"]) { color: var(--fg); }
   .icon-button { display: inline-grid; place-items: center; }
-  .icon-button:disabled { opacity: 0.4; cursor: default; }
+  :is(.icon-button, .color-column button):disabled { opacity: 0.4; cursor: default; }
   .point-count { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
   /* Short of room it wraps, its lines close together. */
   #status { justify-self: end; text-align: right; line-height: 1.15; font-size: var(--type-md); color: var(--soft); }
@@ -340,12 +342,36 @@
   .bar span { display: block; height: 100%; background: var(--fg); border-radius: inherit; }
 
   /* Settings */
+  /* Settings keeps every part's size while it solves, and a setting can draw the page anew; the browser's own scroll correction would then re-anchor on a new element and move the page, so it's off here. */
+  :root:has(#tiers-section) { overflow-anchor: none; }
   .group { padding-top: var(--space-7); border-top: 1px solid var(--line); }
   .field { display: grid; grid-template-columns: 9rem minmax(0, 1fr) 5.5rem; gap: var(--space-6); align-items: center; max-width: 36rem; }
   .field:not(:has(input[type="range"])) { grid-template-columns: 9rem 7rem; }
   .field :is(input[type="number"], input[type="text"], select) { width: 100%; }
   .field input[type="checkbox"] { justify-self: start; }
-  input[type="range"] { height: 1.5rem; }
+  input[type="range"] { height: 1.5rem; cursor: pointer; }
+  input[type="range"]:disabled { opacity: 0.4; cursor: default; }
+  /* One slider everywhere: a track at full contrast for its unfilled part, filled up to the thumb's center, and a round thumb ringed in the page's color so it stands apart from the fill. The whole 24px row takes the pointer. A forced-colors screen keeps the system's own slider. */
+  @media not (forced-colors: active) {
+    input[type="range"] { appearance: none; background: none; --at: calc(var(--thumb) / 2 + var(--p, 0) * (100% - var(--thumb))); }
+    input[type="range"]::-webkit-slider-runnable-track { height: 0.25rem; border-radius: var(--radius-pill); background: linear-gradient(to right, var(--fg) var(--at), var(--soft) var(--at)); }
+    input[type="range"]::-webkit-slider-thumb { appearance: none; width: var(--thumb); height: var(--thumb); margin-top: calc((0.25rem - var(--thumb)) / 2); border-radius: 50%; background: var(--fg); border: 2px solid var(--bg); }
+    input[type="range"]::-moz-range-track { height: 0.25rem; border-radius: var(--radius-pill); background: var(--soft); }
+    input[type="range"]::-moz-range-progress { height: 0.25rem; border-radius: var(--radius-pill); background: var(--fg); }
+    input[type="range"]::-moz-range-thumb { box-sizing: border-box; width: var(--thumb); height: var(--thumb); border-radius: 50%; background: var(--fg); border: 2px solid var(--bg); }
+    /* A checkbox in the slider's colors: unchecked, the unfilled track's color as its edge; checked, the fill's color with a check in the page's color. */
+    input[type="checkbox"] { appearance: none; position: relative; flex: none; width: 1.125rem; height: 1.125rem; margin: 0; border: 2px solid var(--soft); border-radius: 0.25rem; background: none; cursor: pointer; vertical-align: -0.2em; }
+    input[type="checkbox"]:hover:not(:disabled) { border-color: var(--fg); }
+    /* A checkbox before its own text keeps a little more room from it. */
+    label > input[type="checkbox"]:first-child { margin-inline-end: var(--space-3); }
+    input[type="checkbox"]:checked { border-color: var(--fg); background: var(--fg); }
+    input[type="checkbox"]:checked::before { content: ""; position: absolute; left: 50%; top: 45%; width: 0.3125rem; height: 0.5625rem; border: solid var(--bg); border-width: 0 2px 2px 0; transform: translate(-50%, -50%) rotate(45deg); }
+    input[type="checkbox"]:disabled { opacity: 0.4; cursor: default; }
+    /* Keyboard focus rings the thumb, where the eye already is, instead of the whole row. */
+    input[type="range"]:focus-visible { outline: none; }
+    input[type="range"]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 2px var(--focus); }
+    input[type="range"]:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 2px var(--focus); }
+  }
   .with-unit { display: flex; align-items: center; gap: var(--space-2); color: var(--soft); }
   .with-unit input { min-width: 0; }
   .split .field { grid-template-columns: 7rem 6rem; }
@@ -354,17 +380,26 @@
   .extra { display: grid; gap: var(--space-5); }
   /* Custom and neutral colors side by side; narrow, the custom colors come first. */
   .color-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--space-8); align-items: start; }
-  .color-column, .color-list { display: grid; gap: var(--space-7); align-content: start; min-width: 0; }
-  .color-column p, .column-head > * { margin: 0; }
-  .column-head { display: grid; gap: var(--space-4); }
+  .color-column { display: grid; gap: var(--space-7); align-content: start; min-width: 0; }
+  .color-column p, :is(.column-head, .action-row) > * { margin: 0; }
+  :is(.column-head, .action-row) { display: grid; gap: var(--space-4); }
+  /* One action on its own row, centered over the width the fields take. */
+  .action-row { max-width: 36rem; text-align: center; }
+  .action-row > p { max-width: none; }
   /* Under a share's slider: where the band for text and lines is, and the colorfulness it gives. */
   /* A field with a readout under it: its label, slider and number line up at the top, the slider's band hangs just under its track, and the readout sits right below. */
   .field.with-after { align-items: start; row-gap: 0; }
   .field.with-after > span:first-child, .field.with-after > input[type="range"], .slider-cell { margin-top: calc((var(--control-height) - 1.5rem) / 2); }
   .slider-cell { display: block; min-width: 0; }
   .slider-cell input[type="range"] { display: block; width: 100%; margin: 0; }
-  .share-band { display: block; position: relative; height: 0.25rem; margin-top: var(--space-2); border-radius: var(--radius-pill); background: var(--line); }
-  .band-zone { position: absolute; top: 0; bottom: 0; border-radius: inherit; background: color-mix(in oklch, var(--fg) 45%, transparent); }
+  /* The zones under a share's slider, each starting where its limit falls on the thumb's travel: half a thumb in from the ends. The first runs to the start, the last to the end. */
+  .share-zones { display: block; position: relative; height: 0.25rem; margin-top: var(--space-2); }
+  .share-zones > span { position: absolute; top: 0; bottom: 0; left: calc(var(--thumb) / 2 + var(--from) * (100% - var(--thumb)) + 1px); right: calc(100% - var(--thumb) / 2 - var(--to) * (100% - var(--thumb))); }
+  .share-zones > .start { left: 0; border-start-start-radius: var(--radius-pill); border-end-start-radius: var(--radius-pill); }
+  .share-zones > .end { right: 0; border-start-end-radius: var(--radius-pill); border-end-end-radius: var(--radius-pill); }
+  :is(.share-zones, .share-meter .meter-zones) > .zone-0 { background: color-mix(in oklch, var(--fg) 14%, transparent); }
+  :is(.share-zones, .share-meter .meter-zones) > .zone-1 { background: color-mix(in oklch, var(--fg) 40%, transparent); }
+  :is(.share-zones, .share-meter .meter-zones) > .zone-2 { background: color-mix(in oklch, var(--fg) 24%, transparent); }
   .field.with-after .share-m { grid-column: 2 / -1; margin-top: var(--space-2); font-size: var(--type-sm); }
   .share-m.tint-strong { color: var(--fair); }
   .extra-title { display: flex; gap: var(--space-4); align-items: center; margin: 0; }
@@ -372,9 +407,9 @@
   .extra-title .link { margin-inline-start: auto; }
   .extra-name { display: inline-flex; gap: var(--space-4); align-items: center; min-width: 0; }
   .demo .strip { position: static; padding-block: 0; background: none; }
-  .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem) - 1px); z-index: 4; background: var(--bg); border-bottom: 1px solid transparent; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-5); align-items: start; padding-block: var(--space-5); }
-  .graph-editor { max-width: 56rem; display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: var(--space-5) var(--space-7); align-items: center; }
-  .graph-values { display: grid; gap: var(--space-4); align-content: center; }
+  .strip { --fill: 1rem; position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem) - 1px); z-index: 4; background: var(--bg); border-bottom: 1px solid transparent; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-5); align-items: start; padding-block: var(--space-5); }
+  .graph-editor { max-width: 56rem; display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: var(--space-5) var(--space-7); align-items: start; }
+  .graph-values { display: grid; gap: var(--space-4); align-content: start; }
   .graph-values .field, .graph-values .field:not(:has(input[type="range"])) { grid-template-columns: 3.5rem minmax(0, 1fr); gap: var(--space-4); }
   .graph-values .graph-check { grid-template-columns: 3.5rem auto; }
   .graph-values > p { margin: 0; }
@@ -392,7 +427,6 @@
   .guide-row { grid-column: 2; display: flex; gap: var(--space-4); align-items: center; margin: 0 var(--graph-inset-end, 0) calc(-1 * var(--space-5)) var(--graph-inset, 0); }
   .guide-picker { flex: 1; display: flex; min-width: 0; }
   .graph-caption.readout { font-size: var(--type-md); color: var(--fg); }
-  .readout.stale { opacity: 0.5; }
   .graph-caption.hint { font-size: var(--type-sm); color: var(--soft); }
   .graph-help summary { cursor: pointer; color: var(--fg); width: fit-content; }
   .graph-help ul { margin: var(--space-2) 0 0; padding-left: var(--space-6); display: grid; gap: var(--space-1); }
@@ -426,6 +460,7 @@
   .hue-facts dt { color: var(--soft); }
   .hue-facts dd { margin: 0; }
   .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 9rem 13rem; }
+  .field.fill, .field.fill:not(:has(input[type="range"])) { grid-template-columns: 9rem minmax(0, 1fr); }
   .strip.docked { border-bottom-color: var(--line); }
   /* The columns hug their numbers, at least four characters each; the verdict row below takes their
      width without adding to it, and a word too long for it is cut short. */
@@ -455,7 +490,9 @@
   .bend-meter { position: relative; display: block; height: 0.3125rem; min-width: 2rem; }
   .bend-meter.large { height: 0.5rem; margin-bottom: var(--space-7); }
   /* A hairline around the track, so its faintest zones still show where it starts. */
-  .meter-zones { display: flex; gap: 1px; height: 100%; border-radius: var(--radius-pill); overflow: hidden; outline: 1px solid color-mix(in oklch, var(--fg) 20%, transparent); }
+  .meter-zones { display: flex; gap: 1px; height: 100%; overflow: hidden; }
+  /* Every bar of zones has the same rounded, faintly outlined edge. */
+  :is(.meter-zones, .share-zones) { border-radius: var(--radius-pill); outline: 1px solid color-mix(in oklch, var(--fg) 20%, transparent); }
   .meter-zones span:nth-child(1) { background: color-mix(in oklch, var(--fg) 10%, transparent); }
   .meter-zones span:nth-child(2) { background: color-mix(in oklch, var(--fg) 20%, transparent); }
   .meter-zones span:nth-child(3) { background: color-mix(in oklch, var(--fg) 32%, transparent); }
@@ -493,10 +530,12 @@
   #palette-strip[data-shown="3"] .cover { background: var(--f3); transform-origin: 50% 100%; }
   #palette-strip.focused .cover { opacity: 1; transform: none; }
   #palette-strip.focused[data-shown="0"] [data-row="0"], #palette-strip.focused[data-shown="1"] [data-row="1"], #palette-strip.focused[data-shown="2"] [data-row="2"], #palette-strip.focused[data-shown="3"] [data-row="3"] { color: var(--fg); }
-  .strip-item .fill { height: 1rem; margin: 0; border-radius: 0; background: var(--f); }
+  .strip-item .fill { height: var(--fill); margin: 0; border-radius: 0; background: var(--f); }
   .strip-item .fill[data-row="0"] { border-radius: var(--radius-control) var(--radius-control) 0 0; }
   .strip-item .fill[data-row="3"] { border-radius: 0 0 var(--radius-control) var(--radius-control); margin-bottom: var(--space-2); }
   .strip-item .strip-gap { font-size: var(--type-xs); color: var(--c); font-weight: 500; }
+  /* Before the first solve, the colors' place says so, as tall as the colors will be: four rows of swatches, their gap and a line for the names. */
+  .strip-solving { grid-column: 1 / -1; display: grid; place-items: center; height: calc(4 * var(--fill) + var(--space-2) + var(--type-xs) * 1.5); font-size: var(--type-md); color: var(--soft); }
   /* The name and its gap as one line of text from the left, a bullet between, so one underline runs
      under all of it; crowded, the word "gap" goes, then "Hue" before a number, and a line still too
      long is cut short. */
@@ -655,7 +694,7 @@
     .graph-values > p, .graph-values > dl { grid-column: 1 / -1; }
     .graph-caption, .guide-row { grid-column: 1; }
     .graph-values .field, .graph-values .field:not(:has(input[type="range"])), .graph-values .graph-check { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
-    .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 7rem minmax(0, 1fr); }
+    .field:is(.wide, .fill), .field:is(.wide, .fill):not(:has(input[type="range"])) { grid-template-columns: 7rem minmax(0, 1fr); }
     .split { grid-template-columns: minmax(0, 1fr); }
     .facts-list div { grid-template-columns: 8rem minmax(0, 1fr); }
     .settings-head { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-6); }
@@ -685,10 +724,9 @@
   /* Phones: the strip goes compact, and pinned it's just the colors. Tablets keep the full strip. */
   @media (max-width: 36rem) {
     /* The strip stays pinned on phones too, compact: thinner swatches, only the curve's changes named. */
-    .strip { gap: var(--space-4); padding-block: var(--space-4); }
+    .strip { --fill: 0.75rem; gap: var(--space-4); padding-block: var(--space-4); }
     .strip-items { --fade: 1.5rem; grid-auto-columns: minmax(3.5rem, 1fr); gap: var(--space-3); }
     .strip-labels { grid-template-rows: repeat(4, 0.75rem); font-size: var(--type-xs); }
-    .strip-item .fill { height: 0.75rem; }
     /* A numbered hue keeps its number beside its gap; a named one shows its gap alone. */
     .strip-item .name:not(.numbered), .strip-item .name:not(.numbered) + .sep, .strip-item :is(.unit, .hue-word) { display: none; }
     .strip-items .strip-item .hash { display: inline; }
@@ -699,7 +737,7 @@
     .strip-metrics .metric-scope { display: none; }
     .strip-item .cover { height: 3rem; }
     /* Docked under the bar, the strip thins to its colors and their bends. */
-    .strip.docked .strip-item .fill { height: 0.375rem; }
+    .strip.docked { --fill: 0.375rem; }
     .strip.docked .strip-item .cover { height: 1.5rem; }
     /* Pinned, the strip is just the colors, across the whole width. */
     .strip.docked { grid-template-columns: minmax(0, 1fr); }
@@ -747,6 +785,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=a1f1b32343"></script>
+<script type="module" src="app.js?v=6a189af224"></script>
 </body>
 </html>

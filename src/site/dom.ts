@@ -2,25 +2,8 @@
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< DOM >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | What the pages share with the document: drawing a part of the page again without losing the      |
-| focus, copying text, and a status line that says something for a moment.                         |
+| focus, copying text, a status line that says something for a moment, and the sliders' fill.      |
 \*------------------------------------------------------------------------------------------------*/
-
-/**
- * Writes a readout, except while the palette solves: then its last text stays, dimmed, so it
- * keeps its height and nothing below it moves.
- *
- * @param el       The readout.
- * @param html     Its new contents.
- * @param solving  Whether the palette is still solving.
- */
-export function readout(el: Element, html: string, solving: boolean): void {
-  if (solving && el.textContent) {
-    el.classList.add("stale");
-    return;
-  }
-  el.classList.remove("stale");
-  el.innerHTML = html;
-}
 
 /**
  * Draws an element's contents again. Whatever control had the focus inside it gets it back, found
@@ -122,3 +105,37 @@ export function markField(el: HTMLInputElement, problem: string): void {
     el.setAttribute("aria-describedby", note.id);
   }
 }
+
+/* >----------------------------------------< Sliders >-----------------------------------------< */
+
+/**
+ * Brings every slider's look and spoken value up to date: the track fills up to the thumb, and a
+ * slider with a readout under it is announced with its field's value and that readout, so a screen
+ * reader hears what the value means, not only the number.
+ */
+export function syncSliders(): void {
+  for (const slider of document.querySelectorAll<HTMLInputElement>('input[type="range"]')) {
+    const [min, max] = [Number(slider.min || 0), Number(slider.max || 100)];
+    slider.style.setProperty("--p", String(max > min ? (Number(slider.value) - min) / (max - min) : 0));
+    const field = slider.closest(".field");
+    const readout = field?.querySelector("[data-readout]");
+    if (!readout) continue;
+    const exact = field!.querySelector<HTMLInputElement>('input[type="number"]')?.value ?? slider.value;
+    const unit = field!.querySelector(".with-unit > span")?.textContent ?? "";
+    slider.setAttribute("aria-valuetext", `${exact}${unit}, ${readout.textContent ?? ""}`);
+  }
+}
+
+// Sliders change by hand, by script (a field's twin) and by being drawn anew; each is caught, and
+// the pass runs once right after the change, before the page is painted.
+let pending = false;
+const later = () => {
+  if (pending) return;
+  pending = true;
+  queueMicrotask(() => {
+    pending = false;
+    syncSliders();
+  });
+};
+document.addEventListener("input", later);
+new MutationObserver(later).observe(document.body, { childList: true, subtree: true });

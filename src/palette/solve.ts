@@ -278,11 +278,13 @@ function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Sp
 /* >----------------------------------------< Neutrals >----------------------------------------< */
 
 /**
- * The colorfulness where a neutral reads as tinted yet still neutral, for text and lines, in CAM16
- * M: below it a tint hardly shows (CAM16 sees M 1–2 even in a pure gray); above it, text starts to
- * read as colored. A new neutral starts at the top of it.
+ * The colorfulness, in CAM16 M, where a color reads as a neutral: under it the tint hardly shows
+ * next to Gray (CAM16 sees M 1–2 even in a pure gray), past it the color reads as a color.
  */
-export const NEUTRAL_BAND = [4, 8] as const;
+export const NEUTRAL_BAND = [4, 12] as const;
+
+/** Where a new neutral color starts: well inside the neutral range. */
+export const NEUTRAL_START = 8;
 
 /**
  * The gray that sits on a tier: the 8-bit gray nearest the base that reaches it, searched on the
@@ -537,7 +539,7 @@ export function colorKeys(settings: Pick<Settings, "hues" | "extras" | "neutrals
     return key;
   };
   return {
-    extras: settings.extras.map((e) => keyOf(e.name, "extra")),
+    extras: settings.extras.map((e) => keyOf(e.name, "custom")),
     neutrals: settings.neutrals.map((n) => keyOf(n.name, "neutral")),
   };
 }
@@ -594,8 +596,24 @@ export function swatch(
   };
 }
 
+/** What the hues decide on one tier: where each hue sits, its color and colorfulness, and the tier's. */
+interface HueTier {
+  readonly hues: readonly number[];
+  readonly colors: readonly string[];
+  readonly targets: readonly number[];
+  readonly target: number;
+  readonly limit: string | null;
+  readonly ring: readonly number[];
+}
+
+/** The hues of one mode on every tier: the costly part of a palette, which colors placed on top reuse. */
+type HueCore = Readonly<Record<number, HueTier>>;
+
+/** Both modes' hues on one gamut tier. */
+export type GamutCore = Readonly<Record<Mode, HueCore>>;
+
 /**
- * Every tier of one mode.
+ * The hues of one mode on every tier.
  *
  * The identity tier is spaced first; every other tier starts from its hues and may move them a
  * little, so each tier is evenly spaced in its own right. With equal tiers, every color on a tier
@@ -604,12 +622,11 @@ export function swatch(
  * @param settings  The settings.
  * @param model     The color model.
  * @param mode      The mode.
- * @returns         The mode's colors on every tier.
+ * @returns         Each tier's hues.
  */
-function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
+function solveHues(settings: Settings, model: Model, mode: Mode): HueCore {
   const base = settings.bases[mode];
   const { keys, start, fixed, sep } = seeds(settings);
-  const extras = extraKeys(settings);
   // With other than eight hues, the identity tier may move each only up to halfway to its even neighbor.
   const identityReach =
     settings.hues === NAMES.length
@@ -627,7 +644,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
       ? { target: reach[least]!, limit: keys[least]! }
       : { target: settings.colorfulness, limit: null };
   };
-  const solveTier = (tier: number, hues: readonly number[], reach: number) => {
+  const solveTier = (tier: number, hues: readonly number[], reach: number): HueTier => {
     const { target, limit } = ceiling(tier, hues);
     // A curve that takes away more than the tier has stops at gray.
     const aim = (hue: number) => Math.max(0, target + boost(settings, mode, hue));
@@ -637,13 +654,35 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
 
   const identityTier = identityOf(settings, mode);
   const identity = solveTier(identityTier, start, identityReach);
+  return Object.fromEntries(
+    settings.tiers.map((tier) => [
+      tier,
+      tier === identityTier ? identity : solveTier(tier, identity.hues, settings.hueWindow.tier),
+    ]),
+  );
+}
+
+/**
+ * One mode's palette from its hues: each hue's color and muted version on every tier, and the
+ * colors placed on top, the custom colors, Gray and the neutral colors. None of these move the
+ * hues, so a change to them needs only this part.
+ *
+ * @param settings  The settings.
+ * @param model     The color model.
+ * @param mode      The mode.
+ * @param core      The mode's hues on every tier.
+ * @returns         The mode's colors on every tier.
+ */
+function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore): ModePalette {
+  const base = settings.bases[mode];
+  const { keys } = seeds(settings);
+  const extras = extraKeys(settings);
   const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch }>> = {};
   const targets: Record<number, number> = {};
   const limits: Record<number, string | null> = {};
   const ring: Record<number, number[]> = {};
   for (const tier of settings.tiers) {
-    const solved =
-      tier === identityTier ? identity : solveTier(tier, identity.hues, settings.hueWindow.tier);
+    const solved = core[tier]!;
     tiers[tier] = {};
     targets[tier] = round(solved.target);
     limits[tier] = solved.limit;
@@ -700,16 +739,57 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
 }
 
 /**
- * Both modes on one gamut tier.
+ * What the hues depend on: every setting but the colors placed on top of them and the names.
+ * Settings with the same key share their hues.
+ *
+ * @param settings  The settings.
+ * @returns         A key.
+ */
+export function huesKey(settings: Settings): string {
+  const {
+    extras: _extras,
+    neutrals: _neutrals,
+    muted: _muted,
+    name: _name,
+    guide: _guide,
+    ...rest
+  } = settings;
+  return JSON.stringify(rest);
+}
+
+/** How many gamut tiers' hues a cache keeps: the latest few settings, in every gamut tier. */
+const KEPT_CORES = 24;
+
+/**
+ * Both modes on one gamut tier. Given a cache, hues already solved for the same hue settings are
+ * reused, so a change to the colors placed on top takes milliseconds rather than a whole solve.
  *
  * @param settings  What to solve from.
  * @param gamut     The gamut tier colors must fit.
+ * @param cache     Hues solved before, by hue settings and gamut tier; kept up to date.
  * @returns         The palette for that tier.
  */
-export function solveGamut(settings: Settings, gamut: Gamut): GamutPalette {
+export function solveGamut(
+  settings: Settings,
+  gamut: Gamut,
+  cache?: Map<string, GamutCore>,
+): GamutPalette {
   const model = makeModel(settings, gamut);
+  const key = `${huesKey(settings)}|${gamut}`;
+  let core = cache?.get(key);
+  if (!core) {
+    core = Object.fromEntries(
+      MODES.map((mode) => [mode, solveHues(settings, model, mode)]),
+    ) as GamutCore;
+    cache?.set(key, core);
+  } else {
+    // Used again, so it's the last to be let go.
+    cache!.delete(key);
+    cache!.set(key, core);
+  }
+  if (cache && cache.size > KEPT_CORES) cache.delete(cache.keys().next().value!);
   return Object.fromEntries(
-    MODES.map((mode) => [mode, solveMode(settings, model, mode)]),
+    MODES.map((mode) => [mode, finishMode(settings, model, mode, core[mode])]),
   ) as GamutPalette;
 }
 
