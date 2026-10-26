@@ -370,9 +370,7 @@
   .extra-title { display: flex; gap: var(--space-4); align-items: center; margin: 0; }
   .extra-title .soft { font-weight: 400; font-size: var(--type-md); }
   .extra-title .link { margin-inline-start: auto; }
-  .extra-title input.extra-name { flex: 1; min-width: 0; font: inherit; color: inherit; background: none; border: 0; border-bottom: 1px dotted var(--soft); border-radius: 0; padding: 0; }
-  .extra-title input.extra-name:focus { border-bottom-style: solid; outline: none; }
-  .extra-title input.extra-name:focus-visible { border-bottom-color: var(--fg); }
+  .extra-name { display: inline-flex; gap: var(--space-4); align-items: center; min-width: 0; }
   .demo .strip { position: static; padding-block: 0; background: none; }
   .strip { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--header-height, 7rem) - 1px); z-index: 4; background: var(--bg); border-bottom: 1px solid transparent; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-5); align-items: start; padding-block: var(--space-5); }
   .graph-editor { max-width: 56rem; display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: var(--space-5) var(--space-7); align-items: center; }
@@ -748,6 +746,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=e7e400b0ee"></script>
+<script type="module" src="app.js?v=1f48528a7e"></script>
 </body>
 </html>

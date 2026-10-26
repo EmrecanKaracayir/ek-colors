@@ -1958,15 +1958,16 @@ function write(path: string, value: unknown): void {
 function extraFields(i: number): string {
   const name = escape(state.settings.extras[i]!.name);
   return `<div class="extra" data-extra="${String(i)}">
-    <h3 class="extra-title">${extraDot(i)}<input class="extra-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false" aria-label="Name"><button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
+    <h3 class="extra-title"><span class="extra-name">${extraDot(i)}${label(extraKeys(state.settings)[i]!)}</span><button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
+    <label class="field wide" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
     ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` })}
     ${shareField(`extras.${String(i)}.share`, "Share")}
   </div>`;
 }
 
 /**
- * One neutral color's settings: its name, beside a dot of its color on the identity tier, and its
- * share of the base's tint.
+ * One neutral color's settings: its name and its share of the base's tint, under a title showing
+ * its color on the identity tier.
  *
  * @param i  Which neutral color.
  * @returns  HTML.
@@ -1974,7 +1975,8 @@ function extraFields(i: number): string {
 function neutralFields(i: number): string {
   const name = escape(state.settings.neutrals[i]!.name);
   return `<div class="extra" data-neutral="${String(i)}">
-    <h3 class="extra-title">${neutralDot(i)}<input class="extra-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false" aria-label="Name"><button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}">Remove</button></h3>
+    <h3 class="extra-title"><span class="extra-name">${neutralDot(i)}${label(colorKeys(state.settings).neutrals[i]!)}</span><button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}">Remove</button></h3>
+    <label class="field wide" for="set-neutrals-${String(i)}-name"><span>Name</span><input id="set-neutrals-${String(i)}-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false"></label>
     ${shareField(`neutrals.${String(i)}.share`, "Share")}
   </div>`;
 }
@@ -2703,13 +2705,14 @@ function updateTune(): void {
   updateStrip();
   updateExport();
   for (const block of document.querySelectorAll<HTMLElement>("[data-neutral]")) {
-    block.querySelector(".extra-title .dot")!.outerHTML = neutralDot(Number(block.dataset.neutral));
+    const i = Number(block.dataset.neutral);
+    block.querySelector(".extra-name")!.innerHTML = `${neutralDot(i)}${label(colorKeys(state.settings).neutrals[i]!)}`;
   }
   document.querySelector(".gray-row")?.replaceWith(document.createRange().createContextualFragment(grayRow()));
   updateShares();
   for (const block of document.querySelectorAll<HTMLElement>("[data-extra]")) {
     const i = Number(block.dataset.extra);
-    block.querySelector(".extra-title .dot")!.outerHTML = extraDot(i);
+    block.querySelector(".extra-name")!.innerHTML = `${extraDot(i)}${label(extraKeys(state.settings)[i]!)}`;
     block.querySelector("[data-hue-note]")!.textContent = hueNote(i);
   }
   if (document.querySelector(".hues-editor")) refreshHues(huesView());
