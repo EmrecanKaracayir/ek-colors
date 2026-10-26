@@ -1888,7 +1888,7 @@ function shareInfo(path: string): string {
   const of = neutral ? baseTint(state.mode) : state.settings.colorfulness;
   const [low, high] = NEUTRAL_BAND;
   if (of <= 0)
-    return `<span class="share-band" aria-hidden="true"></span><span class="share-m soft" data-readout="${path}">The ${state.mode} base is a pure gray: the grays</span>`;
+    return `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is pure gray, so this is the grays.</span>`;
   const m = share * of;
   // The band as shares of this slider, its edges rounded inward to 4% when that leaves a band.
   let [from, to] = [low / of, high / of];
@@ -1991,6 +1991,15 @@ function neutralTitle(i: number): string {
 }
 
 /**
+ * Whether either base is tinted, so neutral colors would differ from the grays.
+ *
+ * @returns  True when a base is tinted.
+ */
+function anyTinted(): boolean {
+  return MODES.some((m) => tinted(state.settings.bases[m]));
+}
+
+/**
  * The gray that every palette has, shown first among the neutral colors: it can't be removed.
  *
  * @returns  HTML.
@@ -2081,8 +2090,11 @@ function tune(): string {
           <h3>Neutral colors</h3>
           <p class="soft">Gray comes with every palette. Each neutral color follows its mode's base: the base's hue at a share of its colorfulness, so text and lines belong to a tinted page. On a pure-gray base they're the grays.</p>
           ${grayRow()}
-          ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
-          <p><button type="button" data-action="add-neutral">Add a neutral color</button></p>
+          <p class="soft" id="neutrals-untinted"${anyTinted() ? " hidden" : ""}>Both bases are pure gray, so the grays are their neutrals. Tint a base, in Viewing below, to add neutral colors that follow it.</p>
+          <div id="neutrals-list"${anyTinted() ? "" : " hidden"}>
+            ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
+            <p><button type="button" data-action="add-neutral">Add a neutral color</button></p>
+          </div>
         </div>
       </div>
     </section>
@@ -3151,6 +3163,11 @@ document.addEventListener("input", (event) => {
   // automatic identity tier is measured on the bases.
   if (path.startsWith("bases.") || path.startsWith("rooms.")) syncAnchor();
   if (path.startsWith("bases.")) for (const m of MODES) $(`#set-identity-${m} option[value="auto"]`).textContent = automaticName(m);
+  // Neutral colors can be added once a base is tinted; on pure grays they'd be the grays.
+  if (path.startsWith("bases.")) {
+    $<HTMLElement>("#neutrals-untinted").hidden = anyTinted();
+    $<HTMLElement>("#neutrals-list").hidden = !anyTinted();
+  }
   if (path.startsWith("curve.") || path.startsWith("extras.")) updateTune();
   if (path === "hues") $("#hues-note").innerHTML = huesNote(state.settings.hues);
   if (path.endsWith(".share") || path === "colorfulness" || path.startsWith("bases.")) updateShares();

@@ -187,7 +187,7 @@ export const DEFAULTS: Settings = {
   identityTier: { light: "auto", dark: "auto" },
   muted: 0.5,
   extras: [],
-  neutrals: [{ name: "Neutral", share: 1 }],
+  neutrals: [],
   hueWindow: { identity: 20, tier: 6 },
   anchor: "ncs",
   placed: {},
