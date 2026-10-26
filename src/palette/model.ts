@@ -136,12 +136,12 @@ export function lightness(color: string): number {
 }
 
 /**
- * The grey as light as a base, as its 8-bit level.
+ * The gray as light as a base, as its 8-bit level.
  *
  * @param base  The background.
  * @returns     0 for black to 255 for white.
  */
-export function greyLevel(base: string): number {
+export function grayLevel(base: string): number {
   return argbFromLstar(lstarFromArgb(argbFromHex(base))) & 0xff;
 }
 

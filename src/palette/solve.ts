@@ -10,7 +10,7 @@ import {
   apca,
   composition,
   darkBase,
-  greyLevel,
+  grayLevel,
   hueTurn,
   makeModel,
   type Model,
@@ -61,6 +61,12 @@ export interface ModePalette {
 
   /** Per tier, each hue's distance to the next around the circle (CAM16-UCS). */
   readonly ring: Readonly<Record<number, readonly number[]>>;
+
+  /** Per tier, the gray on it: no color at all, its red, green and blue the same. */
+  readonly grays: Readonly<Record<number, Swatch>>;
+
+  /** Per tier, the neutral that follows the base's tint; null when the base is a pure gray. */
+  readonly neutrals: Readonly<Record<number, Swatch>> | null;
 }
 
 /** Both modes on one gamut tier. */
@@ -259,13 +265,56 @@ function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Sp
   return { hues, colors, ring: ring(colors) };
 }
 
+/* >----------------------------------------< Neutrals >----------------------------------------< */
+
+/** How colorful a neutral may get from its base's tint, in CAM16 M: a hint, never a color. */
+export const NEUTRAL_TINT = 8;
+
+/**
+ * The gray that sits on a tier: the 8-bit gray nearest the base that reaches it, searched on the
+ * side away from the base, so it's on the tier from above, as every color is. When none reaches it,
+ * the furthest gray.
+ *
+ * @param base  The background.
+ * @param tier  The tier.
+ * @returns     The gray, as hex.
+ */
+export function grayOn(base: string, tier: number): string {
+  const dark = isDark(base);
+  const gray = (v: number) => `#${v.toString(16).padStart(2, "0").repeat(3).toUpperCase()}`;
+  // On a dark base the first lighter gray that reaches the tier; on a light base the one before
+  // the first darker gray that doesn't.
+  let [lo, hi] = dark ? [grayLevel(base), 256] : [0, grayLevel(base) + 1];
+  while (lo < hi) {
+    const v = Math.floor((lo + hi) / 2);
+    if (apca(gray(v), base) >= tier === dark) hi = v;
+    else lo = v + 1;
+  }
+  return gray(dark ? Math.min(255, lo) : Math.max(0, lo - 1));
+}
+
+/**
+ * Whether a base has a tint: its red, green and blue differ. A pure gray still has a little
+ * colorfulness in CAM16, so this is judged on the screen's color instead.
+ *
+ * @param base  The background, as hex.
+ * @returns     True when it's tinted.
+ */
+export function tinted(base: string): boolean {
+  const [r, g, b] = [1, 3, 5].map((i) => base.slice(i, i + 2).toUpperCase());
+  return r !== g || g !== b;
+}
+
+/** The neutrals' keys, as colors' pages and exports name them. */
+export const NEUTRALS = ["gray", "neutral"] as const;
+
 /* >-------------------------------------< Identity tier >--------------------------------------< */
 
 /** The contrast each rule asks of ordinary text: APCA's Lc and WCAG 2's ratio for AA. */
 export const TEXT_MINIMUM = { apca: 60, wcag: 4.5 } as const;
 
 /**
- * How near a tier is to reading as text by both contrast rules at once: a grey on the tier, its
+ * How near a tier is to reading as text by both contrast rules at once: a gray on the tier, its
  * APCA Lc over APCA's minimum and its WCAG 2 ratio over WCAG's, averaged. At 1, the two rules
  * together are just at their minimum; below, too faint; above, more than text needs.
  *
@@ -274,19 +323,8 @@ export const TEXT_MINIMUM = { apca: 60, wcag: 4.5 } as const;
  * @returns     The score.
  */
 export function textScore(base: string, tier: number): number {
-  const dark = isDark(base);
-  const grey = (v: number) => `#${v.toString(16).padStart(2, "0").repeat(3)}`;
-  // The grey nearest the base that reaches the tier, searched on the side away from it: the first
-  // lighter one that does on a dark base, the one before the first darker one that doesn't on a
-  // light base. When none does, the furthest grey.
-  let [lo, hi] = dark ? [greyLevel(base), 256] : [0, greyLevel(base) + 1];
-  while (lo < hi) {
-    const v = Math.floor((lo + hi) / 2);
-    if (apca(grey(v), base) >= tier === dark) hi = v;
-    else lo = v + 1;
-  }
-  const v = dark ? Math.min(255, lo) : Math.max(0, lo - 1);
-  return (apca(grey(v), base) / TEXT_MINIMUM.apca + wcag(grey(v), base) / TEXT_MINIMUM.wcag) / 2;
+  const gray = grayOn(base, tier);
+  return (apca(gray, base) / TEXT_MINIMUM.apca + wcag(gray, base) / TEXT_MINIMUM.wcag) / 2;
 }
 
 const automatic = new Map<string, number>();
@@ -449,7 +487,7 @@ export const PAGES = [
  * @returns         One key per extra color, in order.
  */
 export function extraKeys(settings: Pick<Settings, "hues" | "extras">): string[] {
-  const used = new Set([...PAGES, ...hueKeys(settings.hues)]);
+  const used = new Set([...PAGES, ...NEUTRALS, ...hueKeys(settings.hues)]);
   return settings.extras.map((extra) => {
     // Accents are dropped and a dotless ı is an i, so "Çivit" becomes "civit".
     const word =
@@ -545,7 +583,7 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
   };
   const solveTier = (tier: number, hues: readonly number[], reach: number) => {
     const { target, limit } = ceiling(tier, hues);
-    // A curve that takes away more than the tier has stops at grey.
+    // A curve that takes away more than the tier has stops at gray.
     const aim = (hue: number) => Math.max(0, target + boost(settings, mode, hue));
     const spaced = space({ model, base, mode, fixed, tier, start: hues, reach, sep, target: aim });
     return { target, limit, targets: spaced.hues.map(aim), ...spaced };
@@ -596,7 +634,18 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     ...c,
     tiers: Object.fromEntries(settings.tiers.map((t) => [t, tiers[t]![c.key]!])),
   }));
-  return { base, colors, targets, limits, ring };
+  // The neutrals: a gray on every tier, and, on a tinted base, one that follows its tint.
+  const onTiers = (make: (tier: number) => Swatch) =>
+    Object.fromEntries(settings.tiers.map((t) => [t, make(t)]));
+  const grays = onTiers((t) => swatch(model, base, mode, grayOn(base, t), 0));
+  const tint = tinted(base) ? model.cam(mode, base) : null;
+  const neutrals = tint
+    ? onTiers((t) => {
+        const m = Math.min(tint.m, NEUTRAL_TINT);
+        return swatch(model, base, mode, strongest(model, base, mode, tint.hue, m, t), m);
+      })
+    : null;
+  return { base, colors, targets, limits, ring, grays, neutrals };
 }
 
 /**

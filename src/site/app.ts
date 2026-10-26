@@ -13,7 +13,7 @@ import { composition, deltaE, hueTurn, lightness, makeModel, type Model, parts, 
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
 import { readSettings, SettingsError } from "../palette/check";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
-import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, PAGES, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, NEUTRAL_TINT, NEUTRALS, PAGES, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { announce, copyText, flash, markField, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
@@ -1007,7 +1007,7 @@ function aimText(key: string, s: Swatch, tierTarget: number): string {
 function card(s: Swatch, title: string, href?: string, at?: Place): string {
   const id = at ? placeId(at) : "";
   // Nothing covers the color: held back by the gamut, the colorfulness itself turns red and opens
-  // why; lowered by the tier, it stays grey and opens why; setting the tier is a small amber flag
+  // why; lowered by the tier, it stays gray and opens why; setting the tier is a small amber flag
   // beside the name.
   // A mark beside the value, not only its color, says it's held back: ! by the screen, ↓ by the tier.
   const value = `M ${s.colorfulness.toFixed(1)}`;
@@ -1386,7 +1386,7 @@ const COLUMNS: readonly Column[] = [
   { key: "apca", name: () => "APCA", unit: "Lc", what: () => "Contrast against the background as APCA's Lc, from 15 for faint fills to 90 for long reading. Each color is solved to land exactly on its tier." },
   { key: "wcag", name: () => "WCAG 2", what: () => "Contrast against the background as WCAG 2's ratio, from 1:1 to 21:1, with the level it reaches. Each level's badge explains what it allows." },
   { key: "lightness", name: () => "Lightness", unit: "J", what: () => "How light the color looks, from 0 for black to 100 for white. The tier's contrast fixes it." },
-  { key: "chroma", name: () => "Chroma", unit: "C", what: () => "How far the color is from grey, measured against a white under the same light." },
+  { key: "chroma", name: () => "Chroma", unit: "C", what: () => "How far the color is from gray, measured against a white under the same light." },
   {
     key: "colorfulness",
     name: () => "Colorfulness",
@@ -1456,12 +1456,81 @@ function marksKey(list: readonly Marked[]): string {
 }
 
 /**
- * One color: every tier, default and muted, with all its numbers.
+ * A swatch on a tier as a row of its color's table.
+ *
+ * @param s         The swatch.
+ * @param tier      Its tier.
+ * @param identity  The identity tier, starred.
+ * @param variant   Default or muted.
+ * @param marks     What it's marked with beside its colorfulness, if anything.
+ * @param hueless   Whether it has no hue to speak of: a gray.
+ * @returns         HTML.
+ */
+function tierRow(s: Swatch, tier: number, identity: number, variant: Variant, marks: string, hueless = false): string {
+  const cells = [
+    `<span class="pair" style="--c:${s.color}"><span class="fill"></span><span class="sample">Aa</span></span>`,
+    copyable(s.color),
+    s.apca.toFixed(1),
+    `<span class="facts">${badge(s)}<span class="mono">${s.wcag.toFixed(2)}</span></span>`,
+    s.lightness.toFixed(1),
+    s.chroma.toFixed(1),
+    `<span class="facts">${marks}<span>${s.colorfulness.toFixed(1)}</span></span>`,
+    hueless ? `<span class="soft">No hue</span>` : `<span class="facts"><span class="soft">${s.name}</span><span>${s.hue.toFixed(1)}°</span></span>`,
+  ];
+  return `<tr>
+    <th scope="row">${tier === identity ? identityLabel(tier, variant) : ""}Lc ${String(tier)}<span class="soft">${ROLES[tier] ?? ""}</span></th>
+    ${cells.map((html, i) => columnCell(COLUMNS[i + 1]!, html)).join("")}
+  </tr>`;
+}
+
+/**
+ * A color's table, one row per tier, with what its columns mean.
+ *
+ * @param title    Its heading.
+ * @param variant  Default or muted, which keeps its popovers apart from the other table's.
+ * @param rows     The rows.
+ * @param after    What follows it, such as the key to its marks.
+ * @returns        HTML.
+ */
+function tierTable(title: string, variant: Variant, rows: string, after = ""): string {
+  return `<section>
+    <h2>${title}</h2>
+    ${popButton(`columns:${variant}`, "What the columns mean", "What the columns mean", "metric columns-help")}
+    <div class="scroll"><table class="swatch-table">
+      <thead><tr>${COLUMNS.map((col) => `<th scope="col"${NUMERIC.has(col.key) ? ' class="num"' : ""}>${heading(col, variant)}</th>`).join("")}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>${after}
+  </section>`;
+}
+
+/**
+ * The chips that lead to each color's page, then the neutrals': gray, and the base's neutral when
+ * the base is tinted.
+ *
+ * @param current  The page on screen.
+ * @returns        HTML.
+ */
+function colorChips(current: string): string {
+  const tier = identityOf(state.settings, state.mode);
+  const p = currentMode();
+  const chip = (key: string, color: string) =>
+    `<a href="#${key}" style="--c:${color}"${key === current ? ' aria-current="page"' : ""}><span class="dot"></span>${label(key)}</a>`;
+  const hues = colors(tier).map((x) => chip(x.key, x.tiers[tier]!.default.color));
+  const neutrals = p ? [chip("gray", p.grays[tier]!.color), ...(p.neutrals ? [chip("neutral", p.neutrals[tier]!.color)] : [])] : [];
+  return `<nav class="chips" aria-label="Colors">${hues.join("")}${neutrals.length ? `<span class="chips-gap" aria-hidden="true"></span>${neutrals.join("")}` : ""}</nav>`;
+}
+
+/** The mode on screen's palette, or null while it solves. */
+const currentMode = () => current()?.[state.mode] ?? null;
+
+/**
+ * A color's page: its tiers, default and muted, in tables. The neutrals have pages of their own.
  *
  * @param key  The color.
  * @returns    HTML.
  */
 function color(key: string): string {
+  if (key === "gray" || key === "neutral") return neutralPage(key);
   const tier = identityOf(state.settings, state.mode);
   const list = colors(tier);
   const c = list.find((x) => x.key === key);
@@ -1477,41 +1546,46 @@ function color(key: string): string {
       : String(colorfulness);
   const table = (variant: Variant) => {
     const rows = state.settings.tiers.filter((t) => c.tiers[t]);
-    return `<section>
-      <h2>${variant === "default" ? "Default" : "Muted"}</h2>
-      ${popButton(`columns:${variant}`, "What the columns mean", "What the columns mean", "metric columns-help")}
-      <div class="scroll"><table class="swatch-table">
-        <thead><tr>${COLUMNS.map((col) => `<th scope="col"${NUMERIC.has(col.key) ? ' class="num"' : ""}>${heading(col, variant)}</th>`).join("")}</tr></thead>
-        <tbody>${rows
-          .map((t) => {
-            const s = c.tiers[t]![variant];
-            const cells = [
-              `<span class="pair" style="--c:${s.color}"><span class="fill"></span><span class="sample">Aa</span></span>`,
-              copyable(s.color),
-              s.apca.toFixed(1),
-              `<span class="facts">${badge(s)}<span class="mono">${s.wcag.toFixed(2)}</span></span>`,
-              s.lightness.toFixed(1),
-              s.chroma.toFixed(1),
-              `<span class="facts">${variant === "default" ? lowered(c.key, t, s) : ""}<span>${s.colorfulness.toFixed(1)}</span></span>`,
-              `<span class="facts"><span class="soft">${s.name}</span><span>${s.hue.toFixed(1)}°</span></span>`,
-            ];
-            return `<tr>
-              <th scope="row">${t === tier ? identityLabel(t, variant) : ""}Lc ${String(t)}<span class="soft">${ROLES[t] ?? ""}</span></th>
-              ${cells.map((html, i) => columnCell(COLUMNS[i + 1]!, html)).join("")}
-            </tr>`;
-          })
-          .join("")}</tbody>
-      </table></div>${variant === "default" ? marksKey(rows.map((t) => ({ s: c.tiers[t]!.default, at: { key: c.key, tier: t, variant: "default" } }))) : ""}
-    </section>`;
+    const html = rows.map((t) => tierRow(c.tiers[t]![variant], t, tier, variant, variant === "default" ? lowered(c.key, t, c.tiers[t]!.default) : "")).join("");
+    const key = variant === "default" ? marksKey(rows.map((t) => ({ s: c.tiers[t]!.default, at: { key: c.key, tier: t, variant: "default" } }))) : "";
+    return tierTable(variant === "default" ? "Default" : "Muted", variant, html, key);
   };
-  return `<nav class="chips" aria-label="Colors">${list
-    .map((x) => `<a href="#${x.key}" style="--c:${x.tiers[tier]!.default.color}"${x.key === key ? ' aria-current="page"' : ""}><span class="dot"></span>${label(x.key)}</a>`)
-    .join("")}</nav>
+  return `${colorChips(key)}
     <section class="intro hero" style="--c:${identity.color}">
       <h1>${label(key)}</h1>
       <p>CAM16 hue ${identity.hue.toFixed(1)}°, read as ${identity.name}. Aims at colorfulness ${aim}.${equalTiers ? ` On a tier whose least colorful hue falls short of ${String(colorfulness)}, the ${String(colorfulness)} drops to that hue's reach.` : ""}</p>
     </section>
     ${table("default")}${table("muted")}`;
+}
+
+/**
+ * A neutral's page: gray, the same red, green and blue on every tier, or the base's neutral, which
+ * follows a tinted base's hue at a hint of its colorfulness.
+ *
+ * @param key  "gray" or "neutral".
+ * @returns    HTML.
+ */
+function neutralPage(key: (typeof NEUTRALS)[number]): string {
+  const p = currentMode();
+  const tier = identityOf(state.settings, state.mode);
+  const { mode } = state;
+  if (!p) return `<section class="intro"><h1>${label(key)}</h1><p>Solving…</p></section>`;
+  const tiers = key === "gray" ? p.grays : p.neutrals;
+  if (!tiers)
+    return `${colorChips(key)}
+      <section class="intro"><h1>Neutral</h1><p>The ${mode} base, ${p.base}, is a pure gray, so its neutrals are the <a href="#gray">grays</a>. A tinted base gets a neutral of its own here.</p></section>`;
+  const identity = tiers[tier]!;
+  const intro =
+    key === "gray"
+      ? `A gray on every tier: its red, green and blue the same, exactly on each tier's contrast against the ${mode} base, as every color is. Text, quiet text and lines usually come from here. CAM16 still sees a little colorfulness in a pure gray, which is why the table shows some.`
+      : `A neutral on every tier that follows the ${mode} base's tint: its hue, ${identity.hue.toFixed(0)}°, at colorfulness M ${identity.target.toFixed(1)}, the base's own, held to at most ${String(NEUTRAL_TINT)} so it stays a hint, never a color. For text and lines that belong to a tinted page.`;
+  const rows = state.settings.tiers.filter((t) => tiers[t]).map((t) => tierRow(tiers[t]!, t, tier, "default", "", key === "gray")).join("");
+  return `${colorChips(key)}
+    <section class="intro hero" style="--c:${identity.color}">
+      <h1>${label(key)}</h1>
+      <p>${intro}</p>
+    </section>
+    ${tierTable("On every tier", "default", rows)}`;
 }
 
 /* >----------------------------------------< Compare >-----------------------------------------< */

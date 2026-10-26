@@ -12,7 +12,7 @@ import { LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
 import { anchorHue, anchorSource } from "../palette/references";
 import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../palette/settings";
 import project from "../../package.json";
-import { autoIdentity, CLOSEST, hueKeys, identityOf, TEXT_MINIMUM, textScore } from "../palette/solve";
+import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_TINT, TEXT_MINIMUM, textScore } from "../palette/solve";
 import type { Context } from "./explain";
 import { escape } from "./graph";
 
@@ -128,8 +128,8 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
   x ← color(light ? lo : hi, M, h)
   return x if APCA(x, base) ≥ Lc after rounding, else none</pre>
       <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces, typically a few tenths of an Lc. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
-      <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together are just at their minimum for text. It's measured on a grey, so it's known before any color is solved:</p>
-<pre class="formula">g(Lc)     = the 8-bit grey nearest the base with APCA(g, base) ≥ Lc, or the furthest grey if none
+      <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together are just at their minimum for text. It's measured on a gray, so it's known before any color is solved:</p>
+<pre class="formula">g(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
 score(Lc) = (APCA(g, base) / ${String(TEXT_MINIMUM.apca)} + WCAG(g, base) / ${String(TEXT_MINIMUM.wcag)}) / 2     // 1: both just at their minimum for text
 identity  = the tier with score nearest 1, the lower on a tie
 ${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textScore(s.bases[m], t).toFixed(2)}`).join(" • ")}   → Lc ${String(autoIdentity(s.bases[m], s.tiers))}${s.identityTier[m] === "auto" ? "" : `, set by hand to Lc ${String(identityOf(s, m))}`}`).join("\n")}</pre>
@@ -147,7 +147,7 @@ ${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textS
 <pre class="formula">reach(h, Lc)  = M of strongest(h, 200, Lc)               // how far the gamut lets h go
 T(Lc)         = min(M_target, min over hues of reach(h, Lc))   // with equal per tier on; before the curve
 limit(Lc)     = the hue with the smallest reach, if it's below M_target
-target(h, Lc) = max(0, T(Lc) + curve(h))                  // a curve can't go below grey</pre>
+target(h, Lc) = max(0, T(Lc) + curve(h))                  // a curve can't go below gray</pre>
       <p>The reach is measured at the hues the tier starts from: the starting hues on the identity tier, the identity tier's spaced hues on every other tier.</p>
       <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. The ceiling is measured before the curve: a hue the curve asks more of than it can reach on a tier stops at its reach (Gamut limit) rather than the whole tier dropping to make room for it. Each swatch is labeled from these numbers:</p>
 <pre class="formula">Gamut limit    measured M &lt; aim − 1                          // the screen holds it below its aim
@@ -214,6 +214,11 @@ hue          = (2 · √(M*₁ · M*₂) · sin(Δh / 2))²      // the chord th
       <h2>8. Muted and extra colors</h2>
 <pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) × ${String(s.muted)}, Lc)     // same hue, same tier
 extra(e, Lc) = strongest(hue(e), T(Lc) × share(e), Lc)               // not spaced${s.extras.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
+      <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a tinted base a neutral that follows it:</p>
+<pre class="formula">gray(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
+tinted       = the base's red, green and blue differ        // a pure gray still has a little M in CAM16
+neutral(Lc)  = strongest(hue(base), min(M(base), ${String(NEUTRAL_TINT)}), Lc)       // only on a tinted base
+exported     = a pure-gray mode's neutral is its gray, so --neutral-* holds a color in both modes</pre>
     </section>
 
     <section class="step">

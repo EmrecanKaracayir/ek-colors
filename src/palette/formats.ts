@@ -6,8 +6,37 @@
 | command line and the site's export both use these.                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import type { Palette } from "./solve";
-import { type Gamut, GAMUT_NAMES, GAMUTS, MODE_NAMES, MODES, type Settings } from "./settings";
+import type { GamutPalette, Palette, Swatch } from "./solve";
+import {
+  type Gamut,
+  GAMUT_NAMES,
+  GAMUTS,
+  type Mode,
+  MODE_NAMES,
+  MODES,
+  type Settings,
+} from "./settings";
+
+/** A neutral as the exports write it: its key and its swatch per mode and tier. */
+interface NeutralRow {
+  readonly key: string;
+  readonly tiers: Readonly<Record<Mode, Readonly<Record<number, Swatch>>>>;
+}
+
+/**
+ * The neutrals as exported: gray always, and the base's neutral whenever either mode's base is
+ * tinted. A mode whose base is a pure gray gives the grays as its neutral, so every name holds a
+ * color in both modes.
+ *
+ * @param palette  One gamut's palette.
+ * @returns        Gray, then the neutral if there is one.
+ */
+function neutralRows(palette: GamutPalette): NeutralRow[] {
+  const gray = { key: "gray", tiers: { light: palette.light.grays, dark: palette.dark.grays } };
+  if (!MODES.some((m) => palette[m].neutrals)) return [gray];
+  const neutral = (m: Mode) => palette[m].neutrals ?? palette[m].grays;
+  return [gray, { key: "neutral", tiers: { light: neutral("light"), dark: neutral("dark") } }];
+}
 
 /**
  * The palette and what it was solved from, as JSON.
@@ -59,6 +88,29 @@ export function toCsv(settings: Settings, palette: Palette): string {
           }
         }
       }
+      for (const neutral of neutralRows(palette[gamut])) {
+        for (const tier of settings.tiers) {
+          const s = neutral.tiers[mode][tier]!;
+          rows.push(
+            [
+              gamut,
+              mode,
+              tier,
+              "default",
+              neutral.key,
+              `"${s.color}"`,
+              s.hue,
+              s.chroma,
+              s.colorfulness,
+              s.lightness,
+              s.name,
+              s.apca,
+              s.wcag,
+              s.wcagLevel,
+            ].join(","),
+          );
+        }
+      }
     }
   }
   return `${rows.join("\n")}\n`;
@@ -84,12 +136,17 @@ export function toMarkdown(settings: Settings, palette: Palette): string {
           `| Color | ${settings.tiers.map((t) => `Lc ${String(t)}`).join(" | ")} |`,
           `|---|${settings.tiers.map(() => "---").join("|")}|`,
         );
+        const cell = (s: Swatch) => `\`${s.color}\` WCAG ${s.wcag.toFixed(2)}`;
         for (const color of palette[gamut][mode].colors) {
           const cells = settings.tiers.map((t) => color.tiers[t]![variant]);
-          md.push(
-            `| ${color.key} | ${cells.map((s) => `\`${s.color}\` WCAG ${s.wcag.toFixed(2)}`).join(" | ")} |`,
-          );
+          md.push(`| ${color.key} | ${cells.map(cell).join(" | ")} |`);
         }
+        // The neutrals have no muted version.
+        if (variant === "default")
+          for (const neutral of neutralRows(palette[gamut]))
+            md.push(
+              `| ${neutral.key} | ${settings.tiers.map((t) => cell(neutral.tiers[mode][t]!)).join(" | ")} |`,
+            );
         md.push("");
       }
     }
@@ -106,7 +163,7 @@ const GAMUT_QUERIES: Readonly<Record<Gamut, string | null>> = {
 
 /**
  * Every color as a CSS custom property: --red-60 is red on Lc 60, --red-60-muted its muted
- * version, and --base the background. Each holds its light and dark color, chosen by
+ * version, --gray-60 and --neutral-60 the neutrals on it, and --base the background. Each holds its light and dark color, chosen by
  * color-scheme; a wider screen gets its gamut's colors.
  *
  * @param settings  The settings (for the bases and tiers).
@@ -136,6 +193,15 @@ export function toCss(settings: Settings, palette: Palette): string {
       }
       lines.push("");
     }
+    // Gray is the same on every screen, so it's written once; the base's neutral follows its gamut.
+    for (const neutral of neutralRows(palette[gamut])) {
+      if (neutral.key === "gray" && gamut !== "standard") continue;
+      for (const tier of settings.tiers)
+        lines.push(
+          `--${neutral.key}-${String(tier)}: light-dark(${neutral.tiers.light[tier]!.color}, ${neutral.tiers.dark[tier]!.color});`,
+        );
+      lines.push("");
+    }
     lines.pop();
     return [
       `${indent}:root {`,
@@ -146,7 +212,8 @@ export function toCss(settings: Settings, palette: Palette): string {
   const css = [
     "/*",
     ` * ${settings.name || "Palette"}, solved with EK Colors.`,
-    " * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version. Light and dark",
+    " * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version, --gray-60 a gray",
+    " * on it, and --neutral-60, when a base is tinted, a neutral that follows its tint. Light and dark",
     " * follow color-scheme: the system's, or color-scheme: light or dark set on the page. Screens",
     " * that show a wider gamut get its colors.",
     " */",

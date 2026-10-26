@@ -7,6 +7,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Neutrals: a gray on every tier, its red, green and blue the same, exactly on the tier's contrast.
+  A mode whose base is tinted also gets a neutral that follows it, the base's hue at a hint of its
+  colorfulness (at most M 8). Both have pages beside the colors' and come in every export, as
+  `--gray-60` and, when a base is tinted, `--neutral-60`.
+
+### Changed
+
+- American spelling throughout: gray, not grey. Quoted titles keep their own spelling.
+
 ## [2.2.4] - 2026-10-26
 
 ### Changed

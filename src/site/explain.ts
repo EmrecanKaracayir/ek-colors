@@ -9,7 +9,7 @@ import { apca, composition, makeModel, type Model, parts, wcag, wcagLevel } from
 import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../palette/settings";
 import { anchorHue, anchorSource } from "../palette/references";
 import { escape, signedWhole, zoneTable } from "./graph";
-import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, strongest } from "../palette/solve";
+import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, NEUTRAL_TINT, strongest } from "../palette/solve";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -577,7 +577,7 @@ export function explain(ctx: Context): string {
         </div>
         <div id="demo-reach-out" class="demo-out wide">${reach(ctx)}</div>
       </div>
-      <p>Small marks say what happened to a color. <strong>Sets the tier</strong>, an amber flag, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, a grey ↓, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, a red !, marks a color the screen can't make as colorful as it should be at all. Tables show them in small chips beside the M value; on cards the flag sits beside the name, and a Lowered or Gamut limit color shows its M value in grey or red with its mark. A key under the colors says which is which, and each mark opens why, with the numbers.</p>
+      <p>Small marks say what happened to a color. <strong>Sets the tier</strong>, an amber flag, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, a gray ↓, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, a red !, marks a color the screen can't make as colorful as it should be at all. Tables show them in small chips beside the M value; on cards the flag sits beside the name, and a Lowered or Gamut limit color shows its M value in gray or red with its mark. A key under the colors says which is which, and each mark opens why, with the numbers.</p>
     </section>
 
     <section class="step">
@@ -642,6 +642,12 @@ export function explain(ctx: Context): string {
         <div id="demo-ladder-out" class="demo-out wide">${ladder(ctx)}</div>
       </div>
       <p><strong>Extra colors</strong> sit beside the hues${extras ? `, like ${s.extras.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Extra colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed.</p>
+    </section>
+
+    <section class="step">
+      <h2>Neutrals</h2>
+      <p>Every palette also gets a <strong>gray</strong> on every tier: its red, green and blue the same, exactly on the tier's contrast against the base, as every color is. Text, quiet text and lines usually come from these.</p>
+      <p>When a mode's base is tinted, that mode also gets a <strong>neutral</strong> that follows it: the base's hue, at the base's own colorfulness held to at most M ${String(NEUTRAL_TINT)}, so it stays a hint and never becomes a color. On warm paper, text and lines then belong to the page instead of looking cold on it. A pure-gray base's neutrals are its grays. Both have pages of their own beside the colors'.</p>
     </section>
 
     <section class="step">

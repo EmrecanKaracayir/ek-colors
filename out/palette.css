@@ -1,6 +1,7 @@
 /*
  * EK Palette, solved with EK Colors.
- * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version. Light and dark
+ * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version, --gray-60 a gray
+ * on it, and --neutral-60, when a base is tinted, a neutral that follows its tint. Light and dark
  * follow color-scheme: the system's, or color-scheme: light or dark set on the page. Screens
  * that show a wider gamut get its colors.
  */
@@ -125,6 +126,13 @@
   --brown-75-muted: light-dark(#624E47, #E0C8C0);
   --brown-90: light-dark(#36211A, #F7E1D9);
   --brown-90-muted: light-dark(#2F2421, #F0E3DF);
+
+  --gray-15: light-dark(#CCCCCC, #565656);
+  --gray-30: light-dark(#B1B1B1, #797979);
+  --gray-45: light-dark(#949494, #979797);
+  --gray-60: light-dark(#757575, #B3B3B3);
+  --gray-75: light-dark(#525252, #CDCDCD);
+  --gray-90: light-dark(#262626, #E6E6E6);
 }
 
 @media (color-gamut: p3) {
