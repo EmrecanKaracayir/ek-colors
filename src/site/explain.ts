@@ -9,7 +9,7 @@ import { apca, composition, makeModel, type Model, parts, wcag, wcagLevel } from
 import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../palette/settings";
 import { anchorHue, anchorSource } from "../palette/references";
 import { escape, signedWhole, zoneTable } from "./graph";
-import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, NEUTRAL_TINT, strongest } from "../palette/solve";
+import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, NEUTRAL_BAND, strongest } from "../palette/solve";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -647,7 +647,7 @@ export function explain(ctx: Context): string {
     <section class="step">
       <h2>Neutrals</h2>
       <p>Every palette also gets a <strong>gray</strong> on every tier: its red, green and blue the same, exactly on the tier's contrast against the base, as every color is. Text, quiet text and lines usually come from these.</p>
-      <p>When a mode's base is tinted, that mode also gets a <strong>neutral</strong> that follows it: the base's hue, at the base's own colorfulness held to at most M ${String(NEUTRAL_TINT)}, so it stays a hint and never becomes a color. On warm paper, text and lines then belong to the page instead of looking cold on it. A pure-gray base's neutrals are its grays. Both have pages of their own beside the colors'.</p>
+      <p>When a mode's base is tinted, its <strong>neutral colors</strong> follow it: the base's hue, at a share of the base's own colorfulness. On warm paper, text and lines then belong to the page instead of looking cold on it. Between M ${String(NEUTRAL_BAND[0])} and ${String(NEUTRAL_BAND[1])} a neutral is tinted yet neutral, right for text and lines; fainter, the tint hardly shows; stronger, text starts to read as a color. A palette can have several, each with its own share, added in Settings beside the extra colors. A pure-gray base's neutral colors are its grays. Gray and each neutral color have pages of their own beside the colors'.</p>
     </section>
 
     <section class="step">

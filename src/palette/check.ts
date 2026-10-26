@@ -11,6 +11,7 @@ import { SYSTEMS } from "./references";
 import {
   type CurvePoint,
   type Extra,
+  type Neutral,
   LIMITS,
   type Mode,
   MODES,
@@ -194,6 +195,22 @@ function extra(value: unknown, name: string): Extra {
   };
 }
 
+/**
+ * A neutral color.
+ *
+ * @param value  The value.
+ * @param name   Which one, for the message.
+ * @returns      The neutral color.
+ */
+function neutral(value: unknown, name: string): Neutral {
+  const n = record(value, name);
+  if (typeof n.name !== "string" || !n.name.trim()) fail(`${name} needs a name.`);
+  return {
+    name: n.name.trim(),
+    share: number(n.share, `${name}: its share of the base's tint`, LIMITS.share),
+  };
+}
+
 /* >--------------------------------------< Older shapes >--------------------------------------< */
 
 /**
@@ -313,6 +330,9 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
     muted: number(s.muted, "Muted share", LIMITS.muted),
     extras: list(s.extras, "The extra colors").map((e, i) =>
       extra(e, `Extra color ${String(i + 1)}`),
+    ),
+    neutrals: list(s.neutrals, "The neutral colors").map((n, i) =>
+      neutral(n, `Neutral color ${String(i + 1)}`),
     ),
     hueWindow: {
       identity: number(window.identity, "The identity tier's hue window", LIMITS.hueWindow),

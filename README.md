@@ -20,7 +20,8 @@ What follows describes EK Palette; every number in it is a setting.
   then seven of them are placed where their names fit best.
 - **Extra colors:** any number beside the hues, each on its own hue at a share of the colorfulness.
   EK Palette has one, brown.
-- **Neutrals:** a gray on every tier, and on a tinted base a neutral that follows its tint.
+- **Neutrals:** a gray on every tier, and neutral colors that follow a tinted base's tint.
+  EK Palette has one, Neutral.
 - **Modes:** light on `#EBEBEB`, dark on `#181818`.
 - **Tiers:** one color per APCA contrast against the base:
 
@@ -66,9 +67,9 @@ WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
 7. **Muted and extra colors.** Muted is the same hue and tier at a share of the colorfulness. Each
    extra color is the most colorful color of its hue, up to its share of the tier's colorfulness,
    exactly on the tier; extras aren't spaced with the hues.
-8. **Neutrals.** A gray on every tier, its red, green and blue the same, exactly on the tier. A
-   tinted base also gets a neutral that follows it: the base's hue at its own colorfulness, held
-   to at most M 8 so it stays a hint.
+8. **Neutrals.** A gray on every tier, its red, green and blue the same, exactly on the tier. Each
+   neutral color follows its mode's base: the base's hue at a share of its own colorfulness. M 4–8
+   is tinted yet neutral, right for text and lines.
 
 ## Use
 

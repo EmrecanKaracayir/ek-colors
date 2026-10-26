@@ -350,6 +350,16 @@
   .split > div { display: grid; gap: var(--space-4); align-content: start; }
   .checks { display: flex; flex-wrap: wrap; gap: var(--space-6); }
   .extra { display: grid; gap: var(--space-5); }
+  /* Custom and neutral colors side by side; narrow, the custom colors come first. */
+  .color-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--space-8); align-items: start; }
+  .color-column { display: grid; gap: var(--space-6); align-content: start; min-width: 0; }
+  .color-column > h3 { margin: 0; }
+  .gray-row p { margin: 0; }
+  /* Under a share's slider: where the band for text and lines is, and the colorfulness it gives. */
+  .field.with-after .share-band { grid-column: 2; position: relative; height: 0.25rem; margin-top: calc(-1 * var(--space-4)); border-radius: var(--radius-pill); background: var(--line); }
+  .band-zone { position: absolute; top: 0; bottom: 0; border-radius: inherit; background: color-mix(in oklch, var(--fg) 45%, transparent); }
+  .field.with-after .share-m { grid-column: 2 / -1; margin-top: calc(-1 * var(--space-4)); font-size: var(--type-sm); }
+  .share-m.tint-strong { color: var(--fair); }
   .extra-title { display: flex; gap: var(--space-5); align-items: baseline; justify-content: space-between; margin: 0; }
   .extra-name { display: inline-flex; gap: var(--space-4); align-items: center; }
   .extra-name .soft { font-weight: 400; font-size: var(--type-md); }
@@ -728,6 +738,6 @@
 </header>
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=a5efccf8a2"></script>
+<script type="module" src="app.js?v=9cc73b9d48"></script>
 </body>
 </html>

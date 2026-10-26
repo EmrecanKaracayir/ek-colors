@@ -24,18 +24,23 @@ interface NeutralRow {
 }
 
 /**
- * The neutrals as exported: gray always, and the base's neutral whenever either mode's base is
- * tinted. A mode whose base is a pure gray gives the grays as its neutral, so every name holds a
+ * The neutrals as exported: gray always, and each neutral color whenever either mode's base is
+ * tinted. A mode whose base is a pure gray gives the grays for its neutrals, so every name holds a
  * color in both modes.
  *
  * @param palette  One gamut's palette.
- * @returns        Gray, then the neutral if there is one.
+ * @returns        Gray, then the neutral colors, if any follow a tint.
  */
 function neutralRows(palette: GamutPalette): NeutralRow[] {
   const gray = { key: "gray", tiers: { light: palette.light.grays, dark: palette.dark.grays } };
-  if (!MODES.some((m) => palette[m].neutrals)) return [gray];
-  const neutral = (m: Mode) => palette[m].neutrals ?? palette[m].grays;
-  return [gray, { key: "neutral", tiers: { light: neutral("light"), dark: neutral("dark") } }];
+  if (!MODES.some((m) => palette[m].tinted)) return [gray];
+  return [
+    gray,
+    ...palette.light.neutrals.map((n, i) => ({
+      key: n.key,
+      tiers: { light: n.tiers, dark: palette.dark.neutrals[i]!.tiers },
+    })),
+  ];
 }
 
 /**

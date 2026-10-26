@@ -12,8 +12,8 @@ import { toCss, toCsv, toJson, toMarkdown } from "../palette/formats";
 import { composition, deltaE, hueTurn, lightness, makeModel, type Model, parts, plainSquared } from "../palette/model";
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
 import { readSettings, SettingsError } from "../palette/check";
-import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
-import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, NEUTRAL_TINT, NEUTRALS, PAGES, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
+import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, PAGES, tinted, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { announce, copyText, flash, markField, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
@@ -830,13 +830,23 @@ function extraOf(key: string): Extra | undefined {
 }
 
 /**
+ * A neutral color by its key.
+ *
+ * @param key  The key.
+ * @returns    The neutral color's settings, or undefined for any other color.
+ */
+function neutralOf(key: string): Neutral | undefined {
+  return state.settings.neutrals[colorKeys(state.settings).neutrals.indexOf(key)];
+}
+
+/**
  * A color key as people read it: an extra color by its own name.
  *
  * @param key  E.g. "red" or "hue-3".
  * @returns    HTML, e.g. "Red" or "Hue 3".
  */
 function label(key: string): string {
-  const extra = extraOf(key);
+  const extra = extraOf(key) ?? neutralOf(key);
   const text = extra ? extra.name : key.replace("-", " ");
   return escape(extra ? text : text.charAt(0).toUpperCase() + text.slice(1));
 }
@@ -1504,7 +1514,7 @@ function tierTable(title: string, variant: Variant, rows: string, after = ""): s
 }
 
 /**
- * The chips that lead to each color's page, then the neutrals': gray, and the base's neutral when
+ * The chips that lead to each color's page, then the neutrals': gray, and the neutral colors when
  * the base is tinted.
  *
  * @param current  The page on screen.
@@ -1516,7 +1526,8 @@ function colorChips(current: string): string {
   const chip = (key: string, color: string) =>
     `<a href="#${key}" style="--c:${color}"${key === current ? ' aria-current="page"' : ""}><span class="dot"></span>${label(key)}</a>`;
   const hues = colors(tier).map((x) => chip(x.key, x.tiers[tier]!.default.color));
-  const neutrals = p ? [chip("gray", p.grays[tier]!.color), ...(p.neutrals ? [chip("neutral", p.neutrals[tier]!.color)] : [])] : [];
+  // A mode whose base is a pure gray has only the grays: its neutral colors would be the same.
+  const neutrals = p ? [chip(GRAY, p.grays[tier]!.color), ...(p.tinted ? p.neutrals.map((n) => chip(n.key, n.tiers[tier]!.color)) : [])] : [];
   return `<nav class="chips" aria-label="Colors">${hues.join("")}${neutrals.length ? `<span class="chips-gap" aria-hidden="true"></span>${neutrals.join("")}` : ""}</nav>`;
 }
 
@@ -1530,7 +1541,7 @@ const currentMode = () => current()?.[state.mode] ?? null;
  * @returns    HTML.
  */
 function color(key: string): string {
-  if (key === "gray" || key === "neutral") return neutralPage(key);
+  if (key === GRAY || neutralOf(key)) return neutralPage(key);
   const tier = identityOf(state.settings, state.mode);
   const list = colors(tier);
   const c = list.find((x) => x.key === key);
@@ -1559,27 +1570,28 @@ function color(key: string): string {
 }
 
 /**
- * A neutral's page: gray, the same red, green and blue on every tier, or the base's neutral, which
- * follows a tinted base's hue at a hint of its colorfulness.
+ * A neutral's page: gray, the same red, green and blue on every tier, or a neutral color, which
+ * follows a tinted base's hue at a share of its colorfulness.
  *
- * @param key  "gray" or "neutral".
+ * @param key  "gray" or a neutral color's key.
  * @returns    HTML.
  */
-function neutralPage(key: (typeof NEUTRALS)[number]): string {
+function neutralPage(key: string): string {
   const p = currentMode();
   const tier = identityOf(state.settings, state.mode);
   const { mode } = state;
   if (!p) return `<section class="intro"><h1>${label(key)}</h1><p>Solving…</p></section>`;
-  const tiers = key === "gray" ? p.grays : p.neutrals;
-  if (!tiers)
+  const neutral = p.neutrals.find((n) => n.key === key);
+  if (neutral && !p.tinted)
     return `${colorChips(key)}
-      <section class="intro"><h1>Neutral</h1><p>The ${mode} base, ${p.base}, is a pure gray, so its neutrals are the <a href="#gray">grays</a>. A tinted base gets a neutral of its own here.</p></section>`;
+      <section class="intro"><h1>${label(key)}</h1><p>The ${mode} base, ${p.base}, is a pure gray, so its neutral colors are the <a href="#gray">grays</a>. On a tinted base, ${label(key)} follows its tint.</p></section>`;
+  const tiers = neutral ? neutral.tiers : p.grays;
   const identity = tiers[tier]!;
-  const intro =
-    key === "gray"
-      ? `A gray on every tier: its red, green and blue the same, exactly on each tier's contrast against the ${mode} base, as every color is. Text, quiet text and lines usually come from here. CAM16 still sees a little colorfulness in a pure gray, which is why the table shows some.`
-      : `A neutral on every tier that follows the ${mode} base's tint: its hue, ${identity.hue.toFixed(0)}°, at colorfulness M ${identity.target.toFixed(1)}, the base's own, held to at most ${String(NEUTRAL_TINT)} so it stays a hint, never a color. For text and lines that belong to a tinted page.`;
-  const rows = state.settings.tiers.filter((t) => tiers[t]).map((t) => tierRow(tiers[t]!, t, tier, "default", "", key === "gray")).join("");
+  const base = baseTint(mode);
+  const intro = neutral
+    ? `A neutral on every tier that follows the ${mode} base's tint: its hue, ${identity.hue.toFixed(0)}°, at ${percent1(neutral.share)} of its colorfulness, M ${base.toFixed(1)}, so M ${(base * neutral.share).toFixed(1)}. ${tintNote(base * neutral.share)}`
+    : `A gray on every tier: its red, green and blue the same, exactly on each tier's contrast against the ${mode} base, as every color is. Text, quiet text and lines usually come from here. CAM16 still sees a little colorfulness in a pure gray, which is why the table shows some.`;
+  const rows = state.settings.tiers.filter((t) => tiers[t]).map((t) => tierRow(tiers[t]!, t, tier, "default", "", !neutral)).join("");
   return `${colorChips(key)}
     <section class="intro hero" style="--c:${identity.color}">
       <h1>${label(key)}</h1>
@@ -1587,6 +1599,35 @@ function neutralPage(key: (typeof NEUTRALS)[number]): string {
     </section>
     ${tierTable("On every tier", "default", rows)}`;
 }
+
+/**
+ * How colorful a mode's base is, which a neutral color takes its share of; 0 for a pure gray.
+ *
+ * @param mode  The mode.
+ * @returns     CAM16 M.
+ */
+function baseTint(mode: Mode): number {
+  const base = state.settings.bases[mode];
+  return tinted(base) ? model().cam(mode, base).m : 0;
+}
+
+/**
+ * What a neutral's colorfulness means for text and lines: inside the band, fainter, or stronger.
+ *
+ * @param m  CAM16 M.
+ * @returns  A sentence.
+ */
+function tintNote(m: number): string {
+  const [low, high] = NEUTRAL_BAND;
+  return m < low
+    ? `That's fainter than M ${String(low)}, so the tint hardly shows.`
+    : m <= high
+      ? `That's within M ${String(low)}–${String(high)}, tinted yet neutral: right for text and lines.`
+      : `That's past M ${String(high)}, so as text it starts to read as a color.`;
+}
+
+/** A share as a percent with one decimal when it has one, e.g. "13.5%" or "100%". */
+const percent1 = (share: number) => `${String(Math.round(share * 1000) / 10)}%`;
 
 /* >----------------------------------------< Compare >-----------------------------------------< */
 
@@ -1806,17 +1847,69 @@ function number(
   path: string,
   title: string,
   [min, max, step]: readonly [number, number, number],
-  { slider = false, percent = false }: { slider?: boolean; percent?: boolean } = {},
+  { slider = false, percent = false, sliderMax, after = "", decimals = 6 }: { slider?: boolean; percent?: boolean; sliderMax?: number; after?: string; decimals?: number } = {},
 ): string {
   const scale = percent ? 100 : 1;
-  const shown = (x: number) => String(Math.round(x * scale * 1e6) / 1e6);
+  const shown = (x: number) => String(Math.round(x * scale * 10 ** decimals) / 10 ** decimals);
   const id = `set-${path.replaceAll(".", "-")}`;
-  const bound = `data-set="${path}"${percent ? ` data-scale="${String(scale)}"` : ""} min="${shown(min)}"${Number.isFinite(max) ? ` max="${shown(max)}"` : ""} step="${shown(step)}" value="${shown(Number(read(path) ?? 0))}"`;
+  const common = `data-set="${path}"${percent ? ` data-scale="${String(scale)}"` : ""} min="${shown(min)}" value="${shown(Number(read(path) ?? 0))}"`;
+  const bound = `${common}${Number.isFinite(max) ? ` max="${shown(max)}"` : ""} step="${shown(step)}"`;
+  // A slider with a max of its own moves freely over its range; the field takes any value.
+  const sliding = sliderMax === undefined ? bound : `${common} max="${shown(sliderMax)}" step="any"`;
   const field = `<input id="${id}" type="number" ${bound}${percent ? ` aria-label="${title}, percent"` : ""}>`;
-  return `<label class="field" for="${id}"><span>${title}</span>
-    ${slider ? `<input type="range" ${bound} aria-label="${title}">` : ""}
-    ${percent ? `<span class="with-unit">${field}<span aria-hidden="true">%</span></span>` : field}
+  return `<label class="field${after ? " with-after" : ""}" for="${id}"><span>${title}</span>
+    ${slider ? `<input type="range" ${sliding} aria-label="${title}">` : ""}
+    ${percent ? `<span class="with-unit">${field}<span aria-hidden="true">%</span></span>` : field}${after}
   </label>`;
+}
+
+/**
+ * A color's share field: a slider over 0–100% and an exact field that takes any share, to a tenth
+ * of a percent, with the colorfulness it gives and where the band for text and lines falls.
+ *
+ * @param path   The setting, e.g. "extras.0.share".
+ * @param title  Its label.
+ * @returns      HTML.
+ */
+function shareField(path: string, title: string): string {
+  return number(path, title, [0, Infinity, 0.001], { slider: true, percent: true, sliderMax: 1, after: shareInfo(path), decimals: 1 });
+}
+
+/**
+ * What a share gives: its colorfulness and, on the slider, where the band for text and lines is.
+ * An extra color's share is of the palette's colorfulness; a neutral color's, of the mode's base.
+ *
+ * @param path  The share's setting.
+ * @returns     HTML.
+ */
+function shareInfo(path: string): string {
+  const share = Number(read(path) ?? 0);
+  const neutral = path.startsWith("neutrals.");
+  const of = neutral ? baseTint(state.mode) : state.settings.colorfulness;
+  const [low, high] = NEUTRAL_BAND;
+  if (of <= 0)
+    return `<span class="share-band" aria-hidden="true"></span><span class="share-m soft" data-readout="${path}">The ${state.mode} base is a pure gray: the grays</span>`;
+  const m = share * of;
+  // The band as shares of this slider, its edges rounded inward to 4% when that leaves a band.
+  let [from, to] = [low / of, high / of];
+  const [inner, outer] = [Math.ceil(from * 25 - 1e-9) / 25, Math.floor(to * 25 + 1e-9) / 25];
+  if (inner < outer) [from, to] = [inner, outer];
+  const zone = from < 1 ? `<span class="band-zone" style="left:${(from * 100).toFixed(2)}%;width:${((Math.min(to, 1) - from) * 100).toFixed(2)}%"></span>` : "";
+  const where = m >= low && m <= high ? " • text and lines" : neutral && m > 12 ? " • reads as a color" : !neutral && m <= high ? " • as faint as a neutral" : "";
+  return `<span class="share-band" aria-hidden="true" title="M ${String(low)}–${String(high)}: for text and lines">${zone}</span><span class="share-m soft${neutral && m > 12 ? " tint-strong" : ""}" data-readout="${path}">M ${m.toFixed(1)}${neutral ? ` in ${state.mode} mode` : ""}${where}</span>`;
+}
+
+/**
+ * Brings every share's colorfulness and band up to date, after a share, the colorfulness, a base or
+ * the mode changes.
+ */
+function updateShares(): void {
+  for (const field of document.querySelectorAll<HTMLElement>(".field.with-after")) {
+    const path = field.querySelector<HTMLInputElement>("[data-set]")?.dataset.set;
+    if (!path?.endsWith(".share")) continue;
+    field.querySelectorAll(".share-band, .share-m").forEach((el) => el.remove());
+    field.insertAdjacentHTML("beforeend", shareInfo(path));
+  }
 }
 
 /**
@@ -1864,8 +1957,49 @@ function extraFields(i: number): string {
     <h3 class="extra-title">${extraTitle(i)}<button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
     <label class="field wide" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
     ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true })}
-    ${number(`extras.${String(i)}.share`, "Colorfulness share", [...LIMITS.share, 0.05], { slider: true, percent: true })}
+    ${shareField(`extras.${String(i)}.share`, "Colorfulness share")}
   </div>`;
+}
+
+/**
+ * One neutral color's settings: its name and its share of the base's tint, under a title showing
+ * its color on the identity tier.
+ *
+ * @param i  Which neutral color.
+ * @returns  HTML.
+ */
+function neutralFields(i: number): string {
+  const name = escape(state.settings.neutrals[i]!.name);
+  return `<div class="extra" data-neutral="${String(i)}">
+    <h3 class="extra-title">${neutralTitle(i)}<button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}">Remove</button></h3>
+    <label class="field wide" for="set-neutrals-${String(i)}-name"><span>Name</span><input id="set-neutrals-${String(i)}-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false"></label>
+    ${shareField(`neutrals.${String(i)}.share`, "Share of the base's tint")}
+  </div>`;
+}
+
+/**
+ * A neutral color's title: a dot of its color on the identity tier and its name.
+ *
+ * @param i  Which neutral color.
+ * @returns  HTML.
+ */
+function neutralTitle(i: number): string {
+  const key = colorKeys(state.settings).neutrals[i]!;
+  const tier = identityOf(state.settings, state.mode);
+  const color = currentMode()?.neutrals.find((n) => n.key === key)?.tiers[tier]?.color ?? "transparent";
+  return `<span class="extra-name"><span class="dot" style="--c:${color}"></span>${label(key)}<span class="soft">follows the base</span></span>`;
+}
+
+/**
+ * The gray that every palette has, shown first among the neutral colors: it can't be removed.
+ *
+ * @returns  HTML.
+ */
+function grayRow(): string {
+  const tier = identityOf(state.settings, state.mode);
+  const color = currentMode()?.grays[tier]?.color ?? "transparent";
+  return `<div class="extra gray-row"><h3 class="extra-title"><span class="extra-name"><span class="dot" style="--c:${color}"></span>Gray<span class="soft">every palette has it</span></span></h3>
+    <p class="soft">Red, green and blue the same, on every tier.</p></div>`;
 }
 
 /**
@@ -1935,9 +2069,22 @@ function tune(): string {
     </section>
     <section class="group" id="extras-section">
       <h2>Extra colors</h2>
-      <p class="soft">Colors beside the evenly spaced hues. Each stays on its own hue at a share of the tier's colorfulness, on every tier, with a muted version too. They aren't spaced with the hues or measured by the blind tests.</p>
-      ${s.extras.map((_, i) => extraFields(i)).join("")}
-      <p><button type="button" data-action="add-extra">Add an extra color</button></p>
+      <p class="soft">Colors beside the evenly spaced hues, on every tier. The band on each share marks where its colorfulness is M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}: tinted yet neutral, right for text and lines.</p>
+      <div class="color-columns">
+        <div class="color-column">
+          <h3>Custom colors</h3>
+          <p class="soft">Each stays on its own hue at a share of the tier's colorfulness, with a muted version too. They aren't spaced with the hues or measured by the blind tests.</p>
+          ${s.extras.map((_, i) => extraFields(i)).join("")}
+          <p><button type="button" data-action="add-extra">Add a custom color</button></p>
+        </div>
+        <div class="color-column">
+          <h3>Neutral colors</h3>
+          <p class="soft">Gray comes with every palette. Each neutral color follows its mode's base: the base's hue at a share of its colorfulness, so text and lines belong to a tinted page. On a pure-gray base they're the grays.</p>
+          ${grayRow()}
+          ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
+          <p><button type="button" data-action="add-neutral">Add a neutral color</button></p>
+        </div>
+      </div>
     </section>
     <section class="group" id="tiers-section">
       <h2>Tiers</h2>
@@ -2529,7 +2676,13 @@ function updateTune(): void {
   if (name) name.placeholder = defaultName();
   updateStrip();
   updateExport();
-  for (const title of document.querySelectorAll(".extra-title")) {
+  for (const title of document.querySelectorAll("[data-neutral] .extra-title")) {
+    const i = Number(title.closest<HTMLElement>("[data-neutral]")!.dataset.neutral);
+    title.querySelector(".extra-name")!.outerHTML = neutralTitle(i);
+  }
+  document.querySelector(".gray-row")?.replaceWith(document.createRange().createContextualFragment(grayRow()));
+  updateShares();
+  for (const title of document.querySelectorAll("[data-extra] .extra-title")) {
     const i = Number(title.closest<HTMLElement>("[data-extra]")!.dataset.extra);
     title.querySelector(".extra-name")!.outerHTML = extraTitle(i);
   }
@@ -2897,6 +3050,20 @@ document.addEventListener("click", (event) => {
     write("extras", state.settings.extras.filter((_, i) => i !== Number(el.dataset.index)));
     solve();
   }
+  if (action === "add-neutral") {
+    const names = new Set(state.settings.neutrals.map((n) => n.name));
+    let n = state.settings.neutrals.length + 1;
+    const name = (k: number) => (k === 1 ? "Neutral" : `Neutral ${String(k)}`);
+    while (names.has(name(n))) n++;
+    // It starts at the top of the band on the more colorful tinted base, or all of a fainter tint.
+    const strongest = Math.max(...MODES.map(baseTint));
+    write("neutrals", [...state.settings.neutrals, { name: name(n), share: strongest > 0 ? Math.min(1, Math.floor((NEUTRAL_BAND[1] / strongest) * 1000) / 1000) : 1 }]);
+    solve();
+  }
+  if (action === "remove-neutral") {
+    write("neutrals", state.settings.neutrals.filter((_, i) => i !== Number(el.dataset.index)));
+    solve();
+  }
   render();
 });
 
@@ -2975,8 +3142,10 @@ document.addEventListener("input", (event) => {
   } else {
     // A value outside its field's range waits: it may be half typed.
     if (outOfRange(el)) return;
-    write(path, el.value === "auto" ? "auto" : Number(el.value) / Number(el.dataset.scale ?? 1));
-    for (const twin of document.querySelectorAll<HTMLInputElement>(`[data-set="${path}"]`)) if (twin !== el) twin.value = el.value;
+    // A share is kept to a tenth of a percent, however the slider lands.
+    const exact = path.endsWith(".share") ? String(Math.round(Number(el.value) * 10) / 10) : el.value;
+    write(path, exact === "auto" ? "auto" : Number(exact) / Number(el.dataset.scale ?? 1));
+    for (const twin of document.querySelectorAll<HTMLInputElement>(`[data-set="${path}"]`)) if (twin !== el) twin.value = exact;
   }
   // A system's yellow is measured in the rooms, on the bases, so its hue can move with them; the
   // automatic identity tier is measured on the bases.
@@ -2984,6 +3153,7 @@ document.addEventListener("input", (event) => {
   if (path.startsWith("bases.")) for (const m of MODES) $(`#set-identity-${m} option[value="auto"]`).textContent = automaticName(m);
   if (path.startsWith("curve.") || path.startsWith("extras.")) updateTune();
   if (path === "hues") $("#hues-note").innerHTML = huesNote(state.settings.hues);
+  if (path.endsWith(".share") || path === "colorfulness" || path.startsWith("bases.")) updateShares();
   solve(150);
 });
 
@@ -2994,6 +3164,17 @@ document.addEventListener("change", (event) => {
   el.value = el.value.trim();
   write("name", el.value);
   updateExport();
+});
+
+// A neutral color's name, likewise, is taken when it's done being typed.
+document.addEventListener("change", (event) => {
+  const el = event.target as HTMLInputElement;
+  if (el.dataset.neutralName === undefined) return;
+  const i = Number(el.dataset.neutralName);
+  el.value = el.value.trim() || (i === 0 ? "Neutral" : `Neutral ${String(i + 1)}`);
+  write(`neutrals.${String(i)}.name`, el.value);
+  updateTune();
+  solve();
 });
 
 // An extra color's name is taken when it's done being typed, so its key doesn't change on every letter.

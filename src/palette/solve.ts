@@ -65,8 +65,18 @@ export interface ModePalette {
   /** Per tier, the gray on it: no color at all, its red, green and blue the same. */
   readonly grays: Readonly<Record<number, Swatch>>;
 
-  /** Per tier, the neutral that follows the base's tint; null when the base is a pure gray. */
-  readonly neutrals: Readonly<Record<number, Swatch>> | null;
+  /** Whether the base is tinted: its red, green and blue differ. */
+  readonly tinted: boolean;
+
+  /** Each neutral color per tier: on a tinted base it follows the base, on a pure gray it's the grays. */
+  readonly neutrals: readonly NeutralColor[];
+}
+
+/** A neutral color as solved: its key, its share of the base's tint, and its swatch per tier. */
+export interface NeutralColor {
+  readonly key: string;
+  readonly share: number;
+  readonly tiers: Readonly<Record<number, Swatch>>;
 }
 
 /** Both modes on one gamut tier. */
@@ -267,8 +277,12 @@ function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Sp
 
 /* >----------------------------------------< Neutrals >----------------------------------------< */
 
-/** How colorful a neutral may get from its base's tint, in CAM16 M: a hint, never a color. */
-export const NEUTRAL_TINT = 8;
+/**
+ * The colorfulness where a neutral reads as tinted yet still neutral, for text and lines, in CAM16
+ * M: below it a tint hardly shows (CAM16 sees M 1–2 even in a pure gray); above it, text starts to
+ * read as colored. A new neutral starts at the top of it.
+ */
+export const NEUTRAL_BAND = [4, 8] as const;
 
 /**
  * The gray that sits on a tier: the 8-bit gray nearest the base that reaches it, searched on the
@@ -305,8 +319,8 @@ export function tinted(base: string): boolean {
   return r !== g || g !== b;
 }
 
-/** The neutrals' keys, as colors' pages and exports name them. */
-export const NEUTRALS = ["gray", "neutral"] as const;
+/** The grays' key, as their page and exports name them; no other color can take it. */
+export const GRAY = "gray";
 
 /* >-------------------------------------< Identity tier >--------------------------------------< */
 
@@ -480,30 +494,46 @@ export const PAGES = [
 ];
 
 /**
- * The extra colors' keys: each name in lowercase words joined by hyphens, numbered when it would
- * repeat a hue's key, another extra's or a page's.
+ * The extra and neutral colors' keys: each name in lowercase words joined by hyphens, numbered
+ * when it would repeat a hue's key, the grays', another color's or a page's.
  *
  * @param settings  The settings.
- * @returns         One key per extra color, in order.
+ * @returns         One key per extra color and per neutral color, in order.
  */
-export function extraKeys(settings: Pick<Settings, "hues" | "extras">): string[] {
-  const used = new Set([...PAGES, ...NEUTRALS, ...hueKeys(settings.hues)]);
-  return settings.extras.map((extra) => {
+export function colorKeys(settings: Pick<Settings, "hues" | "extras" | "neutrals">): {
+  extras: string[];
+  neutrals: string[];
+} {
+  const used = new Set<string>([...PAGES, GRAY, ...hueKeys(settings.hues)]);
+  const keyOf = (name: string, fallback: string) => {
     // Accents are dropped and a dotless ı is an i, so "Çivit" becomes "civit".
     const word =
-      extra.name
+      name
         .normalize("NFKD")
         .replace(/\p{M}/gu, "")
         .replace(/ı/g, "i")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "") || "extra";
+        .replace(/^-|-$/g, "") || fallback;
     let key = word;
     for (let n = 2; used.has(key); n++) key = `${word}-${String(n)}`;
     used.add(key);
     return key;
-  });
+  };
+  return {
+    extras: settings.extras.map((e) => keyOf(e.name, "extra")),
+    neutrals: settings.neutrals.map((n) => keyOf(n.name, "neutral")),
+  };
 }
+
+/**
+ * The extra colors' keys.
+ *
+ * @param settings  The settings.
+ * @returns         One key per extra color, in order.
+ */
+export const extraKeys = (settings: Pick<Settings, "hues" | "extras" | "neutrals">) =>
+  colorKeys(settings).extras;
 
 /**
  * A number rounded to a few decimals.
@@ -634,18 +664,23 @@ function solveMode(settings: Settings, model: Model, mode: Mode): ModePalette {
     ...c,
     tiers: Object.fromEntries(settings.tiers.map((t) => [t, tiers[t]![c.key]!])),
   }));
-  // The neutrals: a gray on every tier, and, on a tinted base, one that follows its tint.
+  // The neutrals: a gray on every tier, and each neutral color, which follows a tinted base.
   const onTiers = (make: (tier: number) => Swatch) =>
     Object.fromEntries(settings.tiers.map((t) => [t, make(t)]));
   const grays = onTiers((t) => swatch(model, base, mode, grayOn(base, t), 0));
   const tint = tinted(base) ? model.cam(mode, base) : null;
-  const neutrals = tint
-    ? onTiers((t) => {
-        const m = Math.min(tint.m, NEUTRAL_TINT);
-        return swatch(model, base, mode, strongest(model, base, mode, tint.hue, m, t), m);
-      })
-    : null;
-  return { base, colors, targets, limits, ring, grays, neutrals };
+  const neutralKeys = colorKeys(settings).neutrals;
+  const neutrals = settings.neutrals.map((n, i) => ({
+    key: neutralKeys[i]!,
+    share: n.share,
+    tiers: tint
+      ? onTiers((t) => {
+          const m = tint.m * n.share;
+          return swatch(model, base, mode, strongest(model, base, mode, tint.hue, m, t), m);
+        })
+      : grays,
+  }));
+  return { base, colors, targets, limits, ring, grays, tinted: tint !== null, neutrals };
 }
 
 /**

@@ -68,6 +68,18 @@ export interface CurvePoint {
   readonly off?: boolean;
 }
 
+/**
+ * A neutral color: it follows its mode's base, on the base's hue at a share of the base's own
+ * colorfulness. On a base that's a pure gray it's the grays.
+ */
+export interface Neutral {
+  /** What it's called. */
+  readonly name: string;
+
+  /** Its colorfulness, as a share of the base's; 1 is all of the base's tint. */
+  readonly share: number;
+}
+
 /** A color outside the evenly spaced hues: it stays on its own hue at a share of the colorfulness. */
 export interface Extra {
   /** What it's called. */
@@ -117,6 +129,9 @@ export interface Settings {
   /** Colors added beside the hues, each on its own hue; they aren't spaced. */
   readonly extras: readonly Extra[];
 
+  /** Neutral colors that follow the base; the grays come with every palette. */
+  readonly neutrals: readonly Neutral[];
+
   /** How far a hue may move to even out the spacing: on the identity tier, then per tier. */
   readonly hueWindow: Readonly<{ identity: number; tier: number }>;
 
@@ -150,7 +165,7 @@ export const LIMITS = {
   lux: [1, 1000],
   amount: [-24, 24],
   width: [10, 180],
-  share: [0.1, 1],
+  share: [0, Infinity],
   hueWindow: [0, 90],
 } as const satisfies Record<string, readonly [number, number]>;
 
@@ -172,6 +187,7 @@ export const DEFAULTS: Settings = {
   identityTier: { light: "auto", dark: "auto" },
   muted: 0.5,
   extras: [],
+  neutrals: [{ name: "Neutral", share: 1 }],
   hueWindow: { identity: 20, tier: 6 },
   anchor: "ncs",
   placed: {},

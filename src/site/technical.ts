@@ -12,7 +12,7 @@ import { LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
 import { anchorHue, anchorSource } from "../palette/references";
 import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../palette/settings";
 import project from "../../package.json";
-import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_TINT, TEXT_MINIMUM, textScore } from "../palette/solve";
+import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, TEXT_MINIMUM, textScore } from "../palette/solve";
 import type { Context } from "./explain";
 import { escape } from "./graph";
 
@@ -214,11 +214,13 @@ hue          = (2 · √(M*₁ · M*₂) · sin(Δh / 2))²      // the chord th
       <h2>8. Muted and extra colors</h2>
 <pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) × ${String(s.muted)}, Lc)     // same hue, same tier
 extra(e, Lc) = strongest(hue(e), T(Lc) × share(e), Lc)               // not spaced${s.extras.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
-      <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a tinted base a neutral that follows it:</p>
+      <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a tinted base each neutral color, which follows it:</p>
 <pre class="formula">gray(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
 tinted       = the base's red, green and blue differ        // a pure gray still has a little M in CAM16
-neutral(Lc)  = strongest(hue(base), min(M(base), ${String(NEUTRAL_TINT)}), Lc)       // only on a tinted base
-exported     = a pure-gray mode's neutral is its gray, so --neutral-* holds a color in both modes</pre>
+neutral(n, Lc) = strongest(hue(base), M(base) × share(n), Lc)    // only on a tinted base
+band         = M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}: tinted yet neutral, for text and lines; a new neutral starts at its top
+new share    = min(1, ${String(NEUTRAL_BAND[1])} / M(base)), the more colorful tinted base; 1 when both are pure grays
+exported     = a pure-gray mode's neutral colors are its grays, so every name holds a color in both modes</pre>
     </section>
 
     <section class="step">
