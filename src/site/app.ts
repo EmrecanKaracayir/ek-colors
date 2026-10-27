@@ -1012,15 +1012,15 @@ interface Place {
   readonly variant: Variant;
 }
 
+/** The mark of the color that sets its tier's colorfulness: a flag. */
+const FLAG = `<svg class="flag" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1h1.25v10H2zM3.25 1.5H10L8.25 4 10 6.5H3.25z"/></svg>`;
+
 /**
  * A place as the end of a popover's id: what the "why" popovers read back.
  *
  * @param at  Where it sits.
  * @returns   E.g. "red:45:default".
  */
-/** The mark of the color that sets its tier's colorfulness: a flag. */
-const FLAG = `<svg class="flag" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 1h1.25v10H2zM3.25 1.5H10L8.25 4 10 6.5H3.25z"/></svg>`;
-
 const placeId = (at: Place) => `${at.key}:${String(at.tier)}:${at.variant}`;
 
 /**
@@ -1467,7 +1467,7 @@ function tiers(): string {
 
 /* >-----------------------------------------< Color >------------------------------------------< */
 
-/** A color table's column: its name, its unit, hidden when the table would scroll sideways, and what it means. */
+/** A color table's column: its key, its name, its unit and what it means. */
 interface Column {
   readonly key: string;
   readonly name: () => string;
@@ -1974,10 +1974,14 @@ function huesNote(hues: number): string {
  * @param range.0  Minimum.
  * @param range.1  Maximum.
  * @param range.2  Step.
- * @param options          How it's shown.
- * @param options.slider   Whether to show a slider too.
- * @param options.percent  Whether a fraction is shown as a percentage; the range stays a fraction.
- * @returns                HTML.
+ * @param options            How it's shown.
+ * @param options.slider     Whether to show a slider too.
+ * @param options.percent    Whether a fraction is shown as a percentage; the range stays a fraction.
+ * @param options.sliderMax  The slider's own maximum, when it covers less than the field takes.
+ * @param options.band       HTML drawn under the slider, such as the zones.
+ * @param options.after      HTML after the field, on its own row.
+ * @param options.decimals   How many decimals the values keep.
+ * @returns                  HTML.
  */
 function number(
   path: string,

@@ -129,6 +129,26 @@ export function syncSliders(): void {
   }
 }
 
+/** Each readout as last written from settled results, kept while new ones arrive. */
+const steadyReadouts = new Map<string, string>();
+
+/**
+ * A readout that holds still while results arrive: written anew once everything shown is settled,
+ * otherwise the last one, so it never mixes old and new results or changes length mid-solve.
+ *
+ * @param key      Which readout.
+ * @param settled  Whether everything it reads is settled.
+ * @param make     Writes it anew.
+ * @returns        HTML.
+ */
+export function steadyReadout(key: string, settled: boolean, make: () => string): string {
+  const kept = steadyReadouts.get(key);
+  if (!settled && kept !== undefined) return kept;
+  const text = make();
+  if (settled) steadyReadouts.set(key, text);
+  return text;
+}
+
 // Sliders change by hand, by script (a field's twin) and by being drawn anew; each is caught, and
 // the pass runs once right after the change, before the page is painted.
 let pending = false;

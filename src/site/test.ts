@@ -273,8 +273,7 @@ function encode(run: Run): string {
 }
 
 /**
- * A run from its code. Codes made before they carried the test's name start with the mode, and
- * still read.
+ * A run from its code. A code without the test's name starts with the mode, and still reads.
  *
  * @param code  The code.
  * @returns     The run, or null when it isn't one.

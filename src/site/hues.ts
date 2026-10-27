@@ -9,7 +9,7 @@
 
 import type { Guide } from "../palette/references";
 import { composition, hueTurn, wrapHue } from "../palette/model";
-import { refill } from "./dom";
+import { refill, steadyReadout } from "./dom";
 import { againstEven, band, evenText, inGaps, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
 
 /** One color, on every row. */
@@ -185,25 +185,6 @@ function neighborGaps(view: HuesView, key: string): string {
     .join("");
 }
 
-/** The readout last written from settled results, kept while new ones arrive. */
-const lastReadout = new Map<string, string>();
-
-/**
- * The readout to show: written anew once everything shown is settled, otherwise the last one, so
- * it never mixes old and new results or changes length mid-solve.
- *
- * @param view  What to show.
- * @returns     HTML.
- */
-function readoutText(view: HuesView): string {
-  const key = String("hues");
-  const kept = lastReadout.get(key);
-  if (!view.settled && kept !== undefined) return kept;
-  const text = huesReadout(view);
-  if (view.settled) lastReadout.set(key, text);
-  return text;
-}
-
 /**
  * What placing costs in evenness, under the graph.
  *
@@ -238,7 +219,7 @@ export function huesEditor(view: HuesView): string {
       ${band("hues-band", stops(view.band), HEIGHT)}<g class="guide-layer">${guideLayer(view.guides, HEIGHT)}</g>${labels.join("")}${hueScale(HEIGHT)}
       <g class="hues-layers">${huesLayers(view)}</g>
     </svg>
-    <p class="graph-caption readout hues-readout">${readoutText(view)}</p>
+    <p class="graph-caption readout hues-readout">${steadyReadout("hues", view.settled, () => huesReadout(view))}</p>
     <p class="graph-caption hint">Uniform is the lineup evenly different by perception, with nothing placed; Turned is that lineup turned to best match the placed hues; Current has them. Bend is how far Current is from Turned. These rows leave out colorfulness per hue, and a dot in the middle marks a color that stays put.</p>
     <details class="graph-caption hint graph-help" id="hues-help"><summary>Keyboard and mouse</summary><ul>
       <li>See a color's values: click it on any row, or focus it and press Enter.</li>
@@ -262,7 +243,7 @@ export function refreshHues(view: HuesView, panel = false): void {
   if (!editor) return;
   refill(editor.querySelector(".hues-layers")!, huesLayers(view));
   editor.querySelector("linearGradient")!.innerHTML = stops(view.band);
-  editor.querySelector(".hues-readout")!.innerHTML = readoutText(view);
+  editor.querySelector(".hues-readout")!.innerHTML = steadyReadout("hues", view.settled, () => huesReadout(view));
   const values = editor.querySelector(".hues-values")!;
   if (panel || !values.contains(document.activeElement)) refill(values, huesPanel(view));
 }
