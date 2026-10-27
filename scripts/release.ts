@@ -97,6 +97,7 @@ try {
   run("pnpm", ["check"]);
   run("pnpm", ["build"]);
   run("pnpm", ["solve"]);
+  run("pnpm", ["test"]);
 } catch {
   writeFileSync("CHANGELOG.md", log);
   writeFileSync("package.json", manifest);

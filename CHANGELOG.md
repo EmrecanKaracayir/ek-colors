@@ -23,6 +23,9 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - While the gamut on screen can't show the base, an amber notice under the header gives the closest
   color and leads to Settings. The red notice for a gamut wider than the screen shows on Settings too.
 
+- `pnpm test`: EK Palette solves to the palette in `out/`, every color sits on its tier, settings
+  read back from their export and bases read the same in any CSS form. A release runs it too.
+
 ### Changed
 
 - The export in Settings is colored once it comes near the screen, so Settings redraws about

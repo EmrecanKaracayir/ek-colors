@@ -85,6 +85,10 @@ pnpm install
 pnpm solve
 ```
 
+`pnpm test` checks that EK Palette still solves to the palette in `out/`, that every color sits on
+its tier, and that settings and bases read back as they should; after a change that moves colors
+on purpose, solve again so `out/` holds the new palette.
+
 Edit `src/config.ts` and solve again. It starts from the defaults in `src/palette/settings.ts`,
 which have no custom or neutral colors. The site checks every setting against its range (`LIMITS`
 there) and that the light base is lighter than the dark one; `pnpm solve` doesn't, so keep to them.
@@ -142,7 +146,7 @@ It's published to GitHub Pages by `.github/workflows/pages.yml` on every push to
 
 What changed in each version is in [CHANGELOG.md](CHANGELOG.md): every change goes under
 Unreleased, and a release, from a clean `main`, dates it as the new version, sets `package.json`,
-formats, checks, builds, solves, commits and tags:
+formats, checks, builds, solves, tests, commits and tags:
 
 ```sh
 pnpm release 2.4.0
