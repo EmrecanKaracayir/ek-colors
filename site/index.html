@@ -705,6 +705,7 @@
     .split { grid-template-columns: minmax(0, 1fr); }
     .split.rows { row-gap: var(--space-8); }
     .split.rows > div { grid-row: auto; grid-template-rows: none; }
+    .split.rows .field.grow:not(:has(input[type="range"])) { grid-template-columns: 9rem minmax(0, 1fr); }
     .facts-list div { grid-template-columns: 8rem minmax(0, 1fr); }
     .settings-head { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-6); }
     .settings-actions .field.palette-name { grid-template-columns: 7rem minmax(0, 1fr); }
