@@ -7,30 +7,12 @@
 | background: no further from the base than the closest color is, by a just-visible step.         |
 \*------------------------------------------------------------------------------------------------*/
 
-import {
-  ColorSpace,
-  getColor,
-  inGamut,
-  OKLab,
-  OKLCH,
-  P3,
-  REC_2020,
-  serialize,
-  sRGB,
-  to,
-  toGamutCSS,
-} from "colorjs.io/fn";
+import { getColor, serialize, toGamutCSS } from "colorjs.io/fn";
 
-import { makeModel, type Model } from "./model";
+import { fits, makeModel, type Model, SPACES, writtenFor } from "./model";
 import { type Gamut, GAMUTS, type Mode, MODES, type Settings } from "./settings";
 
-for (const space of [sRGB, P3, REC_2020, OKLab, OKLCH]) ColorSpace.register(space);
-
-/** The color space each gamut tier's colors are written in. */
-const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies Record<
-  Gamut,
-  unknown
->;
+export { fits, writtenFor };
 
 /** How far a picked color may be from the base past the closest color's distance: a just-visible step, ΔE. */
 export const PICK_MARGIN = 2;
@@ -40,10 +22,10 @@ export type BaseHow = "exact" | "closest" | "picked";
 
 /** A mode's base on one gamut tier. */
 export interface BaseIn {
-  /** What the tier is solved against: the base as given, where the tier shows it exactly. */
+  /** What the tier is solved against: the base as given where the tier shows it exactly, else the closest or the picked color. */
   readonly color: string;
 
-  /** It written for the tier: hex on standard screens, color(display-p3 …) or color(rec2020 …) on wider ones. */
+  /** That color as the tier writes it: hex on standard screens, color(display-p3 …) or color(rec2020 …) on wider ones. */
   readonly written: string;
 
   /** The base itself, the closest color the tier can show to it, or one picked by hand. */
@@ -53,33 +35,28 @@ export interface BaseIn {
   readonly off: number;
 }
 
-/** The bases' settings, and the rooms they're seen in. */
-type BaseSettings = Pick<Settings, "bases" | "gamutBases" | "rooms">;
+/** The bases and the rooms they're seen in. */
+type Viewing = Pick<Settings, "bases" | "rooms">;
+
+/** The bases, the colors picked for them and the rooms they're seen in. */
+type BaseSettings = Viewing & Pick<Settings, "gamutBases">;
 
 /**
- * Whether a color can be parsed as CSS.
+ * Whether a color can be a base: a CSS color, fully opaque, as a background is.
  *
  * @param color  The color.
- * @returns      True when it's a CSS color.
+ * @returns      True when it's an opaque CSS color.
  */
-export function isColor(color: string): boolean {
+export function isBaseColor(color: string): boolean {
+  if (/[<>"'&]/.test(color)) return false;
   try {
-    getColor(color);
-    return true;
+    const parsed = getColor(color);
+    return (
+      (parsed.alpha ?? 1) === 1 && parsed.coords.every((c) => c === null || Number.isFinite(c))
+    );
   } catch {
     return false;
   }
-}
-
-/**
- * Whether a gamut tier's screens can show a color.
- *
- * @param color  The color.
- * @param gamut  The tier.
- * @returns      True when it fits.
- */
-export function fits(color: string, gamut: Gamut): boolean {
-  return inGamut(getColor(color), SPACES[gamut], { epsilon: 0.0005 });
 }
 
 /**
@@ -90,24 +67,6 @@ export function fits(color: string, gamut: Gamut): boolean {
  */
 export function home(color: string): Gamut {
   return GAMUTS.find((g) => fits(color, g)) ?? "ultra";
-}
-
-/**
- * A color written for a gamut tier, as that tier's colors are: hex on standard screens, four
- * decimals in the tier's color space on wider ones.
- *
- * @param color  A color the tier can show.
- * @param gamut  The tier.
- * @returns      CSS.
- */
-export function writtenFor(color: string, gamut: Gamut): string {
-  const inSpace = to(getColor(color), SPACES[gamut]);
-  if (gamut === "standard")
-    return serialize(inSpace, { format: "hex", collapse: false }).toUpperCase();
-  const coords = inSpace.coords.map(
-    (c) => Math.round(Math.min(1, Math.max(0, c ?? 0)) * 10_000) / 10_000,
-  );
-  return serialize({ ...inSpace, coords: coords as [number, number, number] });
 }
 
 /**
@@ -134,7 +93,7 @@ const models = new Map<string, Model>();
  * @param b         The other.
  * @returns         ΔE.
  */
-export function apart(settings: BaseSettings, mode: Mode, a: string, b: string): number {
+export function apart(settings: Viewing, mode: Mode, a: string, b: string): number {
   const key = JSON.stringify([settings.bases, settings.rooms]);
   let model = models.get(key);
   if (!model) models.set(key, (model = makeModel(settings)));
@@ -151,11 +110,37 @@ export function apart(settings: BaseSettings, mode: Mode, a: string, b: string):
  * @param color     The color picked.
  * @returns         How far it is, how far the closest is, and whether it's the same background.
  */
-export function pickCheck(settings: BaseSettings, mode: Mode, gamut: Gamut, color: string) {
+export function pickCheck(settings: Viewing, mode: Mode, gamut: Gamut, color: string) {
   const base = settings.bases[mode];
   const off = apart(settings, mode, base, color);
   const loss = apart(settings, mode, base, closestIn(base, gamut));
   return { off, loss, same: off <= loss + PICK_MARGIN };
+}
+
+/**
+ * What's wrong with a color picked for a gamut tier, if anything: the tier has to be one that can't
+ * show the base, able to show the color, and the color still the same background.
+ *
+ * @param settings  The bases and rooms.
+ * @param mode      The mode.
+ * @param gamut     The tier.
+ * @param color     The color picked.
+ * @returns         The problem as a sentence, or null when the pick holds.
+ */
+export function pickProblem(
+  settings: Viewing,
+  mode: Mode,
+  gamut: Gamut,
+  color: string,
+): string | null {
+  if (!fits(color, gamut))
+    return `The ${mode} color picked for ${gamut} screens is one they can't show.`;
+  if (GAMUTS.indexOf(gamut) >= GAMUTS.indexOf(home(settings.bases[mode])))
+    return `${gamut[0]!.toUpperCase()}${gamut.slice(1)} screens show the ${mode} base exactly, so no color is picked for them.`;
+  const check = pickCheck(settings, mode, gamut, color);
+  return check.same
+    ? null
+    : `The ${mode} color picked for ${gamut} screens is a different background from the ${mode} base: ΔE ${check.off.toFixed(1)} from it, where the closest color is ΔE ${check.loss.toFixed(1)}.`;
 }
 
 /**
@@ -174,26 +159,25 @@ export function baseIn(settings: BaseSettings, mode: Mode, gamut: Gamut): BaseIn
   const at = GAMUTS.indexOf(gamut);
   if (at >= from) return { color: base, written: writtenFor(base, gamut), how: "exact", off: 0 };
   let above = base;
-  let shown: BaseIn = { color: base, written: base, how: "exact", off: 0 };
+  let shown: BaseIn | undefined;
   for (let i = from - 1; i >= at; i--) {
     const g = GAMUTS[i]!;
     const picked = settings.gamutBases[g]?.[mode];
     const check = picked ? pickCheck(settings, mode, g, picked) : null;
-    shown =
-      picked && check!.same
-        ? { color: picked, written: writtenFor(picked, g), how: "picked", off: check!.off }
-        : (() => {
-            const closest = closestIn(above, g);
-            return {
-              color: closest,
-              written: closest,
-              how: "closest" as const,
-              off: apart(settings, mode, base, closest),
-            };
-          })();
+    if (picked && check?.same) {
+      shown = { color: picked, written: writtenFor(picked, g), how: "picked", off: check.off };
+    } else {
+      const closest = closestIn(above, g);
+      shown = {
+        color: closest,
+        written: closest,
+        how: "closest",
+        off: apart(settings, mode, base, closest),
+      };
+    }
     above = shown.color;
   }
-  return shown;
+  return shown!;
 }
 
 /**
@@ -224,9 +208,7 @@ export function keptPicks<T extends BaseSettings>(settings: T): { settings: T; d
       const kept = MODES.flatMap((m) => {
         const picked = settings.gamutBases[g]?.[m];
         if (!picked) return [];
-        const narrower = GAMUTS.indexOf(g) < GAMUTS.indexOf(home(settings.bases[m]));
-        if (narrower && fits(picked, g) && pickCheck(settings, m, g, picked).same)
-          return [[m, picked]];
+        if (!pickProblem(settings, m, g, picked)) return [[m, picked]];
         dropped.push(`the ${m} color for ${g} screens`);
         return [];
       });

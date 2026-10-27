@@ -6,7 +6,7 @@
 | that make sense. A field that's missing takes its default.                                       |
 \*------------------------------------------------------------------------------------------------*/
 
-import { fits, forGamut, home, isColor, pickCheck } from "./bases";
+import { forGamut, isBaseColor, pickProblem } from "./bases";
 import { lightness } from "./model";
 import { SYSTEMS } from "./references";
 import {
@@ -134,14 +134,14 @@ function perMode<T>(
 }
 
 /**
- * A base: a hex color.
+ * A base: any CSS color.
  *
  * @param value  The value.
  * @param mode   Its mode.
- * @returns      It, in capitals.
+ * @returns      It trimmed, six-digit hex in capitals.
  */
 function base(value: unknown, mode: Mode): string {
-  if (typeof value !== "string" || !isColor(value.trim()))
+  if (typeof value !== "string" || !isBaseColor(value.trim()))
     fail(`The ${mode} base must be a color like #EBEBEB or color(display-p3 0.92 0.92 0.92).`);
   const color = value.trim();
   return /^#[0-9a-f]{6}$/i.test(color) ? color.toUpperCase() : color;
@@ -167,16 +167,8 @@ function gamutBases(
       const modes = MODES.flatMap((m) => {
         if (per[m] === undefined) return [];
         const color = base(per[m], m);
-        if (!fits(color, g)) fail(`The ${m} color picked for ${g} screens is one they can't show.`);
-        if (GAMUTS.indexOf(g) >= GAMUTS.indexOf(home(settings.bases[m])))
-          fail(
-            `${g[0]!.toUpperCase()}${g.slice(1)} screens show the ${m} base exactly, so no color is picked for them.`,
-          );
-        const check = pickCheck({ ...settings, gamutBases: {} }, m, g, color);
-        if (!check.same)
-          fail(
-            `The ${m} color picked for ${g} screens is a different background from the ${m} base: ΔE ${check.off.toFixed(1)} from it, where the closest color is ΔE ${check.loss.toFixed(1)}.`,
-          );
+        const problem = pickProblem(settings, m, g, color);
+        if (problem) fail(problem);
         return [[m, color]];
       });
       return modes.length ? [[g, Object.fromEntries(modes)]] : [];

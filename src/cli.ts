@@ -11,6 +11,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { CONFIG } from "./config";
 import { toCss, toCsv, toJson, toMarkdown } from "./palette/formats";
 import { GAMUTS, MODES } from "./palette/settings";
+import { forGamut } from "./palette/bases";
 import { identityOf, solvePalette } from "./palette/solve";
 
 const palette = solvePalette(CONFIG);
@@ -29,7 +30,7 @@ for (const gamut of GAMUTS) {
   );
 }
 for (const mode of MODES) {
-  const tier = identityOf(CONFIG, mode);
+  const tier = identityOf(forGamut(CONFIG, "standard"), mode);
   const colors = palette.standard[mode].colors.map((c) => {
     const s = c.tiers[tier]!.default;
     return `${c.key} ${s.color}${s.short ? "*" : ""}`;

@@ -8,9 +8,10 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { forGamut } from "../src/palette/bases";
 import { identityOf, type Palette } from "../src/palette/solve";
 import type { Settings } from "../src/palette/settings";
 import { iconSvg } from "../src/site/icon";
@@ -20,7 +21,7 @@ const { settings, palette } = JSON.parse(readFileSync("out/palette.json", "utf8"
   palette: Palette;
 };
 const dark = palette.standard.dark;
-const tier = identityOf(settings, "dark");
+const tier = identityOf(forGamut(settings, "standard"), "dark");
 const hues = dark.colors.filter((c) => !c.extra).map((c) => c.tiers[tier]!.default);
 const [light, base] = [palette.standard.light.base, dark.base];
 
@@ -50,6 +51,7 @@ function render(html: string, width: number, height: number, out: string): void 
     ],
     { stdio: "ignore" },
   );
+  rmSync(dir, { recursive: true, force: true });
 }
 
 const svg = iconSvg(light, base, hues);

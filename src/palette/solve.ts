@@ -263,7 +263,8 @@ function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Sp
           hues[(i - 1 + hues.length) % hues.length]!,
           hues[(i + 1) % hues.length]!,
         ];
-        if (wrapHue(hue - before) < sep || wrapHue(after - hue) < sep) continue;
+        // A step that comes too close to a neighbor, or passes it, is left out.
+        if (hueTurn(before, hue) < sep || hueTurn(hue, after) < sep) continue;
         const trial = [...colors];
         trial[i] = strongest(model, base, mode, hue, target(hue), tier);
         const score = spread(ring(trial));
@@ -751,10 +752,11 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
 }
 
 /**
- * What the hues depend on: every setting but the colors placed on top of them and the names.
- * Settings with the same key share their hues.
+ * What the hues depend on: every setting but the custom and neutral colors, the muted share, the
+ * names, the guide and the colors picked per gamut. Settings with the same key share their hues.
+ * It's meant for one gamut tier's settings (forGamut), whose bases already hold the picks.
  *
- * @param settings  The settings.
+ * @param settings  One gamut tier's settings.
  * @returns         A key.
  */
 export function huesKey(settings: Settings): string {
@@ -764,7 +766,7 @@ export function huesKey(settings: Settings): string {
     muted: _muted,
     name: _name,
     guide: _guide,
-    gamutBases: _bases,
+    gamutBases: _gamutBases,
     ...rest
   } = settings;
   return JSON.stringify(rest);

@@ -174,11 +174,7 @@ export const LIMITS = {
 
 /* >----------------------------------------< Defaults >----------------------------------------< */
 
-/*
- * The bases come from depth (8px of height is one just-noticeable OKLab lightness step below
- * white; dark is the light base's contrast mirror). The rooms are sRGB's: its typical environment
- * (200 lux, a lit room) for light mode and its reference environment (64 lux, dim) for dark mode.
- */
+/** The settings a palette starts from: light mode in a lit room, dark mode in a dim one. */
 export const DEFAULTS: Settings = {
   bases: { light: "#EBEBEB", dark: "#181818" },
   gamutBases: {},
@@ -213,7 +209,7 @@ export const NAMES = [
 
 /* >----------------------------------------< Codemos >-----------------------------------------< */
 
-/** Codemos's colors, EK Palette's predecessor, for the comparison. */
+/** Codemos's colors, for the comparison. */
 export const CODEMOS: Readonly<Record<Mode, Readonly<Record<string, string>>>> = {
   light: {
     red: "#B70004",

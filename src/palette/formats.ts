@@ -6,7 +6,7 @@
 | command line and the site's export both use these.                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import type { GamutPalette, Palette, Swatch } from "./solve";
+import { GRAY, type GamutPalette, type Palette, type Swatch } from "./solve";
 import {
   type Gamut,
   GAMUT_NAMES,
@@ -24,16 +24,14 @@ interface NeutralRow {
 }
 
 /**
- * The neutrals as exported: gray always, and each neutral color whenever either mode's base is
- * tinted. A mode whose base is gray or close to it gives the grays for its neutrals, so every name holds a
- * color in both modes.
+ * The neutrals as exported: Gray, then each neutral color. A mode whose base is gray or close to it
+ * gives the grays for its neutral colors, so every name holds a color on every gamut, in both modes.
  *
  * @param palette  One gamut's palette.
- * @returns        Gray, then the neutral colors, if any follow a tint.
+ * @returns        Gray, then the neutral colors.
  */
 function neutralRows(palette: GamutPalette): NeutralRow[] {
-  const gray = { key: "gray", tiers: { light: palette.light.grays, dark: palette.dark.grays } };
-  if (!MODES.some((m) => palette[m].tinted)) return [gray];
+  const gray = { key: GRAY, tiers: { light: palette.light.grays, dark: palette.dark.grays } };
   return [
     gray,
     ...palette.light.neutrals.map((n, i) => ({
@@ -65,56 +63,31 @@ export function toCsv(settings: Settings, palette: Palette): string {
   const rows = [
     "gamut,mode,tier,variant,name,value,cam16_hue,cam16_chroma,cam16_colorfulness,cam16_lightness,cam16_name,apca,wcag2,wcag2_level",
   ];
+  const row = (where: readonly (string | number)[], key: string, s: Swatch) =>
+    [
+      ...where,
+      key,
+      `"${s.color}"`,
+      s.hue,
+      s.chroma,
+      s.colorfulness,
+      s.lightness,
+      s.name,
+      s.apca,
+      s.wcag,
+      s.wcagLevel,
+    ].join(",");
   for (const gamut of GAMUTS) {
     for (const mode of MODES) {
       for (const color of palette[gamut][mode].colors) {
         for (const tier of settings.tiers) {
-          const cell = color.tiers[tier]!;
-          for (const variant of ["default", "muted"] as const) {
-            const s = cell[variant];
-            rows.push(
-              [
-                gamut,
-                mode,
-                tier,
-                variant,
-                color.key,
-                `"${s.color}"`,
-                s.hue,
-                s.chroma,
-                s.colorfulness,
-                s.lightness,
-                s.name,
-                s.apca,
-                s.wcag,
-                s.wcagLevel,
-              ].join(","),
-            );
-          }
+          for (const variant of ["default", "muted"] as const)
+            rows.push(row([gamut, mode, tier, variant], color.key, color.tiers[tier]![variant]));
         }
       }
       for (const neutral of neutralRows(palette[gamut])) {
-        for (const tier of settings.tiers) {
-          const s = neutral.tiers[mode][tier]!;
-          rows.push(
-            [
-              gamut,
-              mode,
-              tier,
-              "default",
-              neutral.key,
-              `"${s.color}"`,
-              s.hue,
-              s.chroma,
-              s.colorfulness,
-              s.lightness,
-              s.name,
-              s.apca,
-              s.wcag,
-              s.wcagLevel,
-            ].join(","),
-          );
-        }
+        for (const tier of settings.tiers)
+          rows.push(row([gamut, mode, tier, "default"], neutral.key, neutral.tiers[mode][tier]!));
       }
     }
   }
@@ -168,8 +141,9 @@ const GAMUT_QUERIES: Readonly<Record<Gamut, string | null>> = {
 
 /**
  * Every color as a CSS custom property: --red-60 is red on Lc 60, --red-60-muted its muted
- * version, --gray-60 and --neutral-60 the neutrals on it, and --base the background. Each holds its light and dark color, chosen by
- * color-scheme; a wider screen gets its gamut's colors.
+ * version, --gray-60 a gray on it, --sand-60 a neutral color named Sand, and --base the
+ * background. Each holds its light and dark color, chosen by color-scheme; a wider screen gets its
+ * gamut's colors.
  *
  * @param settings  The settings (for the bases and tiers).
  * @param palette   The solved palette.
@@ -206,7 +180,7 @@ export function toCss(settings: Settings, palette: Palette): string {
       ),
     );
     for (const neutral of neutralRows(palette[gamut])) {
-      if (neutral.key === "gray" && gamut !== "standard" && sameGrays) continue;
+      if (neutral.key === GRAY && gamut !== "standard" && sameGrays) continue;
       for (const tier of settings.tiers)
         lines.push(
           `--${neutral.key}-${String(tier)}: light-dark(${neutral.tiers.light[tier]!.color}, ${neutral.tiers.dark[tier]!.color});`,
@@ -222,9 +196,9 @@ export function toCss(settings: Settings, palette: Palette): string {
   };
   const css = [
     "/*",
-    ` * ${settings.name || "Palette"}, solved with EK Colors.`,
-    " * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version, --gray-60 a gray",
-    " * on it, and --neutral-60, when a base has a hue, a neutral color in that hue. Light and dark",
+    ` * ${(settings.name || "Palette").replaceAll("*/", "* /")}, solved with EK Colors.`,
+    " * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version and --gray-60 a",
+    " * gray on it; each neutral color is named after itself, in its base's hue. Light and dark",
     " * follow color-scheme: the system's, or color-scheme: light or dark set on the page. Screens",
     " * that show a wider gamut get its colors.",
     " */",

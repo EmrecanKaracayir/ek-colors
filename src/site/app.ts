@@ -11,7 +11,7 @@ import { CONFIG } from "../config";
 import { toCss, toCsv, toJson, toMarkdown } from "../palette/formats";
 import { composition, deltaE, hueTurn, lightness, makeModel, type Model, parts, plainSquared } from "../palette/model";
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
-import { baseIn, type BaseIn, fits, forGamut, home, isColor, keptPicks, pickCheck, PICK_MARGIN } from "../palette/bases";
+import { baseIn, type BaseIn, fits, forGamut, home, isBaseColor, keptPicks, pickCheck, PICK_MARGIN } from "../palette/bases";
 import { readSettings, SettingsError } from "../palette/check";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
 import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, NEUTRAL_START, PAGES, tinted, withNeutrals, baseHasHue, huesKey, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
@@ -165,6 +165,9 @@ let busy = false;
 /** The hues the worker's request in hand depends on: a newer change with the same ones is quick to wait for. */
 let busyHues = "";
 
+/** The gamut tier of the worker's request in hand. */
+let busyGamut: Gamut = "standard";
+
 /** The pending read-out of a finished solve. */
 let settled = 0;
 
@@ -204,7 +207,8 @@ function solved(event: MessageEvent<Response>): void {
  */
 function post(gamut: Gamut): void {
   busy = true;
-  busyHues = huesKey(state.settings);
+  busyHues = huesKey(forGamut(state.settings, gamut));
+  busyGamut = gamut;
   worker.postMessage({ id: latest, settings: state.settings, gamut } satisfies Request);
 }
 
@@ -225,7 +229,7 @@ function solve(wait = 0): void {
     // A solve still running is for older settings: it's stopped rather than waited for, so many
     // hues never hold up the next change. One with the same hues only places colors on them, which
     // takes milliseconds; stopping it would also lose the hues the worker keeps.
-    if (busy && busyHues !== huesKey(state.settings)) {
+    if (busy && busyHues !== huesKey(forGamut(state.settings, busyGamut))) {
       worker.terminate();
       worker = spawn(solved);
     }
@@ -3156,10 +3160,12 @@ function render(): void {
   document.documentElement.style.setProperty("--base-dark", onScreen().bases.dark);
   // The phone's address bar takes the page's own base, whichever mode is on.
   for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.setAttribute("content", baseIn(state.settings, state.mode, "standard").written);
-  const isColor = !(VIEWS as readonly string[]).includes(view);
+  const onColorPage = !(VIEWS as readonly string[]).includes(view);
   for (const a of document.querySelectorAll<HTMLAnchorElement>(".nav a")) {
     const target = a.getAttribute("href")!.slice(1);
-    a.toggleAttribute("aria-current", target === view || (target === "colors" && isColor) || (target === "tune" && (view === "curve-test" || view === "hue-test")) || (target === "how" && view === "algorithm"));
+    const here = target === view || (target === "colors" && onColorPage) || (target === "tune" && (view === "curve-test" || view === "hue-test")) || (target === "how" && view === "algorithm");
+    if (here) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
   }
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-mode]")) b.setAttribute("aria-pressed", String(b.dataset.mode === state.mode));
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-gamut]")) {
@@ -3481,7 +3487,7 @@ document.addEventListener("input", (event) => {
     const gamut = state.gamut;
     const color = normalColor(el.value);
     const other = baseIn(state.settings, mode === "light" ? "dark" : "light", gamut).written;
-    const valid = isColor(color) && fits(color, gamut);
+    const valid = isBaseColor(color) && fits(color, gamut);
     const ordered = valid && (mode === "light" ? lightness(color) > lightness(other) : lightness(color) < lightness(other));
     // On a tier that shows the base exactly, typing changes the base; on a narrower one it picks
     // the tier's color, which has to stay the same background.

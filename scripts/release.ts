@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------------------------*\
 | <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< RELEASE >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| Releases a version: pnpm release 2.2.0. It checks that the version is a semantic version newer   |
+| Releases a version: pnpm release 2.4.0. It checks that the version is a semantic version newer   |
 | than package.json's and every tag, that it runs on main with the tag still free, and that the    |
 | changelog has something under Unreleased. Then it dates that section as the version, opens a new |
 | Unreleased, points the changelog's links at the new tag, sets package.json's version, checks,    |
@@ -47,8 +47,8 @@ function run(command: string, args: readonly string[], input?: string): void {
 const git = (args: readonly string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
 
 // The version: a semantic version newer than the current one and than every tag.
-const given = process.argv[2] ?? stop("say which version, e.g. pnpm release 2.2.0.");
-const version = semver.valid(given) ?? stop(`${given} isn't a semantic version like 2.2.0.`);
+const given = process.argv[2] ?? stop("say which version, e.g. pnpm release 2.4.0.");
+const version = semver.valid(given) ?? stop(`${given} isn't a semantic version like 2.4.0.`);
 const project = JSON.parse(readFileSync("package.json", "utf8")) as {
   version: string;
   repository: { url: string };
@@ -60,6 +60,8 @@ const newest = semver.rsort(tags.map((t) => t.slice(1)).filter((t) => semver.val
 if (newest && !semver.gt(version, newest))
   stop(`${version} isn't newer than v${newest}, the newest tag.`);
 if (tags.includes(`v${version}`)) stop(`the tag v${version} is taken.`);
+if (git(["status", "--porcelain"]))
+  stop("the working tree has changes; commit or stash them first.");
 const branch = git(["branch", "--show-current"]);
 if (branch !== "main") stop(`releases are made on main, not ${branch || "a detached head"}.`);
 

@@ -11,31 +11,99 @@ import {
   argbFromLstar,
   Cam16,
   lstarFromArgb,
+  lstarFromY,
   ViewingConditions,
 } from "@material/material-color-utilities";
 import {
+  A98RGB,
+  A98RGB_Linear,
   ColorSpace,
   contrastAPCA,
   contrastWCAG21,
   getColor,
+  HSL,
+  HWB,
   inGamut,
+  Lab,
+  LCH,
+  OKLab,
+  OKLCH,
   P3,
+  P3_Linear,
+  type PlainColorObject,
+  ProPhoto,
+  ProPhoto_Linear,
   REC_2020,
+  REC_2020_Linear,
   serialize,
   sRGB,
+  sRGB_Linear,
   to,
+  XYZ_D50,
   XYZ_D65,
 } from "colorjs.io/fn";
 
 import type { Gamut, Mode, Settings } from "./settings";
 
-for (const space of [sRGB, P3, REC_2020, XYZ_D65]) ColorSpace.register(space);
+// Every color space CSS Color 4 names, so a base can be written in any of them.
+for (const space of [
+  sRGB,
+  sRGB_Linear,
+  P3,
+  P3_Linear,
+  A98RGB,
+  A98RGB_Linear,
+  ProPhoto,
+  ProPhoto_Linear,
+  REC_2020,
+  REC_2020_Linear,
+  XYZ_D50,
+  XYZ_D65,
+  Lab,
+  LCH,
+  OKLab,
+  OKLCH,
+  HSL,
+  HWB,
+])
+  ColorSpace.register(space);
 
 /** The color space each gamut tier's colors are written in. */
-const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies Record<
+export const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const satisfies Record<
   Gamut,
   unknown
 >;
+
+/**
+ * Whether a gamut tier's screens can show a color.
+ *
+ * @param color  The color, CSS or parsed.
+ * @param gamut  The tier.
+ * @returns      True when it fits.
+ */
+export function fits(color: string | PlainColorObject, gamut: Gamut): boolean {
+  return inGamut(typeof color === "string" ? getColor(color) : color, SPACES[gamut], {
+    epsilon: 0.0005,
+  });
+}
+
+/**
+ * A color written as a gamut tier's colors are: hex on standard screens, four decimals in the
+ * tier's color space on wider ones.
+ *
+ * @param color  A color the tier can show, CSS or parsed.
+ * @param gamut  The tier.
+ * @returns      CSS.
+ */
+export function writtenFor(color: string | PlainColorObject, gamut: Gamut): string {
+  const inSpace = to(typeof color === "string" ? getColor(color) : color, SPACES[gamut]);
+  if (gamut === "standard")
+    return serialize(inSpace, { format: "hex", collapse: false }).toUpperCase();
+  const coords = inSpace.coords.map(
+    (c) => Math.round(Math.min(1, Math.max(0, c ?? 0)) * 10_000) / 10_000,
+  );
+  return serialize({ ...inSpace, coords: coords as [number, number, number] });
+}
 
 /* >-----------------------------------< Viewing conditions >-----------------------------------< */
 
@@ -128,13 +196,12 @@ export function darkBase(base: string): boolean {
 /**
  * How light a color is, as CIE L*.
  *
- * @param color  The color, any CSS; hex is read as it always was, to the last bit.
+ * @param color  The color, any CSS; six-digit hex is read by material-color-utilities, exactly.
  * @returns      0 for black to 100 for white.
  */
 export function lightness(color: string): number {
   if (/^#[0-9a-f]{6}$/i.test(color)) return lstarFromArgb(argbFromHex(color));
-  const y = Math.max(0, (to(getColor(color), XYZ_D65).coords[1] ?? 0) * 100);
-  return y > 216 / 27 ? 116 * Math.cbrt(y / 100) - 16 : (y / 100) * (24389 / 27);
+  return lstarFromY(Math.max(0, (to(getColor(color), XYZ_D65).coords[1] ?? 0) * 100));
 }
 
 /**
@@ -193,16 +260,8 @@ function colorAt(
   colorfulness: number,
   j: number,
 ): string | null {
-  const space = SPACES[gamut];
   const color = appearance(conditions, hue, colorfulness, j);
-  if (!inGamut(color, space, { epsilon: 0.0005 })) return null;
-  const inSpace = to(color, space);
-  if (gamut === "standard")
-    return serialize(inSpace, { format: "hex", collapse: false }).toUpperCase();
-  const coords = inSpace.coords.map(
-    (c) => Math.round(Math.min(1, Math.max(0, c ?? 0)) * 10_000) / 10_000,
-  );
-  return serialize({ ...inSpace, coords: coords as [number, number, number] });
+  return fits(color, gamut) ? writtenFor(color, gamut) : null;
 }
 
 /* >------------------------------------------< Hues >------------------------------------------< */
