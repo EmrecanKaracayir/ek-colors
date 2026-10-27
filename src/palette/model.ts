@@ -57,7 +57,7 @@ export function viewingConditions(
   return ViewingConditions.make(
     undefined,
     settings.rooms[mode].lux * LUX_TO_ADAPTING,
-    lstarFromArgb(argbFromHex(settings.bases[mode])),
+    lightness(settings.bases[mode]),
     settings.rooms[mode].surround,
   );
 }
@@ -128,11 +128,13 @@ export function darkBase(base: string): boolean {
 /**
  * How light a color is, as CIE L*.
  *
- * @param color  The color, as hex.
+ * @param color  The color, any CSS; hex is read as it always was, to the last bit.
  * @returns      0 for black to 100 for white.
  */
 export function lightness(color: string): number {
-  return lstarFromArgb(argbFromHex(color));
+  if (/^#[0-9a-f]{6}$/i.test(color)) return lstarFromArgb(argbFromHex(color));
+  const y = Math.max(0, (to(getColor(color), XYZ_D65).coords[1] ?? 0) * 100);
+  return y > 216 / 27 ? 116 * Math.cbrt(y / 100) - 16 : (y / 100) * (24389 / 27);
 }
 
 /**
@@ -142,7 +144,7 @@ export function lightness(color: string): number {
  * @returns     0 for black to 255 for white.
  */
 export function grayLevel(base: string): number {
-  return argbFromLstar(lstarFromArgb(argbFromHex(base))) & 0xff;
+  return argbFromLstar(lightness(base)) & 0xff;
 }
 
 /* >-----------------------------------------< Colors >-----------------------------------------< */

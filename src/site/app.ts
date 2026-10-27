@@ -11,9 +11,10 @@ import { CONFIG } from "../config";
 import { toCss, toCsv, toJson, toMarkdown } from "../palette/formats";
 import { composition, deltaE, hueTurn, lightness, makeModel, type Model, parts, plainSquared } from "../palette/model";
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
+import { baseIn, type BaseIn, fits, forGamut, home, isColor } from "../palette/bases";
 import { readSettings, SettingsError } from "../palette/check";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
-import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, NEUTRAL_START, PAGES, tinted, withNeutrals, huesKey, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, NEUTRAL_START, PAGES, tinted, withNeutrals, baseHasHue, huesKey, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { announce, copyText, flash, markField, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
@@ -403,7 +404,7 @@ const turns = new WeakMap<ModePalette, WeakMap<ModePalette, Map<number, number>>
  * @returns     Degrees, or null while either palette solves.
  */
 function turn(mode: Mode): number | null {
-  const tier = identityOf(state.settings, mode);
+  const tier = identityOf(onScreen(), mode);
   const [even, hued] = [plain()?.[mode], uncurved()?.[mode]];
   if (!even || !hued) return null;
   if (!turns.has(even)) turns.set(even, new WeakMap());
@@ -461,7 +462,7 @@ function turned(mode: Mode): {
       if (!u) return [];
       const hue = (((u.hue + angle) % 360) + 360) % 360;
       try {
-        return [[c.key, { hue, colorfulness: u.colorfulness, color: strongest(model(), s.bases[mode], mode, hue, u.colorfulness, tier) }]];
+        return [[c.key, { hue, colorfulness: u.colorfulness, color: strongest(model(), onScreen().bases[mode], mode, hue, u.colorfulness, tier) }]];
       } catch {
         return [];
       }
@@ -483,13 +484,30 @@ function askVariants(): void {
 const bands = new Map<string, CurveView["band"]>();
 const models = new Map<string, Model>();
 
+/** The settings as each gamut tier sees them, made once per settings and tier. */
+const seen = new WeakMap<Settings, Map<Gamut, Settings>>();
+
+/**
+ * The settings as the gamut tier on screen sees them: each mode's base resolved for it. Everything
+ * the page shows reads these; changes are written to the settings as entered.
+ *
+ * @returns  The settings.
+ */
+function onScreen(): Settings {
+  let byGamut = seen.get(state.settings);
+  if (!byGamut) seen.set(state.settings, (byGamut = new Map()));
+  let made = byGamut.get(state.gamut);
+  if (!made) byGamut.set(state.gamut, (made = forGamut(state.settings, state.gamut)));
+  return made;
+}
+
 /**
  * The color model of the settings on screen, made once per bases, rooms and gamut tier.
  *
  * @returns  The model.
  */
 function model(): Model {
-  const s = state.settings;
+  const s = onScreen();
   const key = JSON.stringify([s.bases, s.rooms, state.gamut]);
   let made = models.get(key);
   if (!made) models.set(key, (made = makeModel(s, state.gamut)));
@@ -504,7 +522,7 @@ function model(): Model {
  * @returns     The cost, or null while it solves.
  */
 function spacingCost(mode: Mode): HuesView["cost"] {
-  const tier = identityOf(state.settings, mode);
+  const tier = identityOf(onScreen(), mode);
   const [hued, even] = [uncurved()?.[mode], plain()?.[mode]];
   const ring = hued?.ring[tier];
   const evenRing = even?.ring[tier];
@@ -525,7 +543,7 @@ function spacingCost(mode: Mode): HuesView["cost"] {
  * @returns     The cost, or null while it solves.
  */
 function colorfulnessCost(mode: Mode): CurveView["cost"] {
-  const tier = identityOf(state.settings, mode);
+  const tier = identityOf(onScreen(), mode);
   const [before, after] = [uncurved()?.[mode], current()?.[mode]];
   if (!before || !after) return null;
   return after.colors
@@ -549,12 +567,12 @@ function bandOf(mode: Mode): CurveView["band"] {
   const s = state.settings;
   const tier = identityOf(s, mode);
   const target = current()?.[mode].targets[tier] ?? s.colorfulness;
-  const key = JSON.stringify([s.bases, s.rooms, state.gamut, mode, tier, target]);
+  const key = JSON.stringify([onScreen().bases, s.rooms, state.gamut, mode, tier, target]);
   let band = bands.get(key);
   if (!band) {
     band = Array.from({ length: 37 }, (_, i) => i * 10).flatMap((hue) => {
       try {
-        return [{ hue, color: strongest(model(), s.bases[mode], mode, hue % 360, target, tier) }];
+        return [{ hue, color: strongest(model(), onScreen().bases[mode], mode, hue % 360, target, tier) }];
       } catch {
         return [];
       }
@@ -665,7 +683,7 @@ function huesView(): HuesView {
 function syncAnchor(): void {
   const from = document.querySelector<HTMLSelectElement>("#set-anchor");
   if (from) from.value = typeof state.settings.anchor === "number" ? "hand" : state.settings.anchor;
-  const hue = String(Math.round(anchorHue(state.settings)));
+  const hue = String(Math.round(anchorHue(onScreen())));
   for (const el of document.querySelectorAll<HTMLInputElement>("[data-anchor-hue]")) if (el !== document.activeElement) el.value = hue;
 }
 
@@ -725,7 +743,7 @@ bindCurves(curveView, (mode, points) => {
  * @returns  The settings, mode, gamut tier and palette on screen.
  */
 function context(): Context {
-  return { settings: state.settings, mode: state.mode, gamut: state.gamut, palette: current(), label };
+  return { settings: onScreen(), mode: state.mode, gamut: state.gamut, palette: current(), label };
 }
 
 /**
@@ -1240,7 +1258,8 @@ document.addEventListener("pointerout", (event) => {
  * @returns  HTML.
  */
 function overview(): string {
-  const { settings, mode } = state;
+  const { mode } = state;
+  const settings = onScreen();
   const tier = identityOf(settings, mode);
   const room = settings.rooms[mode];
   const list = colors(tier);
@@ -1297,7 +1316,8 @@ const star = (kind: "selected" | "suggested" | "slot") =>
  * @returns     HTML.
  */
 function tierHeading(tier: number): string {
-  const { settings, mode } = state;
+  const { mode } = state;
+  const settings = onScreen();
   const selected = tier === identityOf(settings, mode);
   const suggested = tier === autoIdentity(settings.bases[mode], settings.tiers);
   const pop = `identity:${mode}:${String(tier)}`;
@@ -1316,7 +1336,8 @@ function tierHeading(tier: number): string {
  * @returns     E.g. "automatic".
  */
 function identityHow(tier: number): string {
-  const { settings, mode } = state;
+  const { mode } = state;
+  const settings = onScreen();
   if (settings.identityTier[mode] === "auto") return "automatic";
   return tier === autoIdentity(settings.bases[mode], settings.tiers) ? "set by hand, also suggested" : "set by hand";
 }
@@ -1334,7 +1355,7 @@ function identityLabel(tier: number, where: string): string {
 
 popSource("identity", (which) => {
   const [mode, tierText] = which.split(":") as [Mode, string];
-  const { settings } = state;
+  const settings = onScreen();
   const tier = Number(tierText);
   const base = settings.bases[mode];
   const auto = autoIdentity(base, settings.tiers);
@@ -1363,7 +1384,7 @@ popSource("identity", (which) => {
  * @param choice  A tier, or "auto".
  */
 function setIdentity(mode: Mode, choice: number | "auto"): void {
-  const { bases, tiers } = state.settings;
+  const { bases, tiers } = onScreen();
   write(`identityTier.${mode}`, choice === autoIdentity(bases[mode], tiers) ? "auto" : choice);
   hidePopover();
   render();
@@ -1551,7 +1572,7 @@ function tierTable(title: string, variant: Variant, rows: string, after = ""): s
  * @returns        HTML.
  */
 function colorChips(current: string): string {
-  const tier = identityOf(state.settings, state.mode);
+  const tier = identityOf(onScreen(), state.mode);
   const p = currentMode();
   const chip = (key: string, color: string) =>
     `<a href="#${key}" style="--c:${color}"${key === current ? ' aria-current="page"' : ""}><span class="dot"></span>${label(key)}</a>`;
@@ -1572,7 +1593,7 @@ const currentMode = () => current()?.[state.mode] ?? null;
  */
 function color(key: string): string {
   if (key === GRAY || neutralOf(key)) return neutralPage(key);
-  const tier = identityOf(state.settings, state.mode);
+  const tier = identityOf(onScreen(), state.mode);
   const list = colors(tier);
   const c = list.find((x) => x.key === key);
   if (!c) return `<section class="intro"><h1>${label(key)}</h1><p>${list.length ? "There's no such color in this palette." : "Solving…"}</p></section>`;
@@ -1608,7 +1629,7 @@ function color(key: string): string {
  */
 function neutralPage(key: string): string {
   const p = currentMode();
-  const tier = identityOf(state.settings, state.mode);
+  const tier = identityOf(onScreen(), state.mode);
   const { mode } = state;
   if (!p) return `<section class="intro"><h1>${label(key)}</h1><p>Solving…</p></section>`;
   const neutral = p.neutrals.find((n) => n.key === key);
@@ -1637,7 +1658,7 @@ function neutralPage(key: string): string {
  * @returns     CAM16 M.
  */
 function baseTint(mode: Mode): number {
-  const base = state.settings.bases[mode];
+  const base = onScreen().bases[mode];
   return tinted(model(), mode, base) ? model().cam(mode, base).m : 0;
 }
 
@@ -1660,7 +1681,7 @@ popSource("share", (path) => {
   const m = share * of;
   const zone = SHARE_ZONES[shareZone(m)];
   const p = currentMode();
-  const tier = identityOf(state.settings, mode);
+  const tier = identityOf(onScreen(), mode);
   const i = Number(path.split(".")[1]);
   const key = neutral ? colorKeys(state.settings).neutrals[i] : extraKeys(state.settings)[i];
   // Its distance from Gray on each tier, counting only the tint, not any lightness between them.
@@ -1736,7 +1757,7 @@ function compareEk(): string {
   const { mode } = state;
   if (isPreset())
     return `<section class="intro"><h1>Compare</h1>${ekMade()}<p class="notice" role="note">There's nothing to compare yet: these are EK Palette's own settings. Change anything in <a href="#tune">Settings</a>, and the custom palette appears here next to EK Palette.</p></section>`;
-  const tier = identityOf(state.settings, mode);
+  const tier = identityOf(onScreen(), mode);
   const ek = variant(CONFIG, "EK Palette")?.[mode];
   const intro = `<h1>Compare with EK Palette</h1>${ekMade()}<p>Here are EK Palette's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
   if (!ek) return `<section class="intro">${intro}<p class="soft">Solving EK Palette…</p></section>`;
@@ -1750,7 +1771,8 @@ function compareEk(): string {
  * @returns  HTML.
  */
 function compareCodemos(): string {
-  const { settings, mode } = state;
+  const { mode } = state;
+  const settings = onScreen();
   if (settings.hues !== NAMES.length)
     return `<section class="intro"><h1>Compare with Codemos</h1><p>Codemos has eight hues. Set Hues to 8 in Settings to compare.</p></section>`;
   const m = model();
@@ -1838,7 +1860,7 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
  * @returns     E.g. "Automatic (Lc 60)".
  */
 function automaticName(mode: Mode): string {
-  const { bases, tiers } = state.settings;
+  const { bases, tiers } = onScreen();
   return `Automatic (Lc ${String(autoIdentity(bases[mode], tiers))})`;
 }
 
@@ -2104,7 +2126,7 @@ function neutralFields(i: number): string {
  */
 function neutralDot(i: number): string {
   const key = colorKeys(state.settings).neutrals[i]!;
-  const tier = identityOf(state.settings, state.mode);
+  const tier = identityOf(onScreen(), state.mode);
   const color = currentMode()?.neutrals.find((n) => n.key === key)?.tiers[tier]?.color ?? "transparent";
   return `<span class="dot" style="--c:${color}"></span>`;
 }
@@ -2115,7 +2137,7 @@ function neutralDot(i: number): string {
  * @returns  True when a base is tinted.
  */
 function anyTinted(): boolean {
-  return MODES.some((m) => tinted(model(), m, state.settings.bases[m]));
+  return baseHasHue(state.settings);
 }
 
 /**
@@ -2124,7 +2146,7 @@ function anyTinted(): boolean {
  * @returns  HTML.
  */
 function grayRow(): string {
-  const tier = identityOf(state.settings, state.mode);
+  const tier = identityOf(onScreen(), state.mode);
   const color = currentMode()?.grays[tier]?.color ?? "transparent";
   return `<h3 class="extra-title gray-row"><span class="extra-name"><span class="dot" style="--c:${color}"></span>Gray</span></h3>`;
 }
@@ -2137,7 +2159,7 @@ function grayRow(): string {
  */
 function extraDot(i: number): string {
   const key = extraKeys(state.settings)[i]!;
-  const tier = identityOf(state.settings, state.mode);
+  const tier = identityOf(onScreen(), state.mode);
   const color = current()?.[state.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
   return `<span class="dot" style="--c:${color}"></span>`;
 }
@@ -2249,14 +2271,14 @@ function tune(): string {
       <h2>Viewing</h2>
       <p class="soft">Where the colors are seen. The same screen color looks different on a light page and a dark one, and in a bright room and a dim one, so each mode is solved for its own background and room; <a href="#how">How it works</a> shows the difference.</p>
       <dl class="facts-list">
-        <div><dt>Base</dt><dd>The background the mode's colors sit on. Every contrast is measured against it, so set it to the page the colors will be used on.</dd></div>
+        <div><dt>Base</dt><dd>The background the mode's colors sit on. Every contrast is measured against it, so set it to the page the colors will be used on. Each kind of screen can have its own, set for the gamut picked in the header; one without works it out from another, and the mark beside Base says which.</dd></div>
         <div><dt>Room lux</dt><dd>How much light is in the room. The brighter it is, the more colorful colors look, so a dim room needs more color on the screen for the same look. Light mode is seen in a lit room (200), dark mode in a dim one (64), as the sRGB standard has them.</dd></div>
         <div><dt>Surround</dt><dd>How bright the room around the screen is, next to the screen itself: Average for a lit office, Dim for a dim living room in the evening, Dark for a dark room, like a cinema. A darker surround makes colors look less contrasty and less colorful.</dd></div>
       </dl>
       <div class="split even">${(["light", "dark"] as const)
         .map(
           (m) => `<div><h3>${MODE_NAMES[m]}</h3>
-            <label class="field" for="set-base-${m}"><span>Base</span><input id="set-base-${m}" type="text" data-set="bases.${m}" value="${s.bases[m]}" spellcheck="false" pattern="#[0-9A-Fa-f]{6}"></label>
+            <label class="field fill base-field" for="set-base-${m}"><span>${baseLabel(m)}</span><input id="set-base-${m}" type="text" data-set="bases.${m}" value="${baseIn(s, m, state.gamut).written}" spellcheck="false" aria-label="Base, ${m} mode"></label>
             ${number(`rooms.${m}.lux`, "Room lux", [...LIMITS.lux, 1])}
             <label class="field" for="set-surround-${m}"><span>Surround</span><select id="set-surround-${m}" data-set="rooms.${m}.surround">${SURROUNDS.map((name, i) => `<option value="${String(i)}" ${i === s.rooms[m].surround ? "selected" : ""}>${name}</option>`)
               .join("")}</select></label></div>`,
@@ -2266,6 +2288,106 @@ function tune(): string {
     ${exportSection()}
     ${about()}`;
 }
+
+/**
+ * How a gamut tier came by its base, in a few words.
+ *
+ * @param base   The tier's base.
+ * @param gamut  The tier.
+ * @returns      Text.
+ */
+function baseHowText(base: BaseIn, gamut: Gamut): string {
+  const tier = (g: Gamut) => GAMUT_NAMES[g].toLowerCase();
+  return base.how === "set"
+    ? "set by hand"
+    : base.how === "same"
+      ? `the same color as the ${tier(base.from)} base`
+      : `the closest ${tier(gamut)} screens can show to the ${tier(base.from)} base`;
+}
+
+/**
+ * A base's label: it opens what the base is and how each gamut tier came by it, and a mark says how
+ * the tier on screen did: a check when set by hand, an amber mark when it's only the closest color.
+ *
+ * @param mode  The mode.
+ * @returns     HTML.
+ */
+function baseLabel(mode: Mode): string {
+  const base = baseIn(state.settings, mode, state.gamut);
+  const mark =
+    base.how === "set" ? `<span class="base-state set" aria-hidden="true">✓</span>`
+    : base.how === "closest" ? `<span class="base-state closest" aria-hidden="true">!</span>`
+    : "";
+  return popButton(`base:${mode}`, `Base${mark}`, `Base, ${mode} mode, on ${GAMUT_NAMES[state.gamut].toLowerCase()} screens: ${baseHowText(base, state.gamut)}. What it means`, "metric");
+}
+
+popSource("base", (which) => {
+  const mode = which as Mode;
+  const rows = GAMUTS.map((g) => {
+    const base = baseIn(state.settings, mode, g);
+    return `<div><dt>${GAMUT_NAMES[g]}</dt><dd><span class="mono">${base.written}</span>${g === state.gamut ? ` <span class="base-how soft">• shown</span>` : ""}<br><span class="base-how${base.how === "closest" ? " base-closest" : " soft"}">${baseHowText(base, g)}</span></dd></div>`;
+  }).join("");
+  const shownBase = baseIn(state.settings, mode, state.gamut);
+  const screens = `${GAMUT_NAMES[state.gamut].toLowerCase()} screens`;
+  const action = state.settings.gamutBases[state.gamut]?.[mode]
+    ? `<p><button type="button" data-base-auto="${mode}">Back to automatic</button></p>`
+    : shownBase.how === "set" ? "" : `<p><button type="button" data-base-set="${mode}">Set it for ${screens}</button></p>`;
+  return `<h3>Base, ${mode} mode</h3>
+    <p>The background the ${mode} mode's colors sit on. Every contrast is measured against it, the identity tier is chosen on it, and the neutral colors take their hue from it.</p>
+    <dl class="pop-facts">${rows}</dl>
+    <p class="pop-how">Each kind of screen can have a base of its own. One without works its base out from another: the same color from a narrower gamut, or the closest it can show to a wider one's. For the most correct results, set each: pick a gamut in the header, then type its base here.</p>
+    ${action}`;
+});
+
+/**
+ * The notice under the header while the gamut tier on screen works its base out rather than having
+ * one set: what it uses, and where to set one.
+ */
+function updateBaseNote(): void {
+  const note = document.querySelector<HTMLElement>("#auto-base");
+  if (!note) return;
+  const base = baseIn(state.settings, state.mode, state.gamut);
+  note.hidden = base.how === "set" || state.view === "references";
+  if (note.hidden) return;
+  const tier = (g: Gamut) => GAMUT_NAMES[g].toLowerCase();
+  const where = `<a href="#tune" data-base-go="${state.mode}">set it yourself in Settings, under Viewing</a>`;
+  note.innerHTML =
+    base.how === "same"
+      ? `The ${state.mode} base for ${tier(state.gamut)} screens is worked out from the ${tier(base.from)} one, as the same color: <span class="mono">${base.written}</span>. For the most correct results, ${where}.`
+      : `${GAMUT_NAMES[state.gamut]} screens can't show the ${state.mode} base set for ${tier(base.from)} screens, so the closest color they can, <span class="mono">${base.written}</span>, is used. For the most correct results, ${where}.`;
+}
+
+/**
+ * Puts the cursor in a mode's base field, in Settings under Viewing, opening Settings first.
+ *
+ * @param mode  The mode.
+ */
+function goToBase(mode: Mode): void {
+  if (state.view !== "tune") {
+    history.pushState(null, "", "#tune");
+    route();
+  }
+  jumpTo("viewing-section");
+  const field = document.querySelector<HTMLInputElement>(`#set-base-${mode}`);
+  field?.focus({ preventScroll: true });
+  field?.select();
+}
+
+document.addEventListener("click", (event) => {
+  const el = (event.target as Element).closest<HTMLElement>("[data-base-go],[data-base-set],[data-base-auto]");
+  if (!el) return;
+  event.preventDefault();
+  hidePopover();
+  const { baseGo, baseSet, baseAuto } = el.dataset;
+  if (baseGo) return goToBase(baseGo as Mode);
+  if (baseSet) return goToBase(baseSet as Mode);
+  // Back to automatic: the tier works its base out again, and a tier left with none goes.
+  const { [baseAuto as Mode]: _gone, ...rest } = state.settings.gamutBases[state.gamut] ?? {};
+  const { [state.gamut]: _tier, ...others } = state.settings.gamutBases;
+  write("gamutBases", Object.keys(rest).length ? { ...others, [state.gamut]: rest } : others);
+  solve();
+  render();
+});
 
 /** The rows of the strip: each step of the palette, added one at a time. */
 const STEPS = [
@@ -2286,7 +2408,7 @@ const evenGaps = new Map<Mode, number>();
  * @returns     ΔE.
  */
 function evenGap(mode: Mode): number {
-  const ring = plain()?.[mode].ring[identityOf(state.settings, mode)];
+  const ring = plain()?.[mode].ring[identityOf(onScreen(), mode)];
   if (ring?.length) evenGaps.set(mode, ring.reduce((x, y) => x + y, 0) / ring.length);
   return evenGaps.get(mode) ?? 9;
 }
@@ -2351,7 +2473,7 @@ let focusKey: string | null = null;
  * @param mode  The mode.
  */
 function drawComparison(el: Element, mode: Mode): void {
-  const tier = identityOf(state.settings, mode);
+  const tier = identityOf(onScreen(), mode);
   // Always the palette as set, whatever the H and M switches show: the strip is what they compare.
   const now = inUse()?.[mode].colors ?? [];
   const palettes = [plain()?.[mode], uncurved()?.[mode], inUse()?.[mode]];
@@ -2972,10 +3094,10 @@ function pageTitle(view: string): string {
 function render(): void {
   const view = state.view;
   document.documentElement.dataset.theme = state.mode;
-  document.documentElement.style.setProperty("--base-light", state.settings.bases.light);
-  document.documentElement.style.setProperty("--base-dark", state.settings.bases.dark);
+  document.documentElement.style.setProperty("--base-light", onScreen().bases.light);
+  document.documentElement.style.setProperty("--base-dark", onScreen().bases.dark);
   // The phone's address bar takes the page's own base, whichever mode is on.
-  for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.setAttribute("content", state.settings.bases[state.mode]);
+  for (const meta of document.querySelectorAll('meta[name="theme-color"]')) meta.setAttribute("content", baseIn(state.settings, state.mode, "standard").written);
   const isColor = !(VIEWS as readonly string[]).includes(view);
   for (const a of document.querySelectorAll<HTMLAnchorElement>(".nav a")) {
     const target = a.getAttribute("href")!.slice(1);
@@ -2987,7 +3109,8 @@ function render(): void {
     b.title = b.dataset.gamut === SCREEN ? "This screen" : "";
   }
   const beyond = GAMUTS.indexOf(state.gamut) > GAMUTS.indexOf(SCREEN);
-  $<HTMLElement>("#beyond").hidden = !beyond || view === "tune" || view === "references";
+  $<HTMLElement>("#beyond").hidden = !beyond || view === "references";
+  updateBaseNote();
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-variant]")) b.setAttribute("aria-pressed", String(b.dataset.variant === state.variant));
   $<HTMLElement>("#variant").hidden = view !== "tiers" && view !== "compare";
   $<HTMLElement>("#edits").hidden = !followsEdits(view);
@@ -3275,7 +3398,7 @@ document.addEventListener("input", (event) => {
   }
   if (el.dataset.anchor === "from") {
     // A system's yellow that would carry colors past placed ones is held back, as set by hand.
-    const wanted = el.value === "hand" ? anchorHue(state.settings) : anchorHue({ ...state.settings, anchor: el.value });
+    const wanted = el.value === "hand" ? anchorHue(onScreen()) : anchorHue({ ...onScreen(), anchor: el.value });
     const hue = allowed(anchored(), wanted);
     write("anchor", el.value !== "hand" && Math.abs(hue - wanted) < 0.05 ? el.value : Math.round(hue * 10) / 10);
     syncAnchor();
@@ -3294,15 +3417,32 @@ document.addEventListener("input", (event) => {
   const path = el.dataset.set;
   if (!path) return;
   if (path.startsWith("bases.")) {
-    // A base is a hex color, and the light one stays lighter than the dark one.
+    // A base is a color this gamut tier's screens can show, and the light one stays lighter than
+    // the dark one there.
     const mode = path.split(".")[1] as Mode;
-    const other = state.settings.bases[mode === "light" ? "dark" : "light"];
-    const hex = /^#[0-9a-f]{6}$/i.test(el.value);
-    const ordered = hex && (mode === "light" ? lightness(el.value) > lightness(other) : lightness(el.value) < lightness(other));
-    markField(el, !hex ? "A hex color like #EBEBEB" : !ordered ? `${mode === "light" ? "Lighter" : "Darker"} than the ${mode === "light" ? "dark" : "light"} base, ${other}` : "");
+    const gamut = state.gamut;
+    const color = /^#[0-9a-f]{6}$/i.test(el.value.trim()) ? el.value.trim().toUpperCase() : el.value.trim();
+    const other = baseIn(state.settings, mode === "light" ? "dark" : "light", gamut).written;
+    const valid = isColor(color);
+    const shows = valid && fits(color, gamut);
+    const ordered = shows && (mode === "light" ? lightness(color) > lightness(other) : lightness(color) < lightness(other));
+    markField(
+      el,
+      !valid ? "A color like #EBEBEB or color(display-p3 0.92 0.92 0.92)"
+      : !shows ? `${GAMUT_NAMES[gamut]} screens can't show it`
+      : !ordered ? `${mode === "light" ? "Lighter" : "Darker"} than the ${mode === "light" ? "dark" : "light"} base, ${other}`
+      : "",
+    );
     if (!ordered) return;
-    write(path, el.value.toUpperCase());
-    document.documentElement.style.setProperty(`--base-${path.split(".")[1]!}`, el.value);
+    // The base entered is changed where it's set and stays this tier's own; anywhere else, this
+    // tier gets a base of its own.
+    const entered = state.settings.bases[mode];
+    const own = state.settings.gamutBases[gamut]?.[mode];
+    if (!own && home(entered) === gamut && home(color) === gamut) write(`bases.${mode}`, color);
+    else write(`gamutBases.${gamut}.${mode}`, color);
+    document.documentElement.style.setProperty(`--base-${mode}`, onScreen().bases[mode]);
+    for (const m of MODES) document.querySelector(`#set-base-${m}`)?.closest(".field")?.querySelector("span")?.replaceChildren(document.createRange().createContextualFragment(baseLabel(m)));
+    updateBaseNote();
   } else {
     // A value outside its field's range waits: it may be half typed.
     if (outOfRange(el)) return;

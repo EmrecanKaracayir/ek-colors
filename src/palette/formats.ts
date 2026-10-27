@@ -133,7 +133,7 @@ export function toMarkdown(settings: Settings, palette: Palette): string {
   for (const gamut of GAMUTS) {
     md.push(`## ${GAMUT_NAMES[gamut]} gamut`, "");
     for (const mode of MODES) {
-      md.push(`### ${MODE_NAMES[mode]} • base ${settings.bases[mode]}`, "");
+      md.push(`### ${MODE_NAMES[mode]} • base ${palette[gamut][mode].base}`, "");
       for (const variant of ["default", "muted"] as const) {
         md.push(
           `#### ${variant === "default" ? "Default" : "Muted"}`,
@@ -179,14 +179,14 @@ export function toCss(settings: Settings, palette: Palette): string {
   const block = (gamut: Gamut, indent: string) => {
     const { light, dark } = palette[gamut];
     const darkOf = new Map(dark.colors.map((c) => [c.key, c]));
-    const lines =
-      gamut === "standard"
-        ? [
-            "color-scheme: light dark;",
-            `--base: light-dark(${settings.bases.light}, ${settings.bases.dark});`,
-            "",
-          ]
-        : [];
+    // A wider tier writes its base, and its grays below, only where they differ from the standard ones.
+    const standard = palette.standard;
+    const ownBase =
+      gamut === "standard" || MODES.some((m) => palette[gamut][m].base !== standard[m].base);
+    const lines = [
+      ...(gamut === "standard" ? ["color-scheme: light dark;"] : []),
+      ...(ownBase ? [`--base: light-dark(${light.base}, ${dark.base});`, ""] : []),
+    ];
     for (const color of light.colors) {
       for (const tier of settings.tiers) {
         for (const variant of ["default", "muted"] as const) {
@@ -198,9 +198,15 @@ export function toCss(settings: Settings, palette: Palette): string {
       }
       lines.push("");
     }
-    // Gray is the same on every screen, so it's written once; the base's neutral follows its gamut.
+    // Gray is the same on every screen on the same base, so a wider tier writes it only where its
+    // own base makes it differ; the base's neutral colors follow their gamut.
+    const sameGrays = MODES.every((m) =>
+      settings.tiers.every(
+        (t) => palette[gamut][m].grays[t]?.color === standard[m].grays[t]?.color,
+      ),
+    );
     for (const neutral of neutralRows(palette[gamut])) {
-      if (neutral.key === "gray" && gamut !== "standard") continue;
+      if (neutral.key === "gray" && gamut !== "standard" && sameGrays) continue;
       for (const tier of settings.tiers)
         lines.push(
           `--${neutral.key}-${String(tier)}: light-dark(${neutral.tiers.light[tier]!.color}, ${neutral.tiers.dark[tier]!.color});`,

@@ -93,8 +93,11 @@ export interface Extra {
 }
 
 export interface Settings {
-  /** The backgrounds colors are read on. */
+  /** The backgrounds colors are read on: any CSS color, set on the narrowest gamut tier showing it. */
   readonly bases: Readonly<Record<Mode, string>>;
+
+  /** Bases set by hand for a gamut tier; a tier without one works its base out from the others. */
+  readonly gamutBases: Readonly<Partial<Record<Gamut, Readonly<Partial<Record<Mode, string>>>>>>;
 
   /** The room each mode is seen in. */
   readonly rooms: Readonly<Record<Mode, Room>>;
@@ -178,6 +181,7 @@ export const LIMITS = {
  */
 export const DEFAULTS: Settings = {
   bases: { light: "#EBEBEB", dark: "#181818" },
+  gamutBases: {},
   rooms: { light: { lux: 200, surround: 2 }, dark: { lux: 64, surround: 1 } },
   colorfulness: 40,
   equalTiers: true,

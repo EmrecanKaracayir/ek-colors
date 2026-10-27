@@ -4,6 +4,7 @@
       "light": "#EBEBEB",
       "dark": "#181818"
     },
+    "gamutBases": {},
     "rooms": {
       "light": {
         "lux": 200,

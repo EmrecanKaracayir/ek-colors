@@ -654,7 +654,7 @@ export function explain(ctx: Context): string {
     <section class="step">
       <h2>Three kinds of screen</h2>
       <p>Screens differ in how much color they can show, their gamut; the Gamut switch in the header picks one of the three. <strong>Standard</strong> is what every screen shows. <strong>Wide</strong> is what most new phones and computers show, iPhones and Macs included. <strong>Ultra</strong> is the widest, which few screens fully reach yet.</p>
-      <p>The palette is solved once per kind, each on its own. A wider screen keeps more color on the tiers where the standard one runs out, as the chart above shows. A website gives every screen the widest palette it can show.</p>
+      <p>The palette is solved once per kind, each on its own, and each can have a base of its own: one set for standard screens is the same color on wider ones, and a wider one's is brought into a standard screen as the closest color it can show. A wider screen keeps more color on the tiers where the standard one runs out, as the chart above shows. A website gives every screen the widest palette it can show.</p>
       <p>A dot on the Gamut switch marks the kind this screen shows. Picking a wider one still shows its palette, as closely as this screen can, with a note in red that the colors aren't exact.</p>
     </section>
 

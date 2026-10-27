@@ -6,11 +6,13 @@
 | that make sense. A field that's missing takes its default.                                       |
 \*------------------------------------------------------------------------------------------------*/
 
+import { fits, forGamut, isColor } from "./bases";
 import { lightness } from "./model";
 import { SYSTEMS } from "./references";
 import {
   type CurvePoint,
   type Extra,
+  GAMUTS,
   type Neutral,
   LIMITS,
   type Mode,
@@ -139,9 +141,33 @@ function perMode<T>(
  * @returns      It, in capitals.
  */
 function base(value: unknown, mode: Mode): string {
-  if (typeof value !== "string" || !/^#[0-9a-f]{6}$/i.test(value))
-    fail(`The ${mode} base must be a hex color like #EBEBEB.`);
-  return value.toUpperCase();
+  if (typeof value !== "string" || !isColor(value.trim()))
+    fail(`The ${mode} base must be a color like #EBEBEB or color(display-p3 0.92 0.92 0.92).`);
+  const color = value.trim();
+  return /^#[0-9a-f]{6}$/i.test(color) ? color.toUpperCase() : color;
+}
+
+/**
+ * The bases set by hand per gamut tier: each a color that tier's screens can show.
+ *
+ * @param value  The value.
+ * @returns      The bases.
+ */
+function gamutBases(value: unknown): Settings["gamutBases"] {
+  const given = record(value ?? {}, "The bases per gamut");
+  return Object.fromEntries(
+    GAMUTS.flatMap((g) => {
+      if (given[g] === undefined) return [];
+      const per = record(given[g], `The ${g} bases`);
+      const modes = MODES.flatMap((m) => {
+        if (per[m] === undefined) return [];
+        const color = base(per[m], m);
+        if (!fits(color, g)) fail(`The ${m} base set for ${g} screens is a color they can't show.`);
+        return [[m, color]];
+      });
+      return modes.length ? [[g, Object.fromEntries(modes)]] : [];
+    }),
+  );
 }
 
 /**
@@ -311,13 +337,20 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
   );
   const window = record(s.hueWindow, "The hue window");
   const bases = perMode(s.bases, "The bases", base);
-  if (lightness(bases.light) <= lightness(bases.dark))
-    fail("The light base must be lighter than the dark base.");
+  const perGamut = gamutBases(s.gamutBases);
+  for (const g of GAMUTS) {
+    const on = forGamut({ bases, gamutBases: perGamut }, g).bases;
+    if (lightness(on.light) <= lightness(on.dark))
+      fail(
+        `The light base must be lighter than the dark base${g === "standard" ? "" : ` on ${g} screens`}.`,
+      );
+  }
   if (typeof s.name !== "string" || s.name.trim().length > 60)
     fail("The name must be text of at most 60 characters.");
   const name = s.name.trim();
   return {
     bases,
+    gamutBases: perGamut,
     rooms: perMode(s.rooms, "The rooms", room),
     colorfulness: number(s.colorfulness, "Target M", LIMITS.colorfulness),
     equalTiers: flag(s.equalTiers, "Equal per tier"),

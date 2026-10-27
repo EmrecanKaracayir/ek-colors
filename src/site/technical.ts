@@ -83,7 +83,7 @@ the hues are kept, so custom colors, neutral colors and the muted share are plac
 curve amount −${fixed(-LIMITS.amount[0], 0)}…+${fixed(LIMITS.amount[1], 0)} M, width ${fixed(LIMITS.width[0], 0)}–${fixed(LIMITS.width[1], 0)}° • share ${pct(LIMITS.share[0])} or more, for custom and neutral colors • hue windows ${fixed(LIMITS.hueWindow[0], 0)}–${fixed(LIMITS.hueWindow[1], 0)}°
 tiers        at least one, each one of Lc ${Object.keys(ROLES).join(", ")}
 identity     set by hand to a tier that isn't solved → automatic
-bases        L*(light base) > L*(dark base)
+bases        any CSS color; one set for a gamut must fit it; L*(light base) > L*(dark base) on every gamut
 name         at most 60 characters
 placed hues  kept only for keys of the current number of hues
 neutrals     none while both bases are under M ${String(NEUTRAL_BAND[0])}: nothing to follow
@@ -241,7 +241,7 @@ turned         Uniform, solved with the anchor moved by the turn (step 7)   // "
 
     <section class="step">
       <h2>10. Three gamuts</h2>
-      <p>Steps 2 to 9 run once per gamut, with only the gamut check (step 2) changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one gamut to another; each gamut's ceilings, hues and colors come from its own solve. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
+      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one gamut to another; each gamut's ceilings, hues and colors come from its own solve, against its own base. A base set for one gamut is the same color on a wider one; a wider one's is brought into a narrower gamut with the CSS Color 4 gamut mapping, hue and lightness kept and colorfulness lowered until it fits. Any gamut's base can be set by hand. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
     </section>
 
     <section class="step">

@@ -7,6 +7,18 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- A base per gamut: a base can be any CSS color, and each kind of screen can have its own. One
+  without works it out: a narrower gamut's base is the same color on a wider one, and a wider one's
+  is brought into a narrower gamut as the closest color it can show (CSS Color 4 gamut mapping).
+  In Settings, Base shows the base of the gamut picked in the header, with a check when it's set by
+  hand and an amber mark when it's only the closest color; it opens how every gamut came by its base,
+  with Set it and Back to automatic. Every palette is solved, exported and checked against its
+  gamut's own base; `--base` and Gray are written per gamut where they differ.
+- While the gamut on screen works its base out, an amber notice under the header says so and leads
+  to Settings to set it. The red notice for a gamut wider than the screen shows on Settings too.
+
 ## [2.3.0] - 2026-10-27
 
 ### Added

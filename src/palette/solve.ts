@@ -18,6 +18,7 @@ import {
   wcagLevel,
   wrapHue,
 } from "./model";
+import { forGamut } from "./bases";
 import { anchorHue } from "./references";
 import { type Gamut, GAMUTS, type Mode, MODES, NAMES, type Settings } from "./settings";
 
@@ -331,10 +332,21 @@ export function tinted(model: Model, mode: Mode, base: string): boolean {
  */
 export function withNeutrals(settings: Settings): Settings {
   if (settings.neutrals.length === 0) return settings;
-  const model = makeModel(settings);
-  return MODES.some((m) => tinted(model, m, settings.bases[m]))
-    ? settings
-    : { ...settings, neutrals: [] };
+  return baseHasHue(settings) ? settings : { ...settings, neutrals: [] };
+}
+
+/**
+ * Whether any base, in either mode on any gamut tier, has a hue its neutral colors can follow.
+ *
+ * @param settings  The settings.
+ * @returns         True when one does.
+ */
+export function baseHasHue(settings: Settings): boolean {
+  return GAMUTS.some((g) => {
+    const on = forGamut(settings, g);
+    const model = makeModel(on, g);
+    return MODES.some((m) => tinted(model, m, on.bases[m]));
+  });
 }
 
 /** The grays' key, as their page and exports name them; no other color can take it. */
@@ -752,6 +764,7 @@ export function huesKey(settings: Settings): string {
     muted: _muted,
     name: _name,
     guide: _guide,
+    gamutBases: _bases,
     ...rest
   } = settings;
   return JSON.stringify(rest);
@@ -764,16 +777,18 @@ const KEPT_CORES = 24;
  * Both modes on one gamut tier. Given a cache, hues already solved for the same hue settings are
  * reused, so a change to the colors placed on top takes milliseconds rather than a whole solve.
  *
- * @param settings  What to solve from.
+ * @param given     What to solve from; each tier takes its own bases from it.
  * @param gamut     The gamut tier colors must fit.
  * @param cache     Hues solved before, by hue settings and gamut tier; kept up to date.
  * @returns         The palette for that tier.
  */
 export function solveGamut(
-  settings: Settings,
+  given: Settings,
   gamut: Gamut,
   cache?: Map<string, GamutCore>,
 ): GamutPalette {
+  // The tier is solved against its own bases.
+  const settings = forGamut(given, gamut);
   const model = makeModel(settings, gamut);
   const key = `${huesKey(settings)}|${gamut}`;
   let core = cache?.get(key);
