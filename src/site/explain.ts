@@ -542,7 +542,7 @@ export function explain(ctx: Context): string {
     <section class="step">
       <h2>Color depends on the room</h2>
       <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light. The light mode's base is always lighter than the dark mode's.</p>
-      <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. Both come from the sRGB standard: its typical room and its reference room. CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
+      <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. ${s.rooms.light.lux === 200 && s.rooms.dark.lux === 64 ? "Both come from the sRGB standard: its typical room and its reference room." : "By default they're 200 and 64 lux, the sRGB standard's typical and reference rooms."} CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
       <div class="demo"><div class="demo-out wide">${room(ctx)}</div></div>
       <p>So the same target needs different screen colors in each mode. Both of these aim at the same colorfulness. The dark-mode one gets more color on the screen, because a dim room makes colors look quieter.</p>
       <div class="demo"><div class="demo-out wide">${modes(ctx)}</div></div>
@@ -654,7 +654,7 @@ export function explain(ctx: Context): string {
     <section class="step">
       <h2>Three kinds of screen</h2>
       <p>Screens differ in how much color they can show, their gamut; the Gamut switch in the header picks one of the three. <strong>Standard</strong> is what every screen shows. <strong>Wide</strong> is what most new phones and computers show, iPhones and Macs included. <strong>Ultra</strong> is the widest, which few screens fully reach yet.</p>
-      <p>The palette is solved once per kind, each on its own, against the same base: shown exactly where the screen can, else as the closest color it can show. A wider screen keeps more color on the tiers where the standard one runs out, as the chart above shows. A website gives every screen the widest palette it can show.</p>
+      <p>The palette is solved once per kind, each on its own, against its own base: the base itself where the screen can show it, else the closest color it can show, or one picked by hand. A wider screen keeps more color on the tiers where the standard one runs out, as the chart above shows. A website gives every screen the widest palette it can show.</p>
       <p>A dot on the Gamut switch marks the kind this screen shows. Picking a wider one still shows its palette, as closely as this screen can, with a note in red that the colors aren't exact.</p>
     </section>
 

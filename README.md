@@ -22,9 +22,10 @@ What follows describes EK Palette; every number in it is a setting.
   EK Palette has one, brown.
 - **Neutrals:** Gray on every tier, and neutral colors that take the base's hue at a share of its
   colorfulness. EK Palette's bases are gray, so it has Gray alone.
-- **Modes:** light on `#EBEBEB`, dark on `#181818`. A base can be any CSS color. Each screen
-  gamut shows it exactly where it can, else as the closest color it can show, which can be picked
-  by hand while it's still the same background.
+- **Modes:** light on `#EBEBEB`, dark on `#181818`. A base can be any opaque CSS color, such as
+  hex, `rgb()`, `oklch()` or `color(display-p3 …)`. Each screen gamut shows it exactly where it
+  can; a narrower one uses the closest color it can show to the next wider one's, which can be
+  picked by hand while it's still the same background.
 - **Tiers:** one color per APCA contrast against the base:
 
   | Tier  | For                          |
@@ -36,11 +37,12 @@ What follows describes EK Palette; every number in it is a setting.
   | Lc 75 | Body text                    |
   | Lc 90 | Long reading                 |
 
-- **Variants:** default, and muted at just under half the colorfulness, for every color.
+- **Variants:** default, and muted at just under half the colorfulness, for every hue and custom
+  color; Gray and the neutral colors have one version.
 - **Screens:** standard (every screen, written as hex), wide (most new phones and computers) and
   ultra (the widest screens), each solved on its own.
 
-WCAG 2 contrast and its level (AAA, AA, AA large) are reported for every color.
+WCAG 2 contrast and its level (AAA, AA, AA large or below) are reported for every color.
 
 ## How it is solved
 
@@ -101,10 +103,18 @@ export const CONFIG: Settings = {
 The palette is written to `out/`, the Markdown and CSS titled with its `name`:
 
 - `palette.json`: the settings and everything solved
-- `palette.csv`: one row per color
+- `palette.csv`: one row per swatch (gamut, mode, tier and variant), with CAM16, APCA and WCAG 2
+  values
 - `palette.md`: tables per screen, mode and variant
-- `palette.css`: custom properties for a website, light and dark through `light-dark()`, wider
-  screens through `@media (color-gamut: …)`
+- `palette.css`: custom properties for a website, such as `--red-60`, `--red-60-muted`,
+  `--gray-60` and one per neutral color named after it; light and dark through `light-dark()`,
+  wider screens through `@media (color-gamut: …)`, where `--base` and Gray are written again only
+  when they differ
+
+Custom and neutral colors are named in exports from their own names: lowercased, accents dropped,
+and other characters turned into dashes, with a number added when one would clash with another
+color, `gray` or a page of the site. With a hue count other than 8, the hues are `hue-1` to
+`hue-n`. A JSON export can be pasted back into Settings.
 
 ## Site
 
@@ -131,19 +141,20 @@ pnpm art
 It's published to GitHub Pages by `.github/workflows/pages.yml` on every push to `main`.
 
 What changed in each version is in [CHANGELOG.md](CHANGELOG.md): every change goes under
-Unreleased, and a release dates it as the new version, sets `package.json`, checks, builds, solves,
-commits and tags:
+Unreleased, and a release, from a clean `main`, dates it as the new version, sets `package.json`,
+formats, checks, builds, solves, commits and tags:
 
 ```sh
-pnpm release 2.2.0
-git push origin main v2.2.0
+pnpm release 2.4.0
+git push origin main v2.4.0
 ```
 
 ## Built with
 
 - [material-color-utilities](https://github.com/material-foundation/material-color-utilities)
   (Apache 2.0): CAM16, viewing conditions and color difference.
-- [Color.js](https://colorjs.io) (MIT): APCA, WCAG 2, color spaces and gamut checks.
+- [Color.js](https://colorjs.io) (MIT): APCA, WCAG 2, color spaces, reading CSS colors, gamut
+  checks and CSS Color 4 gamut mapping.
 
 The papers, standards and data behind every step are listed on the site's References page.
 

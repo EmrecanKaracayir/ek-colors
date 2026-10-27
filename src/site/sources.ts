@@ -7,6 +7,7 @@
 
 import project from "../../package.json";
 import { SYSTEMS } from "../palette/references";
+import { escape } from "./graph";
 
 /** One work the site relies on. */
 interface Source {
@@ -64,7 +65,7 @@ const GROUPS: readonly Group[] = [
       {
         cite: "Somers, A. <em>APCA, the Accessible Perceptual Contrast Algorithm</em>, version 0.0.98G. Myndex Research.",
         link: "https://github.com/Myndex/apca-w3",
-        use: "The contrast every tier is solved to, in Lc.",
+        use: "The contrast every tier is solved to, in Lc, and, after its guidance, what each tier is for.",
       },
       {
         cite: "W3C. <em>Web Content Accessibility Guidelines (WCAG) 2.2.</em> 2023.",
@@ -79,7 +80,12 @@ const GROUPS: readonly Group[] = [
       {
         cite: "W3C. <em>CSS Color Module Level 4.</em>",
         link: "https://www.w3.org/TR/css-color-4/",
-        use: "The color spaces of the three gamuts (sRGB, Display P3, Rec. 2020) and the color() values the wide and ultra palettes are written in.",
+        use: "The color spaces of the three gamuts (sRGB, Display P3, Rec. 2020), the color() values the wide and ultra palettes are written in, the CSS colors a base can be written in, and the gamut mapping that finds the closest color a narrower screen can show to a base.",
+      },
+      {
+        cite: "W3C. <em>CSS Color Module Level 5.</em>",
+        link: "https://www.w3.org/TR/css-color-5/",
+        use: "light-dark(), which gives each exported color its light and dark value by color-scheme.",
       },
       {
         cite: "Recommendation ITU-R BT.2020-2. <em>Parameter values for ultra-high definition television systems for production and international programme exchange.</em> International Telecommunication Union, 2015.",
@@ -95,10 +101,25 @@ const GROUPS: readonly Group[] = [
   {
     title: "Hue references",
     sources: [
-      ...SYSTEMS.filter((s) => s.id !== "cam16").map((s) => ({ cite: s.source, use: `The ${s.name} guides on the hue graphs, and ${s.name} yellow as an anchor. ${s.summary}` })),
+      ...SYSTEMS.filter((s) => s.id !== "cam16").map((s) => ({ cite: escape(s.source), use: `${s.name}: the guides on the hue graphs, and its yellow as an anchor. ${s.summary}` })),
       {
         cite: "Lam, K. M. <em>Metamerism and colour constancy.</em> PhD thesis, University of Bradford, 1985.",
-        use: "The Bradford transform, which adapts the Munsell and World Color Survey colors from illuminant C to D65.",
+        use: "The Bradford transform, which adapts the Munsell, Unique hues and World Color Survey colors from illuminant C to D65.",
+      },
+    ],
+  },
+  {
+    title: "Neutral colors",
+    sources: [
+      {
+        cite: "WorkOS. <em>Radix Colors</em>, slate.",
+        link: "https://www.radix-ui.com/colors",
+        use: "A tinted neutral the Neutral zone is checked against.",
+      },
+      {
+        cite: "Tailwind Labs. <em>Tailwind CSS</em>, the default palette's zinc and slate.",
+        link: "https://tailwindcss.com/docs/colors",
+        use: "Tinted neutrals the Neutral zone is checked against; slate sits at its top, where a gray reads blue.",
       },
     ],
   },
@@ -133,7 +154,7 @@ const GROUPS: readonly Group[] = [
       {
         cite: `Verou, L. &amp; Lilley, C. <em>Color.js</em> ${project.dependencies["colorjs.io"]}. MIT License.`,
         link: "https://colorjs.io",
-        use: "APCA, WCAG 2, the color spaces, and checking which colors a screen can show.",
+        use: "APCA, WCAG 2, the color spaces, reading CSS colors, checking which colors a screen can show, and CSS Color 4 gamut mapping.",
       },
       {
         cite: "Instrument. <em>Instrument Sans.</em> SIL Open Font License 1.1.",

@@ -9,11 +9,13 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- A base can be any CSS color, such as hex, `rgb()`, `oklch()` or `color(display-p3 …)`, kept as
-  given. Each gamut shows it exactly where it can, else as the closest color it can show (CSS Color 4
-  gamut mapping). That color can be picked by hand while it's still the same background: no more
+- A base can be any opaque CSS color, such as hex, `rgb()`, `oklch()` or `color(display-p3 …)`,
+  kept as given. Each gamut shows it exactly where it can; a narrower one uses the closest color it
+  can show to the next wider one's (CSS Color 4 gamut mapping), so a color picked for Wide carries
+  down to Standard. That color can be picked by hand while it's still the same background: no more
   than ΔE 2 further from the base than the closest color is. A further one is refused, with Use it
   as the base. A base changed under a pick takes it back to the closest color, and says so.
+- Settings keep the picks under `gamutBases`, per gamut and mode; JSON exports carry it.
 - In Settings, Base shows the base as the gamut picked in the header writes it, with its form as a
   hint, an amber mark when it's the closest color and a check when picked; it opens how every gamut
   shows it. Every palette is solved, exported and checked against its gamut's base; `--base` and
@@ -21,8 +23,22 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - While the gamut on screen can't show the base, an amber notice under the header gives the closest
   color and leads to Settings. The red notice for a gamut wider than the screen shows on Settings too.
 
+### Changed
+
+- The export in Settings is colored once it comes near the screen, so Settings redraws about
+  three times faster.
+- Neutral colors are exported on every gamut, as Gray where its base is gray.
+- Buttons are named for screen readers starting with what they show, and the main navigation says
+  which page is current.
+
 ### Fixed
 
+- A palette name with HTML in it was drawn as HTML; it's text now, wherever it shows.
+- A base written as anything but hex was read lighter than it is when dark: `rgb(78 78 78)` read
+  as L\* 69 rather than 33.
+- The Algorithm page broke on a base that isn't hex.
+- A readout could keep old text after turning edits back on.
+- The exported CSS's opening comment could be ended by the palette's name.
 - Name fields of custom and neutral colors were taller than other fields, from a swatch's style.
 - Light and Dark fields in Viewing stay side by side on the same rows when one shows a problem.
 
@@ -35,7 +51,7 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   mode following its own base; they can be added with "Add a neutral color" once a base has a hue,
   at M 4 or more. A base under that reads as gray, and two gray bases have no neutral colors. Gray
   and each neutral color have pages beside the colors' and come in every export, as `--gray-60`
-  and, when a base has a hue, `--neutral-60`.
+  and, when a base has a hue, one per neutral color named after it, such as `--neutral-60`.
 - Extra colors are split into custom colors and neutral colors, side by side in Settings, with what
   each is for said above them. New ones are named Custom and Neutral, Custom 2 and Neutral 2, and so on.
 - A colorfulness slider has an exact field to a tenth of a percent and a bar of zones under it:

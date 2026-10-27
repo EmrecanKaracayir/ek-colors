@@ -68,7 +68,7 @@ export const SYSTEMS: readonly ReferenceSystem[] = [
     summary:
       "Unique hues from vision research, as built into the color model: pure red, yellow, green and blue, and the mixes between them.",
     source:
-      "Li et al., Comprehensive color solutions: CAM16, CAT16 and CAM16-UCS, Color Research & Application, 2017 (hue quadrature).",
+      "Li et al., Comprehensive color solutions: CAM16, CAT16, and CAM16-UCS, Color Research & Application, 2017 (hue quadrature).",
     guides: CAM16_GUIDES,
     yellow: "Y",
   },

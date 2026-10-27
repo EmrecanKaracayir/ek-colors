@@ -94,7 +94,7 @@ older shapes upgraded: one identity tier for both modes → one per mode; Lc 60 
       <p>CAM16 (Li et al., 2017), as implemented by Google's material-color-utilities ${project.dependencies["@material/material-color-utilities"]}. Each mode gets its own <code>ViewingConditions.make(white, L<sub>A</sub>, Y<sub>b</sub>, surround)</code>:</p>
 <pre class="formula">white  = D65
 L_A    = E × 0.0586          // cd/m²: E lux on an 18% gray (L* 50): E/π × 0.184
-Y_b    = luminance of the base // passed to CAM16 as its L*
+Y_b    = the base's L*        // its lightness, as CAM16 takes the background
 F      = 0.8 + surround/10    // surround 0 dark, 1 dim, 2 average → F 0.8, 0.9, 1.0
 c      = lerp(0.525…0.59…0.69 by F),  N_c = F
 D      = F × (1 − (1/3.6)·e^((−L_A − 42)/92)),  clamped to 0…1
@@ -240,7 +240,7 @@ turned         Uniform, solved with the anchor moved by the turn (step 7)   // "
 
     <section class="step">
       <h2>10. Three gamuts</h2>
-      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one gamut to another; each gamut's ceilings, hues and colors come from its own solve, against its own base. Each mode has one base, any CSS color. A gamut that can show it uses it exactly; a narrower one uses the closest color it can show, by the CSS Color 4 gamut mapping: hue and lightness kept, colorfulness lowered until it fits. That color can be picked by hand, as long as it's no more than ΔE 2 further from the base than the closest color is; a further one is a different background, and is refused. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
+      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Hues and colors are never mapped from one gamut to another: each gamut's ceilings, hues and colors come from its own solve, against its own base. Only the base is mapped. Each mode has one base, any opaque CSS color. A gamut that can show it uses it exactly; a narrower one uses the closest color it can show to the next wider gamut's base, by the CSS Color 4 gamut mapping: hue and lightness kept, colorfulness lowered until it fits, so a color picked for Wide carries down to Standard. That color can be picked by hand, as long as it's no more than ΔE 2 further from the base than the closest color is; a further one is a different background, and is refused. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
     </section>
 
     <section class="step">
