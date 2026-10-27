@@ -35,7 +35,27 @@ export function popSource(prefix: string, source: Source): void {
  * @returns      HTML.
  */
 export function popButton(id: string, label: string, name: string, kind = "", key = ""): string {
-  return `<button type="button" class="pop-trigger ${kind}"${key ? ` id="${key}"` : ""} data-pop="${id}" aria-haspopup="dialog" aria-controls="popover" aria-expanded="${String(open === id)}" aria-label="${name}">${label}</button>`;
+  return `<button type="button" class="pop-trigger ${kind}"${key ? ` id="${key}"` : ""} data-pop="${id}" aria-haspopup="dialog" aria-controls="popover" aria-expanded="${String(open === id)}" aria-label="${spokenName(label, name)}">${label}</button>`;
+}
+
+/**
+ * A button's name for screen readers, starting with what it shows, so it can be said aloud to
+ * voice control: "0.18, how bent Turned is" for a button showing 0.18.
+ *
+ * @param label  The button's content (HTML).
+ * @param name   What the button is for.
+ * @returns      The name.
+ */
+function spokenName(label: string, name: string): string {
+  const shown = label
+    .replace(/<(\w+)[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/\1>/g, " ")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!shown || name.toLowerCase().includes(shown.toLowerCase())) return name;
+  // A name starting with a word in capitals, like APCA, keeps them after the comma.
+  const rest = /^[A-Z][a-z]/.test(name) ? name[0]!.toLowerCase() + name.slice(1) : name;
+  return `${shown}, ${rest}`;
 }
 
 /* >----------------------------------------< Placing >-----------------------------------------< */

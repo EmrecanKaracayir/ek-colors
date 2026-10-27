@@ -1324,7 +1324,7 @@ function tierHeading(tier: number): string {
   const title = `${star(selected ? "selected" : suggested ? "suggested" : "slot")}Lc ${String(tier)} <span class="soft">• ${ROLES[tier] ?? ""}</span>`;
   const pick = selected
     ? popButton(`${pop}:title`, title, `Lc ${String(tier)} is the identity tier, ${identityHow(tier)}: what that means`, "tier-pick chosen", `tier-pick-${String(tier)}`)
-    : `<button type="button" class="tier-pick" id="tier-pick-${String(tier)}" data-identity="${suggested ? "auto" : String(tier)}" aria-label="${suggested ? `Lc ${String(tier)} is the suggested identity tier: go back to automatic` : `Make Lc ${String(tier)} the identity tier for ${mode} mode`}">${title}</button>`;
+    : `<button type="button" class="tier-pick" id="tier-pick-${String(tier)}" data-identity="${suggested ? "auto" : String(tier)}" aria-label="Lc ${String(tier)} • ${ROLES[tier] ?? ""}: ${suggested ? "the suggested identity tier, go back to automatic" : `make it the identity tier for ${mode} mode`}">${title}</button>`;
   const note = selected && suggested ? "Selected • suggested ID" : selected ? "Selected ID" : suggested ? "Suggested ID" : "";
   return `<div class="tier-head"><h2>${pick}</h2>${note ? popButton(`${pop}:note`, note, `${note}: what that means`, "id-note") : ""}</div>`;
 }
@@ -2557,11 +2557,12 @@ function drawComparison(el: Element, mode: Mode): void {
     colors.push(change);
     const fills = swatches.map((sw, i) => `<span class="fill" data-row="${String(i)}" style="--f:${sw.color}"></span>`).join("");
     const rows = swatches.map((sw, i) => `--f${String(i)}:${sw.color}`).join(";");
-    const amount = (inGaps(change.bend[3] / gap) || "0.0 gap").replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`);
+    const amountText = inGaps(change.bend[3] / gap) || "0.0 gap";
+    const amount = amountText.replace(/ gaps?$/, (unit) => `<span class="unit">${unit}</span>`);
     // "Hue" before a number can go when the row is crowded; the number stays, as "#3".
     const name = change.name.replace(/^Hue (?=\d)/, `<span class="hue-word">Hue </span><span class="hash">#</span>`);
     return `<span class="strip-item${change.bend[3] >= 2 ? " changed" : ""}" data-key="${c.key}" style="--c:${last.color};${rows}">
-      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span><span class="sep" aria-hidden="true"> • </span><span class="amount">${amount}</span>`, `How ${change.name} changed`, "strip-gap mono")}</span>`;
+      ${fills}<span class="cover" aria-hidden="true"></span>${popButton(`change:${c.key}`, `<span class="name${name === change.name ? "" : " numbered"}">${name}</span><span class="sep" aria-hidden="true"> • </span><span class="amount">${amount}</span>`, `${change.name} ${amountText}: how it changed`, "strip-gap mono")}</span>`;
   });
   // While new results arrive, a strip that can't be drawn whole keeps what it showed, so it never
   // falls back to empty and moves what's below it.
