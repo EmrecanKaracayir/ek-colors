@@ -131,12 +131,25 @@ function loadEdits(): { h: boolean; m: boolean } {
  * Remembers the settings in this browser.
  */
 function save(): void {
+  // A drag writes on every move, so the settings are stored once it rests, or as the page closes.
+  clearTimeout(saving);
+  saving = window.setTimeout(storeNow, 300);
+}
+
+/** The settings waiting to be stored. */
+let saving = 0;
+
+/** Stores the settings now. */
+function storeNow(): void {
+  clearTimeout(saving);
   try {
     localStorage.setItem(STORE, JSON.stringify(state.settings));
   } catch {
     // Storage can be blocked; the page works without it.
   }
 }
+
+window.addEventListener("pagehide", storeNow);
 
 /* >-----------------------------------------< Solve >------------------------------------------< */
 
@@ -385,8 +398,13 @@ function variant(settings: Settings, use: string): GamutPalette | null {
  */
 function edited(h: boolean, m: boolean): GamutPalette | null {
   const [noCurve, noPlaced] = [!m && curved(), !h && Object.keys(state.settings.placed).length > 0];
-  if (!noCurve && !noPlaced) return inUse();
-  return variant({ ...(noCurve ? flat() : state.settings), ...(noPlaced ? { placed: {} } : {}) }, `edited ${String(h)} ${String(m)}`);
+  const use = `edited ${String(h)} ${String(m)}`;
+  // The palette in use needs no variant, so this use stands in for nothing.
+  if (!noCurve && !noPlaced) {
+    standingIn.delete(use);
+    return inUse();
+  }
+  return variant({ ...(noCurve ? flat() : state.settings), ...(noPlaced ? { placed: {} } : {}) }, use);
 }
 
 /** Without the curve: it only depends on settings other than the curve, so moving the curve never waits for it. */
@@ -457,6 +475,8 @@ function turned(mode: Mode): {
   if (angle === null || !even) return null;
   const s = state.settings;
   const tier = identityOf(s, mode);
+  // No turn needs no variant, so nothing stands in for it.
+  if (angle === 0) standingIn.delete("turned");
   const solved = angle === 0 ? even : variant({ ...flat(), placed: {}, anchor: Math.round((anchorHue(s) + angle) * 10) / 10 }, "turned")?.[mode];
   const colors = Object.fromEntries(
     even.colors.flatMap((c) => {
@@ -844,9 +864,18 @@ function isPreset(): boolean {
  * What the palette is called: the name it's given, or else EK Palette as it ships and Custom
  * palette once anything is changed.
  *
- * @returns  Its name.
+ * @returns  Its name, as HTML.
  */
 function paletteName(): string {
+  return escape(paletteNameText());
+}
+
+/**
+ * The palette's name as plain text, for the export.
+ *
+ * @returns  Its name.
+ */
+function paletteNameText(): string {
   return state.settings.name || defaultName();
 }
 
@@ -892,15 +921,25 @@ function neutralOf(key: string): Neutral | undefined {
 }
 
 /**
- * A color key as people read it: an extra color by its own name.
+ * A color key as people read it: a custom or neutral color by its own name.
  *
  * @param key  E.g. "red" or "hue-3".
  * @returns    HTML, e.g. "Red" or "Hue 3".
  */
 function label(key: string): string {
+  return escape(labelText(key));
+}
+
+/**
+ * A color's name as plain text, for the browser's title.
+ *
+ * @param key  The color's key.
+ * @returns    E.g. "Red", "Hue 3", or a custom color's own name.
+ */
+function labelText(key: string): string {
   const extra = extraOf(key) ?? neutralOf(key);
   const text = extra ? extra.name : key.replace("-", " ");
-  return escape(extra ? text : text.charAt(0).toUpperCase() + text.slice(1));
+  return extra ? text : text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 /** A WCAG 2 level as a class name: "AA large" is "AA-large". */
@@ -2104,7 +2143,7 @@ function write(path: string, value: unknown): void {
 function extraFields(i: number): string {
   const name = escape(state.settings.extras[i]!.name);
   return `<div class="extra" data-extra="${String(i)}">
-    <h3 class="extra-title"><span class="extra-name">${extraDot(i)}${label(extraKeys(state.settings)[i]!)}</span><button type="button" class="link" data-action="remove-extra" data-index="${String(i)}">Remove</button></h3>
+    <h3 class="extra-title"><span class="extra-name">${extraDot(i)}${label(extraKeys(state.settings)[i]!)}</span><button type="button" class="link" data-action="remove-extra" data-index="${String(i)}" aria-label="Remove ${label(extraKeys(state.settings)[i]!)}">Remove</button></h3>
     <label class="field grow" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
     ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` })}
     ${shareField(`extras.${String(i)}.share`, "Colorfulness")}
@@ -2121,7 +2160,7 @@ function extraFields(i: number): string {
 function neutralFields(i: number): string {
   const name = escape(state.settings.neutrals[i]!.name);
   return `<div class="extra" data-neutral="${String(i)}">
-    <h3 class="extra-title"><span class="extra-name">${neutralDot(i)}${label(colorKeys(state.settings).neutrals[i]!)}</span><button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}">Remove</button></h3>
+    <h3 class="extra-title"><span class="extra-name">${neutralDot(i)}${label(colorKeys(state.settings).neutrals[i]!)}</span><button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}" aria-label="Remove ${label(colorKeys(state.settings).neutrals[i]!)}">Remove</button></h3>
     <label class="field grow" for="set-neutrals-${String(i)}-name"><span>Name</span><input id="set-neutrals-${String(i)}-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false"></label>
     ${shareField(`neutrals.${String(i)}.share`, "Colorfulness")}
   </div>`;
@@ -2346,7 +2385,7 @@ popSource("base", (which) => {
   const screens = `${GAMUT_NAMES[state.gamut].toLowerCase()} screens`;
   const action =
     shown.how === "picked" ? `<p><button type="button" data-base-closest="${mode}">Back to the closest color</button></p>`
-    : shown.how === "closest" ? `<p><button type="button" data-base-pick="${mode}">Pick the color for ${screens}</button></p>`
+    : shown.how === "closest" ? `<p><button type="button" data-base-go="${mode}">Pick the color for ${screens}</button></p>`
     : "";
   return `<h3>Base, ${mode} mode</h3>
     <p>The background the ${mode} mode's colors sit on. Every contrast is measured against it, the identity tier is chosen on it, and the neutral colors take their hue from it.</p>
@@ -2365,7 +2404,7 @@ function updateBaseNote(): void {
   const base = baseIn(state.settings, state.mode, state.gamut);
   note.hidden = base.how !== "closest" || state.view === "references";
   if (note.hidden) return;
-  note.innerHTML = `${GAMUT_NAMES[state.gamut]} screens can't show the ${state.mode} base, so they use the closest color they can, <span class="mono">${base.written}</span>, ΔE ${base.off.toFixed(1)} from it. To pick it yourself, <a href="#tune" data-base-go="${state.mode}">go to Settings, under Viewing</a>.`;
+  note.innerHTML = `${GAMUT_NAMES[state.gamut]} screens can't show the ${state.mode} base, so they use the closest color they can, <span class="mono">${base.written}</span>, ΔE ${base.off.toFixed(1)} from it. To pick one by hand, <a href="#tune" data-base-go="${state.mode}">go to Settings, under Viewing</a>.`;
 }
 
 /**
@@ -2408,13 +2447,12 @@ function setBase(mode: Mode, color: string): void {
 }
 
 document.addEventListener("click", (event) => {
-  const el = (event.target as Element).closest<HTMLElement>("[data-base-go],[data-base-pick],[data-base-closest],[data-base-use]");
+  const el = (event.target as Element).closest<HTMLElement>("[data-base-go],[data-base-closest],[data-base-use]");
   if (!el) return;
   event.preventDefault();
   hidePopover();
-  const { baseGo, basePick, baseClosest, baseUse } = el.dataset;
+  const { baseGo, baseClosest, baseUse } = el.dataset;
   if (baseGo) return goToBase(baseGo as Mode);
-  if (basePick) return goToBase(basePick as Mode);
   if (baseUse) {
     // A color too different to be picked becomes the base itself.
     const field = document.querySelector<HTMLInputElement>(`#set-base-${baseUse}`);
@@ -3060,7 +3098,7 @@ function exportText(): string {
   const p = GAMUTS.every((g) => state.fresh.has(g)) ? (state.palettes as Palette) : null;
   if (!p) return "Solving every gamut…";
   // Markdown and CSS are titled with the palette's name, its own or the one it goes by.
-  const named = { ...state.settings, name: paletteName() };
+  const named = { ...state.settings, name: paletteNameText() };
   return { json: () => toJson(state.settings, p), csv: () => toCsv(state.settings, p), md: () => toMarkdown(named, p), css: () => toCss(named, p) }[state.format]();
 }
 
@@ -3076,7 +3114,7 @@ function exportSection(): string {
       <p class="soft">Every gamut, both modes, every tier, default and muted, custom colors, Gray and neutral colors included. JSON keeps the settings too, so they can be pasted back into Settings.</p>
       <div class="row"><div class="segmented" role="group" aria-label="Format">${tab("json", "JSON")}${tab("csv", "CSV")}${tab("md", "Markdown")}${tab("css", "CSS")}</div>
       <button type="button" data-action="copy">Copy</button><span id="export-copied" class="soft" role="status"></span></div>
-      <pre id="export-text" class="code-view" tabindex="0" aria-label="The export"><code></code></pre>
+      <pre id="export-text" class="code-view" tabindex="0" role="region" aria-label="The export"><code></code></pre>
     </section>`;
 }
 
@@ -3146,7 +3184,7 @@ const PAGE_NAMES: Readonly<Record<string, string>> = {
  * @returns     E.g. "Tiers • EK Colors"; the Overview is just "EK Colors".
  */
 function pageTitle(view: string): string {
-  const name = PAGE_NAMES[view] ?? label(view);
+  const name = PAGE_NAMES[view] ?? labelText(view);
   return name ? `${name} • EK Colors` : "EK Colors";
 }
 

@@ -6,9 +6,8 @@
 | reference.                                                                                       |
 \*------------------------------------------------------------------------------------------------*/
 
-import { argbFromHex, lstarFromArgb } from "@material/material-color-utilities";
 
-import { LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
+import { lightness, LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
 import { anchorHue, anchorSource } from "../palette/references";
 import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../palette/settings";
 import project from "../../package.json";
@@ -31,7 +30,7 @@ function conditions(ctx: Context): string {
   return MODES.map((mode) => {
     const room = ctx.settings.rooms[mode];
     const la = room.lux * LUX_TO_ADAPTING;
-    const yb = lstarFromArgb(argbFromHex(ctx.settings.bases[mode]));
+    const yb = lightness(ctx.settings.bases[mode]);
     const vc = viewingConditions(ctx.settings, mode);
     const f = 0.8 + room.surround / 10;
     return `<tr><th scope="row">${MODE_NAMES[mode]}</th>
