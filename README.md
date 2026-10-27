@@ -22,8 +22,9 @@ What follows describes EK Palette; every number in it is a setting.
   EK Palette has one, brown.
 - **Neutrals:** Gray on every tier, and neutral colors that take the base's hue at a share of its
   colorfulness. EK Palette's bases are gray, so it has Gray alone.
-- **Modes:** light on `#EBEBEB`, dark on `#181818`. A base can be any CSS color, and each screen
-  gamut can have its own; one without works it out from another.
+- **Modes:** light on `#EBEBEB`, dark on `#181818`. A base can be any CSS color. Each screen
+  gamut shows it exactly where it can, else as the closest color it can show, which can be picked
+  by hand while it's still the same background.
 - **Tiers:** one color per APCA contrast against the base:
 
   | Tier  | For                          |

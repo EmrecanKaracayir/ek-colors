@@ -381,6 +381,9 @@
   .with-unit input { min-width: 0; }
   .split .field { grid-template-columns: 7rem 6rem; }
   .split > div { display: grid; gap: var(--space-4); align-content: start; }
+  /* Side by side, each mode's fields share rows with the other's, so a field's problem moves both columns alike. */
+  .split.rows { row-gap: var(--space-4); }
+  .split.rows > div { grid-row: span 4; grid-template-rows: subgrid; align-items: start; }
   .checks { display: flex; flex-wrap: wrap; gap: var(--space-6); }
   .extra { display: grid; gap: var(--space-5); }
   /* Custom and neutral colors side by side; narrow, the custom colors come first. */
@@ -465,7 +468,7 @@
   .hue-facts dt { color: var(--soft); }
   .hue-facts dd { margin: 0; }
   .field.wide, .field.wide:not(:has(input[type="range"])) { grid-template-columns: 9rem 13rem; }
-  .field.fill, .field.fill:not(:has(input[type="range"])) { grid-template-columns: 9rem minmax(0, 1fr); }
+  .field.grow, .field.grow:not(:has(input[type="range"])) { grid-template-columns: 9rem minmax(0, 1fr); }
   .strip.docked { border-bottom-color: var(--line); }
   /* The columns hug their numbers, at least four characters each; the verdict row below takes their
      width without adding to it, and a word too long for it is cut short. */
@@ -699,8 +702,10 @@
     .graph-values > p, .graph-values > dl { grid-column: 1 / -1; }
     .graph-caption, .guide-row { grid-column: 1; }
     .graph-values .field, .graph-values .field:not(:has(input[type="range"])), .graph-values .graph-check { grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
-    .field:is(.wide, .fill), .field:is(.wide, .fill):not(:has(input[type="range"])) { grid-template-columns: 7rem minmax(0, 1fr); }
+    .field:is(.wide, .grow), .field:is(.wide, .grow):not(:has(input[type="range"])) { grid-template-columns: 7rem minmax(0, 1fr); }
     .split { grid-template-columns: minmax(0, 1fr); }
+    .split.rows { row-gap: var(--space-8); }
+    .split.rows > div { grid-row: auto; grid-template-rows: none; }
     .facts-list div { grid-template-columns: 8rem minmax(0, 1fr); }
     .settings-head { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-6); }
     .settings-actions .field.palette-name { grid-template-columns: 7rem minmax(0, 1fr); }
@@ -791,6 +796,6 @@
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <p id="auto-base" class="notice beyond" role="note" hidden></p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=5511f951bc"></script>
+<script type="module" src="app.js?v=9772ba8575"></script>
 </body>
 </html>

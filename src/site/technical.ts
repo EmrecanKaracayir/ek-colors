@@ -241,7 +241,7 @@ turned         Uniform, solved with the anchor moved by the turn (step 7)   // "
 
     <section class="step">
       <h2>10. Three gamuts</h2>
-      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one gamut to another; each gamut's ceilings, hues and colors come from its own solve, against its own base. A base set for one gamut is the same color on a wider one; a wider one's is brought into a narrower gamut with the CSS Color 4 gamut mapping, hue and lightness kept and colorfulness lowered until it fits. Any gamut's base can be set by hand. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
+      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Nothing is mapped from one gamut to another; each gamut's ceilings, hues and colors come from its own solve, against its own base. Each mode has one base, any CSS color. A gamut that can show it uses it exactly; a narrower one uses the closest color it can show, by the CSS Color 4 gamut mapping: hue and lightness kept, colorfulness lowered until it fits. That color can be picked by hand, as long as it's no more than ΔE 2 further from the base than the closest color is; a further one is a different background, and is refused. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
     </section>
 
     <section class="step">

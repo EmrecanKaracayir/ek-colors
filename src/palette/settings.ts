@@ -93,10 +93,10 @@ export interface Extra {
 }
 
 export interface Settings {
-  /** The backgrounds colors are read on: any CSS color, set on the narrowest gamut tier showing it. */
+  /** The backgrounds colors are read on: any CSS color, kept as given. */
   readonly bases: Readonly<Record<Mode, string>>;
 
-  /** Bases set by hand for a gamut tier; a tier without one works its base out from the others. */
+  /** Colors picked by hand for a gamut tier that can't show its base exactly; else the closest is used. */
   readonly gamutBases: Readonly<Partial<Record<Gamut, Readonly<Partial<Record<Mode, string>>>>>>;
 
   /** The room each mode is seen in. */

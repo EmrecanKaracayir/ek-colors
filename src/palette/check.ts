@@ -6,7 +6,7 @@
 | that make sense. A field that's missing takes its default.                                       |
 \*------------------------------------------------------------------------------------------------*/
 
-import { fits, forGamut, isColor } from "./bases";
+import { fits, forGamut, home, isColor, pickCheck } from "./bases";
 import { lightness } from "./model";
 import { SYSTEMS } from "./references";
 import {
@@ -148,13 +148,18 @@ function base(value: unknown, mode: Mode): string {
 }
 
 /**
- * The bases set by hand per gamut tier: each a color that tier's screens can show.
+ * The colors picked per gamut tier for a base it can't show exactly: each one the tier's screens
+ * can show, and still the same background as the base.
  *
- * @param value  The value.
- * @returns      The bases.
+ * @param value     The value.
+ * @param settings  The bases and rooms, already checked.
+ * @returns         The colors picked.
  */
-function gamutBases(value: unknown): Settings["gamutBases"] {
-  const given = record(value ?? {}, "The bases per gamut");
+function gamutBases(
+  value: unknown,
+  settings: Pick<Settings, "bases" | "rooms">,
+): Settings["gamutBases"] {
+  const given = record(value ?? {}, "The colors picked per gamut");
   return Object.fromEntries(
     GAMUTS.flatMap((g) => {
       if (given[g] === undefined) return [];
@@ -162,7 +167,16 @@ function gamutBases(value: unknown): Settings["gamutBases"] {
       const modes = MODES.flatMap((m) => {
         if (per[m] === undefined) return [];
         const color = base(per[m], m);
-        if (!fits(color, g)) fail(`The ${m} base set for ${g} screens is a color they can't show.`);
+        if (!fits(color, g)) fail(`The ${m} color picked for ${g} screens is one they can't show.`);
+        if (GAMUTS.indexOf(g) >= GAMUTS.indexOf(home(settings.bases[m])))
+          fail(
+            `${g[0]!.toUpperCase()}${g.slice(1)} screens show the ${m} base exactly, so no color is picked for them.`,
+          );
+        const check = pickCheck({ ...settings, gamutBases: {} }, m, g, color);
+        if (!check.same)
+          fail(
+            `The ${m} color picked for ${g} screens is a different background from the ${m} base: ΔE ${check.off.toFixed(1)} from it, where the closest color is ΔE ${check.loss.toFixed(1)}.`,
+          );
         return [[m, color]];
       });
       return modes.length ? [[g, Object.fromEntries(modes)]] : [];
@@ -337,9 +351,10 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
   );
   const window = record(s.hueWindow, "The hue window");
   const bases = perMode(s.bases, "The bases", base);
-  const perGamut = gamutBases(s.gamutBases);
+  const rooms = perMode(s.rooms, "The rooms", room);
+  const perGamut = gamutBases(s.gamutBases, { bases, rooms });
   for (const g of GAMUTS) {
-    const on = forGamut({ bases, gamutBases: perGamut }, g).bases;
+    const on = forGamut({ bases, gamutBases: perGamut, rooms }, g).bases;
     if (lightness(on.light) <= lightness(on.dark))
       fail(
         `The light base must be lighter than the dark base${g === "standard" ? "" : ` on ${g} screens`}.`,
@@ -351,7 +366,7 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
   return {
     bases,
     gamutBases: perGamut,
-    rooms: perMode(s.rooms, "The rooms", room),
+    rooms,
     colorfulness: number(s.colorfulness, "Target M", LIMITS.colorfulness),
     equalTiers: flag(s.equalTiers, "Equal per tier"),
     curve: perMode(s.curve, "Colorfulness per hue", (c, m) =>

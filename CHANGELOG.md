@@ -9,15 +9,22 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- A base per gamut: a base can be any CSS color, and each kind of screen can have its own. One
-  without works it out: a narrower gamut's base is the same color on a wider one, and a wider one's
-  is brought into a narrower gamut as the closest color it can show (CSS Color 4 gamut mapping).
-  In Settings, Base shows the base of the gamut picked in the header, with a check when it's set by
-  hand and an amber mark when it's only the closest color; it opens how every gamut came by its base,
-  with Set it and Back to automatic. Every palette is solved, exported and checked against its
-  gamut's own base; `--base` and Gray are written per gamut where they differ.
-- While the gamut on screen works its base out, an amber notice under the header says so and leads
-  to Settings to set it. The red notice for a gamut wider than the screen shows on Settings too.
+- A base can be any CSS color, such as hex, `rgb()`, `oklch()` or `color(display-p3 …)`, kept as
+  given. Each gamut shows it exactly where it can, else as the closest color it can show (CSS Color 4
+  gamut mapping). That color can be picked by hand while it's still the same background: no more
+  than ΔE 2 further from the base than the closest color is. A further one is refused, with Use it
+  as the base. A base changed under a pick takes it back to the closest color, and says so.
+- In Settings, Base shows the base as the gamut picked in the header writes it, with its form as a
+  hint, an amber mark when it's the closest color and a check when picked; it opens how every gamut
+  shows it. Every palette is solved, exported and checked against its gamut's base; `--base` and
+  Gray are written per gamut where they differ.
+- While the gamut on screen can't show the base, an amber notice under the header gives the closest
+  color and leads to Settings. The red notice for a gamut wider than the screen shows on Settings too.
+
+### Fixed
+
+- Name fields of custom and neutral colors were taller than other fields, from a swatch's style.
+- Light and Dark fields in Viewing stay side by side on the same rows when one shows a problem.
 
 ## [2.3.0] - 2026-10-27
 

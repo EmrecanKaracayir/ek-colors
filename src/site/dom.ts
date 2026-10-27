@@ -82,8 +82,9 @@ export function announce(text: string): void {
  *
  * @param el       The field.
  * @param problem  What it takes, e.g. "From 10 to 80"; empty when the value is fine.
+ * @param action   A way forward after the problem, as HTML; none when there isn't one.
  */
-export function markField(el: HTMLInputElement, problem: string): void {
+export function markField(el: HTMLInputElement, problem: string, action = ""): void {
   const box = el.closest(".field");
   const id = `${el.id || "field"}-problem`;
   let note = box?.querySelector<HTMLElement>(".field-problem") ?? null;
@@ -102,6 +103,8 @@ export function markField(el: HTMLInputElement, problem: string): void {
   }
   if (note) {
     note.textContent = problem;
+    // A way forward, when there is one, follows the problem.
+    if (action) note.insertAdjacentHTML("beforeend", ` ${action}`);
     el.setAttribute("aria-describedby", note.id);
   }
 }
