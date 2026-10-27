@@ -3071,16 +3071,31 @@ function exportSection(): string {
       <p class="soft">Every gamut, both modes, every tier, default and muted, custom colors, Gray and neutral colors included. JSON keeps the settings too, so they can be pasted back into Settings.</p>
       <div class="row"><div class="segmented" role="group" aria-label="Format">${tab("json", "JSON")}${tab("csv", "CSV")}${tab("md", "Markdown")}${tab("css", "CSS")}</div>
       <button type="button" data-action="copy">Copy</button><span id="export-copied" class="soft" role="status"></span></div>
-      <pre id="export-text" class="code-view" tabindex="0" aria-label="The export"><code>${highlight(exportText(), state.format)}</code></pre>
+      <pre id="export-text" class="code-view" tabindex="0" aria-label="The export"><code></code></pre>
     </section>`;
 }
 
+/** Colors the export once it comes near the screen: its thousands of parts cost every redraw. */
+const exportInView = new IntersectionObserver(
+  (entries) => {
+    if (!entries.some((e) => e.isIntersecting)) return;
+    exportInView.disconnect();
+    const code = document.querySelector("#export-text code");
+    if (code) code.innerHTML = highlight(exportText(), state.format);
+  },
+  { rootMargin: "50% 0px" },
+);
+
 /**
- * Writes the export again, as gamut tiers arrive.
+ * Writes the export again, as gamut tiers arrive: as plain text at once, the same size, and in color
+ * once it's near the screen.
  */
 function updateExport(): void {
   const code = document.querySelector("#export-text code");
-  if (code) code.innerHTML = highlight(exportText(), state.format);
+  if (!code) return;
+  code.textContent = exportText();
+  exportInView.disconnect();
+  exportInView.observe(code);
 }
 
 /**
