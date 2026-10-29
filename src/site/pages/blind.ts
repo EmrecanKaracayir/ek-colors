@@ -7,8 +7,8 @@
 | between people as short codes.                                                                   |
 \*------------------------------------------------------------------------------------------------*/
 
-import { type Gamut, GAMUTS, type Mode, MODES } from "../palette/settings";
-import { announce, copyText, flash } from "./dom";
+import { type Gamut, GAMUTS, type Mode, MODES } from "../../palette/settings";
+import { announce, copyText, flash } from "../dom";
 
 /** One answer: where the test stood, and how it was answered (1, 0, or ½ for "can't tell"). */
 interface Answer {

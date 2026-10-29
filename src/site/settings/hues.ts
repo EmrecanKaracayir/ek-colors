@@ -7,10 +7,10 @@
 | to place it; double-click it to let it go. Dragging the anchor moves the whole lineup.           |
 \*------------------------------------------------------------------------------------------------*/
 
-import type { Guide } from "../palette/references";
-import { composition, hueTurn, wrapHue } from "../palette/model";
-import { refill, steadyReadout } from "./dom";
-import { againstEven, band, evenText, inGaps, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "./graph";
+import { composition, hueTurn, wrapHue } from "../../palette/model";
+import type { Guide } from "../../palette/references";
+import { refill, steadyReadout } from "../dom";
+import { againstEven, band, evenText, inGaps, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "../graph";
 
 /** One color, on every row. */
 interface HueRow {

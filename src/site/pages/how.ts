@@ -1,15 +1,15 @@
 /*------------------------------------------------------------------------------------------------*\
-| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< EXPLAIN >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
+| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HOW IT WORKS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | How it works: the palette solver told step by step, each step with a small live demo that uses   |
 | the same code as the solver.                                                                     |
 \*------------------------------------------------------------------------------------------------*/
 
-import { apca, composition, JUST_VISIBLE, makeModel, type Model, parts, wcag, wcagLevel } from "../palette/model";
-import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../palette/settings";
-import { anchorHue, anchorSource } from "../palette/references";
-import { escape, signedWhole, zoneTable } from "./graph";
-import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, NEUTRAL_BAND, strongest } from "../palette/solve";
+import { apca, composition, JUST_VISIBLE, makeModel, type Model, parts, wcag, wcagLevel } from "../../palette/model";
+import { anchorHue, anchorSource } from "../../palette/references";
+import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../../palette/settings";
+import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, NEUTRAL_BAND, strongest } from "../../palette/solve";
+import { escape, signedWhole, zoneTable } from "../graph";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 

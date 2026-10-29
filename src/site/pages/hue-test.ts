@@ -7,9 +7,9 @@
 | those hues, with how sure each one is, can be placed.                                            |
 \*------------------------------------------------------------------------------------------------*/
 
-import { hueTurn, makeModel, type Model, wrapHue } from "../palette/model";
-import { type Gamut, type Mode, NAMES, type Settings } from "../palette/settings";
-import { boost, type GamutPalette, identityOf, strongest } from "../palette/solve";
+import { hueTurn, makeModel, type Model, wrapHue } from "../../palette/model";
+import { type Gamut, type Mode, NAMES, type Settings } from "../../palette/settings";
+import { boost, type GamutPalette, identityOf, strongest } from "../../palette/solve";
 import {
   ask,
   balance,
@@ -31,7 +31,7 @@ import {
   stair,
   startSides,
 } from "./blind";
-import { signed } from "./graph";
+import { signed } from "../graph";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 

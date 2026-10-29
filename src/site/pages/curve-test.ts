@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------------------------*\
-| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
+| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< CURVE TEST >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | The blind colorfulness test: pairs of colors on the same tier, one a little more or less         |
 | colorful than the palette, shown without names in random order. Each hue has its own staircase   |
@@ -7,9 +7,9 @@
 | sure each one is, fit the curve.                                                                 |
 \*------------------------------------------------------------------------------------------------*/
 
-import { makeModel, meanHue, type Model } from "../palette/model";
-import type { CurvePoint, Gamut, Mode, Settings } from "../palette/settings";
-import { boost, type GamutPalette, identityOf, strongest } from "../palette/solve";
+import { makeModel, meanHue, type Model } from "../../palette/model";
+import type { CurvePoint, Gamut, Mode, Settings } from "../../palette/settings";
+import { boost, type GamutPalette, identityOf, strongest } from "../../palette/solve";
 import {
   ask,
   balance,
@@ -32,7 +32,7 @@ import {
   startSides,
   type Pick,
 } from "./blind";
-import { signed } from "./graph";
+import { signed } from "../graph";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 

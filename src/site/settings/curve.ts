@@ -8,12 +8,12 @@
 | to set its width. The selected point's values can be typed in too.                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import { type CurvePoint, LIMITS, type Mode } from "../palette/settings";
-import type { Guide } from "../palette/references";
-import { hueTurn, wrapHue } from "../palette/model";
-import { boost } from "../palette/solve";
-import { refill, steadyReadout } from "./dom";
-import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, signedWhole, stops, viewBox, WIDTH } from "./graph";
+import { hueTurn, wrapHue } from "../../palette/model";
+import type { Guide } from "../../palette/references";
+import { type CurvePoint, LIMITS, type Mode } from "../../palette/settings";
+import { boost } from "../../palette/solve";
+import { refill, steadyReadout } from "../dom";
+import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, signedWhole, stops, viewBox, WIDTH } from "../graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {

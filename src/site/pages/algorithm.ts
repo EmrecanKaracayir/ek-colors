@@ -1,19 +1,18 @@
 /*------------------------------------------------------------------------------------------------*\
-| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< TECHNICAL >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
+| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< ALGORITHM >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | The algorithm, technically: every step the solver takes, with its formulas, constants and search |
 | rules, in the order it runs. The plain-words version is How it works; this page is the           |
 | reference.                                                                                       |
 \*------------------------------------------------------------------------------------------------*/
 
-
-import { lightness, LUX_TO_ADAPTING, viewingConditions } from "../palette/model";
-import { anchorHue, anchorSource } from "../palette/references";
-import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../palette/settings";
-import project from "../../package.json";
-import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, NEUTRAL_START, TEXT_MINIMUM, textScore } from "../palette/solve";
-import type { Context } from "./explain";
-import { escape, VISIBLE_STEP } from "./graph";
+import project from "../../../package.json";
+import { lightness, LUX_TO_ADAPTING, viewingConditions } from "../../palette/model";
+import { anchorHue, anchorSource } from "../../palette/references";
+import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../../palette/settings";
+import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, NEUTRAL_START, TEXT_MINIMUM, textScore } from "../../palette/solve";
+import { escape, VISIBLE_STEP } from "../graph";
+import type { Context } from "./how";
 
 /* >-----------------------------------------< Values >-----------------------------------------< */
 

@@ -1,13 +1,13 @@
 /*------------------------------------------------------------------------------------------------*\
-| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< SOURCES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
+| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< REFERENCES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
 | The References page: every model, standard, data set, method and library EK Colors is built on,  |
 | each with what it's used for here.                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import project from "../../package.json";
-import { SYSTEMS } from "../palette/references";
-import { escape } from "./graph";
+import project from "../../../package.json";
+import { SYSTEMS } from "../../palette/references";
+import { escape } from "../graph";
 
 /** One work the site relies on. */
 interface Source {
