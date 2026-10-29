@@ -99,7 +99,7 @@ brown, for example:
 export const CONFIG: Settings = {
   ...DEFAULTS,
   colorfulness: 44,
-  anchor: "munsell",
+  anchor: 96,
   customColors: [{ name: "Brown", hue: 40, share: 0.64 }],
 };
 ```

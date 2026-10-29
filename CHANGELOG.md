@@ -27,6 +27,10 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- EK Palette is tuned again by eye, side by side: red gets +2.8 M in light and +5.2 M in dark, in a
+  narrower bump centered on red (16°, 32° wide), orange gives up 1.2 M and 2 M, the same share of
+  each tier's colorfulness in both modes; pink sits at 328° and yellow at 96°, Munsell's 5Y
+  rounded. Dark mode's bend goes from Reshaped to Tuned.
 - Settings and JSON exports use the words Settings shows: `customColors` (was `extras`),
   `neutralColors`, `mutedShare`, `colorfulnessPerHue` (was `curve`) and `hueReach` (was
   `hueWindow`); each color is marked `"kind": "hue"` or `"kind": "custom"`, and a palette's neutral
