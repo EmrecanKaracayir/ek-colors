@@ -46,6 +46,11 @@ describe("Settings", () => {
     assert.deepEqual(readSettings(exported, DEFAULTS), CONFIG);
   });
 
+  it("take up to 64 hues", () => {
+    assert.equal(readSettings({ ...CONFIG, hues: 64 }, DEFAULTS).hues, 64);
+    assert.throws(() => readSettings({ ...CONFIG, hues: 65 }, DEFAULTS));
+  });
+
   it("name custom colors apart from Gray and the hues", () => {
     const keys = colorKeys({
       ...CONFIG,

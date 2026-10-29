@@ -164,7 +164,7 @@ export interface Settings {
 export const LIMITS = {
   colorfulness: [10, 80],
   muted: [0.1, 0.9],
-  hues: [2, Infinity],
+  hues: [2, 64],
   lux: [1, 1000],
   amount: [-24, 24],
   width: [10, 180],
