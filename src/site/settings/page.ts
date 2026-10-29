@@ -11,9 +11,10 @@ import { baseIn } from "../../palette/bases";
 import { SettingsError, readSettings } from "../../palette/check";
 import { composition } from "../../palette/model";
 import { SYSTEMS, anchorHue } from "../../palette/references";
-import { LIMITS, MODES, MODE_NAMES, type Mode, ROLES, SURROUNDS, type Settings } from "../../palette/settings";
+import { DEFAULTS, LIMITS, MODES, MODE_NAMES, type Mode, ROLES, SURROUNDS, type Settings } from "../../palette/settings";
 import { NEUTRAL_BAND, autoIdentity, baseHasHue, colorKeys, customKeys, identityOf } from "../../palette/solve";
 import { anchored, current, curveView, huesView, onScreen } from "../derived";
+import { build } from "../dom";
 import { escape } from "../graph";
 import { currentMode } from "../pages/color";
 import { defaultName, label } from "../parts";
@@ -227,7 +228,7 @@ export function settingsPage(): string {
       ${numberField("colorfulness", "Target M", [...LIMITS.colorfulness, 1], { slider: true })}
       ${numberField("mutedShare", "Muted share", [...LIMITS.mutedShare, 0.05], { slider: true, percent: true })}
       <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
-      <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
+      <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it aims at the same colorfulness, before colorfulness per hue. Off: each color goes as far as the screen allows.</p>
       <h3>Per hue</h3>
       <p class="soft">${MODE_NAMES[state.mode]} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Its points add up.</p>
       <div class="action-row"><p><a href="#curve-test" class="button">Measure it with the blind colorfulness test</a></p></div>
@@ -263,7 +264,7 @@ export function settingsPage(): string {
     </section>
     <section class="group" id="tiers-section">
       <h2>Tiers</h2>
-      <p class="soft">The APCA contrasts every color gets. The identity tier stands for the hue and sets every tier's starting hues. Automatic picks the tier where APCA and WCAG 2 together are just at their minimum for text; choose a tier to set it by hand, here or on the Tiers page.</p>
+      <p class="soft">The APCA contrasts every color gets. The identity tier stands for the hue and sets every tier's starting hues. Automatic picks the tier where APCA and WCAG 2 together come closest to their minimum for text; choose a tier to set it by hand, here or on the Tiers page.</p>
       <div class="checks">${Object.keys(ROLES)
         .map(Number)
         .map((t) => `<label for="tier-${String(t)}"><input id="tier-${String(t)}" type="checkbox" data-tier="${String(t)}" ${s.tiers.includes(t) ? "checked" : ""}> Lc ${String(t)}</label>`)
@@ -280,13 +281,13 @@ export function settingsPage(): string {
       <p class="soft">Where the colors are seen. The same screen color looks different on a light page and a dark one, and in a bright room and a dim one, so each mode is solved for its own background and room; <a href="#how">How it works</a> shows the difference.</p>
       <dl class="facts-list">
         <div><dt>Base</dt><dd>The background the mode's colors sit on. Every contrast is measured against it, so set it to the page the colors will be used on. Any CSS color works, such as hex, rgb(), oklch() or color(display-p3 …). Each kind of screen shows it its own way: hex on standard screens, color(display-p3 …) on wide ones and color(rec2020 …) on ultra ones; a screen that can't show it uses the closest color it can, which can also be picked by hand. Base shows the one for the gamut picked in the header.</dd></div>
-        <div><dt>Room lux</dt><dd>How much light is in the room. The brighter it is, the more colorful colors look, so a dim room needs more color on the screen for the same look. Light mode is seen in a lit room (200), dark mode in a dim one (64), as the sRGB standard has them.</dd></div>
+        <div><dt>Room lux</dt><dd>How much light is in the room. The brighter it is, the more colorful colors look, so a dim room needs more color on the screen for the same look. By default, light mode is seen in a lit room (${String(DEFAULTS.rooms.light.lux)}), dark mode in a dim one (${String(DEFAULTS.rooms.dark.lux)}), as the sRGB standard has them.</dd></div>
         <div><dt>Surround</dt><dd>How bright the room around the screen is, next to the screen itself: Average for a lit office, Dim for a dim living room in the evening, Dark for a dark room, like a cinema. A darker surround makes colors look less contrasty and less colorful.</dd></div>
       </dl>
       <div class="split even rows">${(["light", "dark"] as const)
         .map(
           (m) => `<div><h3>${MODE_NAMES[m]}</h3>
-            <label class="field grow base-field" for="set-base-${m}"><span>${baseLabel(m)}</span><input id="set-base-${m}" type="text" data-set="bases.${m}" value="${baseIn(s, m, state.gamut).written}" placeholder="${BASE_EXAMPLES[state.gamut]}" spellcheck="false" aria-label="Base, ${m} mode"></label>
+            <label class="field grow base-field" for="set-base-${m}"><span>${baseLabel(m)}</span><input id="set-base-${m}" type="text" data-set="bases.${m}" value="${baseIn(s, m, state.gamut).written}" placeholder="${BASE_EXAMPLES[m][state.gamut]}" spellcheck="false" aria-label="Base, ${m} mode"></label>
             ${numberField(`rooms.${m}.lux`, "Room lux", [...LIMITS.lux, 1])}
             <label class="field" for="set-surround-${m}"><span>Surround</span><select id="set-surround-${m}" data-set="rooms.${m}.surround">${SURROUNDS.map((name, i) => `<option value="${String(i)}" ${i === s.rooms[m].surround ? "selected" : ""}>${name}</option>`)
               .join("")}</select></label></div>`,
@@ -312,6 +313,8 @@ export function updateTune(): void {
   }
   document.querySelector(".gray-row")?.replaceWith(document.createRange().createContextualFragment(grayRow()));
   updateShares();
+  const note = document.querySelector("#hues-note");
+  if (note) note.innerHTML = huesNote(state.settings.hues);
   for (const block of document.querySelectorAll<HTMLElement>("[data-custom]")) {
     const i = Number(block.dataset.custom);
     block.querySelector(".extra-name")!.innerHTML = `${customDot(i)}${label(customKeys(state.settings)[i]!)}`;
@@ -359,13 +362,13 @@ export function pasteSettings(text: string): Settings | string {
  * @returns  HTML.
  */
 function about(): string {
-  const build = new URLSearchParams(new URL(import.meta.url).search).get("v");
+  const stamp = build();
   const source = project.repository.url.replace(/^git\+/, "").replace(/\.git$/, "");
   return `<section class="group" id="about">
       <h2>About</h2>
       <dl class="facts-list">
         <div><dt>Name</dt><dd>EK Colors</dd></div>
-        <div><dt>Version</dt><dd><span class="mono">${project.version}</span>${build ? ` <span class="soft">• build <span class="mono">${build}</span></span>` : ""} <span class="soft">•</span> <a href="${source}/blob/main/CHANGELOG.md">Changelog</a></dd></div>
+        <div><dt>Version</dt><dd><span class="mono">${project.version}</span>${stamp ? ` <span class="soft">• build <span class="mono">${stamp}</span></span>` : ""} <span class="soft">•</span> <a href="${source}/blob/main/CHANGELOG.md">Changelog</a></dd></div>
         <div><dt>Made by</dt><dd>${project.author}, 2026</dd></div>
         <div><dt>License</dt><dd>${project.license}</dd></div>
         <div><dt>Source</dt><dd><a href="${source}">${source.replace(/^https:\/\//, "")}</a></dd></div>

@@ -142,7 +142,9 @@ function perMode<T>(
  */
 function base(value: unknown, mode: Mode): string {
   if (typeof value !== "string" || !isBaseColor(value.trim()))
-    fail(`The ${mode} base must be a color like #EBEBEB or color(display-p3 0.92 0.92 0.92).`);
+    fail(
+      `The ${mode} base must be a CSS color, like ${mode === "light" ? "#EBEBEB or color(display-p3 0.92 0.92 0.92)" : "#181818 or color(display-p3 0.09 0.09 0.09)"}.`,
+    );
   const color = value.trim();
   return /^#[0-9a-f]{6}$/i.test(color) ? color.toUpperCase() : color;
 }

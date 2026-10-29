@@ -162,3 +162,23 @@ const later = () => {
 };
 document.addEventListener("input", later);
 new MutationObserver(later).observe(document.body, { childList: true, subtree: true });
+
+/**
+ * Where app.js was loaded from, its build in the query: the worker loads beside it at the same
+ * build. It's read from the page, as the code asking may sit in a shared chunk elsewhere.
+ *
+ * @returns  The address.
+ */
+export function appUrl(): URL {
+  const script = document.querySelector<HTMLScriptElement>('script[type="module"][src*="app.js"]');
+  return new URL(script?.src ?? "app.js", document.baseURI);
+}
+
+/**
+ * The build of the site loaded, as the page names it in app.js's address.
+ *
+ * @returns  The build, or "" when it isn't stamped.
+ */
+export function build(): string {
+  return appUrl().searchParams.get("v") ?? "";
+}

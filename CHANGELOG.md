@@ -34,8 +34,17 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The guides drawn on the graphs are a choice kept in the browser, like Light or Dark, rather than
   a setting, so exports no longer carry `guide`.
 - How many hues goes up to 64; past 32, the field still says solving can take a long time.
-- A just-visible difference is ΔE 2 everywhere: the marker and text in How it works, the Tuned zone
-  (now up to 0.2 gap), Even's "worth watching" (now up to 20%) and the margin for picking a base.
+- A just-visible difference is ΔE 2 everywhere: the marker and text in How it works, the zones,
+  Even and the margin for picking a base.
+- Bend's zones and Even's words are measured in the palette's own gap between neighbors, per mode,
+  rather than an assumed 10 ΔE: Uniform up to ΔE 1, Tuned up to ΔE 2, in that gap; a different
+  shade is half the gap and a different color all of it. The last zone is Distinct.
+- What the site says about a palette follows the palette on screen rather than EK Palette: the
+  neighbor spacing on Overview, How it works and the Algorithm page, the rooms, which mode needs
+  more color, the identity tiers, the APCA range of the tiers, a tier's colorfulness with Equal per
+  tier off, how far light and dark hues land apart, rounding past a tier, the grays' colorfulness,
+  the blind test's length, and the base fields' examples per mode. The hues field warns once
+  neighbors, as measured, sit under ΔE 5 apart.
 - A return visit shows the last palette solved at once, while it solves again.
 - The fonts, Instrument Sans and JetBrains Mono, are served with the site, with their licenses in
   `site/fonts/`, so a visit asks nothing of Google Fonts.

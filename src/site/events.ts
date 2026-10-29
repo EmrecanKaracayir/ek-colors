@@ -235,7 +235,7 @@ document.addEventListener("input", (event) => {
     const check = ordered && !ownTier ? pickCheck(state.settings, mode, gamut, color) : null;
     markField(
       el,
-      !valid ? `${GAMUT_NAMES[gamut]} screens take any CSS color they can show, like ${BASE_EXAMPLES[gamut]}`
+      !valid ? `${GAMUT_NAMES[gamut]} screens take any CSS color they can show, like ${BASE_EXAMPLES[mode][gamut]}`
       : !ordered ? `${mode === "light" ? "Lighter" : "Darker"} than the ${mode === "light" ? "dark" : "light"} base, ${other}`
       : check && !check.same ? `That's a different color from the ${mode} base: ΔE ${check.off.toFixed(1)} from it, where the closest color is ΔE ${check.loss.toFixed(1)}.`
       : "",

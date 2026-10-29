@@ -7,9 +7,9 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import project from "../../../package.json";
-import { JUST_VISIBLE, lightness, LUX_TO_ADAPTING, viewingConditions } from "../../palette/model";
+import { hueTurn, JUST_VISIBLE, lightness, LUX_TO_ADAPTING, viewingConditions } from "../../palette/model";
 import { anchorHue, anchorSource } from "../../palette/references";
-import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../../palette/settings";
+import { LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES } from "../../palette/settings";
 import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, NEUTRAL_START, TEXT_MINIMUM, textScore } from "../../palette/solve";
 import { BARELY_VISIBLE, escape, zones } from "../graph";
 import { evenGap } from "../settings/strip";
@@ -52,6 +52,19 @@ export function algorithmPage(ctx: Context): string {
   const s = ctx.settings;
   const identityReach = s.hues === NAMES.length ? s.hueReach.identity : Math.min(s.hueReach.identity, 180 / s.hues);
   const anchor = anchorHue(s);
+  // What this palette measures, where the text quotes it: how far light and dark hues land apart,
+  // how far rounding puts colors past their tier, and how colorful the grays look.
+  const p = ctx.palette;
+  const hueColors = (mode: Mode) => p?.[mode].colors.filter((c) => c.kind === "hue") ?? [];
+  const apart = p
+    ? Math.max(0, ...hueColors("light").map((c, i) => {
+        const dark = hueColors("dark")[i];
+        const [l, d] = [c.tiers[identityOf(s, "light")]?.default.hue, dark?.tiers[identityOf(s, "dark")]?.default.hue];
+        return l === undefined || d === undefined ? 0 : Math.abs(hueTurn(l, d));
+      }))
+    : null;
+  const past = p ? Math.max(0, ...MODES.flatMap((m) => p[m].colors.flatMap((c) => s.tiers.flatMap((t) => [c.tiers[t]?.default, c.tiers[t]?.muted].map((w) => (w ? Math.abs(w.apca) - t : 0)))))) : null;
+  const grayM = p ? MODES.flatMap((m) => s.tiers.map((t) => p[m].grays[t]?.colorfulness ?? 0)) : [];
   const starts = hueKeys(s.hues).map((key, k) => {
     const placed = k === 0 ? undefined : s.placed[key];
     return `<tr><th scope="row">${ctx.label(key)}${k === 0 ? " (anchor)" : ""}</th><td class="mono">${fixed((anchor + (k * 360) / s.hues) % 360, 1)}°</td><td class="mono">${placed === undefined ? "—" : `${fixed(placed, 0)}°`}</td></tr>`;
@@ -129,8 +142,8 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
     dark base:  ok → hi ← J  else lo ← J   // keep the darkest that passes
   x ← color(light ? lo : hi, M, h)
   return x if APCA(x, base) ≥ Lc after rounding, else none</pre>
-      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces, typically a few tenths of an Lc. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
-      <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together are just at their minimum for text. It's measured on a gray, so it's known before any color is solved:</p>
+      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces${past === null ? "" : `, here up to ${past.toFixed(2)} Lc`}. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
+      <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together come closest to their minimum for text. It's measured on a gray, so it's known before any color is solved:</p>
 <pre class="formula">g(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
 score(Lc) = (APCA(g, base) / ${String(TEXT_MINIMUM.apca)} + WCAG(g, base) / ${String(TEXT_MINIMUM.wcag)}) / 2     // 1: both just at their minimum for text
 identity  = the tier with score nearest 1, the lower on a tie
@@ -197,7 +210,7 @@ a*, b* = M*·cos h, M*·sin h
         h ← hue_i + step;  skip if |h − start_i| &gt; reach
         try color_i ← strongest(h, target(h));  rescore
         keep it if the score drops by more than 10⁻⁴</pre>
-      <p>The identity tier (light Lc ${String(identityOf(s, "light"))}, dark Lc ${String(identityOf(s, "dark"))}) is spaced first from the starting hues with a reach of ±${String(s.hueReach.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less: ±${fixed(identityReach, 1)}° here`}. Every other tier starts from the identity tier's hues with ±${String(s.hueReach.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
+      <p>The identity tier (light Lc ${String(identityOf(s, "light"))}, dark Lc ${String(identityOf(s, "dark"))}) is spaced first from the starting hues with a reach of ±${String(s.hueReach.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less: ±${fixed(identityReach, 1)}° here`}. Every other tier starts from the identity tier's hues with ±${String(s.hueReach.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land close to each other${apart === null ? "" : `, ${apart.toFixed(1)}° apart at most here`}; a placed color sits exactly where it was placed in both.</p>
       <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(CLOSEST * 100)}% of the even step from each (${fixed((360 / s.hues) * CLOSEST, 2)}° here), and a spacing step that would bring a color closer than that to a neighbor isn't taken. Dragging the anchor stops before any color it carries would pass a placed one.</p>
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
@@ -219,10 +232,10 @@ hue          = (2 · √(M*₁ · M*₂) · sin(Δh / 2))²      // the chord th
 custom(c, Lc) = strongest(hue(c), T(Lc) × share(c), Lc)             // not spaced${s.customColors.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
       <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a base with a hue each neutral color, which takes it:</p>
 <pre class="formula">gray(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
-tinted       = M(base) ≥ ${String(NEUTRAL_BAND[0])}                       // a pure gray still has M 1–2 in CAM16
+tinted       = M(base) ≥ ${String(NEUTRAL_BAND[0])}                       // a pure gray still has some M in CAM16${grayM.length ? `: ${Math.min(...grayM).toFixed(1)}–${Math.max(...grayM).toFixed(1)} here` : ""}
 neutral(n, Lc) = strongest(hue(base), M(base) × share(n), Lc)    // only on a tinted base
 zones        = Gray under M ${String(NEUTRAL_BAND[0])}, Neutral M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}, Color past it, for custom colors too; a new neutral color starts at M ${String(NEUTRAL_START)}
-from Gray    = ΔE(a*, b*) to the tier's gray, the tint alone       // M ${String(NEUTRAL_BAND[0])} ≈ ΔE 2–4, M ${String(NEUTRAL_BAND[1])} ≈ ΔE 5.5–6.5
+from Gray    = ΔE(a*, b*) to the tier's gray, the tint alone       // on four test bases: M ${String(NEUTRAL_BAND[0])} ≈ ΔE 2.3–3.9, M ${String(NEUTRAL_BAND[1])} ≈ ΔE 5.5–6.4
 new share    = min(1, ${String(NEUTRAL_START)} / M(base)), the more colorful tinted base; 1 when neither is tinted
 exported     = a gray mode's neutral colors are its grays, so every name holds a color in both modes
 two gray bases = no neutral colors at all; Gray alone</pre>
@@ -241,7 +254,7 @@ turned         Uniform, solved with the anchor moved by the turn (step 7)   // "
 
     <section class="step">
       <h2>10. Three gamuts</h2>
-      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Hues and colors are never mapped from one gamut to another: each gamut's ceilings, hues and colors come from its own solve, against its own base. Only the base is mapped. Each mode has one base, any opaque CSS color. A gamut that can show it uses it exactly; a narrower one uses the closest color it can show to the next wider gamut's base, by the CSS Color 4 gamut mapping: hue and lightness kept, colorfulness lowered until it fits, so a color picked for Wide carries down to Standard. That color can be picked by hand, as long as it's no more than ΔE 2 further from the base than the closest color is; a further one is a different background, and is refused. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
+      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Hues and colors are never mapped from one gamut to another: each gamut's ceilings, hues and colors come from its own solve, against its own base. Only the base is mapped. Each mode has one base, any opaque CSS color. A gamut that can show it uses it exactly; a narrower one uses the closest color it can show to the next wider gamut's base, by the CSS Color 4 gamut mapping: hue and lightness kept, colorfulness lowered until it fits, so a color picked for Wide carries down to Standard. That color can be picked by hand, as long as it's no more than ΔE ${String(JUST_VISIBLE)} further from the base than the closest color is; a further one is a different background, and is refused. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: …)</code>.</p>
     </section>
 
     <section class="step">
@@ -252,7 +265,7 @@ labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA • ≥ 4.5 AA • ≥ 3 AA large • else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.customColors.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker; the header shows how long the one on screen took.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.customColors.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker with eight hues, and longer with many more; the header shows how long the one on screen took.</p>
       <p>The hues are the costly part, and custom colors, neutral colors and the muted share don't move them. So each worker keeps the hues of its last few solves, keyed by every setting but those, and a change to them only places the colors on the kept hues again: a few milliseconds instead of a whole solve, so they follow a slider as it moves.</p>
     </section>
 

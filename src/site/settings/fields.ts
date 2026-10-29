@@ -6,30 +6,34 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { keptPicks } from "../../palette/bases";
-import type { Settings } from "../../palette/settings";
+import { JUST_VISIBLE } from "../../palette/model";
+import { MODES, type Settings } from "../../palette/settings";
 import { NEUTRAL_BAND, withNeutrals } from "../../palette/solve";
 import { flash } from "../dom";
 import { baseTint } from "../pages/color";
 import { $ } from "../parts";
 import { popButton, refreshPopover } from "../popover";
 import { save, state } from "../state";
+import { evenGap } from "./strip";
 
-/** Past this many hues, neighbors come too close to tell apart easily. */
-const CLOSE_HUES = 16;
+/** Neighbors closer than this, ΔE, read as shades of one another: two and a half just-visible steps. */
+const CLOSE_GAP = JUST_VISIBLE * 2.5;
 
 /** Past this many hues, solving can take a long time. */
 const SLOW_HUES = 32;
 
 /**
- * What a count of hues costs, said under its field: amber once neighbors come too close, red once
- * solving can take a long time.
+ * What a count of hues costs, said under its field: amber once neighbors, as last measured, come
+ * close enough to read as shades of one another, red once solving can take a long time.
  *
  * @param hues  How many hues.
  * @returns     HTML, or nothing.
  */
 export function huesNote(hues: number): string {
+  // The closer mode's even gap between neighbors, as last measured.
+  const gap = Math.min(...MODES.map(evenGap));
   const notes = [
-    hues > CLOSE_HUES ? `<p class="field-note">With more than ${String(CLOSE_HUES)} hues, neighbors come too close to tell apart easily.</p>` : "",
+    gap < CLOSE_GAP ? `<p class="field-note">Neighbors are ${gap.toFixed(1)} ΔE apart here, close enough to read as shades of one another.</p>` : "",
     hues > SLOW_HUES ? `<p class="field-note unmet">With more than ${String(SLOW_HUES)} hues, solving can take a long time, longer on phones.</p>` : "",
   ];
   return notes.join("");

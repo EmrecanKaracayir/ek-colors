@@ -146,7 +146,7 @@ function valuesPanel(view: CurveView): string {
 function curveReadout(view: CurveView): string {
   if (!view.cost) return "Solving…";
   const moved = view.cost.filter((c) => c.difference >= 0.05).toSorted((a, b) => b.difference - a.difference);
-  if (!moved.length) return "Every color is equally colorful, as the model says.";
+  if (!moved.length) return "The curve moves nothing: every color keeps the colorfulness its tier gives it.";
   const most = moved[0]!;
   // A color the curve doesn't touch can still move: the others re-space around the ones it does.
   const each = moved

@@ -10,6 +10,7 @@ import { readSettings } from "../palette/check";
 import { SYSTEMS } from "../palette/references";
 import type { Gamut, Mode, Settings } from "../palette/settings";
 import { type GamutPalette, PAGES, withNeutrals } from "../palette/solve";
+import { build } from "./dom";
 import type { Format } from "./highlight";
 
 /** A color's default version, or its muted one. */
@@ -37,7 +38,7 @@ const GUIDE = "ek-colors:guide";
 const PALETTE = "ek-colors:palette";
 
 /** This script's build, so a palette another build solved isn't drawn. */
-const BUILD = new URLSearchParams(new URL(import.meta.url).search).get("v") ?? "";
+const BUILD = build();
 
 /** The widest gamut tier this screen covers. */
 export const SCREEN: Gamut = matchMedia("(color-gamut: rec2020)").matches

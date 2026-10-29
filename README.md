@@ -1,9 +1,9 @@
 # EK Colors
 
 Accessible color palettes that are solved, not picked. EK Colors builds a palette from a handful of
-rules: hues, custom colors and neutrals, for light and dark, on six contrast tiers, for three kinds of
-screen. Every color sits exactly on its contrast, the hues look equally colorful, and each is as
-different from its neighbors as they are from theirs.
+rules: hues, custom colors and neutrals, for light and dark, on contrast tiers (six by default), for
+three kinds of screen. Every color sits exactly on its contrast, and the hues aim to look equally
+colorful and as different from their neighbors as those are from theirs.
 
 It ships with **EK Palette**, the palette it was made for: eight hues and brown. Change the settings
 and it solves a palette of its own.

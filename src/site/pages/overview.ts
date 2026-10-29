@@ -34,7 +34,7 @@ export function overviewPage(): string {
   const icon = iconSvg(settings.bases.light, settings.bases.dark, list.filter((c) => c.kind === "hue").map((c) => c.tiers[tier]!.default), 'class="palette-icon" aria-hidden="true"');
   return `<section class="intro">
       <h1 class="named">${icon}<span>${paletteName()}</span></h1>
-      <p>${custom.length ? `${String(hues)} + ${String(custom.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the custom ${custom.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
+      <p>${custom.length ? `${String(hues)} + ${String(custom.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful and evenly different, ${range(ring)} ΔE between neighbors; the custom ${custom.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, evenly different from its neighbors: ${range(ring)} ΔE apart.`}</p>
     </section>
     <section class="glance">
       <h2>At a glance <span class="soft">• Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>

@@ -15,11 +15,10 @@ import { state } from "../state";
 import { write } from "./fields";
 import { jumpTo } from "./page";
 
-/** How each gamut tier writes a base, for the field's hint and its problems. */
-export const BASE_EXAMPLES: Record<Gamut, string> = {
-  standard: "#EBEBEB",
-  wide: "color(display-p3 0.92 0.92 0.92)",
-  ultra: "color(rec2020 0.93 0.93 0.93)",
+/** How each gamut tier writes a mode's base, for the field's hint and its problems: EK Palette's bases. */
+export const BASE_EXAMPLES: Record<Mode, Record<Gamut, string>> = {
+  light: { standard: "#EBEBEB", wide: "color(display-p3 0.92 0.92 0.92)", ultra: "color(rec2020 0.93 0.93 0.93)" },
+  dark: { standard: "#181818", wide: "color(display-p3 0.09 0.09 0.09)", ultra: "color(rec2020 0.14 0.14 0.14)" },
 };
 
 /**

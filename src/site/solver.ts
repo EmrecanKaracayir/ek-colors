@@ -8,6 +8,7 @@
 import { forGamut } from "../palette/bases";
 import { GAMUTS, type Gamut } from "../palette/settings";
 import { huesKey } from "../palette/solve";
+import { appUrl } from "./dom";
 import { updateExport } from "./settings/export";
 import { updateTune } from "./settings/page";
 import { render, status } from "./shell";
@@ -23,7 +24,7 @@ import type { Request, Response } from "./worker";
  * @returns       The worker.
  */
 export function spawn(answer: (event: MessageEvent<Response>) => void): Worker {
-  const url = new URL(`worker.js${new URL(import.meta.url).search}`, import.meta.url);
+  const url = new URL(`worker.js${appUrl().search}`, appUrl());
   const started = new Worker(url, { type: "module" });
   started.addEventListener("message", answer);
   return started;

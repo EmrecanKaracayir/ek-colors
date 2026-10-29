@@ -101,7 +101,7 @@ function flat(): Settings {
  *
  * @returns  True when either mode's curve has an amount.
  */
-function curved(): boolean {
+export function curved(): boolean {
   return Object.values(state.settings.colorfulnessPerHue).some((points) => points.some((p) => !p.off && p.amount !== 0));
 }
 

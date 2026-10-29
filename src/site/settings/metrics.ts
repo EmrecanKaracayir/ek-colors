@@ -202,7 +202,7 @@ popSource("metric", (which) => {
       <dl class="pop-facts">
         <div><dt>Even</dt><dd>±${String(Math.round(evenOff * 100))}%: ${evenness(evenOff, gap)}</dd></div>
         <div><dt>M</dt><dd>${vivid && Math.abs(vivid.colorful[3]) >= 0.005 ? `${percent(vivid.colorful[3])} (${vivid.name})` : "equal"}</dd></div>
-        <div><dt>Turned</dt><dd>${turnText(angle)}, which costs nothing</dd></div>
+        <div><dt>Turned</dt><dd>${turnText(angle)}, which keeps the lineup uniform</dd></div>
       </dl>
       <p class="pop-how">You're on safe ground while Bend stays within Tuned or Reshaped and Even under ${String(evenLimits(gap)[0])}%: deliberate adjustments, with every pair of neighbors still about equally easy to tell apart. It gets risky when Even passes ${String(evenLimits(gap)[1])}% (two colors getting confusable) or Bend passes 0.5, where the palette is no longer honestly uniform.</p>
       ${zoneTable(gap)}`;
@@ -210,7 +210,7 @@ popSource("metric", (which) => {
   const heads: Record<string, string> = {
     bend: `<h3>Bend</h3><p>How far the colors are from the nearest uniform lineup. Turning the whole lineup keeps it uniform, so the uniform lineup is first turned to best match the placed hues (${turnText(angle)}); what's left is the bend. Each color's difference, in gaps (one gap is ${gap.toFixed(1)} ΔE), averaged as a root mean square, so one large difference isn't hidden among small ones.</p>${zoneTable(gap)}<p class="pop-how">Rows: Uniform is the lineup at the anchor; Turned is it turned to match; +H adds placed hues; +M adds colorfulness per hue. Point at a swatch for that color; click a row's name to keep it shown, then ↑ and ↓ switch rows.</p>`,
     even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under ${String(evenLimits(gap)[0])}% is fine, ${String(evenLimits(gap)[0])} to ${String(evenLimits(gap)[1])}% worth watching, over ${String(evenLimits(gap)[1])}% two colors are getting confusable (or, over even, a hole in the palette).</p>${thresholds(gap)}`,
-    colorful: `<h3>M</h3><p>How equally colorful the colors are: the color furthest from the target colorfulness (M ${targets[3].toFixed(1)} on this tier), as a share of it. The uniform lineup makes every color equally colorful; colorfulness per hue changes that on purpose, so this says how far you've pushed.</p>`,
+    colorful: `<h3>M</h3><p>How equally colorful the colors are: the color furthest from the target colorfulness (M ${targets[3].toFixed(1)} on this tier), as a share of it. The uniform lineup aims every color at the same colorfulness, as far as the screen allows; colorfulness per hue changes that on purpose, so this says how far you've pushed.</p>`,
   };
   if (which2 === "head") return heads[kind] ?? "";
   const row = Number(which2) as Row;

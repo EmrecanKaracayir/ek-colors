@@ -5,7 +5,7 @@
 | with its share of the base's tint.                                                               |
 \*------------------------------------------------------------------------------------------------*/
 
-import { deltaE } from "../../palette/model";
+import { deltaE, JUST_VISIBLE } from "../../palette/model";
 import { GAMUT_NAMES, type Mode, ROLES } from "../../palette/settings";
 import { GRAY, NEUTRAL_BAND, type Swatch, colorKeys, customKeys, identityOf, tinted } from "../../palette/solve";
 import { current, model, onScreen } from "../derived";
@@ -36,7 +36,12 @@ const COLUMNS: readonly Column[] = [
         ? "The color as a hex code, for every screen."
         : `The color as a CSS color() for ${GAMUT_NAMES[state.gamut]} screens. A screen that can't show it falls back to the nearest color it can; the Standard gamut gives hex codes.`,
   },
-  { key: "apca", name: () => "APCA", unit: "Lc", what: () => "Contrast against the background as APCA's Lc, from 15 for faint fills to 90 for long reading. Each color is solved to land exactly on its tier." },
+  { key: "apca", name: () => "APCA", unit: "Lc", what: () => {
+      const [low, high] = [Math.min(...state.settings.tiers), Math.max(...state.settings.tiers)];
+      const role = (t: number) => (ROLES[t] ?? "").toLowerCase();
+      return `Contrast against the background as APCA's Lc, here from ${String(low)} for ${role(low)} to ${String(high)} for ${role(high)}. Each color is solved to land exactly on its tier.`;
+    },
+  },
   { key: "wcag", name: () => "WCAG 2", what: () => "Contrast against the background as WCAG 2's ratio, from 1:1 to 21:1, with the level it reaches. Each level's badge explains what it allows." },
   { key: "lightness", name: () => "Lightness", unit: "J", what: () => "How light the color looks, from 0 for black to 100 for white. The tier's contrast fixes it." },
   { key: "chroma", name: () => "Chroma", unit: "C", what: () => "How far the color is from gray, measured against a white under the same light." },
@@ -44,7 +49,8 @@ const COLUMNS: readonly Column[] = [
     key: "colorfulness",
     name: () => "Colorfulness",
     unit: "M",
-    what: () => "How much color the eye sees, on its own scale rather than against white. The palette aims a tier's colors at the same M so they look equally vivid; a chip says when a color falls short of its own aim.",
+    what: () =>
+      `How much color the eye sees, on its own scale rather than against white. ${state.settings.equalTiers ? "With Equal per tier on, a tier's colors aim at the same M so they look equally vivid" : "Each color aims at the target M, as far as the screen allows"}; a chip says when a color falls short of its own aim.`,
   },
   { key: "hue", name: () => "Hue", what: () => "The hue angle around the color wheel, 0 to 360°, and how it reads as a mix of the four unique hues: R 4 B is red with 4% blue." },
 ];
@@ -303,7 +309,7 @@ popSource("share", (path) => {
     <p class="pop-how">The bar under the slider shows the same zones, lined up with the thumb.</p>
     <dl class="pop-facts zones">${rows}</dl>
     <details class="pop-sources"><summary>Where these limits come from</summary>
-      <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About 2 is what most people notice with two colors side by side on a screen; 5 is where the site calls a difference a different shade. Measured against Gray on four bases, two light and two dark, at every tier: M ${String(NEUTRAL_BAND[0])} is ΔE 2.3–3.9 from it, just past the visible step, and M ${String(NEUTRAL_BAND[1])} is ΔE 5.5–6.4, a little past a different shade.</p>
+      <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About ${String(JUST_VISIBLE)} is what most people notice with two colors side by side on a screen; about 5, half the gap between neighbors in a palette of eight hues, reads as a different shade. Measured against Gray on four bases, two light and two dark, at every tier: M ${String(NEUTRAL_BAND[0])} is ΔE 2.3–3.9 from it, just past the visible step, and M ${String(NEUTRAL_BAND[1])} is ΔE 5.5–6.4, a little past a different shade.</p>
       <p>Established tinted neutrals sit inside the range: Radix's slate and Tailwind's zinc peak around M 5–7, and Tailwind's slate, around M 9–14, is at its top, where a gray reads blue.</p>
       <p>The ΔE figures come from color science; the limits are judgment built on them, not results of a study. Eyes and screens differ.</p></details>`;
 });

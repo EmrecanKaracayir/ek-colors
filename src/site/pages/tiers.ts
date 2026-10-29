@@ -81,13 +81,13 @@ popSource("identity", (which) => {
   const score = (t: number) => textScore(base, t).toFixed(2);
   if (tier !== identityOf(settings, mode))
     return `<h3>${star("suggested")}Suggested identity tier</h3>
-      <p>Lc ${String(tier)} is where APCA and WCAG 2 together are just at their minimum for text in ${mode} mode, Lc ${String(TEXT_MINIMUM.apca)} and ${String(TEXT_MINIMUM.wcag)}:1, with a score of ${score(tier)}; 1 is exactly at the minimum. It's the identity tier when it's left automatic.</p>
+      <p>Lc ${String(tier)} is where APCA and WCAG 2 together come closest to their minimum for text in ${mode} mode, Lc ${String(TEXT_MINIMUM.apca)} and ${String(TEXT_MINIMUM.wcag)}:1, with a score of ${score(tier)}; 1 is exactly at the minimum. It's the identity tier when it's left automatic.</p>
       <p>Lc ${String(identityOf(settings, mode))} is set by hand instead, with a score of ${score(identityOf(settings, mode))}.</p>
       <p><button type="button" data-identity="auto">Back to automatic</button></p>`;
   const picked =
     settings.identityTier[mode] === "auto"
-      ? `<p>Picked automatically: it's where APCA and WCAG 2 together are just at their minimum for text, Lc ${String(TEXT_MINIMUM.apca)} and ${String(TEXT_MINIMUM.wcag)}:1, with a score of ${score(tier)} here; 1 is exactly at the minimum.</p>`
-      : `<p>Set by hand. Automatic would be Lc ${String(auto)}, where APCA and WCAG 2 together are just at their minimum for text (a score of ${score(auto)}, against ${score(tier)} here).</p>
+      ? `<p>Picked automatically: it's where APCA and WCAG 2 together come closest to their minimum for text, Lc ${String(TEXT_MINIMUM.apca)} and ${String(TEXT_MINIMUM.wcag)}:1, with a score of ${score(tier)} here; 1 is exactly at the minimum.</p>`
+      : `<p>Set by hand. Automatic would be Lc ${String(auto)}, where APCA and WCAG 2 together come closest to their minimum for text (a score of ${score(auto)}, against ${score(tier)} here).</p>
         <p><button type="button" data-identity="auto">Back to automatic</button></p>`;
   return `<h3>${star("selected")}Identity tier</h3>
     <p>Lc ${String(tier)} stands for each hue in ${mode} mode: the Overview shows it, every tier's hues start from it, and the blind tests use it.</p>

@@ -190,6 +190,23 @@ function roomDemo(ctx: Context): string {
 }
 
 /**
+ * The tiers the automatic identity picks on each base, in words: WCAG 2 rates colors on a dark base
+ * as more contrasty than APCA does, which can put the dark base's lower.
+ *
+ * @param s  The settings.
+ * @returns  Text.
+ */
+function autoTiers(s: Settings): string {
+  const [light, dark] = [autoIdentity(s.bases.light, s.tiers), autoIdentity(s.bases.dark, s.tiers)];
+  if (light === dark) return `Lc ${String(light)} on both bases`;
+  const why = dark < light ? ", since WCAG 2 rates colors on a dark base as more contrasty than APCA does" : "";
+  return `Lc ${String(light)} on the light base and Lc ${String(dark)} on the dark one${why}`;
+}
+
+/** A room in words, by its CAM16 surround. */
+const ROOM_WORDS: readonly string[] = ["a dark room", "a dim room", "a normal lit room"];
+
+/**
  * The same hue at the same colorfulness on the same tier, solved for each mode on its own base and
  * in its own room, with how much color the screen gives each.
  *
@@ -224,7 +241,11 @@ function modesDemo(ctx: Context): string {
       <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks M ${cam.m.toFixed(0)} • chroma C ${cam.chroma.toFixed(0)}</span></figcaption>
     </figure>`;
   });
-  return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(first.key)}'s hue at M ${String(target)} on Lc ${String(lc)}, in each mode's room.</p>`;
+  // Which mode needs more color on the screen to look the same: the one whose room and base make
+  // colors look quieter.
+  const [light, dark] = MODES.map((mode) => m.cam(mode, colors[mode]).chroma) as [number, number];
+  const more = Math.abs(light - dark) < 1 ? "Both need about the same chroma on the screen: their rooms and bases make colors look alike." : `${MODE_NAMES[dark > light ? "dark" : "light"]} mode needs more chroma on the screen to look as colorful: its room and base make colors look quieter.`;
+  return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(first.key)}'s hue at M ${String(target)} on Lc ${String(lc)}, in each mode's room. ${more}</p>`;
 }
 
 /**
@@ -372,7 +393,7 @@ function differenceDemo(ctx: Context): string {
       <span class="scale-mark" style="left:${at(JUST_VISIBLE)}"><span>Just visible</span></span>
       ${typical ? `<span class="scale-mark" style="left:${at(typical)}"><span>Neighbors on this tier</span></span>` : ""}
     </div>
-    <p class="soft">CAM16-UCS distance, and the share of it each part makes up. About ${String(JUST_VISIBLE)} is the smallest difference most people see with two colors side by side. On a tier, every color solves to sit about the same distance from its neighbors, which is why the circle below stays even.</p>`;
+    <p class="soft">CAM16-UCS distance, and the share of it each part makes up. About ${String(JUST_VISIBLE)} is the smallest difference most people see with two colors side by side.${ring.length ? ` On Lc ${String(lc)} here, neighbors are ${Math.min(...ring).toFixed(1)} to ${Math.max(...ring).toFixed(1)} apart, ${typical.toFixed(1)} on average: the uniform lineup spaces them as evenly as the screen allows, and placed hues and colorfulness per hue move them on purpose.` : ""}</p>`;
 }
 
 /**
@@ -526,9 +547,8 @@ export function howPage(ctx: Context): string {
   const swatches = (count + custom) * s.tiers.length * 2 * 2 * GAMUTS.length;
   const anchor = anchorSource(s);
   const hueOptions = hues(ctx).map((h) => [h.key, ctx.label(h.key)] as const);
-  // The even difference between neighbors on the identity tier, as the strip measures gaps.
-  const ring = ctx.palette?.[ctx.mode].ring[identityOf(s, ctx.mode)] ?? [];
-  const gap = ring.length ? ring.reduce((x, y) => x + y, 0) / ring.length : 0;
+  // The even difference between neighbors, as the strip and the zones measure gaps.
+  const gap = evenGap(ctx.mode);
   return `<section class="intro">
       <h1>How it works</h1>
       <p><strong>EK Colors</strong> solves color palettes instead of picking them by eye. A small program builds a palette from a handful of rules, so every color can be explained, and solved again when a rule changes. It starts from <strong>EK Palette</strong>, the palette it was made for; change the settings and it solves a palette of its own. This page walks through the rules one at a time; every demo runs the same code as the solver.</p>
@@ -543,9 +563,9 @@ export function howPage(ctx: Context): string {
     <section class="step">
       <h2>Color depends on the room</h2>
       <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light. The light mode's base is always lighter than the dark mode's.</p>
-      <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. ${s.rooms.light.lux === 200 && s.rooms.dark.lux === 64 ? "Both come from the sRGB standard: its typical room and its reference room." : "By default they're 200 and 64 lux, the sRGB standard's typical and reference rooms."} CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
+      <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, ${ROOM_WORDS[s.rooms.light.surround] ?? "a room"}. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, ${ROOM_WORDS[s.rooms.dark.surround] ?? "a room"}. ${s.rooms.light.lux === 200 && s.rooms.dark.lux === 64 ? "Both come from the sRGB standard: its typical room and its reference room." : "By default they're 200 and 64 lux, the sRGB standard's typical and reference rooms."} CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
       <div class="demo"><div class="demo-out wide">${roomDemo(ctx)}</div></div>
-      <p>So the same target needs different screen colors in each mode. Both of these aim at the same colorfulness. The dark-mode one gets more color on the screen, because a dim room makes colors look quieter.</p>
+      <p>So the same target needs different screen colors in each mode. Both of these aim at the same colorfulness.</p>
       <div class="demo"><div class="demo-out wide">${modesDemo(ctx)}</div></div>
     </section>
 
@@ -556,7 +576,7 @@ export function howPage(ctx: Context): string {
         .map((t) => `<tr><th scope="row" class="mono">Lc ${String(t)}</th><td>${ROLES[t] ?? ""}</td></tr>`)
         .join("")}</tbody></table></div>
       <p>For each hue and tier, the solver searches lightness until the color sits exactly on the tier: never below it, and only as far above as rounding forces. The older WCAG 2 contrast is reported beside every color too, because laws still point to it. Its badge says what that ratio allows: AAA and AA pass for text, AA large only for large text and for icons, borders and controls, and below 3:1 for nothing that must be read. Each badge opens its level.</p>
-      <p>One tier stands for each hue: the <strong>identity tier</strong>. It's where the colors look most like themselves: clear enough to read, neither faint nor heavy. The solver picks it as the tier where APCA and WCAG 2, taken together, are just at their minimum for text: Lc ${String(autoIdentity(s.bases.light, s.tiers))} on the light base and Lc ${String(autoIdentity(s.bases.dark, s.tiers))} on the dark one, since WCAG 2 rates colors on a dark base as more contrasty than APCA does.${MODES.filter((m) => s.identityTier[m] !== "auto")
+      <p>One tier stands for each hue: the <strong>identity tier</strong>. It's where the colors look most like themselves: clear enough to read, neither faint nor heavy. The solver picks it as the tier where APCA and WCAG 2, taken together, come closest to their minimum for text: ${autoTiers(s)}.${MODES.filter((m) => s.identityTier[m] !== "auto")
         .map((m) => ` Here, ${m} mode's is set by hand to Lc ${String(identityOf(s, m))}.`)
         .join("")} Any tier can be made the identity on the Tiers page, or in Settings.</p>
       <div class="demo">
@@ -648,7 +668,7 @@ export function howPage(ctx: Context): string {
     <section class="step">
       <h2>Neutrals</h2>
       <p>Every palette has <strong>Gray</strong> on every tier: no hue at all, red, green and blue the same, exactly on the tier's contrast against the base, as every color is.</p>
-      <p>A <strong>neutral color</strong> takes the base's hue at a share of the base's own colorfulness, so it belongs with a base of that hue. On warm paper, text in a warm neutral sits on the page instead of looking cold on it. A color's colorfulness puts it in a zone: under M ${String(NEUTRAL_BAND[0])} it reads as gray, from M ${String(NEUTRAL_BAND[0])} to ${String(NEUTRAL_BAND[1])} it shows the hue yet reads as a neutral, and past that it reads as a color. The limits come from color difference: M ${String(NEUTRAL_BAND[0])} is just visibly different from Gray side by side, and M ${String(NEUTRAL_BAND[1])} is a different shade of it. In Settings, a bar under every colorfulness slider shows the zones, and its readout explains them.</p>
+      <p>A <strong>neutral color</strong> takes the base's hue at a share of the base's own colorfulness, so it belongs with a base of that hue. On warm paper, text in a warm neutral sits on the page instead of looking cold on it. A color's colorfulness puts it in a zone: under M ${String(NEUTRAL_BAND[0])} it reads as gray, from M ${String(NEUTRAL_BAND[0])} to ${String(NEUTRAL_BAND[1])} it shows the hue yet reads as a neutral, and past that it reads as a color. The limits come from color difference, measured on four test bases: M ${String(NEUTRAL_BAND[0])} is just past a visible step from Gray side by side, and M ${String(NEUTRAL_BAND[1])} a little past a different shade of it. A color's page gives its own distance from Gray. In Settings, a bar under every colorfulness slider shows the zones, and its readout explains them.</p>
       <p>A palette can have several neutral colors, each with its own share, added in Settings under Extra colors. Each mode follows its own base. A base under M ${String(NEUTRAL_BAND[0])}, gray or nearly, has no hue to give, so in that mode its neutral colors are Gray; when both bases are gray, there are none to add. Gray and each neutral color have pages of their own beside the colors'.</p>
     </section>
 

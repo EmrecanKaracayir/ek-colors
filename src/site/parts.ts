@@ -324,7 +324,7 @@ popSource("why", (which) => {
   const tierTarget = palette.targets[tier] ?? s.target;
   if (kind === "tier")
     return `<h3 class="why tier">Sets the tier</h3>
-      <p>On Lc ${String(tier)}, ${name.toLowerCase()} can't be more colorful than M ${s.colorfulness.toFixed(1)} on ${gamut} screens. <strong>Equal per tier</strong> is on, so every color on this tier is held to M ${tierTarget.toFixed(1)} to match it, though most could go further.</p>
+      <p>On Lc ${String(tier)}, ${name.toLowerCase()} can't be more colorful than M ${s.colorfulness.toFixed(1)} on ${gamut} screens. <strong>Equal per tier</strong> is on, so every color on this tier is held to M ${tierTarget.toFixed(1)} to match it, even those that could go further.</p>
       ${EQUAL_OFF}`;
   if (kind === "lowered") {
     const limit = label(palette.limits[tier]!);
@@ -371,9 +371,13 @@ export function held(tier: number): string {
   const p = current()?.[state.mode];
   if (!p) return "…";
   const limit = p.limits[tier];
-  return limit
-    ? `M ${(p.targets[tier] ?? 0).toFixed(1)}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`
-    : `M ${(p.targets[tier] ?? 0).toFixed(1)}, every color reaches it`;
+  const target = `M ${(p.targets[tier] ?? 0).toFixed(1)}`;
+  if (limit) return `${target}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`;
+  // With Equal per tier off, a color the screen can't take that far stays short of it.
+  const short = p.colors.filter((c) => c.tiers[tier]?.default.short).map((c) => label(c.key));
+  if (!short.length) return `${target}, every color reaches it`;
+  const names = short.length === 1 ? short[0]! : `${short.slice(0, -1).join(", ")} and ${short.at(-1)!}`;
+  return `${target}, which ${names} can't reach on ${GAMUT_NAMES[state.gamut]} screens`;
 }
 
 /**

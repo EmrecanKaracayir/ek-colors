@@ -14,7 +14,7 @@ import { signedWhole } from "../graph";
 import { card, colors, isPreset, label, paletteName, range } from "../parts";
 import { comparing } from "../shell";
 import { state } from "../state";
-import { baseline } from "../baselines";
+import { baseline, curved } from "../baselines";
 import { marksKey } from "./color";
 
 /** One side of a comparison: a palette's colors on a tier, and how different each hue is from the next. */
@@ -111,6 +111,12 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
   const most = Math.max(...otherRing, ...myRing);
   const reached = hues(mine).map((c) => c.swatch.colorfulness);
   const offRing = Math.max(...reached) - Math.min(...reached) >= 0.5;
+  // What takes a hue off the ring: the curve, a screen that can't go that far, or tiers left unequal.
+  const offBy = [
+    curved() && "colorfulness per hue moves",
+    hues(mine).some((c) => c.swatch.short) && "the screen can't take that far",
+    !state.settings.equalTiers && "Equal per tier, being off, lets go further",
+  ].filter(Boolean);
   const bars = (side: Side, values: readonly number[]) => {
     const keys = hues(side).map((c) => c.key);
     return values
@@ -126,7 +132,7 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
       <div>${circle([...dots(other, true), ...dots(mine, false)])}</div>
       <div class="legend">
         <p><span class="key hollow"></span> ${other.name} <span class="key"></span> ${name}</p>
-        <p class="soft">Distance from the center is colorfulness. ${name}'s hues share one ring${offRing ? ", apart from those colorfulness per hue moves on purpose" : ""}${mine.colors.some((c) => c.custom) ? ", and its custom colors sit at their share of it" : ""}${scatter}.</p>
+        <p class="soft">Distance from the center is colorfulness. ${name}'s hues share one ring${offRing && offBy.length ? `, apart from those ${offBy.join(" or ")}` : ""}${mine.colors.some((c) => c.custom) ? ", and its custom colors sit at their share of it" : ""}${scatter}.</p>
       </div>
     </section>
     ${
