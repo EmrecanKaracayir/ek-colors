@@ -20,7 +20,7 @@ import { marksKey } from "./color";
  *
  * @returns  HTML.
  */
-export function overview(): string {
+export function overviewPage(): string {
   const { mode } = state;
   const settings = onScreen();
   const tier = identityOf(settings, mode);

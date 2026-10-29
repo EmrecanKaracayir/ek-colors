@@ -19,7 +19,7 @@ import { type Row, STEPS, type Split, changes, focusKey } from "./strip";
  * @param share  E.g. 0.25.
  * @returns      E.g. "+25%", "−8%", "0%".
  */
-export function percent(share: number): string {
+function percent(share: number): string {
   const value = Math.round(share * 100);
   return value === 0 ? "0%" : `${value > 0 ? "+" : "−"}${String(Math.abs(value))}%`;
 }

@@ -53,7 +53,7 @@ export function huesNote(hues: number): string {
  * @param options.decimals   How many decimals the values keep.
  * @returns                  HTML.
  */
-export function number(
+export function numberField(
   path: string,
   title: string,
   [min, max, step]: readonly [number, number, number],
@@ -83,7 +83,7 @@ export function number(
  */
 export function shareField(path: string, title: string): string {
   const { band, readout } = shareInfo(path);
-  return number(path, title, [0, Infinity, 0.001], { slider: true, percent: true, sliderMax: 1, band, after: readout, decimals: 1 });
+  return numberField(path, title, [0, Infinity, 0.001], { slider: true, percent: true, sliderMax: 1, band, after: readout, decimals: 1 });
 }
 
 /** Where a color's colorfulness puts it, the same for custom and neutral colors. */

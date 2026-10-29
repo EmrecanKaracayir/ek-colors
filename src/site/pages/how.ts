@@ -141,7 +141,7 @@ function hues(ctx: Context) {
  * @param ctx  What the page shows.
  * @returns    SVG.
  */
-function room(ctx: Context): string {
+function roomDemo(ctx: Context): string {
   const first = hues(ctx)[0];
   if (!first) return "Solving…";
   const surround = ctx.settings.rooms[ctx.mode].surround;
@@ -195,7 +195,7 @@ function room(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-function modes(ctx: Context): string {
+function modesDemo(ctx: Context): string {
   const first = hues(ctx)[0];
   if (!first) return "Solving…";
   const lc = identityOf(ctx.settings, "light");
@@ -232,7 +232,7 @@ function modes(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-function tier(ctx: Context): string {
+function tierDemo(ctx: Context): string {
   const hue = Number(setting(ctx, "demo-hue"));
   const lc = Number(setting(ctx, "demo-lc"));
   const base = ctx.settings.bases[ctx.mode];
@@ -275,7 +275,7 @@ function shade(color: string, gamut: Gamut): string {
  * @param ctx  What the page shows.
  * @returns    SVG and its legend.
  */
-function reach(ctx: Context): string {
+function reachDemo(ctx: Context): string {
   const list = hues(ctx);
   if (!list.length) return "Solving…";
   const lc = tierSetting(ctx, "demo-tier");
@@ -342,7 +342,7 @@ function reach(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-function difference(ctx: Context): string {
+function differenceDemo(ctx: Context): string {
   const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => !c.custom);
   if (colors.length < 2) return "Solving…";
   const lc = tierSetting(ctx, "demo-dtier");
@@ -380,7 +380,7 @@ function difference(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-function spacing(ctx: Context): string {
+function spacingDemo(ctx: Context): string {
   const list = hues(ctx);
   const ring = ctx.palette?.[ctx.mode].ring[identityOf(ctx.settings, ctx.mode)] ?? [];
   if (!ring.length) return "Solving…";
@@ -400,7 +400,7 @@ function spacing(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-function bump(ctx: Context): string {
+function bumpDemo(ctx: Context): string {
   const list = hues(ctx);
   const tierLc = identityOf(ctx.settings, ctx.mode);
   const target = ctx.palette?.[ctx.mode].targets[tierLc];
@@ -441,7 +441,7 @@ function bump(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-function placing(ctx: Context): string {
+function placingDemo(ctx: Context): string {
   const s = ctx.settings;
   const list = hues(ctx);
   if (!list.length) return "Solving…";
@@ -480,7 +480,7 @@ function placing(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-function ladder(ctx: Context): string {
+function ladderDemo(ctx: Context): string {
   const colors = ctx.palette?.[ctx.mode].colors ?? [];
   if (!colors.length) return "Solving…";
   const c = colors.find((x) => x.key === setting(ctx, "demo-color")) ?? colors[0]!;
@@ -495,7 +495,7 @@ function ladder(ctx: Context): string {
   return `<div class="ladder" style="--n:${String(tiers.length)}"><span class="soft">Default</span>${cells("default")}<span class="soft">Muted</span>${cells("muted")}</div>`;
 }
 
-const DEMOS = { tier, reach, difference, bump, ladder } as const;
+const DEMOS = { tier: tierDemo, reach: reachDemo, difference: differenceDemo, bump: bumpDemo, ladder: ladderDemo } as const;
 
 /**
  * Redraws one demo after its controls change.
@@ -518,7 +518,7 @@ export function updateDemo(ctx: Context, control: HTMLInputElement | HTMLSelectE
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-export function explain(ctx: Context): string {
+export function howPage(ctx: Context): string {
   const s = ctx.settings;
   const count = hues(ctx).length;
   const custom = s.custom.length;
@@ -543,9 +543,9 @@ export function explain(ctx: Context): string {
       <h2>Color depends on the room</h2>
       <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light. The light mode's base is always lighter than the dark mode's.</p>
       <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, a normal lit room. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, a dim room. ${s.rooms.light.lux === 200 && s.rooms.dark.lux === 64 ? "Both come from the sRGB standard: its typical room and its reference room." : "By default they're 200 and 64 lux, the sRGB standard's typical and reference rooms."} CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
-      <div class="demo"><div class="demo-out wide">${room(ctx)}</div></div>
+      <div class="demo"><div class="demo-out wide">${roomDemo(ctx)}</div></div>
       <p>So the same target needs different screen colors in each mode. Both of these aim at the same colorfulness. The dark-mode one gets more color on the screen, because a dim room makes colors look quieter.</p>
-      <div class="demo"><div class="demo-out wide">${modes(ctx)}</div></div>
+      <div class="demo"><div class="demo-out wide">${modesDemo(ctx)}</div></div>
     </section>
 
     <section class="step">
@@ -563,7 +563,7 @@ export function explain(ctx: Context): string {
           ${slider(ctx, "demo-hue", "Hue", [0, 359, 1], "tier")}
           ${slider(ctx, "demo-lc", "Contrast", [15, 90, 1], "tier")}
         </div>
-        <div id="demo-tier-out" class="demo-out">${tier(ctx)}</div>
+        <div id="demo-tier-out" class="demo-out">${tierDemo(ctx)}</div>
       </div>
     </section>
 
@@ -575,7 +575,7 @@ export function explain(ctx: Context): string {
         <div class="demo-controls">
           ${choice(ctx, "demo-tier", "Tier", tierOptions(ctx), "reach")}
         </div>
-        <div id="demo-reach-out" class="demo-out wide">${reach(ctx)}</div>
+        <div id="demo-reach-out" class="demo-out wide">${reachDemo(ctx)}</div>
       </div>
       <p>Small marks say what happened to a color. <strong>Sets the tier</strong>, an amber flag, marks the color whose reach the tier was lowered to. <strong>Lowered</strong>, a gray ↓, marks a color held below its own aim because of it. <strong>Gamut limit</strong>, a red !, marks a color the screen can't make as colorful as it should be at all. Tables show them in small chips beside the M value; on cards the flag sits beside the name, and a Lowered or Gamut limit color shows its M value in gray or red with its mark. A key under the colors says which is which, and each mark opens why, with the numbers.</p>
     </section>
@@ -589,7 +589,7 @@ export function explain(ctx: Context): string {
           ${slider(ctx, "demo-center", "Center", [0, 359, 1], "bump")}
           ${slider(ctx, "demo-width", "Width", [20, 180, 5], "bump")}
         </div>
-        <div id="demo-bump-out" class="demo-out wide">${bump(ctx)}</div>
+        <div id="demo-bump-out" class="demo-out wide">${bumpDemo(ctx)}</div>
       </div>
       <p>The <strong>blind colorfulness test</strong> in Settings measures where it's needed. It shows two colors at a time, without names, and asks which looks more colorful, nudging the color it's testing after each answer, apart from the occasional easy check, until it finds where each hue looks as colorful as the others. Its result can be applied as the curve.</p>
     </section>
@@ -604,16 +604,16 @@ export function explain(ctx: Context): string {
           ${choice(ctx, "demo-b", "Second color", hueOptions, "difference")}
           ${choice(ctx, "demo-dtier", "Tier", tierOptions(ctx), "difference")}
         </div>
-        <div id="demo-difference-out" class="demo-out wide">${difference(ctx)}</div>
+        <div id="demo-difference-out" class="demo-out wide">${differenceDemo(ctx)}</div>
       </div>
       <p>Around the circle on the tier that stands for each hue:</p>
-      <div class="demo"><div class="demo-out wide">${spacing(ctx)}</div></div>
+      <div class="demo"><div class="demo-out wide">${spacingDemo(ctx)}</div></div>
     </section>
 
     <section class="step">
       <h2>Placing hues (H)</h2>
       <p>A name fits some hues better than others: an even red can lean pink, an even blue can lean cyan. So any color can be <strong>placed</strong> by hand where its name fits best, by dragging it on the hue graph in Settings, and the others re-space evenly around it. Colors keep their order around the circle: a placed color stays between its neighbors, at least a quarter of the even step from each.</p>
-      <div class="demo"><div class="demo-out wide">${placing(ctx)}</div></div>
+      <div class="demo"><div class="demo-out wide">${placingDemo(ctx)}</div></div>
       <p>The <strong>blind hue test</strong> in Settings measures where each name fits. It shows one color at a time, without its name, and asks whether it leans toward the color before it or the one after it; the hue where it leans neither way is the middle of its name, and a color can be placed there.</p>
     </section>
 
@@ -639,7 +639,7 @@ export function explain(ctx: Context): string {
             "ladder",
           )}
         </div>
-        <div id="demo-ladder-out" class="demo-out wide">${ladder(ctx)}</div>
+        <div id="demo-ladder-out" class="demo-out wide">${ladderDemo(ctx)}</div>
       </div>
       <p><strong>Custom colors</strong> sit beside the hues${custom ? `, like ${s.custom.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Custom colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed, under Extra colors.</p>
     </section>

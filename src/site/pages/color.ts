@@ -182,7 +182,7 @@ export const currentMode = () => current()?.[state.mode] ?? null;
  * @param key  The color.
  * @returns    HTML.
  */
-export function color(key: string): string {
+export function colorPage(key: string): string {
   if (key === GRAY || neutralOf(key)) return neutralPage(key);
   const tier = identityOf(onScreen(), state.mode);
   const list = colors(tier);

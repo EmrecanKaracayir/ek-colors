@@ -51,7 +51,7 @@ export const state = {
   /** The gamut tiers solved from the current settings; the others still show their last solve. */
   fresh: new Set<Gamut>(),
 
-  /** Variants of the settings (without the curve, nothing placed, turned), by request: for the Edits switches and the strip. */
+  /** The settings solved again without the curve, with nothing placed or turned, by request: for the Edits switches and the strip. */
   baselines: new Map<number, GamutPalette>(),
   solving: false,
   took: 0,

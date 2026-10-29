@@ -202,7 +202,7 @@ const placeId = (at: Place) => `${at.key}:${String(at.tier)}:${at.variant}`;
  * @param at  Where it sits.
  * @returns   HTML, or nothing.
  */
-export function chips(s: Swatch, at: Place): string {
+function chips(s: Swatch, at: Place): string {
   const id = placeId(at);
   return [
     s.short ? popButton(`why:gamut:${id}`, "!", `Gamut limit: why ${label(at.key)} is held back`, "chip gamut mark") : "",

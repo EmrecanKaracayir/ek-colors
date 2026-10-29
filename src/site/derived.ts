@@ -23,13 +23,13 @@ import { evenGap, updateStrip } from "./settings/strip";
 import { render } from "./shell";
 import { solve } from "./solver";
 import { state } from "./state";
-import { edited, plain, turn, turned, uncurved, upToDate } from "./variants";
+import { edited, plain, turn, turned, uncurved, upToDate } from "./baselines";
 
 const bands = new Map<string, CurveView["band"]>();
 const models = new Map<string, Model>();
 
 /** The settings as each gamut tier sees them, made once per settings and tier. */
-export const seen = new WeakMap<Settings, Map<Gamut, Settings>>();
+const seen = new WeakMap<Settings, Map<Gamut, Settings>>();
 
 /**
  * The settings as the gamut tier on screen sees them: each mode's base resolved for it. Everything

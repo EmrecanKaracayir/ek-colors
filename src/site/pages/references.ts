@@ -187,7 +187,7 @@ const GROUPS: readonly Group[] = [
  *
  * @returns  HTML.
  */
-export function references(): string {
+export function referencesPage(): string {
   let n = 0;
   const groups = GROUPS.map(
     (g) => `<section class="step">

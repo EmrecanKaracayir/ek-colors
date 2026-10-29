@@ -302,7 +302,7 @@ function decode(code: string): Run | null {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-export function testPage(ctx: TestContext): string {
+export function curveTestPage(ctx: TestContext): string {
   if (session && session.mode === ctx.mode) return stage();
   const mode = ctx.mode;
   const done = runs().filter((r) => r.mode === ctx.mode);

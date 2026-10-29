@@ -14,7 +14,7 @@ import { signedWhole } from "../graph";
 import { card, colors, isPreset, label, paletteName, range } from "../parts";
 import { comparing } from "../shell";
 import { state } from "../state";
-import { variant } from "../variants";
+import { baseline } from "../baselines";
 import { marksKey } from "./color";
 
 /** One side of a comparison: a palette's colors on a tier, and how different each hue is from the next. */
@@ -28,7 +28,7 @@ interface Side {
  *
  * @returns  HTML.
  */
-export function compare(): string {
+export function comparePage(): string {
   return comparing() ? compareCodemos() : compareEk();
 }
 
@@ -55,7 +55,7 @@ function compareEk(): string {
   if (isPreset())
     return `<section class="intro"><h1>Compare</h1>${ekMade()}<p class="notice" role="note">There's nothing to compare yet: these are EK Palette's own settings. Change anything in <a href="#tune">Settings</a>, and the custom palette appears here next to EK Palette.</p></section>`;
   const tier = identityOf(onScreen(), mode);
-  const ek = variant(CONFIG, "EK Palette")?.[mode];
+  const ek = baseline(CONFIG, "EK Palette")?.[mode];
   const intro = `<h1>Compare with EK Palette</h1>${ekMade()}<p>Here are EK Palette's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
   if (!ek) return `<section class="intro">${intro}<p class="soft">Solving EK Palette…</p></section>`;
   const other: Side = { name: "EK Palette", colors: ek.colors.filter((c) => c.tiers[tier]).map((c) => ({ key: c.key, custom: c.custom, swatch: c.tiers[tier]![state.variant] })) };

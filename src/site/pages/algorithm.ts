@@ -47,7 +47,7 @@ function conditions(ctx: Context): string {
  * @param ctx  What the page shows.
  * @returns    HTML.
  */
-export function technical(ctx: Context): string {
+export function algorithmPage(ctx: Context): string {
   const s = ctx.settings;
   const identityReach = s.hues === NAMES.length ? s.hueWindow.identity : Math.min(s.hueWindow.identity, 180 / s.hues);
   const anchor = anchorHue(s);

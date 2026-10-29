@@ -21,7 +21,7 @@ import { state } from "../state";
 import { BASE_EXAMPLES, baseLabel } from "./base";
 import { curveEditor, refreshCurve } from "./curve";
 import { exportSection, updateExport } from "./export";
-import { huesNote, number, shareField, updateShares } from "./fields";
+import { huesNote, numberField, shareField, updateShares } from "./fields";
 import { huesEditor, refreshHues } from "./hues";
 import { updateStrip } from "./strip";
 
@@ -73,6 +73,34 @@ document.addEventListener("click", (event) => {
   if (link.dataset.focus) document.getElementById(link.dataset.focus)?.focus({ preventScroll: true });
 });
 
+/** Where Settings keeps custom and neutral colors: their path in the settings, the word in their data attributes, and their keys. */
+const EXTRAS = {
+  custom: { path: "custom", data: "custom", keys: (s: Settings) => customKeys(s) },
+  neutral: { path: "neutrals", data: "neutral", keys: (s: Settings) => colorKeys(s).neutrals },
+} as const;
+
+/**
+ * A custom or neutral color's block: a title with its dot and name and a Remove button, its name
+ * field, and the fields of its own.
+ *
+ * @param kind    Custom or neutral.
+ * @param i       Which one.
+ * @param dot     Its dot.
+ * @param fields  Its own fields, after the name.
+ * @returns       HTML.
+ */
+function extraBlock(kind: keyof typeof EXTRAS, i: number, dot: string, fields: readonly string[]): string {
+  const { path, data, keys } = EXTRAS[kind];
+  const at = String(i);
+  const title = label(keys(state.settings)[i]!);
+  const name = escape(state.settings[path][i]!.name);
+  return `<div class="extra" data-${data}="${at}">
+    <h3 class="extra-title"><span class="extra-name">${dot}${title}</span><button type="button" class="link" data-action="remove-${data}" data-index="${at}" aria-label="Remove ${title}">Remove</button></h3>
+    <label class="field grow" for="set-${path}-${at}-name"><span>Name</span><input id="set-${path}-${at}-name" type="text" data-${data}-name="${at}" value="${name}" spellcheck="false"></label>
+    ${fields.join("\n    ")}
+  </div>`;
+}
+
 /**
  * One custom color's settings: its name, hue and share of the colorfulness, under a title showing
  * its color on the identity tier and how its hue reads.
@@ -81,13 +109,10 @@ document.addEventListener("click", (event) => {
  * @returns  HTML.
  */
 function customFields(i: number): string {
-  const name = escape(state.settings.custom[i]!.name);
-  return `<div class="extra" data-custom="${String(i)}">
-    <h3 class="extra-title"><span class="extra-name">${customDot(i)}${label(customKeys(state.settings)[i]!)}</span><button type="button" class="link" data-action="remove-custom" data-index="${String(i)}" aria-label="Remove ${label(customKeys(state.settings)[i]!)}">Remove</button></h3>
-    <label class="field grow" for="set-custom-${String(i)}-name"><span>Name</span><input id="set-custom-${String(i)}-name" type="text" data-custom-name="${String(i)}" value="${name}" spellcheck="false"></label>
-    ${number(`custom.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` })}
-    ${shareField(`custom.${String(i)}.share`, "Colorfulness")}
-  </div>`;
+  return extraBlock("custom", i, customDot(i), [
+    numberField(`custom.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` }),
+    shareField(`custom.${String(i)}.share`, "Colorfulness"),
+  ]);
 }
 
 /**
@@ -98,12 +123,7 @@ function customFields(i: number): string {
  * @returns  HTML.
  */
 function neutralFields(i: number): string {
-  const name = escape(state.settings.neutrals[i]!.name);
-  return `<div class="extra" data-neutral="${String(i)}">
-    <h3 class="extra-title"><span class="extra-name">${neutralDot(i)}${label(colorKeys(state.settings).neutrals[i]!)}</span><button type="button" class="link" data-action="remove-neutral" data-index="${String(i)}" aria-label="Remove ${label(colorKeys(state.settings).neutrals[i]!)}">Remove</button></h3>
-    <label class="field grow" for="set-neutrals-${String(i)}-name"><span>Name</span><input id="set-neutrals-${String(i)}-name" type="text" data-neutral-name="${String(i)}" value="${name}" spellcheck="false"></label>
-    ${shareField(`neutrals.${String(i)}.share`, "Colorfulness")}
-  </div>`;
+  return extraBlock("neutral", i, neutralDot(i), [shareField(`neutrals.${String(i)}.share`, "Colorfulness")]);
 }
 
 /**
@@ -167,7 +187,7 @@ export function hueNote(i: number): string {
  *
  * @returns  HTML.
  */
-export function tune(): string {
+export function settingsPage(): string {
   const s = state.settings;
   return `<section class="intro settings-head">
       <div class="settings-lead">
@@ -185,7 +205,7 @@ export function tune(): string {
     <div id="palette-strip" class="strip"></div>
     <section class="group" id="hue-section">
       <h2>Hue (H)</h2>
-      ${number("hues", "How many hues", [...LIMITS.hues, 1])}<div id="hues-note">${huesNote(state.settings.hues)}</div>
+      ${numberField("hues", "How many hues", [...LIMITS.hues, 1])}<div id="hues-note">${huesNote(state.settings.hues)}</div>
       <p class="soft">The uniform lineup divides the circle evenly from the anchor, then evens out the differences between neighbors as they're seen rather than as numbers. From there, colors can be placed where their names fit best: drag one on the Current row and the others re-space around it.</p>
       <p class="soft">The anchor fixes where the lineup sits: the differences between neighbors barely change if the whole lineup turns, so something has to hold it. ${label(anchored())} stays exactly on it.</p>
       <div class="action-row"><p><a href="#hue-test" class="button">Measure it with the blind hue test</a></p></div>
@@ -204,14 +224,14 @@ export function tune(): string {
     <section class="group" id="colorfulness-section">
       <h2>Colorfulness (M)</h2>
       <p class="soft">One CAM16 colorfulness every hue aims at, in both modes, before colorfulness per hue adds or takes away; custom colors aim at their share of it. A color the screen can't make that colorful goes as far as it can.</p>
-      ${number("colorfulness", "Target M", [...LIMITS.colorfulness, 1], { slider: true })}
-      ${number("muted", "Muted share", [...LIMITS.muted, 0.05], { slider: true, percent: true })}
+      ${numberField("colorfulness", "Target M", [...LIMITS.colorfulness, 1], { slider: true })}
+      ${numberField("muted", "Muted share", [...LIMITS.muted, 0.05], { slider: true, percent: true })}
       <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
       <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
       <h3>Per hue</h3>
       <p class="soft">${MODE_NAMES[state.mode]} mode's curve; switch Light and Dark above to edit the other. Colorfulness added or taken away smoothly over hue, for parts of the circle that look weaker or stronger than the model says. Its points add up.</p>
       <div class="action-row"><p><a href="#curve-test" class="button">Measure it with the blind colorfulness test</a></p></div>
-      ${curveEditor(curveView(state.mode), (path, title, range) => number(path, title, range))}
+      ${curveEditor(curveView(state.mode), (path, title, range) => numberField(path, title, range))}
     </section>
     <section class="group" id="extras-section">
       <h2>Extra colors</h2>
@@ -267,7 +287,7 @@ export function tune(): string {
         .map(
           (m) => `<div><h3>${MODE_NAMES[m]}</h3>
             <label class="field grow base-field" for="set-base-${m}"><span>${baseLabel(m)}</span><input id="set-base-${m}" type="text" data-set="bases.${m}" value="${baseIn(s, m, state.gamut).written}" placeholder="${BASE_EXAMPLES[state.gamut]}" spellcheck="false" aria-label="Base, ${m} mode"></label>
-            ${number(`rooms.${m}.lux`, "Room lux", [...LIMITS.lux, 1])}
+            ${numberField(`rooms.${m}.lux`, "Room lux", [...LIMITS.lux, 1])}
             <label class="field" for="set-surround-${m}"><span>Surround</span><select id="set-surround-${m}" data-set="rooms.${m}.surround">${SURROUNDS.map((name, i) => `<option value="${String(i)}" ${i === s.rooms[m].surround ? "selected" : ""}>${name}</option>`)
               .join("")}</select></label></div>`,
         )
@@ -338,7 +358,7 @@ export function pasteSettings(text: string): Settings | string {
  *
  * @returns  HTML.
  */
-export function about(): string {
+function about(): string {
   const build = new URLSearchParams(new URL(import.meta.url).search).get("v");
   const source = project.repository.url.replace(/^git\+/, "").replace(/\.git$/, "");
   return `<section class="group" id="about">

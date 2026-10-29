@@ -13,7 +13,7 @@ import { inGaps } from "../graph";
 import { $, label } from "../parts";
 import { popButton } from "../popover";
 import { state } from "../state";
-import { askVariants, plain, turn, turned, uncurved, upToDate } from "../variants";
+import { askBaselines, plain, turn, turned, uncurved, upToDate } from "../baselines";
 import { metrics, turnText } from "./metrics";
 
 /** The rows of the strip: each step of the palette, added one at a time. */
@@ -44,7 +44,7 @@ export function evenGap(mode: Mode): number {
 const lastSteps = new Map<string, readonly Color[]>();
 
 /** One color across the strip's rows: Uniform, Turned, +H, +M. */
-export interface Change {
+interface Change {
   readonly key: string;
   readonly name: string;
   readonly color: string;
@@ -159,8 +159,8 @@ function drawComparison(el: Element, mode: Mode): void {
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
   // The turn's angle stays off the row's name, which would widen the names' column for one row.
   const names = STEPS.map((step, i) => {
-    const turn = i === 1 ? turnText(angle) : "";
-    return `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" aria-label="${step.title}${turn ? `, ${turn}` : ""}"${turn ? ` title="${step.name} ${turn}"` : ""}>${step.name}</button>`;
+    const turned = i === 1 ? turnText(angle) : "";
+    return `<button type="button" data-row="${String(i)}" aria-pressed="${String(pinned === i)}" aria-label="${step.title}${turned ? `, ${turned}` : ""}"${turned ? ` title="${step.name} ${turned}"` : ""}>${step.name}</button>`;
   }).join("");
   // Drawn again, the row keeps where it was scrolled to.
   const scrolled = el.querySelector(".strip-items")?.scrollLeft ?? 0;
@@ -343,7 +343,7 @@ export function watchDock(): void {
  * Draws the strip, at the top of Settings and in How it works.
  */
 export function updateStrip(): void {
-  askVariants();
+  askBaselines();
   const strip = document.querySelector("#palette-strip");
   if (strip) drawComparison(strip, state.mode);
 }

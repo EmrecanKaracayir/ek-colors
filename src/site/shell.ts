@@ -9,18 +9,18 @@ import { baseIn } from "../palette/bases";
 import { GAMUTS } from "../palette/settings";
 import { context, followsEdits, hueTestContext, onScreen, testContext } from "./derived";
 import { refill } from "./dom";
-import { technical } from "./pages/algorithm";
-import { color } from "./pages/color";
-import { compare } from "./pages/compare";
-import { testPage } from "./pages/curve-test";
-import { explain } from "./pages/how";
+import { algorithmPage } from "./pages/algorithm";
+import { colorPage } from "./pages/color";
+import { comparePage } from "./pages/compare";
+import { curveTestPage } from "./pages/curve-test";
+import { howPage } from "./pages/how";
 import { hueTestPage } from "./pages/hue-test";
-import { overview } from "./pages/overview";
-import { references } from "./pages/references";
-import { tiers } from "./pages/tiers";
+import { overviewPage } from "./pages/overview";
+import { referencesPage } from "./pages/references";
+import { tiersPage } from "./pages/tiers";
 import { $, colors, labelText } from "./parts";
 import { updateBaseNote } from "./settings/base";
-import { jumpTo, tune, updateTune } from "./settings/page";
+import { jumpTo, settingsPage, updateTune } from "./settings/page";
 import { updateStrip, watchDock } from "./settings/strip";
 import { COMPARE, SCREEN, VIEWS, state } from "./state";
 
@@ -84,16 +84,16 @@ export function render(): void {
   const keptStrip = view === "tune" && document.querySelector("#tiers-section") ? document.querySelector("#palette-strip") : null;
   refill(
     $("main"),
-    view === "overview" ? overview()
-    : view === "tiers" ? tiers()
-    : view === "compare" ? compare()
-    : view === "tune" ? tune()
-    : view === "references" ? references()
-    : view === "how" ? explain(context())
-    : view === "algorithm" ? technical(context())
-    : view === "curve-test" ? testPage(testContext())
+    view === "overview" ? overviewPage()
+    : view === "tiers" ? tiersPage()
+    : view === "compare" ? comparePage()
+    : view === "tune" ? settingsPage()
+    : view === "references" ? referencesPage()
+    : view === "how" ? howPage(context())
+    : view === "algorithm" ? algorithmPage(context())
+    : view === "curve-test" ? curveTestPage(testContext())
     : view === "hue-test" ? hueTestPage(hueTestContext())
-    : color(view === "colors" ? first : view),
+    : colorPage(view === "colors" ? first : view),
   );
   if (keptStrip) document.querySelector("#palette-strip")?.replaceWith(keptStrip);
   if (view === "tune") updateTune();
@@ -103,7 +103,7 @@ export function render(): void {
 }
 
 /** The pending read-out of a finished solve. */
-export let settled = 0;
+let settled = 0;
 
 /**
  * Shows whether the palette is being solved.
@@ -135,7 +135,7 @@ export function comparing(): boolean {
   }
 }
 
-export let shown = false;
+let shown = false;
 
 /**
  * Switches Compare between EK Palette and Codemos, and says which.

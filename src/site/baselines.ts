@@ -1,8 +1,8 @@
 /*------------------------------------------------------------------------------------------------*\
-| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< VARIANTS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
+| <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< BASELINES >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> |
 |*------------------------------------------------------------------------------------------------*|
-| A second worker solves variants of the settings: without the curve, with nothing placed, turned. |
-| The Edits switches and the strip show them beside the palette in use.                            |
+| A second worker solves the settings again as baselines to compare with: without the curve, with  |
+| nothing placed, turned. The Edits switches and the strip show them beside the palette in use.    |
 \*------------------------------------------------------------------------------------------------*/
 
 import { deltaE } from "../palette/model";
@@ -18,18 +18,17 @@ import { spawn } from "./solver";
 import { state } from "./state";
 import type { Request, Response } from "./worker";
 
-// A second worker solves variants of the settings, without the curve or with nothing placed, so
-// they can be shown beside the palette.
-let baseline = spawn(variantSolved);
+/** The worker that solves the baselines. */
+let baselineWorker = spawn(baselineSolved);
 
 /**
- * Keeps a solved variant, and sends the next one waiting.
+ * Keeps a solved baseline, and sends the next one waiting.
  *
  * @param event  The worker's answer.
  */
-function variantSolved(event: MessageEvent<Response>): void {
+function baselineSolved(event: MessageEvent<Response>): void {
   const data = event.data;
-  nextVariant();
+  nextBaseline();
   if ("error" in data) return;
   state.baselines.set(data.id, data.palette);
   for (const [key, id] of asked)
@@ -43,47 +42,47 @@ function variantSolved(event: MessageEvent<Response>): void {
   else if (state.view === "how") updateStrip();
 }
 
-export let asks = 0;
+let asks = 0;
 const asked = new Map<string, number>();
 
-/** Variants waiting for the worker, newest last; one is solved at a time. */
+/** Baselines waiting for the worker, newest last; one is solved at a time. */
 const queue: Request[] = [];
-export let solvingVariant = false;
+export let solvingBaseline = false;
 
-/** How many variants wait at most: a drag asks for a new one on every move, and only the last few matter. */
+/** How many baselines wait at most: a drag asks for a new one on every move, and only the last few matter. */
 const QUEUED = 4;
 
-/** How many solved variants are kept. */
+/** How many solved baselines are kept. */
 const KEPT = 48;
 
-/** The variant being solved, and since when. */
-let variantId = 0;
-export let variantSince = 0;
+/** The baseline being solved, and since when. */
+let baselineId = 0;
+export let baselineSince = 0;
 
-/** How long a variant may run, in ms, before a change of settings stops it. */
-export const LONG_VARIANT = 1000;
+/** How long a baseline may run, in ms, before a change of settings stops it. */
+export const LONG_BASELINE = 1000;
 
 /**
- * Sends the next waiting variant to the worker, if it's free.
+ * Sends the next waiting baseline to the worker, if it's free.
  */
-function nextVariant(): void {
+function nextBaseline(): void {
   const request = queue.shift();
-  solvingVariant = !!request;
+  solvingBaseline = !!request;
   if (!request) return;
-  [variantId, variantSince] = [request.id, performance.now()];
-  baseline.postMessage(request);
+  [baselineId, baselineSince] = [request.id, performance.now()];
+  baselineWorker.postMessage(request);
 }
 
 /**
- * Stops the variant being solved and those waiting, so they're asked for again if still wanted.
+ * Stops the baseline being solved and those waiting, so they're asked for again if still wanted.
  */
-export function restartVariants(): void {
-  baseline.terminate();
-  baseline = spawn(variantSolved);
-  const dropped = new Set([variantId, ...queue.map((r) => r.id)]);
+export function restartBaselines(): void {
+  baselineWorker.terminate();
+  baselineWorker = spawn(baselineSolved);
+  const dropped = new Set([baselineId, ...queue.map((r) => r.id)]);
   for (const [key, id] of asked) if (dropped.has(id)) asked.delete(key);
   queue.length = 0;
-  solvingVariant = false;
+  solvingBaseline = false;
 }
 
 /**
@@ -104,14 +103,14 @@ function curved(): boolean {
   return Object.values(state.settings.curve).some((points) => points.some((p) => !p.off && p.amount !== 0));
 }
 
-/** The last solved palette for each use of a variant, shown while that use's new one solves. */
+/** The last solved palette for each use of a baseline, shown while that use's new one solves. */
 const lastSolved = new Map<string, GamutPalette>();
 
 /** The uses showing a stand-in right now. */
 const standingIn = new Set<string>();
 
 /**
- * Whether everything on screen comes from the current settings: the palette and every variant
+ * Whether everything on screen comes from the current settings: the palette and every baseline
  * shown. Until then a comparison would mix old and new results, so readouts keep their last text.
  *
  * @returns  True when nothing is solving or standing in.
@@ -119,15 +118,15 @@ const standingIn = new Set<string>();
 export const upToDate = () => !state.solving && standingIn.size === 0;
 
 /**
- * A variant of the settings on the gamut tier on screen, asked for once and kept. While it solves,
+ * A baseline of the settings on the gamut tier on screen, asked for once and kept. While it solves,
  * the last one solved for the same use stands in, so nothing that was drawn goes back to waiting
  * and nothing below it moves; only the very first time is there nothing yet.
  *
- * @param settings  The variant.
+ * @param settings  The settings to solve.
  * @param use       What it's for, e.g. "plain"; each use has its own stand-in.
  * @returns         The palette, its stand-in while it solves, or null before either exists.
  */
-export function variant(settings: Settings, use: string): GamutPalette | null {
+export function baseline(settings: Settings, use: string): GamutPalette | null {
   const key = `${JSON.stringify(solvedPart(settings))}|${state.gamut}`;
   const standIn = lastSolved.get(`${use}|${state.gamut}`) ?? null;
   const id = asked.get(key);
@@ -144,10 +143,10 @@ export function variant(settings: Settings, use: string): GamutPalette | null {
   asks++;
   asked.set(key, asks);
   queue.push({ id: asks, settings, gamut: state.gamut });
-  // Older waiting variants are given up; they're asked for again if they're still wanted.
+  // Older waiting baselines are given up; they're asked for again if they're still wanted.
   for (const dropped of queue.splice(0, Math.max(0, queue.length - QUEUED)))
     for (const [k, v] of asked) if (v === dropped.id) asked.delete(k);
-  if (!solvingVariant) nextVariant();
+  if (!solvingBaseline) nextBaseline();
   if (standIn) standingIn.add(use);
   return standIn;
 }
@@ -163,12 +162,12 @@ export function variant(settings: Settings, use: string): GamutPalette | null {
 export function edited(h: boolean, m: boolean): GamutPalette | null {
   const [noCurve, noPlaced] = [!m && curved(), !h && Object.keys(state.settings.placed).length > 0];
   const use = `edited ${String(h)} ${String(m)}`;
-  // The palette in use needs no variant, so this use stands in for nothing.
+  // The palette in use needs no baseline, so this use stands in for nothing.
   if (!noCurve && !noPlaced) {
     standingIn.delete(use);
     return inUse();
   }
-  return variant({ ...(noCurve ? flat() : state.settings), ...(noPlaced ? { placed: {} } : {}) }, use);
+  return baseline({ ...(noCurve ? flat() : state.settings), ...(noPlaced ? { placed: {} } : {}) }, use);
 }
 
 /** Without the curve: it only depends on settings other than the curve, so moving the curve never waits for it. */
@@ -178,7 +177,7 @@ export const uncurved = () => edited(true, false);
 export const plain = () => edited(false, false);
 
 /** The turn found for each pair of palettes and tier: exact by construction, and let go with the palettes. */
-export const turns = new WeakMap<ModePalette, WeakMap<ModePalette, Map<number, number>>>();
+const turns = new WeakMap<ModePalette, WeakMap<ModePalette, Map<number, number>>>();
 
 /**
  * The turn that brings the uniform lineup nearest the palette with placed hues (without
@@ -239,9 +238,9 @@ export function turned(mode: Mode): {
   if (angle === null || !even) return null;
   const s = state.settings;
   const tier = identityOf(s, mode);
-  // No turn needs no variant, so nothing stands in for it.
+  // No turn needs no baseline, so nothing stands in for it.
   if (angle === 0) standingIn.delete("turned");
-  const solved = angle === 0 ? even : variant({ ...flat(), placed: {}, anchor: Math.round((anchorHue(s) + angle) * 10) / 10 }, "turned")?.[mode];
+  const solved = angle === 0 ? even : baseline({ ...flat(), placed: {}, anchor: Math.round((anchorHue(s) + angle) * 10) / 10 }, "turned")?.[mode];
   const colors = Object.fromEntries(
     even.colors.flatMap((c) => {
       const exact = solved?.colors.find((x) => x.key === c.key)?.tiers[tier]?.default;
@@ -261,9 +260,9 @@ export function turned(mode: Mode): {
 }
 
 /**
- * Asks for the variants the strip compares; the page asks for any other it shows.
+ * Asks for the baselines the strip compares; the page asks for any other it shows.
  */
-export function askVariants(): void {
+export function askBaselines(): void {
   uncurved();
   plain();
   turned(state.mode);

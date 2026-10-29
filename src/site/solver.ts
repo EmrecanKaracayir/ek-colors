@@ -12,12 +12,12 @@ import { updateExport } from "./settings/export";
 import { updateTune } from "./settings/page";
 import { render, status } from "./shell";
 import { state } from "./state";
-import { LONG_VARIANT, askVariants, restartVariants, solvingVariant, variantSince } from "./variants";
+import { LONG_BASELINE, askBaselines, restartBaselines, solvingBaseline, baselineSince } from "./baselines";
 import type { Request, Response } from "./worker";
 
 /**
  * Starts a worker, at the same version as this script, so the two always match. Its address is
- * worked out on each call, as the variants' worker starts before this file has run.
+ * worked out on each call, as the baselines' worker starts before this file has run.
  *
  * @param answer  What to do with each answer.
  * @returns       The worker.
@@ -34,7 +34,7 @@ let latest = 0;
 let timer = 0;
 
 /** Whether the worker is solving a request that hasn't answered yet. */
-export let busy = false;
+let busy = false;
 
 /** The hues the worker's request in hand depends on: a newer change with the same ones is quick to wait for. */
 let busyHues = "";
@@ -47,7 +47,7 @@ let busyGamut: Gamut = "standard";
  *
  * @param event  The worker's answer.
  */
-export function solved(event: MessageEvent<Response>): void {
+function solved(event: MessageEvent<Response>): void {
   busy = false;
   const data = event.data;
   if (data.id !== latest) return;
@@ -104,8 +104,8 @@ export function solve(wait = 0): void {
       worker.terminate();
       worker = spawn(solved);
     }
-    if (solvingVariant && performance.now() - variantSince > LONG_VARIANT) restartVariants();
+    if (solvingBaseline && performance.now() - baselineSince > LONG_BASELINE) restartBaselines();
     post(state.gamut);
-    askVariants();
+    askBaselines();
   }, wait);
 }

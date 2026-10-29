@@ -121,7 +121,7 @@ document.addEventListener("click", (event) => {
  *
  * @returns  HTML.
  */
-export function tiers(): string {
+export function tiersPage(): string {
   const { settings, mode, variant } = state;
   return `<section class="intro">
       <h1>Tiers</h1>
