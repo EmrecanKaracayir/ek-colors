@@ -14,13 +14,12 @@ import { allowed, anchored, context, onScreen, syncAnchor } from "./derived";
 import { announce, copyText, flash, markField } from "./dom";
 import type { Format } from "./highlight";
 import { baseTint } from "./pages/color";
-import { updateDemo } from "./pages/how";
 import { $, copying, shownValue } from "./parts";
 import { BASE_EXAMPLES, baseLabel, normalColor, setBase, updateBaseNote } from "./settings/base";
 import { exportText, updateExport } from "./settings/export";
 import { huesNote, updateShares, write } from "./settings/fields";
 import { anyTinted, automaticName, hueNote, pasteSettings, updateTune } from "./settings/page";
-import { render, status } from "./shell";
+import { later, render, status } from "./shell";
 import { solve } from "./solver";
 import { EDITS, MODE, type Variant, save, state } from "./state";
 
@@ -175,7 +174,7 @@ function outOfRange(el: HTMLInputElement): boolean {
 
 document.addEventListener("input", (event) => {
   const el = event.target as HTMLInputElement;
-  if (el.dataset.demo) return void updateDemo(context(), el);
+  if (el.dataset.demo) return void later.how?.updateDemo(context(), el);
   // The name changes nothing solved: only what the palette is called, and the export's title.
   if (el.dataset.name !== undefined) {
     write("name", el.value.slice(0, 60));

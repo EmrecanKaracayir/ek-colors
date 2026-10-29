@@ -29,6 +29,12 @@ export const EDITS = "ek-colors:edits";
 /** Remembers Light or Dark, once chosen. */
 export const MODE = "ek-colors:mode";
 
+/** Remembers the last palette solved for the gamut tier on screen, drawn at once on the next visit. */
+const PALETTE = "ek-colors:palette";
+
+/** This script's build, so a palette another build solved isn't drawn. */
+const BUILD = new URLSearchParams(new URL(import.meta.url).search).get("v") ?? "";
+
 /** The widest gamut tier this screen covers. */
 export const SCREEN: Gamut = matchMedia("(color-gamut: rec2020)").matches
   ? "ultra"
@@ -63,6 +69,9 @@ export const state = {
   /** The settings before the last paste, until anything else changes them. */
   undo: null as Settings | null,
 };
+
+// The palette last solved for these settings and this screen shows until they solve again.
+Object.assign(state.palettes, keptPalette());
 
 /**
  * The saved settings, or EK Palette's.
@@ -130,4 +139,71 @@ function storeNow(): void {
   }
 }
 
-window.addEventListener("pagehide", storeNow);
+/**
+ * Settings as text that's the same whatever order their keys were written in.
+ *
+ * @param value  The settings, or a part of them.
+ * @returns      JSON with every object's keys sorted.
+ */
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value && typeof value === "object")
+    return `{${Object.keys(value)
+      .toSorted()
+      .map((k) => `${JSON.stringify(k)}:${canonical((value as Record<string, unknown>)[k])}`)
+      .join(",")}}`;
+  return JSON.stringify(value) ?? "null";
+}
+
+/** A palette kept in this browser, with what it was solved from. */
+interface Kept {
+  readonly build: string;
+  readonly gamut: Gamut;
+  readonly settings: string;
+  readonly palette: GamutPalette;
+}
+
+/**
+ * The palette kept from the last visit, if this build solved it from these settings for this
+ * screen's gamut tier.
+ *
+ * @returns  It by its gamut tier, or nothing.
+ */
+function keptPalette(): Partial<Record<Gamut, GamutPalette>> {
+  try {
+    const kept = JSON.parse(localStorage.getItem(PALETTE) ?? "null") as Kept | null;
+    if (kept?.build === BUILD && kept.gamut === state.gamut && kept.settings === canonical(state.settings)) return { [kept.gamut]: kept.palette };
+  } catch {
+    // Storage can be blocked, or hold something else; the palette then waits for its solve.
+  }
+  return {};
+}
+
+/** The palette waiting to be kept. */
+let keeping = 0;
+
+/**
+ * Keeps the palette on screen for the next visit, once solving rests.
+ */
+export function keepPalette(): void {
+  clearTimeout(keeping);
+  keeping = window.setTimeout(keepNow, 1000);
+}
+
+/** Keeps the palette on screen now, if it's solved from the current settings. */
+function keepNow(): void {
+  clearTimeout(keeping);
+  const palette = state.palettes[state.gamut];
+  if (!palette || !state.fresh.has(state.gamut)) return;
+  const kept: Kept = { build: BUILD, gamut: state.gamut, settings: canonical(state.settings), palette };
+  try {
+    localStorage.setItem(PALETTE, JSON.stringify(kept));
+  } catch {
+    // Storage can be blocked or full; the next visit then waits for its solve.
+  }
+}
+
+window.addEventListener("pagehide", () => {
+  storeNow();
+  keepNow();
+});

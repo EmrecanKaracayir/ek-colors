@@ -11,7 +11,7 @@ import { huesKey } from "../palette/solve";
 import { updateExport } from "./settings/export";
 import { updateTune } from "./settings/page";
 import { render, status } from "./shell";
-import { state } from "./state";
+import { keepPalette, state } from "./state";
 import { LONG_BASELINE, askBaselines, restartBaselines, solvingBaseline, baselineSince } from "./baselines";
 import type { Request, Response } from "./worker";
 
@@ -59,7 +59,10 @@ function solved(event: MessageEvent<Response>): void {
   state.palettes[data.gamut] = data.palette;
   state.fresh.add(data.gamut);
   const shown = data.gamut === state.gamut;
-  if (shown) [state.solving, state.took, state.error] = [false, data.took, null];
+  if (shown) {
+    [state.solving, state.took, state.error] = [false, data.took, null];
+    keepPalette();
+  }
   // The other gamut tiers solve after the one on screen, one at a time, so a newer change can start sooner.
   const next = state.fresh.has(state.gamut) ? GAMUTS.find((g) => !state.fresh.has(g)) : state.gamut;
   if (next) post(next);

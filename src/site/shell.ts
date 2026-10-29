@@ -9,14 +9,9 @@ import { baseIn } from "../palette/bases";
 import { GAMUTS } from "../palette/settings";
 import { context, followsEdits, hueTestContext, onScreen, testContext } from "./derived";
 import { refill } from "./dom";
-import { algorithmPage } from "./pages/algorithm";
 import { colorPage } from "./pages/color";
 import { comparePage } from "./pages/compare";
-import { curveTestPage } from "./pages/curve-test";
-import { howPage } from "./pages/how";
-import { hueTestPage } from "./pages/hue-test";
 import { overviewPage } from "./pages/overview";
-import { referencesPage } from "./pages/references";
 import { tiersPage } from "./pages/tiers";
 import { $, colors, labelText } from "./parts";
 import { updateBaseNote } from "./settings/base";
@@ -46,6 +41,53 @@ const PAGE_NAMES: Readonly<Record<string, string>> = {
 function pageTitle(view: string): string {
   const name = PAGE_NAMES[view] ?? labelText(view);
   return name ? `${name} • EK Colors` : "EK Colors";
+}
+
+/** The pages loaded the first time they're opened, so the first page loads without them. */
+export const later: {
+  how?: typeof import("./pages/how");
+  algorithm?: typeof import("./pages/algorithm");
+  references?: typeof import("./pages/references");
+  curveTest?: typeof import("./pages/curve-test");
+  hueTest?: typeof import("./pages/hue-test");
+} = {};
+
+/** How each of those pages loads, once. */
+const LOADS: Readonly<Record<string, () => Promise<unknown>>> = {
+  how: () => import("./pages/how").then((page) => (later.how = page)),
+  algorithm: () => import("./pages/algorithm").then((page) => (later.algorithm = page)),
+  references: () => import("./pages/references").then((page) => (later.references = page)),
+  "curve-test": () =>
+    import("./pages/curve-test").then((page) => {
+      page.bindTest(testContext);
+      later.curveTest = page;
+    }),
+  "hue-test": () =>
+    import("./pages/hue-test").then((page) => {
+      page.bindHueTest(hueTestContext);
+      later.hueTest = page;
+    }),
+};
+
+/** The pages loading now. */
+const loading = new Set<string>();
+
+/** Whether the title waits for its page to load before it takes the focus. */
+let focusWaiting = false;
+
+/**
+ * Loads a page the first time it's opened, then draws it if it's still the one asked for.
+ *
+ * @param view  The page.
+ */
+function loadPage(view: string): void {
+  if (loading.has(view)) return;
+  loading.add(view);
+  void LOADS[view]!().then(() => {
+    if (state.view !== view) return;
+    render();
+    if (focusWaiting) focusTitle();
+  });
 }
 
 /**
@@ -82,19 +124,20 @@ export function render(): void {
   // Settings drawn again keeps its strip as it is, drawn, pinned and with its margin, rather than an
   // empty one that grows back and moves the page below it.
   const keptStrip = view === "tune" && document.querySelector("#tiers-section") ? document.querySelector("#palette-strip") : null;
-  refill(
-    $("main"),
+  const page =
     view === "overview" ? overviewPage()
     : view === "tiers" ? tiersPage()
     : view === "compare" ? comparePage()
     : view === "tune" ? settingsPage()
-    : view === "references" ? referencesPage()
-    : view === "how" ? howPage(context())
-    : view === "algorithm" ? algorithmPage(context())
-    : view === "curve-test" ? curveTestPage(testContext())
-    : view === "hue-test" ? hueTestPage(hueTestContext())
-    : colorPage(view === "colors" ? first : view),
-  );
+    : view === "references" ? later.references?.referencesPage()
+    : view === "how" ? later.how?.howPage(context())
+    : view === "algorithm" ? later.algorithm?.algorithmPage(context())
+    : view === "curve-test" ? later.curveTest?.curveTestPage(testContext())
+    : view === "hue-test" ? later.hueTest?.hueTestPage(hueTestContext())
+    : colorPage(view === "colors" ? first : view);
+  // A page loaded on its first visit is drawn once it's there.
+  if (page === undefined) loadPage(view);
+  refill($("main"), page ?? "");
   if (keptStrip) document.querySelector("#palette-strip")?.replaceWith(keptStrip);
   if (view === "tune") updateTune();
   if (view === "how") updateStrip();
@@ -221,6 +264,7 @@ addEventListener("hashchange", () => openMenu(false));
  */
 function focusTitle(): void {
   const title = document.querySelector<HTMLElement>("main h1");
+  focusWaiting = !title;
   if (!title) return;
   title.tabIndex = -1;
   title.focus({ preventScroll: true });

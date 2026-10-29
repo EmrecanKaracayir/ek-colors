@@ -12,9 +12,9 @@ import { anchorHue, guides } from "../palette/references";
 import type { Gamut, Mode, Settings } from "../palette/settings";
 import { type GamutPalette, type ModePalette, bounds, hueKeys, identityOf, lineup, strongest } from "../palette/solve";
 import { bindGuides } from "./graph";
-import { type TestContext, bindTest } from "./pages/curve-test";
+import type { TestContext } from "./pages/curve-test";
 import type { Context } from "./pages/how";
-import { type HueTestContext, bindHueTest } from "./pages/hue-test";
+import type { HueTestContext } from "./pages/hue-test";
 import { label } from "./parts";
 import { type CurveView, bindCurves } from "./settings/curve";
 import { write } from "./settings/fields";
@@ -307,8 +307,6 @@ export function testContext(): TestContext {
   };
 }
 
-bindTest(testContext);
-
 /**
  * What the blind hue test needs from the page.
  *
@@ -328,8 +326,6 @@ export function hueTestContext(): HueTestContext {
     redraw: render,
   };
 }
-
-bindHueTest(hueTestContext);
 
 /**
  * The palette on screen.

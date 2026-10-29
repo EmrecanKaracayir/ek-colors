@@ -127,11 +127,16 @@ color, `gray` or a page of the site. With a hue count other than 8, the hues are
 references, and settings. Settings names the palette, resets it to EK Palette, copies and pastes
 its settings, and holds the two blind tests (one finds where each color looks most like its name,
 the other how colorful each hue looks), export as JSON, CSV, Markdown or CSS, and what the site is.
-Changes stay in the browser. After changing `src/`, rebuild it:
+Changes stay in the browser, with the last palette solved, so a return visit shows it at once
+while it solves again. After changing `src/`, rebuild it:
 
 ```sh
 pnpm build
 ```
+
+The build puts `app.js` and `worker.js` in `site/`, and in `site/chunks/` what they share and the
+pages loaded the first time they're opened: How it works, the algorithm, references and the two
+blind tests.
 
 Its icon, iPhone home-screen icon and link preview card are drawn from EK Palette in `out/`, with
 Google Chrome (`CHROME` names it when it isn't in the usual place on a Mac); after EK Palette
