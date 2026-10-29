@@ -414,8 +414,8 @@ export function identityOf(
 
 /* >----------------------------------------< Palette >-----------------------------------------< */
 
-/** How close neighbors may come, as a share of the even step between them. */
-export const CLOSEST = 0.25;
+/** How close neighbors may come, degrees: enough to keep them in order around the circle. */
+export const CLOSEST = 1;
 
 /**
  * The hues' keys in lineup order: with eight, their names from yellow, the anchor; with any other
@@ -435,8 +435,8 @@ export function hueKeys(n: number): string[] {
  * The lineup: every color in order around the circle from the anchor (yellow, with eight, then
  * green, mint, blue, purple, pink, red, orange), with the hue it starts from, unwrapped so they rise
  * from the anchor. A color starts where it's placed, or else where the circle divided evenly puts
- * it. Placed colors are kept in order: each stays at least CLOSEST of the even step from the colors
- * beside it.
+ * it. Placed colors are kept in order: each stays at least CLOSEST degrees from the colors beside
+ * it.
  *
  * @param settings  The settings.
  * @returns         The keys, their hues (rising from the anchor), which stay put, and the closest
@@ -447,7 +447,7 @@ export function lineup(settings: Pick<Settings, "hues" | "placed" | "anchor" | "
   const keys = hueKeys(n);
   const anchor = anchorHue(settings);
   const step = 360 / n;
-  const sep = step * CLOSEST;
+  const sep = CLOSEST;
   const held = keys.map((key, k) => k === 0 || settings.placed[key] !== undefined);
   const hues = keys.map((key, k) => {
     const placed = k === 0 ? undefined : settings.placed[key];

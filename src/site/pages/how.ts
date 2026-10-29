@@ -633,7 +633,7 @@ export function howPage(ctx: Context): string {
 
     <section class="step">
       <h2>Placing hues (H)</h2>
-      <p>A name fits some hues better than others: an even red can lean pink, an even blue can lean cyan. So any color can be <strong>placed</strong> by hand where its name fits best, by dragging it on the hue graph in Settings, and the others re-space evenly around it. Colors keep their order around the circle: a placed color stays between its neighbors, at least a quarter of the even step from each.</p>
+      <p>A name fits some hues better than others: an even red can lean pink, an even blue can lean cyan. So any color can be <strong>placed</strong> by hand where its name fits best, by dragging it on the hue graph in Settings, and the others re-space evenly around it. Colors keep their order around the circle: a placed color stays between its neighbors. It can come as close to them as asked; once two neighbors are under a visible step apart (ΔE ${String(JUST_VISIBLE)}) on any tier, the graph says so in amber.</p>
       <div class="demo"><div class="demo-out wide">${placingDemo(ctx)}</div></div>
       <p>The <strong>blind hue test</strong> in Settings measures where each name fits. It shows one color at a time, without its name, and asks whether it leans toward the color before it or the one after it; the hue where it leans neither way is the middle of its name, and a color can be placed there.</p>
     </section>

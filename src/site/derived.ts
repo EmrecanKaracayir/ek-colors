@@ -7,7 +7,7 @@
 
 import { CONFIG } from "../config";
 import { forGamut } from "../palette/bases";
-import { type Model, makeModel, parts, plainSquared } from "../palette/model";
+import { JUST_VISIBLE, type Model, makeModel, parts, plainSquared } from "../palette/model";
 import { anchorHue, guides } from "../palette/references";
 import type { Gamut, Mode, Settings } from "../palette/settings";
 import { type GamutPalette, type ModePalette, bounds, hueKeys, identityOf, lineup, strongest } from "../palette/solve";
@@ -171,6 +171,26 @@ function gapsOf(palette: ModePalette | undefined, tier: number): HuesView["gaps"
 }
 
 /**
+ * Neighbors that come closer than a just-visible step on some tier, in the colors in use: the
+ * closest each pair comes, and on which tier.
+ *
+ * @param mode  The mode.
+ * @returns     The pairs, by their gap's place in the ring.
+ */
+function closeNeighbors(mode: Mode): HuesView["close"] {
+  const palette = current()?.[mode];
+  if (!palette) return [];
+  const keys = palette.colors.filter((c) => c.kind === "hue").map((c) => c.key);
+  const found = new Map<number, HuesView["close"][number]>();
+  for (const tier of state.settings.tiers)
+    (palette.ring[tier] ?? []).forEach((difference, i) => {
+      if (difference < JUST_VISIBLE && difference < (found.get(i)?.difference ?? Infinity))
+        found.set(i, { index: i, keys: [keys[i]!, keys[(i + 1) % keys.length]!], difference, tier });
+    });
+  return [...found.values()];
+}
+
+/**
  * The hue graph's contents: every color in the uniform lineup and the current one, without the
  * curve, on the identity tier of the mode on screen. Placed colors and the anchor are drawn where
  * they're set, so a drag follows the pointer before the palette solves again.
@@ -218,7 +238,7 @@ export function huesView(): HuesView {
   }
   const split = weight ? { hue: hue / weight, colorfulness: colorful / weight } : null;
   return {
-    settled: upToDate(), rows, gaps, band: bandOf(mode), guide: state.guide, guides: guides(s, state.guide), cost: spacingCost(mode), turn: turn(mode), bend, split };
+    settled: upToDate(), rows, gaps, close: closeNeighbors(mode), band: bandOf(mode), guide: state.guide, guides: guides(s, state.guide), cost: spacingCost(mode), turn: turn(mode), bend, split };
 }
 
 /**

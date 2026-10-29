@@ -34,6 +34,9 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - The guides drawn on the graphs are a choice kept in the browser, like Light or Dark, rather than
   a setting, so exports no longer carry `guide`.
 - How many hues goes up to 64; past 32, the field still says solving can take a long time.
+- Placed colors can come as close to their neighbors as asked; they only keep their order, at least
+  1° apart, rather than a quarter of the even step (45° with two hues). Neighbors under ΔE 2 apart
+  on any tier are marked in amber on the hue graph, its readout and the color's values.
 - A just-visible difference is ΔE 2 everywhere: the marker and text in How it works, the zones,
   Even and the margin for picking a base.
 - Bend's zones and Even's words are measured in the palette's own gap between neighbors, per mode,

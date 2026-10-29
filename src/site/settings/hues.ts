@@ -44,6 +44,9 @@ export interface HuesView {
   /** The gaps between neighbors on the uniform and current rows (CAM16-UCS ΔE). */
   readonly gaps: Readonly<Record<"uniform" | "current", readonly HueGap[]>>;
 
+  /** Neighbors closer than a just-visible step on some tier: their gap's place in the ring, the two colors, the closest they come (ΔE) and where. */
+  readonly close: readonly { readonly index: number; readonly keys: readonly [string, string]; readonly difference: number; readonly tier: number }[];
+
   /** The turn that brings the uniform lineup nearest the current one, and how bent the current one is from it (gaps, root mean square); null while they solve. */
   readonly turn: number | null;
   readonly bend: number | null;
@@ -100,7 +103,8 @@ function huesLayers(view: HuesView): string {
     const [low, high] = [Math.min(...values), Math.max(...values)];
     return list.map((g, i) => {
       const extreme = high > low && (values[i] === low || values[i] === high);
-      return `<text x="${g.hue.toFixed(1)}" y="${String(row === "uniform" ? ROWS.uniform - 10 : ROWS.current + 18)}" class="axis hue-gap${extreme ? " extreme" : ""}" text-anchor="middle">${g.gap.toFixed(1)}</text>`;
+      const close = row === "current" && view.close.some((c) => c.index === i);
+      return `<text x="${g.hue.toFixed(1)}" y="${String(row === "uniform" ? ROWS.uniform - 10 : ROWS.current + 18)}" class="axis hue-gap${extreme ? " extreme" : ""}${close ? " close" : ""}" text-anchor="middle">${g.gap.toFixed(1)}</text>`;
     });
   });
   return gaps.join("") + view.rows
@@ -181,7 +185,11 @@ function neighborGaps(view: HuesView, key: string): string {
   const i = cost.keys.indexOf(key);
   const name = (k: string | undefined) => view.rows.find((row) => row.key === k)?.label ?? "";
   return [cost.keys[(i - 1 + n) % n], cost.keys[(i + 1) % n]]
-    .map((k, side) => `<div><dt>To ${name(k)}</dt><dd>${againstEven(cost.uniform + gaps[side]!, cost.uniform)}</dd></div>`)
+    .map((k, side) => {
+      const close = view.close.find((c) => c.keys[side === 0 ? 0 : 1] === k && c.keys[side === 0 ? 1 : 0] === key);
+      const near = close ? `<span class="near">Under a visible step: ${close.difference.toFixed(1)} ΔE on Lc ${String(close.tier)}</span>` : "";
+      return `<div><dt>To ${name(k)}</dt><dd>${againstEven(cost.uniform + gaps[side]!, cost.uniform)}${near}</dd></div>`;
+    })
     .join("");
 }
 
@@ -199,7 +207,13 @@ function huesReadout(view: HuesView): string {
   const split = view.split;
   const made = !split ? "" : split.hue >= 0.995 ? ", all from hue" : `, ${share(split.hue)} from hue${split.colorfulness >= 0.005 ? ` and ${share(split.colorfulness)} from colorfulness` : ""}`;
   const turn = view.turn === null || view.bend === null ? "" : `${zone(view.bend, cost.uniform).name}: bend ${view.bend.toFixed(2)} gap${view.bend >= 0.005 ? made : ""}, turned ${signed(view.turn)}°. `;
-  return turn + evenText(cost.ring, names, cost.uniform);
+  const label = (key: string) => view.rows.find((r) => r.key === key)?.label ?? "";
+  // With two colors, both gaps of the ring are between the same pair; it's named once.
+  const pairs = view.close.filter((c, i) => !view.close.slice(0, i).some((d) => d.keys.includes(c.keys[0]) && d.keys.includes(c.keys[1])));
+  const close = pairs
+    .map((c) => `<span class="near">${label(c.keys[0])} and ${label(c.keys[1])} come within ${c.difference.toFixed(1)} ΔE on Lc ${String(c.tier)}: they can't be told apart side by side.</span>`)
+    .join(" ");
+  return turn + evenText(cost.ring, names, cost.uniform) + (close ? ` ${close}` : "");
 }
 
 /**

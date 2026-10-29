@@ -448,6 +448,10 @@
   .guide-picker button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .graph-editor .hue-gap { font-size: 7px; }
   .graph-editor .hue-gap.extreme { fill: var(--fg); font-weight: 700; }
+  /* Neighbors closer than a visible step: amber, a side effect of where they were placed. */
+  .graph-editor .hue-gap.close { fill: var(--fair); font-weight: 700; }
+  .hues-editor .near { color: var(--fair); }
+  .hue-facts .near { display: block; font-size: var(--type-xs); }
   .hue-point.uniform .dot-fill { stroke: color-mix(in oklch, var(--fg) 45%, transparent); stroke-width: 1; }
   .hue-point.uniform { cursor: pointer; }
   .hue-point.uniform.selected .dot-fill { stroke: var(--fg); stroke-width: 2; }
@@ -769,9 +773,9 @@
   }
   @media (prefers-reduced-motion: reduce) { .strip-item .cover, .menu-toggle span { transition: none; } }
 </style>
-<link rel="modulepreload" href="chunks/chunk-4J4ZH2OA.js">
+<link rel="modulepreload" href="chunks/chunk-QSMB3AQZ.js">
 <link rel="modulepreload" href="chunks/chunk-R6CCDRJP.js">
-<link rel="modulepreload" href="chunks/chunk-7JYMHWRG.js">
+<link rel="modulepreload" href="chunks/chunk-X5DVRVZT.js">
 <link rel="modulepreload" href="chunks/chunk-35RC7DVO.js">
 </head>
 <body>
@@ -808,6 +812,6 @@
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <p id="auto-base" class="notice beyond" role="note" hidden></p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=01e3c1b3f9"></script>
+<script type="module" src="app.js?v=d56c8e4c4d"></script>
 </body>
 </html>
