@@ -209,9 +209,9 @@ function point(value: unknown, name: string): CurvePoint {
     center: hue(p.center, `${name}: its center`),
     width: number(p.width, `${name}: its width`, LIMITS.width),
   };
-  return p.off === undefined
-    ? checked
-    : { ...checked, off: flag(p.off, `${name}: whether it's off`) };
+  // A point that's on has no off, whether it was written false or left out.
+  const off = p.off !== undefined && flag(p.off, `${name}: whether it's off`);
+  return off ? { ...checked, off } : checked;
 }
 
 /**

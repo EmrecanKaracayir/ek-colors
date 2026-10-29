@@ -69,6 +69,9 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A colorfulness point switched off and on again no longer keeps `"off": false` in settings and
+  exports, so a palette otherwise the same as EK Palette reads as EK Palette; one that has it reads
+  as if it weren't there.
 - A test run's Copy code and Remove buttons sit as far from its text and each other as Add from
   the code field.
 - A palette name with HTML in it was drawn as HTML; it's text now, wherever it shows.

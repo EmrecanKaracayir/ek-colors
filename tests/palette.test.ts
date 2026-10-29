@@ -52,6 +52,22 @@ describe("Settings", () => {
     assert.equal(readSettings({ ...CONFIG, name: "EK Palette 2" }, DEFAULTS).name, "EK Palette 2");
   });
 
+  it("read a curve point that's on the same, with off false or left out", () => {
+    const at = (off?: boolean) => ({
+      amount: 4,
+      center: 16,
+      width: 32,
+      ...(off === undefined ? {} : { off }),
+    });
+    const read = (off?: boolean) =>
+      readSettings(
+        { ...CONFIG, colorfulnessPerHue: { ...CONFIG.colorfulnessPerHue, light: [at(off)] } },
+        DEFAULTS,
+      ).colorfulnessPerHue.light[0];
+    assert.deepEqual(read(false), read());
+    assert.equal(read(true)?.off, true);
+  });
+
   it("take up to 64 hues", () => {
     assert.equal(readSettings({ ...CONFIG, hues: 64 }, DEFAULTS).hues, 64);
     assert.throws(() => readSettings({ ...CONFIG, hues: 65 }, DEFAULTS));

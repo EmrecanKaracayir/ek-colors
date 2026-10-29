@@ -219,6 +219,18 @@ export function curveEditor(view: CurveView, drawField: Field): string {
 /* >----------------------------------------< Dragging >----------------------------------------< */
 
 /**
+ * A point switched off or on: off, it says so; on, it has no off at all, as a new point doesn't.
+ *
+ * @param p    The point.
+ * @param off  Whether it's off.
+ * @returns    The point.
+ */
+function switched(p: CurvePoint, off: boolean): CurvePoint {
+  const { amount, center, width } = p;
+  return off ? { amount, center, width, off: true } : { amount, center, width };
+}
+
+/**
  * Makes every editor on the page respond to pointer, wheel and keys.
  *
  * @param get  The current view of a mode.
@@ -278,7 +290,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
       lastPress = { time: 0, on: "" };
       const index = Number(part.dataset.index);
       const points = [...get(mode).points];
-      points[index] = { ...points[index]!, off: !points[index]!.off };
+      points[index] = switched(points[index]!, !points[index]!.off);
       selected[mode] = index;
       return apply(mode, points, true);
     }
@@ -326,7 +338,7 @@ export function bindCurves(get: (mode: Mode) => CurveView, set: (mode: Mode, poi
     const points = [...get(mode).points];
     const i = selected[mode];
     if (!points[i]) return;
-    points[i] = { ...points[i], off: !box.checked };
+    points[i] = switched(points[i], !box.checked);
     apply(mode, points, true);
   });
   document.addEventListener("pointermove", (event) => {
