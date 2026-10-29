@@ -33,6 +33,10 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - A just-visible difference is ΔE 2 everywhere: the marker and text in How it works, the Tuned zone
   (now up to 0.2 gap), Even's "worth watching" (now up to 20%) and the margin for picking a base.
 - A return visit shows the last palette solved at once, while it solves again.
+- The fonts, Instrument Sans and JetBrains Mono, are served with the site, with their licenses in
+  `site/fonts/`, so a visit asks nothing of Google Fonts.
+- The Algorithm page's step 9 is Baselines for the H and M switches, so "variant" only means a
+  color's default or muted version, as in the CSV export.
 - How it works, the algorithm, references and the blind tests load the first time they're opened,
   and the parts of Material Color Utilities EK Colors doesn't use are left out: the first page
   loads 46% less JavaScript.

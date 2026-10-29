@@ -18,7 +18,7 @@ import{a as y}from"./chunk-X2Y5TGFK.js";import{B as g,C as x,D as T,E as c,F as 
                        muted   \u2190 strongest(h, M(default) \xD7 muted share)
     per tier, per custom color: default \u2190 strongest(its hue, T \xD7 its share), muted as above
     per tier: gray \u2190 the 8-bit gray on Lc; per neutral color: strongest(hue(base), M(base) \xD7 its share)
-variants for the H and M switches: the same solve without placed hues, without the curve, or both (step 9)
+baselines for the H and M switches: the same solve without placed hues, without the curve, or both (step 9)
 the hues are kept, so custom colors, neutral colors and the muted share are placed on them anew (step 11)</pre>
       <p>Every color is produced by one primitive: <code>strongest(h, M, Lc)</code>, the most colorful color of CAM16 hue h, up to colorfulness M, whose APCA contrast against the mode's base is exactly Lc.</p>
       <p>Settings from the site, from a paste or from storage are checked first, and older ones brought up to date; the config the command line solves isn't checked:</p>
@@ -174,8 +174,8 @@ two gray bases = no neutral colors at all; Gray alone</pre>
     </section>
 
     <section class="step">
-      <h2>9. Variants for the H and M switches</h2>
-      <p>The H and M switches in the header, and the rows of the strip in Settings, show the palette without some of its edits. Each variant is a solve of changed settings, in a second worker so the palette on screen never waits for it:</p>
+      <h2>9. Baselines for the H and M switches</h2>
+      <p>The H and M switches in the header, and the rows of the strip in Settings, show the palette without some of its edits. Each baseline is a solve of changed settings, in a second worker so the palette on screen never waits for it:</p>
 <pre class="formula">H on,  M on    the palette as set
 H on,  M off   without the curve                          // "+H" row
 H off, M on    with nothing placed

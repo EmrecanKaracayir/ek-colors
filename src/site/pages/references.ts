@@ -159,12 +159,12 @@ const GROUPS: readonly Group[] = [
       {
         cite: "Instrument. <em>Instrument Sans.</em> SIL Open Font License 1.1.",
         link: "https://fonts.google.com/specimen/Instrument+Sans",
-        use: "The site's text.",
+        use: "The site's text, served with the site with its license.",
       },
       {
         cite: "JetBrains. <em>JetBrains Mono.</em> SIL Open Font License 1.1.",
         link: "https://www.jetbrains.com/lp/mono/",
-        use: "The site's numbers and color values.",
+        use: "The site's numbers and color values, served with the site with its license.",
       },
       {
         cite: `Microsoft. <em>TypeScript</em> ${project.devDependencies.typescript}. Apache License 2.0.`,
