@@ -35,6 +35,9 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   a setting, so exports no longer carry `guide`.
 - Numbers measured from the palette on screen, such as its gap between neighbors, are set in
   monospace in the text, apart from the method's fixed numbers, such as ΔE 2.
+- A palette can't be named EK Palette, in any case or spacing: the name field says so and keeps
+  the name it had, a pasted or loaded export with it is refused, and settings kept in the browser
+  under it keep everything but the name.
 - How many hues goes up to 64; past 32, the field still says solving can take a long time.
 - Placed colors can come as close to their neighbors as asked; they only keep their order, at least
   1° apart, rather than a quarter of the even step (45° with two hues). Neighbors under ΔE 2 apart

@@ -8,7 +8,7 @@
 import { CONFIG } from "../config";
 import { readSettings } from "../palette/check";
 import { SYSTEMS } from "../palette/references";
-import type { Gamut, Mode, Settings } from "../palette/settings";
+import { type Gamut, isOwnName, type Mode, type Settings } from "../palette/settings";
 import { type GamutPalette, PAGES, withNeutrals } from "../palette/solve";
 import { build } from "./dom";
 import type { Format } from "./highlight";
@@ -89,7 +89,12 @@ Object.assign(state.palettes, keptPalette());
 function load(): Settings {
   try {
     const saved = localStorage.getItem(STORE);
-    if (saved) return withNeutrals(readSettings(JSON.parse(saved), CONFIG));
+    if (saved) {
+      // A palette kept under EK Palette's own name keeps everything but the name.
+      const given = JSON.parse(saved) as { name?: unknown };
+      if (typeof given.name === "string" && isOwnName(given.name)) given.name = "";
+      return withNeutrals(readSettings(given, CONFIG));
+    }
   } catch {
     // Storage can be blocked, and settings that no longer make sense are dropped; the defaults do.
   }

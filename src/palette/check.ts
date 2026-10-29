@@ -10,6 +10,8 @@ import { forGamut, isBaseColor, pickProblem } from "./bases";
 import { lightness } from "./model";
 import { SYSTEMS } from "./references";
 import {
+  isOwnName,
+  OWN_NAME,
   type CurvePoint,
   type CustomColor,
   GAMUTS,
@@ -331,6 +333,7 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
   if (typeof s.name !== "string" || s.name.trim().length > 60)
     fail("The name must be text of at most 60 characters.");
   const name = s.name.trim();
+  if (isOwnName(name)) fail(`${OWN_NAME} is EK Colors' own palette; the name must be another.`);
   return {
     bases,
     pickedBases: perGamut,

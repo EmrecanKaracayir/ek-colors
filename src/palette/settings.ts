@@ -158,6 +158,20 @@ export interface Settings {
 /* >-----------------------------------------< Limits >-----------------------------------------< */
 
 /** The lowest and highest each number in the settings may be; the fields and the check share them. */
+/** The name EK Colors' own palette goes by, which no other palette may take. */
+export const OWN_NAME = "EK Palette";
+
+/**
+ * Whether a name is EK Palette's, whatever its case or spacing.
+ *
+ * @param name  The name.
+ * @returns     True for "EK Palette", "ek palette", "EKPalette" and the like.
+ */
+export function isOwnName(name: string): boolean {
+  const plain = (text: string) => text.replace(/\s+/g, "").toLowerCase();
+  return plain(name) === plain(OWN_NAME);
+}
+
 export const LIMITS = {
   colorfulness: [10, 80],
   mutedShare: [0.1, 0.9],

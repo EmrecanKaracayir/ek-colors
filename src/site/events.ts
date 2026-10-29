@@ -8,7 +8,7 @@ import { CONFIG } from "../config";
 import { baseIn, fits, home, isBaseColor, pickCheck } from "../palette/bases";
 import { lightness } from "../palette/model";
 import { anchorHue } from "../palette/references";
-import { GAMUTS, GAMUT_NAMES, type Gamut, MODES, type Mode } from "../palette/settings";
+import { GAMUTS, GAMUT_NAMES, type Gamut, isOwnName, MODES, type Mode, OWN_NAME } from "../palette/settings";
 import { NEUTRAL_START, withNeutrals } from "../palette/solve";
 import { allowed, anchored, context, onScreen, syncAnchor } from "./derived";
 import { announce, copyText, flash, markField } from "./dom";
@@ -177,6 +177,10 @@ document.addEventListener("input", (event) => {
   if (el.dataset.demo) return void later.how?.updateDemo(context(), el);
   // The name changes nothing solved: only what the palette is called, and the export's title.
   if (el.dataset.name !== undefined) {
+    // EK Palette's own name isn't taken; the palette keeps the name it had.
+    const own = isOwnName(el.value);
+    markField(el, own ? `${OWN_NAME} is EK Colors' own palette; give this one another name` : "");
+    if (own) return;
     write("name", el.value.slice(0, 60));
     return updateExport();
   }
@@ -279,7 +283,7 @@ document.addEventListener("input", (event) => {
 // The palette's name loses its outer spaces once it's done being typed.
 document.addEventListener("change", (event) => {
   const el = event.target as HTMLInputElement;
-  if (el.dataset.name === undefined || el.value === el.value.trim()) return;
+  if (el.dataset.name === undefined || el.value === el.value.trim() || isOwnName(el.value)) return;
   el.value = el.value.trim();
   write("name", el.value);
   updateExport();

@@ -46,6 +46,12 @@ describe("Settings", () => {
     assert.deepEqual(readSettings(exported, DEFAULTS), CONFIG);
   });
 
+  it("leave EK Palette's name to EK Palette", () => {
+    for (const name of ["EK Palette", "ek palette", " EKPalette "])
+      assert.throws(() => readSettings({ ...CONFIG, name }, DEFAULTS), /own palette/);
+    assert.equal(readSettings({ ...CONFIG, name: "EK Palette 2" }, DEFAULTS).name, "EK Palette 2");
+  });
+
   it("take up to 64 hues", () => {
     assert.equal(readSettings({ ...CONFIG, hues: 64 }, DEFAULTS).hues, 64);
     assert.throws(() => readSettings({ ...CONFIG, hues: 65 }, DEFAULTS));
