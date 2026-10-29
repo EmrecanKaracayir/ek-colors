@@ -22,12 +22,20 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Gray are written per gamut where they differ.
 - While the gamut on screen can't show the base, an amber notice under the header gives the closest
   color and leads to Settings. The red notice for a gamut wider than the screen shows on Settings too.
-
 - `pnpm test`: EK Palette solves to the palette in `out/`, every color sits on its tier, settings
   read back from their export and bases read the same in any CSS form. A release runs it too.
 
 ### Changed
 
+- Custom colors are `custom` in settings and JSON exports, and each one is marked `"custom": true`.
+  Exports that say `extras` no longer paste.
+- How many hues goes up to 64; past 32, the field still says solving can take a long time.
+- A just-visible difference is ΔE 2 everywhere: the marker and text in How it works, the Tuned zone
+  (now up to 0.2 gap), Even's "worth watching" (now up to 20%) and the margin for picking a base.
+- A return visit shows the last palette solved at once, while it solves again.
+- How it works, the algorithm, references and the blind tests load the first time they're opened,
+  and the parts of Material Color Utilities EK Colors doesn't use are left out: the first page
+  loads 46% less JavaScript.
 - The export in Settings is colored once it comes near the screen, so Settings redraws about
   three times faster.
 - Neutral colors are exported on every gamut, as Gray where its base is gray.
