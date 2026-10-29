@@ -633,6 +633,8 @@
   button.link:hover { color: var(--fg); }
   .test-code { min-width: 0; flex: 1 1 12rem; }
   .test-runs { margin: 0; padding-left: var(--space-7); display: grid; gap: var(--space-4); }
+  /* A run's buttons keep the same distance from its text and each other as Add from the code field. */
+  .test-runs li button { margin-inline-start: var(--space-5); }
   table.test-results { min-width: 0; width: auto; }
   .test-results tr.clear th, .test-results tr.clear td:not(.soft) { font-weight: 700; }
   a.button { display: inline-block; text-decoration: none; }
@@ -775,7 +777,7 @@
   }
   @media (prefers-reduced-motion: reduce) { .strip-item .cover, .menu-toggle span { transition: none; } }
 </style>
-<link rel="modulepreload" href="chunks/chunk-XVUCNMTA.js">
+<link rel="modulepreload" href="chunks/chunk-XJHXZWCV.js">
 <link rel="modulepreload" href="chunks/chunk-R6CCDRJP.js">
 <link rel="modulepreload" href="chunks/chunk-VNPMBALE.js">
 <link rel="modulepreload" href="chunks/chunk-35RC7DVO.js">
@@ -814,6 +816,6 @@
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <p id="auto-base" class="notice beyond" role="note" hidden></p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=061dadd9e7"></script>
+<script type="module" src="app.js?v=7279b956d1"></script>
 </body>
 </html>

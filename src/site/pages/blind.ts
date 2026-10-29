@@ -372,9 +372,7 @@ function pickOf(event: KeyboardEvent): Pick | null {
  */
 export function runItem(name: string, run: Run<unknown>, i: number, unit: string): string {
   const when = new Date(run.when).toLocaleString();
-  return `<li><span class="mono">${when}</span> • ${String(run.points.length)} ${unit} • ${run.gamut}, Lc ${String(run.tier)}
-    <button type="button" data-${name}="copy" data-run="${String(i)}" aria-label="Copy the code of the run from ${when}">Copy code</button>
-    <button type="button" data-${name}="remove" data-run="${String(i)}" aria-label="Remove the run from ${when}">Remove</button></li>`;
+  return `<li><span class="mono">${when}</span> • ${String(run.points.length)} ${unit} • ${run.gamut}, Lc ${String(run.tier)}<button type="button" data-${name}="copy" data-run="${String(i)}" aria-label="Copy the code of the run from ${when}">Copy code</button><button type="button" data-${name}="remove" data-run="${String(i)}" aria-label="Remove the run from ${when}">Remove</button></li>`;
 }
 
 /**

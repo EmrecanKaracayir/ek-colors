@@ -69,6 +69,8 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A test run's Copy code and Remove buttons sit as far from its text and each other as Add from
+  the code field.
 - A palette name with HTML in it was drawn as HTML; it's text now, wherever it shows.
 - A base written as anything but hex was read lighter than it is when dark: `rgb(78 78 78)` read
   as L\* 69 rather than 33.
