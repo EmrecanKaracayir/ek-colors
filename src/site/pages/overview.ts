@@ -9,7 +9,6 @@ import { SURROUNDS } from "../../palette/settings";
 import { identityOf } from "../../palette/solve";
 import { circle } from "../circle";
 import { anchored, current, onScreen } from "../derived";
-import { measured } from "../graph";
 import { iconSvg } from "../icon";
 import { card, colors, held, label, paletteName, range } from "../parts";
 import { popButton } from "../popover";
@@ -35,7 +34,7 @@ export function overviewPage(): string {
   const icon = iconSvg(settings.bases.light, settings.bases.dark, list.filter((c) => c.kind === "hue").map((c) => c.tiers[tier]!.default), 'class="palette-icon" aria-hidden="true"');
   return `<section class="intro">
       <h1 class="named">${icon}<span>${paletteName()}</span></h1>
-      <p>${custom.length ? `${measured(String(hues))} + ${measured(String(custom.length))} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${measured(String(hues))} hues aim to look equally colorful and evenly different, ${range(ring)} ΔE between neighbors; the custom ${custom.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${measured(String(list.length))} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, evenly different from its neighbors: ${range(ring)} ΔE apart.`}</p>
+      <p>${custom.length ? `${String(hues)} + ${String(custom.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful and evenly different, ${range(ring)} ΔE between neighbors; the custom ${custom.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, evenly different from its neighbors: ${range(ring)} ΔE apart.`}</p>
     </section>
     <section class="glance">
       <h2>At a glance <span class="soft">• Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>
@@ -43,9 +42,9 @@ export function overviewPage(): string {
       <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, c.tiers[tier]!.muted].map((s, i) => ({ hue: s.hue, m: s.colorfulness, color: s.color, custom: c.kind === "custom", name: i ? `${label(c.key)}, muted` : label(c.key) }))))}</div>
       <dl class="facts-list">
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
-        <div><dt>Room</dt><dd>${measured(`${String(room.lux)} lux`)}, ${(SURROUNDS[room.surround] ?? "").toLowerCase()} surround</dd></div>
-        <div><dt>Colorfulness</dt><dd>${held(tier)}; muted at ${measured(`${String(Math.round(settings.mutedShare * 100))}%`)}</dd></div>
-        <div><dt>Anchor</dt><dd>${label(anchored())} at hue ${measured(`${anchorHue(settings).toFixed(0)}°`)}, ${anchorSource(settings)}</dd></div>
+        <div><dt>Room</dt><dd>${String(room.lux)} lux, ${(SURROUNDS[room.surround] ?? "").toLowerCase()} surround</dd></div>
+        <div><dt>Colorfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.mutedShare * 100))}%</dd></div>
+        <div><dt>Anchor</dt><dd>${label(anchored())} at hue ${anchorHue(settings).toFixed(0)}°, ${anchorSource(settings)}</dd></div>
         <div><dt>Neighbor differences</dt><dd>${range(ring)} (CAM16-UCS)</dd></div>
       </dl>
       </div>

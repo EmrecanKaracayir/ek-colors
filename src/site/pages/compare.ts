@@ -10,7 +10,7 @@ import { CODEMOS, CODEMOS_MUTED, MODES, NAMES } from "../../palette/settings";
 import { type Swatch, identityOf, neighbors, swatch } from "../../palette/solve";
 import { circle } from "../circle";
 import { model, onScreen } from "../derived";
-import { measured, signedWhole } from "../graph";
+import { signedWhole } from "../graph";
 import { card, colors, isPreset, label, paletteName, range } from "../parts";
 import { comparing } from "../shell";
 import { state } from "../state";
@@ -56,7 +56,7 @@ function compareEk(): string {
     return `<section class="intro"><h1>Compare</h1>${ekMade()}<p class="notice" role="note">There's nothing to compare yet: these are EK Palette's own settings. Change anything in <a href="#tune">Settings</a>, and the custom palette appears here next to EK Palette.</p></section>`;
   const tier = identityOf(onScreen(), mode);
   const ek = baseline(CONFIG, "EK Palette")?.[mode];
-  const intro = `<h1>Compare with EK Palette</h1>${ekMade()}<p>Here are EK Palette's ${state.variant} colors next to ${paletteName()}'s on ${measured(`Lc ${String(tier)}`)}, on the ${mode} base.</p>`;
+  const intro = `<h1>Compare with EK Palette</h1>${ekMade()}<p>Here are EK Palette's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
   if (!ek) return `<section class="intro">${intro}<p class="soft">Solving EK Palette…</p></section>`;
   const other: Side = { name: "EK Palette", colors: ek.colors.filter((c) => c.tiers[tier]).map((c) => ({ key: c.key, custom: c.kind === "custom", swatch: c.tiers[tier]![state.variant] })) };
   return comparison(other, tier, intro, "");
@@ -84,7 +84,7 @@ function compareCodemos(): string {
       .map((c) => ({ key: c.key, custom: c.kind === "custom", swatch: swatch(m, base, mode, source[c.key]!, m.cam(mode, source[c.key]!).m) })),
   };
   const intro = `<h1>Compare with Codemos</h1>
-      <p>Codemos is the palette of <a href="https://github.com/EmrecanKaracayir/Codemos-Modern#readme">Codemos Modern</a>, an extension for theming VS Code, and EK Palette's predecessor: the first attempt at a uniform palette, and the one this project grew from. Its colors were set by hand, each worked out with the same measures used here; EK Colors solves them instead. Here are Codemos's ${state.variant} colors next to ${paletteName()}'s on ${measured(`Lc ${String(tier)}`)}, on the ${mode} base.</p>`;
+      <p>Codemos is the palette of <a href="https://github.com/EmrecanKaracayir/Codemos-Modern#readme">Codemos Modern</a>, an extension for theming VS Code, and EK Palette's predecessor: the first attempt at a uniform palette, and the one this project grew from. Its colors were set by hand, each worked out with the same measures used here; EK Colors solves them instead. Here are Codemos's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
   return comparison(other, tier, intro, "; Codemos's scatter, so some of its colors look stronger than others");
 }
 

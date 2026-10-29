@@ -9,7 +9,7 @@ import { CONFIG } from "../config";
 import { type CurvePoint, type CustomColor, GAMUT_NAMES, type NeutralColor, type Settings } from "../palette/settings";
 import { type Color, type Swatch, colorKeys, customKeys } from "../palette/solve";
 import { current } from "./derived";
-import { escape, measured, signed } from "./graph";
+import { escape, signed } from "./graph";
 import { popButton, popSource } from "./popover";
 import { type Variant, state } from "./state";
 
@@ -266,11 +266,11 @@ export function ownTarget(key: string, s: Swatch, tierTarget: number): number {
  * @returns           E.g. "the tier's M 36.8 + 7.8 from colorfulness per hue".
  */
 function aimText(key: string, s: Swatch, tierTarget: number): string {
-  const tierM = `the tier's ${measured(`M ${tierTarget.toFixed(1)}`)}`;
+  const tierM = `the tier's M ${tierTarget.toFixed(1)}`;
   const custom = customOf(key);
-  if (custom) return `${measured(`${String(Math.round(custom.share * 100))}%`)} of ${tierM}`;
+  if (custom) return `${String(Math.round(custom.share * 100))}% of ${tierM}`;
   const edit = s.target - tierTarget;
-  return Math.abs(edit) >= 0.5 ? `${tierM} ${measured(signed(edit))} from colorfulness per hue` : tierM;
+  return Math.abs(edit) >= 0.5 ? `${tierM} ${signed(edit)} from colorfulness per hue` : tierM;
 }
 
 /**
@@ -324,19 +324,19 @@ popSource("why", (which) => {
   const tierTarget = palette.targets[tier] ?? s.target;
   if (kind === "tier")
     return `<h3 class="why tier">Sets the tier</h3>
-      <p>On ${measured(`Lc ${String(tier)}`)}, ${name.toLowerCase()} can't be more colorful than ${measured(`M ${s.colorfulness.toFixed(1)}`)} on ${gamut} screens. <strong>Equal per tier</strong> is on, so every color on this tier is held to ${measured(`M ${tierTarget.toFixed(1)}`)} to match it, even those that could go further.</p>
+      <p>On Lc ${String(tier)}, ${name.toLowerCase()} can't be more colorful than M ${s.colorfulness.toFixed(1)} on ${gamut} screens. <strong>Equal per tier</strong> is on, so every color on this tier is held to M ${tierTarget.toFixed(1)} to match it, even those that could go further.</p>
       ${EQUAL_OFF}`;
   if (kind === "lowered") {
     const limit = label(palette.limits[tier]!);
     const own = ownTarget(key, s, tierTarget);
     const share = aimText(key, s, tierTarget);
     return `<h3>Lowered</h3>
-      <p>${name} would be ${measured(`M ${own.toFixed(1)}`)} here. On ${measured(`Lc ${String(tier)}`)}, ${limit.toLowerCase()} can't be more colorful than ${measured(`M ${tierTarget.toFixed(1)}`)} on ${gamut} screens, and <strong>Equal per tier</strong> holds every color on the tier to that, so ${name.toLowerCase()} shows ${measured(`M ${s.colorfulness.toFixed(1)}`)} (${share}).</p>
+      <p>${name} would be M ${own.toFixed(1)} here. On Lc ${String(tier)}, ${limit.toLowerCase()} can't be more colorful than M ${tierTarget.toFixed(1)} on ${gamut} screens, and <strong>Equal per tier</strong> holds every color on the tier to that, so ${name.toLowerCase()} shows M ${s.colorfulness.toFixed(1)} (${share}).</p>
       ${EQUAL_OFF}`;
   }
-  const reason = variant === "muted" ? `${measured(`${String(Math.round(state.settings.mutedShare * 100))}%`)} of the default's colorfulness` : aimText(key, s, tierTarget);
+  const reason = variant === "muted" ? `${String(Math.round(state.settings.mutedShare * 100))}% of the default's colorfulness` : aimText(key, s, tierTarget);
   return `<h3 class="why gamut">Gamut limit</h3>
-    <p>${name} would be ${measured(`M ${s.target.toFixed(1)}`)} here (${reason}), but on ${measured(`Lc ${String(tier)}`)} no ${name.toLowerCase()} that colorful exists on ${gamut} screens. It shows ${measured(`M ${s.colorfulness.toFixed(1)}`)}, the most it can.</p>
+    <p>${name} would be M ${s.target.toFixed(1)} here (${reason}), but on Lc ${String(tier)} no ${name.toLowerCase()} that colorful exists on ${gamut} screens. It shows M ${s.colorfulness.toFixed(1)}, the most it can.</p>
     <p class="pop-how">A color's contrast fixes its lightness, and at that lightness a screen can only show so much colorfulness in each hue. ${state.gamut === "ultra" ? "This is already the widest gamut." : "A wider gamut can reach further."}</p>`;
 });
 
@@ -358,7 +358,7 @@ export function colors(tier?: number): readonly Color[] {
  * @returns     E.g. "9.1 to 10.3", or "…" for none.
  */
 export function range(ring: readonly number[]): string {
-  return ring.length ? `${measured(Math.min(...ring).toFixed(1))} to ${measured(Math.max(...ring).toFixed(1))}` : "…";
+  return ring.length ? `${Math.min(...ring).toFixed(1)} to ${Math.max(...ring).toFixed(1)}` : "…";
 }
 
 /**
@@ -371,8 +371,8 @@ export function held(tier: number): string {
   const p = current()?.[state.mode];
   if (!p) return "…";
   const limit = p.limits[tier];
-  const target = measured(`M ${(p.targets[tier] ?? 0).toFixed(1)}`);
-  if (limit) return `${target}, lowered from ${measured(String(state.settings.colorfulness))}: ${label(limit)} can't reach more`;
+  const target = `M ${(p.targets[tier] ?? 0).toFixed(1)}`;
+  if (limit) return `${target}, lowered from ${String(state.settings.colorfulness)}: ${label(limit)} can't reach more`;
   // With Equal per tier off, a color the screen can't take that far stays short of it.
   const short = p.colors.filter((c) => c.tiers[tier]?.default.short).map((c) => label(c.key));
   if (!short.length) return `${target}, every color reaches it`;

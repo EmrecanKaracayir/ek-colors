@@ -10,7 +10,7 @@
 import { composition, hueTurn, wrapHue } from "../../palette/model";
 import type { Guide } from "../../palette/references";
 import { refill, steadyReadout } from "../dom";
-import { againstEven, band, evenText, inGaps, INSETS, measured, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "../graph";
+import { againstEven, band, evenText, inGaps, INSETS, signed, zone, guideLayer, guidePicker, hueAt, hueScale, stops, viewBox } from "../graph";
 
 /** One color, on every row. */
 interface HueRow {
@@ -147,7 +147,7 @@ function huesPanel(view: HuesView): string {
     const note =
       selected.row === "uniform"
         ? "Evenly different, with nothing placed. It follows the anchor and can't be moved."
-        : `The uniform lineup turned ${view.turn === null ? "…" : measured(`${signed(view.turn)}°`)} to best match the placed hues: still evenly different. It can't be moved.`;
+        : `The uniform lineup turned ${view.turn === null ? "…" : `${signed(view.turn)}°`} to best match the placed hues: still evenly different. It can't be moved.`;
     return `<p class="hue-name"><span class="dot" style="--c:${spot.color}"></span> ${r.label} <span class="soft">${selected.row}</span></p>
       <dl class="hue-facts">
         <div><dt>Hue</dt><dd class="mono">${degrees(spot.hue)}</dd></div>
@@ -205,13 +205,13 @@ function huesReadout(view: HuesView): string {
   const names = cost.keys.map((key) => view.rows.find((r) => r.key === key)?.label ?? "");
   const share = (x: number) => `${String(Math.round(x * 100))}%`;
   const split = view.split;
-  const made = !split ? "" : split.hue >= 0.995 ? ", all from hue" : `, ${measured(share(split.hue))} from hue${split.colorfulness >= 0.005 ? ` and ${measured(share(split.colorfulness))} from colorfulness` : ""}`;
-  const turn = view.turn === null || view.bend === null ? "" : `${zone(view.bend, cost.uniform).name}: bend ${measured(`${view.bend.toFixed(2)} gap`)}${view.bend >= 0.005 ? made : ""}, turned ${measured(`${signed(view.turn)}°`)}. `;
+  const made = !split ? "" : split.hue >= 0.995 ? ", all from hue" : `, ${share(split.hue)} from hue${split.colorfulness >= 0.005 ? ` and ${share(split.colorfulness)} from colorfulness` : ""}`;
+  const turn = view.turn === null || view.bend === null ? "" : `${zone(view.bend, cost.uniform).name}: bend ${view.bend.toFixed(2)} gap${view.bend >= 0.005 ? made : ""}, turned ${signed(view.turn)}°. `;
   const label = (key: string) => view.rows.find((r) => r.key === key)?.label ?? "";
   // With two colors, both gaps of the ring are between the same pair; it's named once.
   const pairs = view.close.filter((c, i) => !view.close.slice(0, i).some((d) => d.keys.includes(c.keys[0]) && d.keys.includes(c.keys[1])));
   const close = pairs
-    .map((c) => `<span class="near">${label(c.keys[0])} and ${label(c.keys[1])} come within ${measured(`${c.difference.toFixed(1)} ΔE`)} on ${measured(`Lc ${String(c.tier)}`)}: they can't be told apart side by side.</span>`)
+    .map((c) => `<span class="near">${label(c.keys[0])} and ${label(c.keys[1])} come within ${c.difference.toFixed(1)} ΔE on Lc ${String(c.tier)}: they can't be told apart side by side.</span>`)
     .join(" ");
   return turn + evenText(cost.ring, names, cost.uniform) + (close ? ` ${close}` : "");
 }

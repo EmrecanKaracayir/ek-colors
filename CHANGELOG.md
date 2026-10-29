@@ -37,8 +37,6 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   colors are `neutralColors`. Exports from before don't paste their renamed parts.
 - The guides drawn on the graphs are a choice kept in the browser, like Light or Dark, rather than
   a setting, so exports no longer carry `guide`.
-- Numbers measured from the palette on screen, such as its gap between neighbors, are set in
-  monospace in the text, apart from the method's fixed numbers, such as ΔE 2.
 - A palette can't be named EK Palette, in any case or spacing: the name field says so and keeps
   the name it had, a pasted or loaded export with it is refused, and settings kept in the browser
   under it keep everything but the name.

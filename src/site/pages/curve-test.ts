@@ -32,7 +32,7 @@ import {
   startSides,
   type Pick,
 } from "./blind";
-import { measured, signed } from "../graph";
+import { signed } from "../graph";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -321,7 +321,7 @@ export function curveTestPage(ctx: TestContext): string {
   const hues = ctx.palette?.[ctx.mode].colors.filter((c) => c.kind === "hue").length ?? 8;
   return `<section class="intro">
       <h1>Blind colorfulness test</h1>
-      <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${measured(String(CAP * hues))} pairs, fewer once the answers settle; usually about ${measured(minutesFor(hues))}. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
+      <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once the answers settle; usually about ${minutesFor(hues)}. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
       <ul class="soft checklist">
         <li>Turn off True Tone, Night Shift, Night Light or any blue-light filter, and use the usual brightness.</li>
         <li>Look straight at the screen, in the room you usually work in.</li>

@@ -11,7 +11,7 @@ import { hueTurn, JUST_VISIBLE, lightness, LUX_TO_ADAPTING, viewingConditions } 
 import { anchorHue, anchorSource } from "../../palette/references";
 import { LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES } from "../../palette/settings";
 import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, NEUTRAL_START, TEXT_MINIMUM, textScore } from "../../palette/solve";
-import { BARELY_VISIBLE, escape, measured, zones } from "../graph";
+import { BARELY_VISIBLE, escape, zones } from "../graph";
 import { evenGap } from "../settings/strip";
 import type { Context } from "./how";
 
@@ -142,7 +142,7 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
     dark base:  ok → hi ← J  else lo ← J   // keep the darkest that passes
   x ← color(light ? lo : hi, M, h)
   return x if APCA(x, base) ≥ Lc after rounding, else none</pre>
-      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces${past === null ? "" : `, here up to ${measured(`${past.toFixed(2)} Lc`)}`}. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
+      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces${past === null ? "" : `, here up to ${past.toFixed(2)} Lc`}. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
       <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together come closest to their minimum for text. It's measured on a gray, so it's known before any color is solved:</p>
 <pre class="formula">g(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
 score(Lc) = (APCA(g, base) / ${String(TEXT_MINIMUM.apca)} + WCAG(g, base) / ${String(TEXT_MINIMUM.wcag)}) / 2     // 1: both just at their minimum for text
@@ -189,7 +189,7 @@ curve(h) = Σ_i  [ d_i(h) &lt; w_i ]  ·  a_i · (1 + cos(π · d_i(h) / w_i)) /
 <pre class="formula">start_k = anchor + k · 360° / n     // k = 0 … n − 1, yellow first with eight hues
 start_k = placed_k                  // a color placed by hand starts there instead
 order    = named hues by hue, red first; numbered ones by number, Hue 1 at the anchor</pre>
-      <p>The anchor is ${measured(`${fixed(anchor, 1)}°`)} (${from}). It's needed because the spacing (step 7) only evens out differences between neighbors, and turning the whole lineup around the circle leaves those almost unchanged; the anchor fixes where it sits. The anchor and placed colors don't move while the others are spaced. With nothing placed, the result is the uniform lineup.</p>
+      <p>The anchor is ${fixed(anchor, 1)}° (${from}). It's needed because the spacing (step 7) only evens out differences between neighbors, and turning the whole lineup around the circle leaves those almost unchanged; the anchor fixes where it sits. The anchor and placed colors don't move while the others are spaced. With nothing placed, the result is the uniform lineup.</p>
       <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Even start</th><th>Placed at</th></tr></thead><tbody>${starts}</tbody></table></div>
     </section>
 
@@ -210,7 +210,7 @@ a*, b* = M*·cos h, M*·sin h
         h ← hue_i + step;  skip if |h − start_i| &gt; reach
         try color_i ← strongest(h, target(h));  rescore
         keep it if the score drops by more than 10⁻⁴</pre>
-      <p>The identity tier (light ${measured(`Lc ${String(identityOf(s, "light"))}`)}, dark ${measured(`Lc ${String(identityOf(s, "dark"))}`)}) is spaced first from the starting hues with a reach of ${measured(`±${String(s.hueReach.identity)}°`)}${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${measured(String(s.hues))}) if that's less: ${measured(`±${fixed(identityReach, 1)}°`)} here`}. Every other tier starts from the identity tier's hues with ${measured(`±${String(s.hueReach.tier)}°`)}, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land close to each other${apart === null ? "" : `, ${measured(`${apart.toFixed(1)}°`)} apart at most here`}; a placed color sits exactly where it was placed in both.</p>
+      <p>The identity tier (light Lc ${String(identityOf(s, "light"))}, dark Lc ${String(identityOf(s, "dark"))}) is spaced first from the starting hues with a reach of ±${String(s.hueReach.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less: ±${fixed(identityReach, 1)}° here`}. Every other tier starts from the identity tier's hues with ±${String(s.hueReach.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land close to each other${apart === null ? "" : `, ${apart.toFixed(1)}° apart at most here`}; a placed color sits exactly where it was placed in both.</p>
       <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(CLOSEST)}° from each, only so they can't swap or overlap, and a spacing step that would bring a color closer than that to a neighbor isn't taken. Neighbors under ΔE ${String(JUST_VISIBLE)} on any tier are marked, not stopped. Dragging the anchor stops before any color it carries would pass a placed one.</p>
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
@@ -265,7 +265,7 @@ labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA • ≥ 4.5 AA • ≥ 3 AA large • else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${measured(String(s.tiers.length))} tiers, ${measured(String(s.hues + s.customColors.length))} colors, default and muted, plus spacing) takes well under a second in a browser worker with eight hues, and longer with many more; the header shows how long the one on screen took.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.customColors.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker with eight hues, and longer with many more; the header shows how long the one on screen took.</p>
       <p>The hues are the costly part, and custom colors, neutral colors and the muted share don't move them. So each worker keeps the hues of its last few solves, keyed by every setting but those, and a change to them only places the colors on the kept hues again: a few milliseconds instead of a whole solve, so they follow a slider as it moves.</p>
     </section>
 
