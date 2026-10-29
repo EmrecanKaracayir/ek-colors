@@ -9,16 +9,16 @@
 import project from "../../package.json";
 import { CONFIG } from "../config";
 import { toCss, toCsv, toJson, toMarkdown } from "../palette/formats";
-import { composition, deltaE, hueTurn, lightness, makeModel, type Model, parts, plainSquared } from "../palette/model";
+import { composition, deltaE, hueTurn, JUST_VISIBLE, lightness, makeModel, type Model, parts, plainSquared } from "../palette/model";
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
-import { baseIn, type BaseIn, fits, forGamut, home, isBaseColor, keptPicks, pickCheck, PICK_MARGIN } from "../palette/bases";
+import { baseIn, type BaseIn, fits, forGamut, home, isBaseColor, keptPicks, pickCheck } from "../palette/bases";
 import { readSettings, SettingsError } from "../palette/check";
 import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
 import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, NEUTRAL_START, PAGES, tinted, withNeutrals, baseHasHue, huesKey, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { announce, copyText, flash, markField, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
-import { bendMeter, bindGuides, CIRCLE, circleGuides, escape, evenness, guidePicker, evenText, inGaps, signed, signedWhole, THRESHOLDS, visibility, zone, zoneTable } from "./graph";
+import { bendMeter, bindGuides, CIRCLE, circleGuides, escape, evenness, guidePicker, evenText, inGaps, signed, signedWhole, THRESHOLDS, visibility, VISIBLE_STEP, zone, zoneTable } from "./graph";
 import { type Format, highlight } from "./highlight";
 import { hidePopover, popButton, popSource, refreshPopover } from "./popover";
 import { iconSvg } from "./icon";
@@ -2394,7 +2394,7 @@ popSource("base", (which) => {
   return `<h3>Base, ${mode} mode</h3>
     <p>The background the ${mode} mode's colors sit on. Every contrast is measured against it, the identity tier is chosen on it, and the neutral colors take their hue from it.</p>
     <dl class="pop-facts">${rows}</dl>
-    <p class="pop-how">The base is one color, shown by every kind of screen as well as it can: exactly where it can, else as the closest color it can show. That color can be picked by hand, as long as it's still the same background: no more than ΔE ${String(PICK_MARGIN)} further from the base than the closest color is.</p>
+    <p class="pop-how">The base is one color, shown by every kind of screen as well as it can: exactly where it can, else as the closest color it can show. That color can be picked by hand, as long as it's still the same background: no more than ΔE ${String(JUST_VISIBLE)} further from the base than the closest color is.</p>
     ${action}`;
 });
 
@@ -2876,12 +2876,12 @@ popSource("metric", (which) => {
         <div><dt>M</dt><dd>${vivid && Math.abs(vivid.colorful[3]) >= 0.005 ? `${percent(vivid.colorful[3])} (${vivid.name})` : "equal"}</dd></div>
         <div><dt>Turned</dt><dd>${turnText(angle)}, which costs nothing</dd></div>
       </dl>
-      <p class="pop-how">You're on safe ground while Bend stays within Tuned or Reshaped and Even under 10%: deliberate adjustments, with every pair of neighbors still about equally easy to tell apart. It gets risky when Even passes 25% (two colors getting confusable) or Bend passes 0.5, where the palette is no longer honestly uniform.</p>
+      <p class="pop-how">You're on safe ground while Bend stays within Tuned or Reshaped and Even under 10%: deliberate adjustments, with every pair of neighbors still about equally easy to tell apart. It gets risky when Even passes ${String(VISIBLE_STEP * 100)}% (two colors getting confusable) or Bend passes 0.5, where the palette is no longer honestly uniform.</p>
       ${zoneTable()}`;
   }
   const heads: Record<string, string> = {
     bend: `<h3>Bend</h3><p>How far the colors are from the nearest uniform lineup. Turning the whole lineup keeps it uniform, so the uniform lineup is first turned to best match the placed hues (${turnText(angle)}); what's left is the bend. Each color's difference, in gaps (one gap is ${gap.toFixed(1)} ΔE), averaged as a root mean square, so one large difference isn't hidden among small ones.</p>${zoneTable()}<p class="pop-how">Rows: Uniform is the lineup at the anchor; Turned is it turned to match; +H adds placed hues; +M adds colorfulness per hue. Point at a swatch for that color; click a row's name to keep it shown, then ↑ and ↓ switch rows.</p>`,
-    even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under 10% is fine, 10 to 25% worth watching, over 25% two colors are getting confusable (or, over even, a hole in the palette).</p>${THRESHOLDS}`,
+    even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under 10% is fine, 10 to ${String(VISIBLE_STEP * 100)}% worth watching, over ${String(VISIBLE_STEP * 100)}% two colors are getting confusable (or, over even, a hole in the palette).</p>${THRESHOLDS}`,
     colorful: `<h3>M</h3><p>How equally colorful the colors are: the color furthest from the target colorfulness (M ${targets[3].toFixed(1)} on this tier), as a share of it. The uniform lineup makes every color equally colorful; colorfulness per hue changes that on purpose, so this says how far you've pushed.</p>`,
   };
   if (which2 === "head") return heads[kind] ?? "";

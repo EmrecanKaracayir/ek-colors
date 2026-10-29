@@ -105,6 +105,9 @@ export function writtenFor(color: string | PlainColorObject, gamut: Gamut): stri
   return serialize({ ...inSpace, coords: coords as [number, number, number] });
 }
 
+/** The smallest difference most people see between two colors side by side on a screen, ΔE. */
+export const JUST_VISIBLE = 2;
+
 /* >-----------------------------------< Viewing conditions >-----------------------------------< */
 
 /** Lux to the luminance the eye adapts to (cd/m²): E / π × 0.184, an 18% gray (L* 50) lit by E lux. */

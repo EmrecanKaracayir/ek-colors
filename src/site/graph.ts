@@ -6,6 +6,7 @@
 | system's guides with their exact hues under it, chosen by a switch that previews on hover.       |
 \*------------------------------------------------------------------------------------------------*/
 
+import { JUST_VISIBLE } from "../palette/model";
 import { type Guide, system, SYSTEMS } from "../palette/references";
 import { popButton, popSource } from "./popover";
 
@@ -20,6 +21,12 @@ export const WIDTH = 360;
 const share = (units: number) => `${((units / (WIDTH + 2 * PAD + LEFT + RIGHT)) * 100).toFixed(3)}%`;
 export const INSETS = `--graph-inset:${share(LEFT)};--graph-inset-end:${share(RIGHT)}`;
 
+/** The gap between neighboring colors the zones and evenness are counted in, ΔE: about 10 on a tier. */
+const GAP = 10;
+
+/** A just-visible step, in gaps. */
+export const VISIBLE_STEP = JUST_VISIBLE / GAP;
+
 /**
  * How a color difference looks (CAM16-UCS ΔE), against the palette's own scale: neighboring colors
  * are about 9 to 10 apart. Rough guides, not exact limits.
@@ -28,7 +35,7 @@ export const INSETS = `--graph-inset:${share(LEFT)};--graph-inset-end:${share(RI
  * @returns           Words.
  */
 export function visibility(difference: number): string {
-  if (difference < 2) return "can't be seen side by side";
+  if (difference < JUST_VISIBLE) return "can't be seen side by side";
   if (difference < 5) return "visible side by side";
   if (difference < 10) return "a different shade";
   return "a different color";
@@ -54,7 +61,7 @@ export function inGaps(share: number): string {
  */
 export function evenness(closer: number): string {
   if (closer < 0.1) return "fine";
-  if (closer < 0.25) return "worth watching";
+  if (closer < VISIBLE_STEP) return "worth watching";
   return "getting confusable";
 }
 
@@ -122,7 +129,7 @@ export function evenText(ring: readonly number[], names: readonly string[], even
 /** How far a palette bends from the nearest uniform one, in zones: Bend up to each limit (gaps). */
 const ZONES = [
   { upTo: 0.1, name: "Uniform", note: "No difference from the uniform palette anyone could see, even side by side." },
-  { upTo: 0.25, name: "Tuned", note: "A typical color differs by about a just-visible step side by side: still the uniform palette, adjusted." },
+  { upTo: VISIBLE_STEP, name: "Tuned", note: "A typical color differs by about a just-visible step side by side: still the uniform palette, adjusted." },
   { upTo: 0.5, name: "Reshaped", note: "Colors differ clearly side by side: deliberate design choices on top of the uniform palette." },
   { upTo: 1, name: "Departed", note: "A typical color is a different shade of its uniform one; the uniformity no longer quite holds." },
   { upTo: Infinity, name: "Different palette", note: "Colors moved more than a whole gap: a palette of its own, not a tuned uniform one." },
@@ -173,8 +180,8 @@ export function zoneTable(): string {
 
 /** Where the zones' and evenness limits come from. */
 export const THRESHOLDS = `<details class="pop-sources"><summary>Where these thresholds come from</summary>
-  <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About 1 is the smallest difference careful observers notice under ideal conditions; about 2 is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). The palette's own gap between neighbors, about 10 ΔE, is what it treats as a different color.</p>
-  <p>The zones put Bend on that scale, in gaps: under 0.1 (about 1 ΔE) nothing is visible; up to 0.25 (about 2.5 ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: 10% of a gap is about 1 ΔE, hard to notice; 25% is about 2.5 ΔE, a visible imbalance between pairs of neighbors.</p>
+  <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About 1 is the smallest difference careful observers notice under ideal conditions; about ${String(JUST_VISIBLE)} is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). The palette's own gap between neighbors, about 10 ΔE, is what it treats as a different color.</p>
+  <p>The zones put Bend on that scale, in gaps: under 0.1 (about 1 ΔE) nothing is visible; up to ${String(VISIBLE_STEP)} (about ${String(JUST_VISIBLE)} ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: 10% of a gap is about 1 ΔE, hard to notice; ${String(VISIBLE_STEP * 100)}% is about ${String(JUST_VISIBLE)} ΔE, a visible imbalance between pairs of neighbors.</p>
   <p>The ΔE figures come from color science; the zone limits are judgment built on them, not results of a study. Eyes and screens differ.</p></details>`;
 
 /* >----------------------------------------< Drawing >-----------------------------------------< */

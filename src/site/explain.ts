@@ -5,7 +5,7 @@
 | the same code as the solver.                                                                     |
 \*------------------------------------------------------------------------------------------------*/
 
-import { apca, composition, makeModel, type Model, parts, wcag, wcagLevel } from "../palette/model";
+import { apca, composition, JUST_VISIBLE, makeModel, type Model, parts, wcag, wcagLevel } from "../palette/model";
 import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../palette/settings";
 import { anchorHue, anchorSource } from "../palette/references";
 import { escape, signedWhole, zoneTable } from "./graph";
@@ -368,10 +368,10 @@ function difference(ctx: Context): string {
     </dl>
     <div class="scale">
       <span class="scale-fill" style="width:${at(total)}"></span>
-      <span class="scale-mark" style="left:${at(1.5)}"><span>Just visible</span></span>
+      <span class="scale-mark" style="left:${at(JUST_VISIBLE)}"><span>Just visible</span></span>
       ${typical ? `<span class="scale-mark" style="left:${at(typical)}"><span>Neighbors on this tier</span></span>` : ""}
     </div>
-    <p class="soft">CAM16-UCS distance, and the share of it each part makes up. Around 1 to 2 is the smallest difference most people see with two colors side by side. On a tier, every color solves to sit about the same distance from its neighbors, which is why the circle below stays even.</p>`;
+    <p class="soft">CAM16-UCS distance, and the share of it each part makes up. About ${String(JUST_VISIBLE)} is the smallest difference most people see with two colors side by side. On a tier, every color solves to sit about the same distance from its neighbors, which is why the circle below stays even.</p>`;
 }
 
 /**

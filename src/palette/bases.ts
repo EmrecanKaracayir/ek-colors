@@ -9,13 +9,10 @@
 
 import { getColor, serialize, toGamutCSS } from "colorjs.io/fn";
 
-import { fits, makeModel, type Model, SPACES, writtenFor } from "./model";
+import { fits, JUST_VISIBLE, makeModel, type Model, SPACES, writtenFor } from "./model";
 import { type Gamut, GAMUTS, type Mode, MODES, type Settings } from "./settings";
 
 export { fits, writtenFor };
-
-/** How far a picked color may be from the base past the closest color's distance: a just-visible step, ΔE. */
-export const PICK_MARGIN = 2;
 
 /** How a gamut tier shows its base. */
 export type BaseHow = "exact" | "closest" | "picked";
@@ -114,7 +111,7 @@ export function pickCheck(settings: Viewing, mode: Mode, gamut: Gamut, color: st
   const base = settings.bases[mode];
   const off = apart(settings, mode, base, color);
   const loss = apart(settings, mode, base, closestIn(base, gamut));
-  return { off, loss, same: off <= loss + PICK_MARGIN };
+  return { off, loss, same: off <= loss + JUST_VISIBLE };
 }
 
 /**
