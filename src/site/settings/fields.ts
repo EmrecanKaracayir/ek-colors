@@ -99,7 +99,9 @@ export const SHARE_ZONES = [
  * @param m  CAM16 M.
  * @returns  Its index in SHARE_ZONES.
  */
-export const shareZone = (m: number) => (m < NEUTRAL_BAND[0] ? 0 : m <= NEUTRAL_BAND[1] ? 1 : 2);
+export function shareZone(m: number): 0 | 1 | 2 {
+  return m < NEUTRAL_BAND[0] ? 0 : m <= NEUTRAL_BAND[1] ? 1 : 2;
+}
 
 /**
  * A share on a bar of the zones, in the slider's own proportions, with a mark where it falls, like

@@ -12,8 +12,8 @@ import { type GamutPalette, type ModePalette, identityOf, strongest } from "../p
 import { followsEdits, inUse, model, onScreen } from "./derived";
 import { solvedPart } from "./parts";
 import { updateTune } from "./settings/page";
-import { updateStrip } from "./settings/strip";
-import { render } from "./shell";
+import { evenGap, updateStrip } from "./settings/strip";
+import { drawnGap, render } from "./shell";
 import { spawn } from "./solver";
 import { state } from "./state";
 import type { Request, Response } from "./worker";
@@ -39,6 +39,8 @@ function baselineSolved(event: MessageEvent<Response>): void {
   if (state.view === "tune") updateTune();
   else if (state.view === "compare") render();
   else if (followsEdits(state.view) && !(state.edits.h && state.edits.m)) render();
+  // How it works and the algorithm quote the even gap, so they're drawn again once it's measured.
+  else if ((state.view === "how" || state.view === "algorithm") && Math.abs(evenGap(state.mode) - drawnGap) > 0.05) render();
   else if (state.view === "how") updateStrip();
 }
 
@@ -115,7 +117,9 @@ const standingIn = new Set<string>();
  *
  * @returns  True when nothing is solving or standing in.
  */
-export const upToDate = () => !state.solving && standingIn.size === 0;
+export function upToDate(): boolean {
+  return !state.solving && standingIn.size === 0;
+}
 
 /**
  * A baseline of the settings on the gamut tier on screen, asked for once and kept. While it solves,
@@ -171,10 +175,14 @@ export function edited(h: boolean, m: boolean): GamutPalette | null {
 }
 
 /** Without the curve: it only depends on settings other than the curve, so moving the curve never waits for it. */
-export const uncurved = () => edited(true, false);
+export function uncurved(): GamutPalette | null {
+  return edited(true, false);
+}
 
 /** Nothing placed and no curve: the first step of the strip. */
-export const plain = () => edited(false, false);
+export function plain(): GamutPalette | null {
+  return edited(false, false);
+}
 
 /** The turn found for each pair of palettes and tier: exact by construction, and let go with the palettes. */
 const turns = new WeakMap<ModePalette, WeakMap<ModePalette, Map<number, number>>>();

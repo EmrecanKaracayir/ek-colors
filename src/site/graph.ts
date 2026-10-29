@@ -21,23 +21,22 @@ export const WIDTH = 360;
 const share = (units: number) => `${((units / (WIDTH + 2 * PAD + LEFT + RIGHT)) * 100).toFixed(3)}%`;
 export const INSETS = `--graph-inset:${share(LEFT)};--graph-inset-end:${share(RIGHT)}`;
 
-/** The gap between neighboring colors the zones and evenness are counted in, ΔE: about 10 on a tier. */
-const GAP = 10;
-
-/** A just-visible step, in gaps. */
-export const VISIBLE_STEP = JUST_VISIBLE / GAP;
+/** The smallest difference careful observers notice under ideal conditions, ΔE: half a just-visible step. */
+export const BARELY_VISIBLE = JUST_VISIBLE / 2;
 
 /**
- * How a color difference looks (CAM16-UCS ΔE), against the palette's own scale: neighboring colors
- * are about 9 to 10 apart. Rough guides, not exact limits.
+ * How a color difference looks (CAM16-UCS ΔE), against the palette's own scale, the gap between
+ * neighbors: half of it is a different shade, all of it a different color. Rough guides, not exact
+ * limits.
  *
  * @param difference  ΔE.
+ * @param gap         The palette's even gap between neighbors, ΔE.
  * @returns           Words.
  */
-export function visibility(difference: number): string {
+export function visibility(difference: number, gap: number): string {
   if (difference < JUST_VISIBLE) return "can't be seen side by side";
-  if (difference < 5) return "visible side by side";
-  if (difference < 10) return "a different shade";
+  if (difference < gap / 2) return "visible side by side";
+  if (difference < gap) return "a different shade";
   return "a different color";
 }
 
@@ -54,14 +53,27 @@ export function inGaps(share: number): string {
 }
 
 /**
- * How worrying it is that two neighbors sit closer than the even gap.
+ * Where Even's words change, as percentages of the even gap: up to a barely visible difference is
+ * fine, up to a just-visible one worth watching.
+ *
+ * @param gap  The even gap, ΔE.
+ * @returns    The two limits, %.
+ */
+export function evenLimits(gap: number): [number, number] {
+  return [Math.round((BARELY_VISIBLE / gap) * 100), Math.round((JUST_VISIBLE / gap) * 100)];
+}
+
+/**
+ * How worrying it is that two neighbors sit closer than the even gap: fine while what they lost is
+ * barely visible, worth watching up to a just-visible step.
  *
  * @param closer  How much closer, as a share of the even gap.
+ * @param gap     The even gap, ΔE.
  * @returns       Words.
  */
-export function evenness(closer: number): string {
-  if (closer < 0.1) return "fine";
-  if (closer < VISIBLE_STEP) return "worth watching";
+export function evenness(closer: number, gap: number): string {
+  if (closer * gap < BARELY_VISIBLE) return "fine";
+  if (closer * gap < JUST_VISIBLE) return "worth watching";
   return "getting confusable";
 }
 
@@ -123,26 +135,49 @@ export function evenText(ring: readonly number[], names: readonly string[], even
   const pair = (i: number) => `${names[i] ?? ""}–${names[(i + 1) % names.length] ?? ""}`;
   const off = (d: number) => againstEven(d, even);
   if (off(ring[low]!) === "even" && off(ring[high]!) === "even") return `Every pair is one even gap apart (${even.toFixed(1)} ΔE).`;
-  return `Closest: ${pair(low)}, ${off(ring[low]!)} (${ring[low]!.toFixed(1)} ΔE): ${evenness(Math.max(0, 1 - ring[low]! / even))}. Widest: ${pair(high)}, ${off(ring[high]!)} (${ring[high]!.toFixed(1)} ΔE). Even gap: ${even.toFixed(1)}.`;
+  return `Closest: ${pair(low)}, ${off(ring[low]!)} (${ring[low]!.toFixed(1)} ΔE): ${evenness(Math.max(0, 1 - ring[low]! / even), even)}. Widest: ${pair(high)}, ${off(ring[high]!)} (${ring[high]!.toFixed(1)} ΔE). Even gap: ${even.toFixed(1)}.`;
 }
 
-/** How far a palette bends from the nearest uniform one, in zones: Bend up to each limit (gaps). */
-const ZONES = [
-  { upTo: 0.1, name: "Uniform", note: "No difference from the uniform palette anyone could see, even side by side." },
-  { upTo: VISIBLE_STEP, name: "Tuned", note: "A typical color differs by about a just-visible step side by side: still the uniform palette, adjusted." },
-  { upTo: 0.5, name: "Reshaped", note: "Colors differ clearly side by side: deliberate design choices on top of the uniform palette." },
-  { upTo: 1, name: "Departed", note: "A typical color is a different shade of its uniform one; the uniformity no longer quite holds." },
-  { upTo: Infinity, name: "Different palette", note: "Colors moved more than a whole gap: a palette of its own, not a tuned uniform one." },
-] as const;
+/** A zone of Bend: its name and what a palette in it is like. */
+interface Zone {
+  readonly upTo: number;
+  readonly name: string;
+  readonly note: string;
+}
+
+/**
+ * How far a palette bends from the nearest uniform one, in zones, each up to a limit in gaps. The
+ * first two are differences anyone could see, so they're in ΔE and take the palette's own gap: a
+ * barely visible difference and a just-visible one. The others are shares of the gap itself: half
+ * of it, a different shade, and all of it, a different color.
+ *
+ * @param gap  The palette's even gap between neighbors, ΔE.
+ * @returns    The zones, in order.
+ */
+export function zones(gap: number): readonly Zone[] {
+  const [uniform, tuned] = [BARELY_VISIBLE / gap, JUST_VISIBLE / gap].map((g) => Math.min(round(g), 0.5));
+  return [
+    { upTo: uniform!, name: "Uniform", note: "No difference from the uniform palette anyone could see, even side by side." },
+    { upTo: tuned!, name: "Tuned", note: "A typical color differs by about a just-visible step side by side: still the uniform palette, adjusted." },
+    { upTo: 0.5, name: "Reshaped", note: "Colors differ clearly side by side: deliberate design choices on top of the uniform palette." },
+    { upTo: 1, name: "Departed", note: "A typical color is a different shade of its uniform one; the uniformity no longer quite holds." },
+    { upTo: Infinity, name: "Distinct", note: "Colors moved more than a whole gap: a palette of its own, not a tuned uniform one." },
+  ];
+}
+
+/** A limit as the zones show it, to two decimals. */
+const round = (x: number) => Math.round(x * 100) / 100;
 
 /**
  * The zone a bend falls in.
  *
  * @param bend  Gaps.
+ * @param gap   The palette's even gap between neighbors, ΔE.
  * @returns     The zone.
  */
-export function zone(bend: number): (typeof ZONES)[number] {
-  return ZONES.find((z) => bend < z.upTo) ?? ZONES[ZONES.length - 1]!;
+export function zone(bend: number, gap: number): Zone {
+  const all = zones(gap);
+  return all.find((z) => bend < z.upTo) ?? all[all.length - 1]!;
 }
 
 /** Where the meter puts a bend: a square-root scale up to 1.5 gaps, so the small zones get room. */
@@ -152,37 +187,50 @@ const along = (bend: number) => Math.sqrt(Math.min(bend, 1.5) / 1.5) * 100;
  * A bend on a bar of its zones, with a mark where it falls; with no bend yet, the bar alone.
  *
  * @param bend   Gaps, or null before there's one.
+ * @param gap    The palette's even gap between neighbors, ΔE.
  * @param large  Whether it's the large one, with the zones named under it.
  * @returns      HTML.
  */
-export function bendMeter(bend: number | null, large = false): string {
-  const edges = [0, ...ZONES.map((z) => along(z.upTo))];
-  const parts = ZONES.map((_, i) => `<span style="flex-basis:${(edges[i + 1]! - edges[i]!).toFixed(2)}%"></span>`).join("");
+export function bendMeter(bend: number | null, gap: number, large = false): string {
+  const all = zones(gap);
+  const edges = [0, ...all.map((z) => along(z.upTo))];
+  const parts = all.map((_, i) => `<span style="flex-basis:${(edges[i + 1]! - edges[i]!).toFixed(2)}%"></span>`).join("");
   const names = large
-    ? `<span class="meter-names">${ZONES.map((z, i) => `<span style="left:${((edges[i]! + edges[i + 1]!) / 2).toFixed(2)}%">${z.name}</span>`).join("")}</span>`
+    ? `<span class="meter-names">${all.map((z, i) => `<span style="left:${((edges[i]! + edges[i + 1]!) / 2).toFixed(2)}%">${z.name}</span>`).join("")}</span>`
     : "";
   if (bend === null) return `<span class="bend-meter${large ? " large" : ""}" aria-hidden="true"><span class="meter-zones">${parts}</span>${names}</span>`;
-  return `<span class="bend-meter${large ? " large" : ""}" role="img" aria-label="Bend ${bend.toFixed(2)} gap: ${zone(bend).name}"><span class="meter-zones">${parts}</span><span class="meter-mark" style="left:${along(bend).toFixed(2)}%"></span>${names}</span>`;
+  return `<span class="bend-meter${large ? " large" : ""}" role="img" aria-label="Bend ${bend.toFixed(2)} gap: ${zone(bend, gap).name}"><span class="meter-zones">${parts}</span><span class="meter-mark" style="left:${along(bend).toFixed(2)}%"></span>${names}</span>`;
 }
 
 /**
  * The zones as a table, with where their limits come from.
  *
- * @returns  HTML.
+ * @param gap  The palette's even gap between neighbors, ΔE.
+ * @returns    HTML.
  */
-export function zoneTable(): string {
-  const rows = ZONES.map((z, i) => {
-    const from = i === 0 ? "under" : `${String(ZONES[i - 1]!.upTo)} to`;
-    return `<div><dt>${z.name}</dt><dd><span class="mono">${z.upTo === Infinity ? `over ${String(ZONES[i - 1]!.upTo)}` : `${from} ${String(z.upTo)}`}</span> ${z.note}</dd></div>`;
+export function zoneTable(gap: number): string {
+  const all = zones(gap);
+  const rows = all.map((z, i) => {
+    const from = i === 0 ? "under" : `${String(all[i - 1]!.upTo)} to`;
+    return `<div><dt>${z.name}</dt><dd><span class="mono">${z.upTo === Infinity ? `over ${String(all[i - 1]!.upTo)}` : `${from} ${String(z.upTo)}`}</span> ${z.note}</dd></div>`;
   });
-  return `<dl class="pop-facts zones">${rows.join("")}</dl>${THRESHOLDS}`;
+  return `<dl class="pop-facts zones">${rows.join("")}</dl>${thresholds(gap)}`;
 }
 
-/** Where the zones' and evenness limits come from. */
-export const THRESHOLDS = `<details class="pop-sources"><summary>Where these thresholds come from</summary>
-  <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About 1 is the smallest difference careful observers notice under ideal conditions; about ${String(JUST_VISIBLE)} is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). The palette's own gap between neighbors, about 10 ΔE, is what it treats as a different color.</p>
-  <p>The zones put Bend on that scale, in gaps: under 0.1 (about 1 ΔE) nothing is visible; up to ${String(VISIBLE_STEP)} (about ${String(JUST_VISIBLE)} ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: 10% of a gap is about 1 ΔE, hard to notice; ${String(VISIBLE_STEP * 100)}% is about ${String(JUST_VISIBLE)} ΔE, a visible imbalance between pairs of neighbors.</p>
+/**
+ * Where the zones' and evenness limits come from, in this palette's own gap.
+ *
+ * @param gap  The palette's even gap between neighbors, ΔE.
+ * @returns    HTML.
+ */
+export function thresholds(gap: number): string {
+  const [uniform, tuned] = zones(gap);
+  const [fine, watch] = evenLimits(gap);
+  return `<details class="pop-sources"><summary>Where these thresholds come from</summary>
+  <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About ${String(BARELY_VISIBLE)} is the smallest difference careful observers notice under ideal conditions; about ${String(JUST_VISIBLE)} is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). This palette's own gap between neighbors, ${gap.toFixed(1)} ΔE on the identity tier, is what it treats as a different color; it changes with the number of hues, the colorfulness and the bases.</p>
+  <p>The zones put Bend on that scale, in gaps: under ${String(uniform!.upTo)} (${String(BARELY_VISIBLE)} ΔE here) nothing is visible; up to ${String(tuned!.upTo)} (${String(JUST_VISIBLE)} ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: ${String(fine)}% of the gap is ${String(BARELY_VISIBLE)} ΔE, hard to notice; ${String(watch)}% is ${String(JUST_VISIBLE)} ΔE, a visible imbalance between pairs of neighbors.</p>
   <p>The ΔE figures come from color science; the zone limits are judgment built on them, not results of a study. Eyes and screens differ.</p></details>`;
+}
 
 /* >----------------------------------------< Drawing >-----------------------------------------< */
 

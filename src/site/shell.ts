@@ -16,7 +16,7 @@ import { tiersPage } from "./pages/tiers";
 import { $, colors, labelText } from "./parts";
 import { updateBaseNote } from "./settings/base";
 import { jumpTo, settingsPage, updateTune } from "./settings/page";
-import { updateStrip, watchDock } from "./settings/strip";
+import { evenGap, updateStrip, watchDock } from "./settings/strip";
 import { COMPARE, SCREEN, VIEWS, state } from "./state";
 
 /** Each page's name in the browser's title; a color page's is the color's. */
@@ -90,11 +90,15 @@ function loadPage(view: string): void {
   });
 }
 
+/** The even gap the page's text was drawn with, ΔE: How it works and the algorithm quote it. */
+export let drawnGap = 0;
+
 /**
  * Draws the current view.
  */
 export function render(): void {
   const view = state.view;
+  drawnGap = evenGap(state.mode);
   document.documentElement.dataset.theme = state.mode;
   document.documentElement.style.setProperty("--base-light", onScreen().bases.light);
   document.documentElement.style.setProperty("--base-dark", onScreen().bases.dark);

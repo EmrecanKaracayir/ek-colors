@@ -152,7 +152,7 @@ function curveReadout(view: CurveView): string {
   const each = moved
     .map((c) => `${c.label} ${c.added ? `${c.added > 0 ? "+" : "−"}${String(Math.abs(c.added))} M` : "re-spaced"} → ${c.difference.toFixed(1)}`)
     .join(", ");
-  return `Moves ${most.label} most: ${most.difference.toFixed(1)} ΔE, ${inGaps(most.difference / most.gap) || "under 0.1 gap"}, ${visibility(most.difference)}. Each (ΔE): ${each}.`;
+  return `Moves ${most.label} most: ${most.difference.toFixed(1)} ΔE, ${inGaps(most.difference / most.gap) || "under 0.1 gap"}, ${visibility(most.difference, most.gap)}. Each (ΔE): ${each}.`;
 }
 
 /**

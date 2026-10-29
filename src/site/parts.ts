@@ -13,7 +13,15 @@ import { escape, signed } from "./graph";
 import { popButton, popSource } from "./popover";
 import { type Variant, state } from "./state";
 
-export const $ = <T extends Element>(selector: string) => document.querySelector<T>(selector)!;
+/**
+ * The page's element for a selector, which is there.
+ *
+ * @param selector  The selector.
+ * @returns         The element.
+ */
+export function $<T extends Element>(selector: string): T {
+  return document.querySelector<T>(selector)!;
+}
 
 /**
  * Whether the settings are EK Palette's as it ships, whatever order their keys were saved in.

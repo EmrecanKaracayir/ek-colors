@@ -7,11 +7,12 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import project from "../../../package.json";
-import { lightness, LUX_TO_ADAPTING, viewingConditions } from "../../palette/model";
+import { JUST_VISIBLE, lightness, LUX_TO_ADAPTING, viewingConditions } from "../../palette/model";
 import { anchorHue, anchorSource } from "../../palette/references";
 import { LIMITS, MODE_NAMES, MODES, NAMES, ROLES } from "../../palette/settings";
 import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, NEUTRAL_START, TEXT_MINIMUM, textScore } from "../../palette/solve";
-import { escape, VISIBLE_STEP } from "../graph";
+import { BARELY_VISIBLE, escape, zones } from "../graph";
+import { evenGap } from "../settings/strip";
 import type { Context } from "./how";
 
 /* >-----------------------------------------< Values >-----------------------------------------< */
@@ -201,10 +202,11 @@ a*, b* = M*·cos h, M*·sin h
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
 bend     = √(mean over colors of (ΔE(color, turned color) / gap)²)
-zone     = Uniform &lt; 0.1 • Tuned &lt; ${String(VISIBLE_STEP)} • Reshaped &lt; 0.5 • Departed &lt; 1 • Different palette
+zone     = Uniform &lt; ${String(BARELY_VISIBLE)} ΔE / gap • Tuned &lt; ${String(JUST_VISIBLE)} ΔE / gap • Reshaped &lt; 0.5 • Departed &lt; 1 • Distinct
+           // here, with a gap of ${evenGap(ctx.mode).toFixed(1)} ΔE: Uniform &lt; ${String(zones(evenGap(ctx.mode))[0]!.upTo)} • Tuned &lt; ${String(zones(evenGap(ctx.mode))[1]!.upTo)}
 even     = max over neighbors of |ΔE(neighbors) / gap − 1|     // the strip's Even: the furthest from even, either way
 closer   = 1 − (smallest neighbor ΔE) / gap                     // how much the tightest pair lost
-evenness = fine &lt; 10% • worth watching &lt; ${String(VISIBLE_STEP * 100)}% • getting confusable  // of even and of closer</pre>
+evenness = fine &lt; ${String(BARELY_VISIBLE)} ΔE / gap • worth watching &lt; ${String(JUST_VISIBLE)} ΔE / gap • getting confusable  // of even and of closer</pre>
       <p>A change between two colors is split into lightness, colorfulness and hue, each as its share of the three added together:</p>
 <pre class="formula">lightness    = ΔJ*²
 colorfulness = ΔM*²

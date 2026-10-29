@@ -174,7 +174,9 @@ function colorChips(current: string): string {
 }
 
 /** The mode on screen's palette, or null while it solves. */
-export const currentMode = () => current()?.[state.mode] ?? null;
+export function currentMode() {
+  return current()?.[state.mode] ?? null;
+}
 
 /**
  * A color's page: its tiers, default and muted, in tables. The neutrals have pages of their own.

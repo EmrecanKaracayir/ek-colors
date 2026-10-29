@@ -198,7 +198,7 @@ function huesReadout(view: HuesView): string {
   const share = (x: number) => `${String(Math.round(x * 100))}%`;
   const split = view.split;
   const made = !split ? "" : split.hue >= 0.995 ? ", all from hue" : `, ${share(split.hue)} from hue${split.colorfulness >= 0.005 ? ` and ${share(split.colorfulness)} from colorfulness` : ""}`;
-  const turn = view.turn === null || view.bend === null ? "" : `${zone(view.bend).name}: bend ${view.bend.toFixed(2)} gap${view.bend >= 0.005 ? made : ""}, turned ${signed(view.turn)}°. `;
+  const turn = view.turn === null || view.bend === null ? "" : `${zone(view.bend, cost.uniform).name}: bend ${view.bend.toFixed(2)} gap${view.bend >= 0.005 ? made : ""}, turned ${signed(view.turn)}°. `;
   return turn + evenText(cost.ring, names, cost.uniform);
 }
 

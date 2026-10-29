@@ -9,7 +9,8 @@ import { apca, composition, JUST_VISIBLE, makeModel, type Model, parts, wcag, wc
 import { anchorHue, anchorSource } from "../../palette/references";
 import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../../palette/settings";
 import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, NEUTRAL_BAND, strongest } from "../../palette/solve";
-import { escape, signedWhole, zoneTable } from "../graph";
+import { escape, evenLimits, signedWhole, zoneTable } from "../graph";
+import { evenGap } from "../settings/strip";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
 
@@ -622,8 +623,8 @@ export function howPage(ctx: Context): string {
       <p>Placed hues and colorfulness per hue are edits on top of the uniform lineup. The <strong>H</strong> and <strong>M</strong> switches in the header turn them off and on across the pages, so the palette can be seen with and without them.</p>
       <p>At the top of Settings, a strip shows the palette a step at a time. <strong>Uniform</strong> is the evenly spaced lineup. <strong>Turned</strong> is the same lineup turned around the circle to best match the placed hues; turning keeps it uniform. <strong>+H</strong> adds the placed hues, and <strong>+M</strong> colorfulness per hue. How far the edits take the palette from the turned lineup is its <strong>bend</strong>, in gaps: one gap is the even difference between neighbors${gap ? `, ${gap.toFixed(1)} ΔE in ${ctx.mode} mode here` : ""}, ΔE being how different two colors look in CAM16-UCS. Here's the strip for this palette; point at a swatch or a row for its numbers, and click a number for what it means.</p>
       <div class="demo"><div id="palette-strip" class="strip"></div></div>
-      ${zoneTable()}
-      <p>Bending colors is what placing is for, so bend isn't the risk in itself. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under 10% closer is fine, 10 to 25% is worth watching, and over 25% they're getting confusable. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole.</p>
+      ${zoneTable(evenGap(ctx.mode))}
+      <p>Bending colors is what placing is for, so bend isn't the risk in itself. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under ${String(evenLimits(evenGap(ctx.mode))[0])}% closer is fine, ${String(evenLimits(evenGap(ctx.mode))[0])} to ${String(evenLimits(evenGap(ctx.mode))[1])}% is worth watching, and over ${String(evenLimits(evenGap(ctx.mode))[1])}% they're getting confusable, for this palette's gap of ${evenGap(ctx.mode).toFixed(1)} ΔE. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole.</p>
     </section>
 
     <section class="step">
