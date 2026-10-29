@@ -121,7 +121,7 @@ function drawComparison(el: Element, mode: Mode): void {
   const rings: [Ring, Ring, Ring, Ring] = [evenRing, twist?.ring ? { gaps: twist.ring, keys: twist.keys ?? evenRing.keys } : evenRing, ringOf(palettes[1]), ringOf(palettes[2])];
   const colors: Change[] = [];
   const items = now.map((c) => {
-    if (c.custom) return "";
+    if (c.kind === "custom") return "";
     const found = [...steps, now].map((list) => list.find((b) => b.key === c.key)?.tiers[tier]?.default ?? c.tiers[tier]?.default);
     if (found.some((x) => !x)) return "";
     const [first, hued, last] = found as [Swatch, Swatch, Swatch];
@@ -151,9 +151,9 @@ function drawComparison(el: Element, mode: Mode): void {
   });
   // While new results arrive, a strip that can't be drawn whole keeps what it showed, so it never
   // falls back to empty and moves what's below it.
-  const whole = colors.length === now.filter((c) => !c.custom).length;
+  const whole = colors.length === now.filter((c) => c.kind === "hue").length;
   // A palette with nothing on this tier is from older settings, even before the new solve starts.
-  const current = now.length > 0 && now.every((c) => c.custom || c.tiers[tier]);
+  const current = now.length > 0 && now.every((c) => c.kind === "custom" || c.tiers[tier]);
   if (!whole && (!upToDate() || !current) && el.querySelector(".strip-items")) return;
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;

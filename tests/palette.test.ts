@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 
 import { CONFIG } from "../src/config";
-import { forGamut, isBaseColor, pickProblem } from "../src/palette/bases";
+import { forGamut, isBaseColor, keptPicks, pickProblem } from "../src/palette/bases";
 import { readSettings } from "../src/palette/check";
 import { toCss, toJson } from "../src/palette/formats";
 import { lightness } from "../src/palette/model";
@@ -54,7 +54,7 @@ describe("Settings", () => {
   it("name custom colors apart from Gray and the hues", () => {
     const keys = colorKeys({
       ...CONFIG,
-      custom: [
+      customColors: [
         { name: "Gray", hue: 0, share: 0.5 },
         { name: "Red", hue: 10, share: 0.5 },
       ],
@@ -113,6 +113,17 @@ describe("Bases", () => {
       /different background/,
     );
     assert.match(pickProblem(settings, "light", "wide", "#FFE59A") ?? "", /exactly/);
+  });
+
+  it("let go of a pick that's no longer the same background", () => {
+    const settings = {
+      ...CONFIG,
+      bases: { light: "color(display-p3 1 0.9 0.62)", dark: CONFIG.bases.dark },
+      pickedBases: { standard: { light: "#C8E6FF" } },
+    };
+    const kept = keptPicks(settings);
+    assert.deepEqual(kept.settings.pickedBases, {});
+    assert.deepEqual(kept.dropped, ["the light color for standard screens"]);
   });
 });
 

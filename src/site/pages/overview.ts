@@ -27,11 +27,11 @@ export function overviewPage(): string {
   const room = settings.rooms[mode];
   const list = colors(tier);
   if (!list.length) return `<section class="intro"><h1>${paletteName()}</h1><p>Solving…</p></section>`;
-  const custom = list.filter((c) => c.custom);
+  const custom = list.filter((c) => c.kind === "custom");
   const hues = list.length - custom.length;
   const ring = current()?.[mode].ring[tier] ?? [];
   // The palette's own icon, its hues on this mode's identity tier.
-  const icon = iconSvg(settings.bases.light, settings.bases.dark, list.filter((c) => !c.custom).map((c) => c.tiers[tier]!.default), 'class="palette-icon" aria-hidden="true"');
+  const icon = iconSvg(settings.bases.light, settings.bases.dark, list.filter((c) => c.kind === "hue").map((c) => c.tiers[tier]!.default), 'class="palette-icon" aria-hidden="true"');
   return `<section class="intro">
       <h1 class="named">${icon}<span>${paletteName()}</span></h1>
       <p>${custom.length ? `${String(hues)} + ${String(custom.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the custom ${custom.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
@@ -39,11 +39,11 @@ export function overviewPage(): string {
     <section class="glance">
       <h2>At a glance <span class="soft">• Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>
       <div class="split">
-      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, c.tiers[tier]!.muted].map((s, i) => ({ hue: s.hue, m: s.colorfulness, color: s.color, custom: c.custom, name: i ? `${label(c.key)}, muted` : label(c.key) }))))}</div>
+      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, c.tiers[tier]!.muted].map((s, i) => ({ hue: s.hue, m: s.colorfulness, color: s.color, custom: c.kind === "custom", name: i ? `${label(c.key)}, muted` : label(c.key) }))))}</div>
       <dl class="facts-list">
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${(SURROUNDS[room.surround] ?? "").toLowerCase()} surround</dd></div>
-        <div><dt>Colorfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.muted * 100))}%</dd></div>
+        <div><dt>Colorfulness</dt><dd>${held(tier)}; muted at ${String(Math.round(settings.mutedShare * 100))}%</dd></div>
         <div><dt>Anchor</dt><dd>${label(anchored())} at hue ${anchorHue(settings).toFixed(0)}°, ${anchorSource(settings)}</dd></div>
         <div><dt>Neighbor differences</dt><dd>${range(ring)} (CAM16-UCS)</dd></div>
       </dl>

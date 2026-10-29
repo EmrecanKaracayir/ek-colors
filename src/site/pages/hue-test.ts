@@ -141,7 +141,7 @@ function start(ctx: HueTestContext): boolean {
   if (!palette || ctx.settings.hues !== NAMES.length) return false;
   const tier = identityOf(ctx.settings, ctx.mode);
   const colors = palette.colors
-    .filter((c) => !c.custom)
+    .filter((c) => c.kind === "hue")
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }))
     .toSorted((a, b) => a.hue - b.hue);
   const signs = startSides(colors.length);

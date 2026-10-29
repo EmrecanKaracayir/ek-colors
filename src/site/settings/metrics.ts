@@ -161,7 +161,7 @@ popSource("tools", (which) => {
       <p class="pop-how">Settings, the blind tests and Export always use the palette with every edit.</p>`;
   if (which === "variant")
     return `<h3>Variant: Default and Muted</h3>
-      <p>Every color comes in two strengths on every tier: <strong>Default</strong> at the palette's colorfulness, and <strong>Muted</strong> at ${String(Math.round(state.settings.muted * 100))}% of it, for quieter uses like backgrounds and borders. Both keep the same hue and contrast.</p>`;
+      <p>Every color comes in two strengths on every tier: <strong>Default</strong> at the palette's colorfulness, and <strong>Muted</strong> at ${String(Math.round(state.settings.mutedShare * 100))}% of it, for quieter uses like backgrounds and borders. Both keep the same hue and contrast.</p>`;
   return `<h3>Gamut: how many colors a screen can show</h3>
     <dl class="pop-facts words">
       <div><dt>Standard</dt><dd>What every screen can show.</dd></div>

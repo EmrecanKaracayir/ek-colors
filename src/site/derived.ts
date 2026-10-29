@@ -22,7 +22,7 @@ import { type HuesView, bindHues } from "./settings/hues";
 import { evenGap, updateStrip } from "./settings/strip";
 import { render } from "./shell";
 import { solve } from "./solver";
-import { state } from "./state";
+import { setGuide, state } from "./state";
 import { edited, plain, turn, turned, uncurved, upToDate } from "./baselines";
 
 const bands = new Map<string, CurveView["band"]>();
@@ -91,7 +91,7 @@ function colorfulnessCost(mode: Mode): CurveView["cost"] {
   const [before, after] = [uncurved()?.[mode], current()?.[mode]];
   if (!before || !after) return null;
   return after.colors
-    .filter((c) => !c.custom)
+    .filter((c) => c.kind === "hue")
     .flatMap((c) => {
       const [a, b] = [c.tiers[tier]?.default, before.colors.find((o) => o.key === c.key)?.tiers[tier]?.default];
       if (!a || !b) return [];
@@ -139,10 +139,10 @@ export function curveView(mode: Mode): CurveView {
   const palette = current()?.[mode];
   const band = bandOf(mode);
   const dots = (palette?.colors ?? [])
-    .filter((c) => !c.custom && c.tiers[tier])
+    .filter((c) => c.kind === "hue" && c.tiers[tier])
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
   return {
-    settled: upToDate(), mode, points: s.curve[mode], dots, band, cost: colorfulnessCost(mode), guide: s.guide, guides: guides(s) };
+    settled: upToDate(), mode, points: s.colorfulnessPerHue[mode], dots, band, cost: colorfulnessCost(mode), guide: state.guide, guides: guides(s, state.guide) };
 }
 
 /**
@@ -189,7 +189,7 @@ export function huesView(): HuesView {
   const twist = turned(mode);
   const gap = evenGap(mode);
   const rows = (palette?.colors ?? [])
-    .filter((c) => !c.custom && c.tiers[tier])
+    .filter((c) => c.kind === "hue" && c.tiers[tier])
     .map((c) => {
       const now = c.tiers[tier]!.default;
       const set = c.key === anchored() ? anchorHue(s) : s.placed[c.key] === undefined ? undefined : held[c.key];
@@ -218,7 +218,7 @@ export function huesView(): HuesView {
   }
   const split = weight ? { hue: hue / weight, colorfulness: colorful / weight } : null;
   return {
-    settled: upToDate(), rows, gaps, band: bandOf(mode), guide: s.guide, guides: guides(s), cost: spacingCost(mode), turn: turn(mode), bend, split };
+    settled: upToDate(), rows, gaps, band: bandOf(mode), guide: state.guide, guides: guides(s, state.guide), cost: spacingCost(mode), turn: turn(mode), bend, split };
 }
 
 /**
@@ -271,12 +271,12 @@ bindHues(
 
 bindGuides(
   (id) => guides(state.settings, id),
-  () => state.settings.guide,
-  (id) => write("guide", id),
+  () => state.guide,
+  setGuide,
 );
 
 bindCurves(curveView, (mode, points) => {
-  write(`curve.${mode}`, points);
+  write(`colorfulnessPerHue.${mode}`, points);
   updateStrip();
   solve(150);
 });
@@ -300,7 +300,7 @@ export function testContext(): TestContext {
   return {
     ...context(),
     applyCurve: (mode, points) => {
-      write(`curve.${mode}`, points);
+      write(`colorfulnessPerHue.${mode}`, points);
       solve();
     },
     redraw: render,

@@ -129,30 +129,30 @@ document.addEventListener("click", (event) => {
     return solve();
   }
   if (action === "add-custom") {
-    const names = new Set(state.settings.custom.map((e) => e.name));
+    const names = new Set(state.settings.customColors.map((e) => e.name));
     // The first free name: Custom, Custom 2, …
     let n = 1;
     const name = (k: number) => (k === 1 ? "Custom" : `Custom ${String(k)}`);
     while (names.has(name(n))) n++;
-    write("custom", [...state.settings.custom, { name: name(n), hue: 0, share: 0.6 }]);
+    write("customColors", [...state.settings.customColors, { name: name(n), hue: 0, share: 0.6 }]);
     solve();
   }
   if (action === "remove-custom") {
-    write("custom", state.settings.custom.filter((_, i) => i !== Number(el.dataset.index)));
+    write("customColors", state.settings.customColors.filter((_, i) => i !== Number(el.dataset.index)));
     solve();
   }
   if (action === "add-neutral") {
-    const names = new Set(state.settings.neutrals.map((n) => n.name));
+    const names = new Set(state.settings.neutralColors.map((n) => n.name));
     let n = 1;
     const name = (k: number) => (k === 1 ? "Neutral" : `Neutral ${String(k)}`);
     while (names.has(name(n))) n++;
     // It starts at M 8 on the more colorful tinted base, or all of a fainter tint.
     const strongest = Math.max(...MODES.map(baseTint));
-    write("neutrals", [...state.settings.neutrals, { name: name(n), share: strongest > 0 ? Math.min(1, Math.floor((NEUTRAL_START / strongest) * 1000) / 1000) : 1 }]);
+    write("neutralColors", [...state.settings.neutralColors, { name: name(n), share: strongest > 0 ? Math.min(1, Math.floor((NEUTRAL_START / strongest) * 1000) / 1000) : 1 }]);
     solve();
   }
   if (action === "remove-neutral") {
-    write("neutrals", state.settings.neutrals.filter((_, i) => i !== Number(el.dataset.index)));
+    write("neutralColors", state.settings.neutralColors.filter((_, i) => i !== Number(el.dataset.index)));
     solve();
   }
   render();
@@ -243,7 +243,7 @@ document.addEventListener("input", (event) => {
     );
     if (!ordered || (check && !check.same)) return;
     if (ownTier) setBase(mode, color);
-    else write(`gamutBases.${gamut}.${mode}`, color);
+    else write(`pickedBases.${gamut}.${mode}`, color);
     document.documentElement.style.setProperty(`--base-${mode}`, onScreen().bases[mode]);
     for (const m of MODES) document.querySelector(`#set-base-${m}`)?.closest(".field")?.querySelector("span")?.replaceChildren(document.createRange().createContextualFragment(baseLabel(m)));
     updateBaseNote()
@@ -264,16 +264,16 @@ document.addEventListener("input", (event) => {
     $<HTMLElement>("#neutrals-untinted").hidden = anyTinted();
     $<HTMLButtonElement>('[data-action="add-neutral"]').disabled = !anyTinted();
     // Two gray bases have no neutral colors, so their blocks go with them.
-    if (!state.settings.neutrals.length) document.querySelectorAll("[data-neutral]").forEach((el) => el.remove());
+    if (!state.settings.neutralColors.length) document.querySelectorAll("[data-neutral]").forEach((el) => el.remove());
   }
-  if (path.startsWith("curve.")) updateTune();
+  if (path.startsWith("colorfulnessPerHue.")) updateTune();
   // A custom color's hue reads right away; its color, the strip and the export follow the solve.
-  if (path.startsWith("custom.")) for (const note of document.querySelectorAll<HTMLElement>("[data-hue-note]")) note.textContent = hueNote(Number(note.dataset.hueNote));
+  if (path.startsWith("customColors.")) for (const note of document.querySelectorAll<HTMLElement>("[data-hue-note]")) note.textContent = hueNote(Number(note.dataset.hueNote));
   if (path === "hues") $("#hues-note").innerHTML = huesNote(state.settings.hues);
   if (path.endsWith(".share") || path === "colorfulness" || path.startsWith("bases.")) updateShares();
   // Custom and neutral colors and the muted share sit on the hues already solved, so they solve at
   // once, even mid-drag; anything that moves the hues waits for the slider to rest.
-  solve(path.startsWith("custom.") || path.startsWith("neutrals.") || path === "muted" ? 0 : 150);
+  solve(path.startsWith("customColors.") || path.startsWith("neutralColors.") || path === "mutedShare" ? 0 : 150);
 });
 
 // The palette's name loses its outer spaces once it's done being typed.
@@ -291,7 +291,7 @@ document.addEventListener("change", (event) => {
   if (el.dataset.neutralName === undefined) return;
   const i = Number(el.dataset.neutralName);
   el.value = el.value.trim() || (i === 0 ? "Neutral" : `Neutral ${String(i + 1)}`);
-  write(`neutrals.${String(i)}.name`, el.value);
+  write(`neutralColors.${String(i)}.name`, el.value);
   updateTune();
   solve();
 });
@@ -302,7 +302,7 @@ document.addEventListener("change", (event) => {
   if (el.dataset.customName === undefined) return;
   const i = Number(el.dataset.customName);
   el.value = el.value.trim() || (i === 0 ? "Custom" : `Custom ${String(i + 1)}`);
-  write(`custom.${String(i)}.name`, el.value);
+  write(`customColors.${String(i)}.name`, el.value);
   updateTune();
   solve();
 });

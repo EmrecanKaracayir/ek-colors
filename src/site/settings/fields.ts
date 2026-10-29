@@ -77,7 +77,7 @@ export function numberField(
  * A color's share field: a slider over 0–100% and an exact field that takes any share, to a tenth
  * of a percent, with the colorfulness it gives and where the band, M 4–8, falls.
  *
- * @param path   The setting, e.g. "custom.0.share".
+ * @param path   The setting, e.g. "customColors.0.share".
  * @param title  Its label.
  * @returns      HTML.
  */
@@ -131,7 +131,7 @@ export function shareMeter(share: number, of: number): string {
  */
 function shareInfo(path: string): { band: string; readout: string } {
   const share = Number(read(path) ?? 0);
-  const neutral = path.startsWith("neutrals.");
+  const neutral = path.startsWith("neutralColors.");
   const of = neutral ? baseTint(state.mode) : state.settings.colorfulness;
   if (of <= 0)
     return { band: "", readout: `<span class="share-m soft" data-readout="${path}">The ${state.mode} base is gray or nearly, so this is Gray here.</span>` };

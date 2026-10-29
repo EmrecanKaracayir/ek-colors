@@ -49,7 +49,7 @@ function conditions(ctx: Context): string {
  */
 export function algorithmPage(ctx: Context): string {
   const s = ctx.settings;
-  const identityReach = s.hues === NAMES.length ? s.hueWindow.identity : Math.min(s.hueWindow.identity, 180 / s.hues);
+  const identityReach = s.hues === NAMES.length ? s.hueReach.identity : Math.min(s.hueReach.identity, 180 / s.hues);
   const anchor = anchorHue(s);
   const starts = hueKeys(s.hues).map((key, k) => {
     const placed = k === 0 ? undefined : s.placed[key];
@@ -68,7 +68,7 @@ export function algorithmPage(ctx: Context): string {
     VC[m]   ← viewing conditions from room[m] and base[m]
     starts  ← the circle divided evenly from the anchor (${ctx.label(hueKeys(s.hues)[0]!).toLowerCase()}), or where a color is placed
     identity tier: T ← target ceiling; hues ← space(starts, ±${fixed(identityReach, 1)}°)   // the tier from step 3
-    other tiers:   T ← target ceiling; hues ← space(identity hues, ±${String(s.hueWindow.tier)}°)
+    other tiers:   T ← target ceiling; hues ← space(identity hues, ±${String(s.hueReach.tier)}°)
     per tier, per hue: default ← strongest(h, T + curve(h))
                        muted   ← strongest(h, M(default) × muted share)
     per tier, per custom color: default ← strongest(its hue, T × its share), muted as above
@@ -77,8 +77,8 @@ baselines for the H and M switches: the same solve without placed hues, without 
 the hues are kept, so custom colors, neutral colors and the muted share are placed on them anew (step 11)</pre>
       <p>Every color is produced by one primitive: <code>strongest(h, M, Lc)</code>, the most colorful color of CAM16 hue h, up to colorfulness M, whose APCA contrast against the mode's base is exactly Lc.</p>
       <p>Settings from the site, from a paste or from storage are checked first, and older ones brought up to date; the config the command line solves isn't checked:</p>
-<pre class="formula">hues ${fixed(LIMITS.hues[0], 0)}–${fixed(LIMITS.hues[1], 0)} • M_target ${fixed(LIMITS.colorfulness[0], 0)}–${fixed(LIMITS.colorfulness[1], 0)} • muted share ${pct(LIMITS.muted[0])}–${pct(LIMITS.muted[1])} • lux ${fixed(LIMITS.lux[0], 0)}–${fixed(LIMITS.lux[1], 0)}
-curve amount −${fixed(-LIMITS.amount[0], 0)}…+${fixed(LIMITS.amount[1], 0)} M, width ${fixed(LIMITS.width[0], 0)}–${fixed(LIMITS.width[1], 0)}° • share ${pct(LIMITS.share[0])} or more, for custom and neutral colors • hue windows ${fixed(LIMITS.hueWindow[0], 0)}–${fixed(LIMITS.hueWindow[1], 0)}°
+<pre class="formula">hues ${fixed(LIMITS.hues[0], 0)}–${fixed(LIMITS.hues[1], 0)} • M_target ${fixed(LIMITS.colorfulness[0], 0)}–${fixed(LIMITS.colorfulness[1], 0)} • muted share ${pct(LIMITS.mutedShare[0])}–${pct(LIMITS.mutedShare[1])} • lux ${fixed(LIMITS.lux[0], 0)}–${fixed(LIMITS.lux[1], 0)}
+curve amount −${fixed(-LIMITS.amount[0], 0)}…+${fixed(LIMITS.amount[1], 0)} M, width ${fixed(LIMITS.width[0], 0)}–${fixed(LIMITS.width[1], 0)}° • share ${pct(LIMITS.share[0])} or more, for custom and neutral colors • hue reach ${fixed(LIMITS.hueReach[0], 0)}–${fixed(LIMITS.hueReach[1], 0)}°
 tiers        at least one, each one of Lc ${Object.keys(ROLES).join(", ")}
 identity     set by hand to a tier that isn't solved → automatic
 bases        any CSS color; one set for a gamut must fit it; L*(light base) > L*(dark base) on every gamut
@@ -187,16 +187,16 @@ M*  = ln(1 + 0.0228·M) / 0.0228
 a*, b* = M*·cos h, M*·sin h
 ΔE′ = √(ΔJ*² + Δa*² + Δb*²)
 ΔE  = 1.41 · ΔE′^0.63                      // the distance shown on the site</pre>
-<pre class="formula">space(start, window):                       // coordinate descent
+<pre class="formula">space(start, reach):                        // coordinate descent
   colors ← strongest(start_i, target(start_i)) for each hue
   score  ← standard deviation of ΔE(color_i, color_(i+1)) around the circle
   repeat up to 8 passes, stop early if a pass changes nothing:
     for each hue i except the anchor and placed colors:
       for step in (−3°, +3°, −1°, +1°):
-        h ← hue_i + step;  skip if |h − start_i| &gt; window
+        h ← hue_i + step;  skip if |h − start_i| &gt; reach
         try color_i ← strongest(h, target(h));  rescore
         keep it if the score drops by more than 10⁻⁴</pre>
-      <p>The identity tier (light Lc ${String(identityOf(s, "light"))}, dark Lc ${String(identityOf(s, "dark"))}) is spaced first from the starting hues with a window of ±${String(s.hueWindow.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less: ±${fixed(identityReach, 1)}° here`}. Every other tier starts from the identity tier's hues with ±${String(s.hueWindow.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
+      <p>The identity tier (light Lc ${String(identityOf(s, "light"))}, dark Lc ${String(identityOf(s, "dark"))}) is spaced first from the starting hues with a reach of ±${String(s.hueReach.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less: ±${fixed(identityReach, 1)}° here`}. Every other tier starts from the identity tier's hues with ±${String(s.hueReach.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land within about a degree of each other; a placed color sits exactly where it was placed in both.</p>
       <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(CLOSEST * 100)}% of the even step from each (${fixed((360 / s.hues) * CLOSEST, 2)}° here), and a spacing step that would bring a color closer than that to a neighbor isn't taken. Dragging the anchor stops before any color it carries would pass a placed one.</p>
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
@@ -213,8 +213,8 @@ hue          = (2 · √(M*₁ · M*₂) · sin(Δh / 2))²      // the chord th
 
     <section class="step">
       <h2>8. Muted, custom and neutral colors</h2>
-<pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) × ${String(s.muted)}, Lc)     // same hue, same tier
-custom(c, Lc) = strongest(hue(c), T(Lc) × share(c), Lc)             // not spaced${s.custom.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
+<pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) × ${String(s.mutedShare)}, Lc)     // same hue, same tier
+custom(c, Lc) = strongest(hue(c), T(Lc) × share(c), Lc)             // not spaced${s.customColors.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
       <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a base with a hue each neutral color, which takes it:</p>
 <pre class="formula">gray(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
 tinted       = M(base) ≥ ${String(NEUTRAL_BAND[0])}                       // a pure gray still has M 1–2 in CAM16
@@ -250,7 +250,7 @@ labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA • ≥ 4.5 AA • ≥ 3 AA large • else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.custom.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker; the header shows how long the one on screen took.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.customColors.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker; the header shows how long the one on screen took.</p>
       <p>The hues are the costly part, and custom colors, neutral colors and the muted share don't move them. So each worker keeps the hues of its last few solves, keyed by every setting but those, and a change to them only places the colors on the kept hues again: a few milliseconds instead of a whole solve, so they follow a slider as it moves.</p>
     </section>
 

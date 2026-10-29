@@ -11,9 +11,9 @@ import { lightness } from "./model";
 import { SYSTEMS } from "./references";
 import {
   type CurvePoint,
-  type Custom,
+  type CustomColor,
   GAMUTS,
-  type Neutral,
+  type NeutralColor,
   LIMITS,
   type Mode,
   MODES,
@@ -155,10 +155,10 @@ function base(value: unknown, mode: Mode): string {
  * @param settings  The bases and rooms, already checked.
  * @returns         The colors picked.
  */
-function gamutBases(
+function pickedBases(
   value: unknown,
   settings: Pick<Settings, "bases" | "rooms">,
-): Settings["gamutBases"] {
+): Settings["pickedBases"] {
   const given = record(value ?? {}, "The colors picked per gamut");
   return Object.fromEntries(
     GAMUTS.flatMap((g) => {
@@ -217,7 +217,7 @@ function point(value: unknown, name: string): CurvePoint {
  * @param name   Which one, for the message.
  * @returns      The custom color.
  */
-function custom(value: unknown, name: string): Custom {
+function custom(value: unknown, name: string): CustomColor {
   const e = record(value, name);
   if (typeof e.name !== "string" || !e.name.trim()) fail(`${name} needs a name.`);
   return {
@@ -234,7 +234,7 @@ function custom(value: unknown, name: string): Custom {
  * @param name   Which one, for the message.
  * @returns      The neutral color.
  */
-function neutral(value: unknown, name: string): Neutral {
+function neutral(value: unknown, name: string): NeutralColor {
   const n = record(value, name);
   if (typeof n.name !== "string" || !n.name.trim()) fail(`${name} needs a name.`);
   return {
@@ -263,12 +263,6 @@ function upgrade(given: Record<string, unknown>, defaults: Settings): Record<str
   };
   const yellow = old.homes?.yellow ?? old.yellowHue?.light ?? old.start;
   if (yellow !== undefined && given.anchor === undefined) s.anchor = yellow;
-  // One guide at a time was once several; the first is kept.
-  if (Array.isArray(given.guides) && given.guides.length && given.guide === undefined)
-    s.guide = given.guides[0];
-  // Custom colors were once brown's share, or null without it.
-  if (given.brown !== undefined && given.custom === undefined)
-    s.custom = given.brown === null ? [] : [{ name: "Brown", hue: 40, share: given.brown }];
   // The identity tier was once one number for both modes.
   if (typeof s.identityTier === "number")
     s.identityTier = { light: s.identityTier, dark: s.identityTier };
@@ -277,23 +271,6 @@ function upgrade(given: Record<string, unknown>, defaults: Settings): Record<str
   const identity = s.identityTier as { light?: unknown; dark?: unknown } | undefined;
   if (identity?.light === 60 && identity.dark === 45)
     s.identityTier = { light: "auto", dark: "auto" };
-  // The curve was once one point per mode, flat or not.
-  if (s.curve && typeof s.curve === "object") {
-    const curve = s.curve as Record<string, unknown>;
-    s.curve = Object.fromEntries(
-      MODES.map((m) => {
-        const one = curve[m];
-        return [
-          m,
-          Array.isArray(one)
-            ? one
-            : one && typeof one === "object" && (one as { amount?: unknown }).amount !== 0
-              ? [one]
-              : [],
-        ];
-      }),
-    );
-  }
   // Anything else from an older version is left out.
   return Object.fromEntries(Object.keys(defaults).map((key) => [key, s[key]]));
 }
@@ -331,9 +308,6 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
   const isHue = typeof anchor === "number" && anchor >= 0 && anchor <= 360;
   if (!isHue && !(typeof anchor === "string" && systems.includes(anchor)))
     fail(`The anchor must be one of ${systems.join(", ")}, or a hue from 0 to 360.`);
-  const guide = s.guide;
-  if (typeof guide !== "string" || !systems.includes(guide))
-    fail(`The guide must be one of ${systems.join(", ")}.`);
   // Hues placed under a count of hues that's since changed are kept out.
   const keys = hueKeys(hues);
   const placed = Object.fromEntries(
@@ -341,12 +315,12 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
       .filter(([key]) => keys.includes(key))
       .map(([key, h]) => [key, hue(h, `Where ${key} is placed`)]),
   );
-  const window = record(s.hueWindow, "The hue window");
+  const reach = record(s.hueReach, "The hue reach");
   const bases = perMode(s.bases, "The bases", base);
   const rooms = perMode(s.rooms, "The rooms", room);
-  const perGamut = gamutBases(s.gamutBases, { bases, rooms });
+  const perGamut = pickedBases(s.pickedBases, { bases, rooms });
   for (const g of GAMUTS) {
-    const on = forGamut({ bases, gamutBases: perGamut, rooms }, g).bases;
+    const on = forGamut({ bases, pickedBases: perGamut, rooms }, g).bases;
     if (lightness(on.light) <= lightness(on.dark))
       fail(
         `The light base must be lighter than the dark base${g === "standard" ? "" : ` on ${g} screens`}.`,
@@ -357,30 +331,29 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
   const name = s.name.trim();
   return {
     bases,
-    gamutBases: perGamut,
+    pickedBases: perGamut,
     rooms,
     colorfulness: number(s.colorfulness, "Target M", LIMITS.colorfulness),
     equalTiers: flag(s.equalTiers, "Equal per tier"),
-    curve: perMode(s.curve, "Colorfulness per hue", (c, m) =>
+    colorfulnessPerHue: perMode(s.colorfulnessPerHue, "Colorfulness per hue", (c, m) =>
       list(c, `The ${m} curve`).map((p, i) => point(p, `Point ${String(i + 1)} of the ${m} curve`)),
     ),
     hues,
     tiers: solved,
     identityTier,
-    muted: number(s.muted, "Muted share", LIMITS.muted),
-    custom: list(s.custom, "The custom colors").map((e, i) =>
+    mutedShare: number(s.mutedShare, "Muted share", LIMITS.mutedShare),
+    customColors: list(s.customColors, "The custom colors").map((e, i) =>
       custom(e, `Custom color ${String(i + 1)}`),
     ),
-    neutrals: list(s.neutrals, "The neutral colors").map((n, i) =>
+    neutralColors: list(s.neutralColors, "The neutral colors").map((n, i) =>
       neutral(n, `Neutral color ${String(i + 1)}`),
     ),
-    hueWindow: {
-      identity: number(window.identity, "The identity tier's hue window", LIMITS.hueWindow),
-      tier: number(window.tier, "The other tiers' hue window", LIMITS.hueWindow),
+    hueReach: {
+      identity: number(reach.identity, "The identity tier's hue reach", LIMITS.hueReach),
+      tier: number(reach.tier, "The other tiers' hue reach", LIMITS.hueReach),
     },
     anchor: anchor as string | number,
     placed,
-    guide,
     name,
   };
 }

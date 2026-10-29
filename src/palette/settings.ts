@@ -72,7 +72,7 @@ export interface CurvePoint {
  * A neutral color: it follows its mode's base, on the base's hue at a share of the base's own
  * colorfulness. On a base that's gray or close to it, it's the grays.
  */
-export interface Neutral {
+export interface NeutralColor {
   /** What it's called. */
   readonly name: string;
 
@@ -81,7 +81,7 @@ export interface Neutral {
 }
 
 /** A color outside the evenly spaced hues: it stays on its own hue at a share of the colorfulness. */
-export interface Custom {
+export interface CustomColor {
   /** What it's called. */
   readonly name: string;
 
@@ -97,7 +97,7 @@ export interface Settings {
   readonly bases: Readonly<Record<Mode, string>>;
 
   /** Colors picked by hand for a gamut tier that can't show its base exactly; else the closest is used. */
-  readonly gamutBases: Readonly<Partial<Record<Gamut, Readonly<Partial<Record<Mode, string>>>>>>;
+  readonly pickedBases: Readonly<Partial<Record<Gamut, Readonly<Partial<Record<Mode, string>>>>>>;
 
   /** The room each mode is seen in. */
   readonly rooms: Readonly<Record<Mode, Room>>;
@@ -112,7 +112,7 @@ export interface Settings {
    * Per mode, colorfulness added or taken away smoothly over hue, for colors that look weaker or
    * stronger than the model says: the sum of its points.
    */
-  readonly curve: Readonly<Record<Mode, readonly CurvePoint[]>>;
+  readonly colorfulnessPerHue: Readonly<Record<Mode, readonly CurvePoint[]>>;
 
   /** How many hues share the circle; 8 are named red to pink, any other number Hue 1, Hue 2 and so on. */
   readonly hues: number;
@@ -127,16 +127,16 @@ export interface Settings {
   readonly identityTier: Readonly<Record<Mode, number | "auto">>;
 
   /** Muted colorfulness, as a share of the default's. */
-  readonly muted: number;
+  readonly mutedShare: number;
 
   /** Colors added beside the hues, each on its own hue; they aren't spaced. */
-  readonly custom: readonly Custom[];
+  readonly customColors: readonly CustomColor[];
 
   /** Neutral colors that follow the base; the grays come with every palette. */
-  readonly neutrals: readonly Neutral[];
+  readonly neutralColors: readonly NeutralColor[];
 
   /** How far a hue may move to even out the spacing: on the identity tier, then per tier. */
-  readonly hueWindow: Readonly<{ identity: number; tier: number }>;
+  readonly hueReach: Readonly<{ identity: number; tier: number }>;
 
   /**
    * Where the lineup sits: the first color (yellow, with eight) stays exactly on this hue, and the
@@ -151,9 +151,6 @@ export interface Settings {
    */
   readonly placed: Readonly<Record<string, number>>;
 
-  /** The reference system whose hues are drawn as guides (see references.ts). */
-  readonly guide: string;
-
   /** What the palette is called; empty for EK Palette's own name, or Custom palette once changed. */
   readonly name: string;
 }
@@ -163,13 +160,13 @@ export interface Settings {
 /** The lowest and highest each number in the settings may be; the fields and the check share them. */
 export const LIMITS = {
   colorfulness: [10, 80],
-  muted: [0.1, 0.9],
+  mutedShare: [0.1, 0.9],
   hues: [2, 64],
   lux: [1, 1000],
   amount: [-24, 24],
   width: [10, 180],
   share: [0, Infinity],
-  hueWindow: [0, 90],
+  hueReach: [0, 90],
 } as const satisfies Record<string, readonly [number, number]>;
 
 /* >----------------------------------------< Defaults >----------------------------------------< */
@@ -177,21 +174,20 @@ export const LIMITS = {
 /** The settings a palette starts from: light mode in a lit room, dark mode in a dim one. */
 export const DEFAULTS: Settings = {
   bases: { light: "#EBEBEB", dark: "#181818" },
-  gamutBases: {},
+  pickedBases: {},
   rooms: { light: { lux: 200, surround: 2 }, dark: { lux: 64, surround: 1 } },
   colorfulness: 40,
   equalTiers: true,
-  curve: { light: [], dark: [] },
+  colorfulnessPerHue: { light: [], dark: [] },
   hues: 8,
   tiers: [15, 30, 45, 60, 75, 90],
   identityTier: { light: "auto", dark: "auto" },
-  muted: 0.5,
-  custom: [],
-  neutrals: [],
-  hueWindow: { identity: 20, tier: 6 },
+  mutedShare: 0.5,
+  customColors: [],
+  neutralColors: [],
+  hueReach: { identity: 20, tier: 6 },
   anchor: "ncs",
   placed: {},
-  guide: "cam16",
   name: "",
 };
 

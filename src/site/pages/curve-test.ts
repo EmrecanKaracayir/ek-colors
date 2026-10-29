@@ -143,7 +143,7 @@ function start(ctx: TestContext): boolean {
   const palette = ctx.palette?.[ctx.mode];
   if (!palette) return false;
   const tier = identityOf(ctx.settings, ctx.mode);
-  const hues = palette.colors.filter((c) => !c.custom).map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
+  const hues = palette.colors.filter((c) => c.kind === "hue").map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
   const signs = startSides(hues.length);
   const base = {
     mode: ctx.mode,
@@ -213,7 +213,7 @@ function bestPoint(left: readonly Measured[], mode: Mode) {
     for (let width = 30; width <= 180; width += 10) {
       for (let amount = -24; amount <= 24; amount++) {
         const point = { amount, center, width };
-        const settings = { curve: { light: [point], dark: [point] } };
+        const settings = { colorfulnessPerHue: { light: [point], dark: [point] } };
         const error = left.reduce((s, m) => s + m.weight * (boost(settings, mode, m.hue) - m.equal) ** 2, 0);
         if (error < best.error - 1e-9) best = { error, point };
       }
@@ -239,7 +239,7 @@ function fitCurve(measured: readonly Measured[], mode: Mode): CurvePoint[] {
     // A point has three numbers; it has to explain clearly more than chance would.
     if (next.point.amount === 0 || error - next.error < 6) break;
     points.push(next.point);
-    const settings = { curve: { light: [next.point], dark: [next.point] } };
+    const settings = { colorfulnessPerHue: { light: [next.point], dark: [next.point] } };
     left = left.map((m) => ({ ...m, equal: m.equal - boost(settings, mode, m.hue) }));
     error = next.error;
   }
@@ -306,7 +306,7 @@ export function curveTestPage(ctx: TestContext): string {
   if (session && session.mode === ctx.mode) return stage();
   const mode = ctx.mode;
   const done = runs().filter((r) => r.mode === ctx.mode);
-  const hues = ctx.palette?.[ctx.mode].colors.filter((c) => !c.custom).length ?? 8;
+  const hues = ctx.palette?.[ctx.mode].colors.filter((c) => c.kind === "hue").length ?? 8;
   return `<section class="intro">
       <h1>Blind colorfulness test</h1>
       <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once the answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>
@@ -361,7 +361,7 @@ function results(ctx: TestContext): string {
     m.result?.sure ? [{ hue: m.hue, equal: m.result.equal, weight: 1 / Math.max(1, ((m.result.high - m.result.low) / 3.92) ** 2) }] : [],
   );
   const curve = usable.length >= 3 ? fitCurve(usable, ctx.mode) : null;
-  const settings = { curve: { light: curve ?? [], dark: curve ?? [] } };
+  const settings = { colorfulnessPerHue: { light: curve ?? [], dark: curve ?? [] } };
   const sign = signed;
   const rows = measured
     .map((m) => {

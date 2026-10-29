@@ -75,7 +75,7 @@ let field: Field = () => "";
  */
 function curveLayers(view: CurveView): string {
   const { mode, points } = view;
-  const settings = { curve: { light: points, dark: points } };
+  const settings = { colorfulnessPerHue: { light: points, dark: points } };
   const at = (hue: number) => MIDDLE - boost(settings, mode, hue) * SCALE;
   const line = Array.from({ length: 181 }, (_, i) => i * 2)
     .map((h, i) => `${i ? "L" : "M"}${String(h)} ${at(h).toFixed(1)}`)
@@ -132,9 +132,9 @@ function valuesPanel(view: CurveView): string {
   if (!points[i]) return `<p class="soft point-count">No points: the curve is flat.${add}</p>`;
   return `<p class="soft point-count">Point ${String(i + 1)} of ${String(points.length)}${add}</p>
     <label class="field graph-check" for="curve-on-${mode}"><span>On</span><input id="curve-on-${mode}" type="checkbox" data-curve-on ${points[i].off ? "" : "checked"}></label>
-    ${field(`curve.${mode}.${String(i)}.amount`, "Amount", [-LIMIT, LIMIT, 1])}
-    ${field(`curve.${mode}.${String(i)}.center`, "Center", [0, 359, 1])}
-    ${field(`curve.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, MAX_WIDTH, 5])}`;
+    ${field(`colorfulnessPerHue.${mode}.${String(i)}.amount`, "Amount", [-LIMIT, LIMIT, 1])}
+    ${field(`colorfulnessPerHue.${mode}.${String(i)}.center`, "Center", [0, 359, 1])}
+    ${field(`colorfulnessPerHue.${mode}.${String(i)}.width`, "Width", [MIN_WIDTH, MAX_WIDTH, 5])}`;
 }
 
 /**
@@ -174,7 +174,7 @@ export function refreshCurve(view: CurveView, panel = false): void {
   const chosen = points[selected[mode]];
   if (!chosen) return;
   for (const key of ["amount", "center", "width"] as const) {
-    const input = editor.querySelector<HTMLInputElement>(`[data-set="curve.${mode}.${String(selected[mode])}.${key}"]`);
+    const input = editor.querySelector<HTMLInputElement>(`[data-set="colorfulnessPerHue.${mode}.${String(selected[mode])}.${key}"]`);
     if (input && input !== document.activeElement) input.value = String(chosen[key]);
   }
 }

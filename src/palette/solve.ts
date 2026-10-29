@@ -45,8 +45,8 @@ export interface Color {
   /** The colorfulness it aims at before any tier lowers it and before the curve: a custom color's share of the target, or the target. */
   readonly target: number;
 
-  /** Whether it's a custom color: on its own hue, not spaced with the others. */
-  readonly custom: boolean;
+  /** One of the evenly spaced hues, or a custom color: on its own hue, not spaced with the others. */
+  readonly kind: "hue" | "custom";
   readonly tiers: Readonly<Record<number, { readonly default: Swatch; readonly muted: Swatch }>>;
 }
 
@@ -70,11 +70,11 @@ export interface ModePalette {
   readonly tinted: boolean;
 
   /** Each neutral color per tier: on a tinted base it follows the base, on a gray base it's the grays. */
-  readonly neutrals: readonly NeutralColor[];
+  readonly neutralColors: readonly SolvedNeutral[];
 }
 
 /** A neutral color as solved: its key, its share of the base's tint, and its swatch per tier. */
-export interface NeutralColor {
+export interface SolvedNeutral {
   readonly key: string;
   readonly share: number;
   readonly tiers: Readonly<Record<number, Swatch>>;
@@ -186,8 +186,12 @@ export function strongest(
  * @param hue       CAM16 hue.
  * @returns         Every point's addition there, added up.
  */
-export function boost(settings: Pick<Settings, "curve">, mode: Mode, hue: number): number {
-  return settings.curve[mode].reduce((sum, { amount, center, width, off }) => {
+export function boost(
+  settings: Pick<Settings, "colorfulnessPerHue">,
+  mode: Mode,
+  hue: number,
+): number {
+  return settings.colorfulnessPerHue[mode].reduce((sum, { amount, center, width, off }) => {
     if (off) return sum;
     const away = Math.abs(hueTurn(center, hue));
     return away >= width ? sum : sum + (amount * (1 + Math.cos((Math.PI * away) / width))) / 2;
@@ -332,8 +336,8 @@ export function tinted(model: Model, mode: Mode, base: string): boolean {
  * @returns         The same settings, without neutral colors when neither base is tinted.
  */
 export function withNeutrals(settings: Settings): Settings {
-  if (settings.neutrals.length === 0) return settings;
-  return baseHasHue(settings) ? settings : { ...settings, neutrals: [] };
+  if (settings.neutralColors.length === 0) return settings;
+  return baseHasHue(settings) ? settings : { ...settings, neutralColors: [] };
 }
 
 /**
@@ -531,7 +535,7 @@ export const PAGES = [
  * @param settings  The settings.
  * @returns         One key per custom color and per neutral color, in order.
  */
-export function colorKeys(settings: Pick<Settings, "hues" | "custom" | "neutrals">): {
+export function colorKeys(settings: Pick<Settings, "hues" | "customColors" | "neutralColors">): {
   custom: string[];
   neutrals: string[];
 } {
@@ -552,8 +556,8 @@ export function colorKeys(settings: Pick<Settings, "hues" | "custom" | "neutrals
     return key;
   };
   return {
-    custom: settings.custom.map((e) => keyOf(e.name, "custom")),
-    neutrals: settings.neutrals.map((n) => keyOf(n.name, "neutral")),
+    custom: settings.customColors.map((e) => keyOf(e.name, "custom")),
+    neutrals: settings.neutralColors.map((n) => keyOf(n.name, "neutral")),
   };
 }
 
@@ -563,7 +567,7 @@ export function colorKeys(settings: Pick<Settings, "hues" | "custom" | "neutrals
  * @param settings  The settings.
  * @returns         One key per custom color, in order.
  */
-export const customKeys = (settings: Pick<Settings, "hues" | "custom" | "neutrals">) =>
+export const customKeys = (settings: Pick<Settings, "hues" | "customColors" | "neutralColors">) =>
   colorKeys(settings).custom;
 
 /**
@@ -643,8 +647,8 @@ function solveHues(settings: Settings, model: Model, mode: Mode): HueCore {
   // With other than eight hues, the identity tier may move each only up to halfway to its even neighbor.
   const identityReach =
     settings.hues === NAMES.length
-      ? settings.hueWindow.identity
-      : Math.min(settings.hueWindow.identity, 180 / settings.hues);
+      ? settings.hueReach.identity
+      : Math.min(settings.hueReach.identity, 180 / settings.hues);
 
   // On an equal tier, the target drops to what its least colorful hue can reach. It's measured
   // before the curve: a hue the curve asks more of than it can reach there stops at its reach,
@@ -670,7 +674,7 @@ function solveHues(settings: Settings, model: Model, mode: Mode): HueCore {
   return Object.fromEntries(
     settings.tiers.map((tier) => [
       tier,
-      tier === identityTier ? identity : solveTier(tier, identity.hues, settings.hueWindow.tier),
+      tier === identityTier ? identity : solveTier(tier, identity.hues, settings.hueReach.tier),
     ]),
   );
 }
@@ -703,7 +707,7 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
     // A color on this tier, and its muted version: the same hue at a share of its colorfulness.
     const pair = (hue: number, color: string, target: number) => {
       const def = swatch(model, base, mode, color, target);
-      const quiet = def.colorfulness * settings.muted;
+      const quiet = def.colorfulness * settings.mutedShare;
       return {
         default: def,
         muted: swatch(model, base, mode, strongest(model, base, mode, hue, quiet, tier), quiet),
@@ -712,7 +716,7 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
     keys.forEach((key, i) => {
       tiers[tier]![key] = pair(solved.hues[i]!, solved.colors[i]!, solved.targets[i]!);
     });
-    settings.custom.forEach((custom, i) => {
+    settings.customColors.forEach((custom, i) => {
       const target = solved.target * custom.share;
       tiers[tier]![customKeyOf[i]!] = pair(
         custom.hue,
@@ -722,11 +726,11 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
     });
   }
   const colors = [
-    ...keys.map((key) => ({ key, target: settings.colorfulness, custom: false })),
-    ...settings.custom.map((e, i) => ({
+    ...keys.map((key) => ({ key, target: settings.colorfulness, kind: "hue" as const })),
+    ...settings.customColors.map((e, i) => ({
       key: customKeyOf[i]!,
       target: settings.colorfulness * e.share,
-      custom: true,
+      kind: "custom" as const,
     })),
   ].map((c) => ({
     ...c,
@@ -738,7 +742,7 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
   const grays = onTiers((t) => swatch(model, base, mode, grayOn(base, t), 0));
   const tint = tinted(model, mode, base) ? model.cam(mode, base) : null;
   const neutralKeys = colorKeys(settings).neutrals;
-  const neutrals = settings.neutrals.map((n, i) => ({
+  const neutrals = settings.neutralColors.map((n, i) => ({
     key: neutralKeys[i]!,
     share: n.share,
     tiers: tint
@@ -748,7 +752,16 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
         })
       : grays,
   }));
-  return { base, colors, targets, limits, ring, grays, tinted: tint !== null, neutrals };
+  return {
+    base,
+    colors,
+    targets,
+    limits,
+    ring,
+    grays,
+    tinted: tint !== null,
+    neutralColors: neutrals,
+  };
 }
 
 /**
@@ -761,12 +774,11 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
  */
 export function huesKey(settings: Settings): string {
   const {
-    custom: _custom,
-    neutrals: _neutrals,
-    muted: _muted,
+    customColors: _custom,
+    neutralColors: _neutrals,
+    mutedShare: _muted,
     name: _name,
-    guide: _guide,
-    gamutBases: _gamutBases,
+    pickedBases: _picked,
     ...rest
   } = settings;
   return JSON.stringify(rest);

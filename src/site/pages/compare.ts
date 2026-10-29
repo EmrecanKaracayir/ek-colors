@@ -41,7 +41,7 @@ function ekMade(): string {
   const placed = Object.keys(CONFIG.placed).length;
   // Each curve point is named by the placed color nearest its center.
   const nearest = (hue: number) => label(Object.entries(CONFIG.placed).reduce((best, [key, h]) => (Math.abs(hueTurn(h, hue)) < Math.abs(hueTurn(CONFIG.placed[best]!, hue)) ? key : best), Object.keys(CONFIG.placed)[0]!));
-  const lifts = MODES.flatMap((m) => CONFIG.curve[m].map((p) => `M ${signedWhole(p.amount)} around ${nearest(p.center).toLowerCase()} in ${m} mode`));
+  const lifts = MODES.flatMap((m) => CONFIG.colorfulnessPerHue[m].map((p) => `M ${signedWhole(p.amount)} around ${nearest(p.center).toLowerCase()} in ${m} mode`));
   return `<p>EK Palette is the palette EK Colors was made for, and almost all of it is solved: every color sits exactly on its contrast, as colorful as its tier allows and evenly different from its neighbors, by the rules in <a href="#how">How it works</a>. The rest is a person's eye: ${String(placed)} of its ${String(CONFIG.hues)} hues are placed where their names fit best${lifts.length ? `, and colorfulness is added where it looks weaker than the model says: ${lifts.join(", ")}` : ""}.</p>`;
 }
 
@@ -58,7 +58,7 @@ function compareEk(): string {
   const ek = baseline(CONFIG, "EK Palette")?.[mode];
   const intro = `<h1>Compare with EK Palette</h1>${ekMade()}<p>Here are EK Palette's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
   if (!ek) return `<section class="intro">${intro}<p class="soft">Solving EK Palette…</p></section>`;
-  const other: Side = { name: "EK Palette", colors: ek.colors.filter((c) => c.tiers[tier]).map((c) => ({ key: c.key, custom: c.custom, swatch: c.tiers[tier]![state.variant] })) };
+  const other: Side = { name: "EK Palette", colors: ek.colors.filter((c) => c.tiers[tier]).map((c) => ({ key: c.key, custom: c.kind === "custom", swatch: c.tiers[tier]![state.variant] })) };
   return comparison(other, tier, intro, "");
 }
 
@@ -81,7 +81,7 @@ function compareCodemos(): string {
     name: "Codemos",
     colors: colors(tier)
       .filter((c) => source[c.key])
-      .map((c) => ({ key: c.key, custom: c.custom, swatch: swatch(m, base, mode, source[c.key]!, m.cam(mode, source[c.key]!).m) })),
+      .map((c) => ({ key: c.key, custom: c.kind === "custom", swatch: swatch(m, base, mode, source[c.key]!, m.cam(mode, source[c.key]!).m) })),
   };
   const intro = `<h1>Compare with Codemos</h1>
       <p>Codemos is the palette of <a href="https://github.com/EmrecanKaracayir/Codemos-Modern#readme">Codemos Modern</a>, an extension for theming VS Code, and EK Palette's predecessor: the first attempt at a uniform palette, and the one this project grew from. Its colors were set by hand, each worked out with the same measures used here; EK Colors solves them instead. Here are Codemos's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
@@ -102,7 +102,7 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
   const { mode, variant: kind } = state;
   const m = model();
   const name = paletteName();
-  const mine: Side = { name, colors: colors(tier).map((c) => ({ key: c.key, custom: c.custom, swatch: c.tiers[tier]![kind] })) };
+  const mine: Side = { name, colors: colors(tier).map((c) => ({ key: c.key, custom: c.kind === "custom", swatch: c.tiers[tier]![kind] })) };
   const theirs = new Map(other.colors.map((c) => [c.key, c.swatch]));
   const pairs = mine.colors.filter((c) => theirs.has(c.key));
   const hues = (side: Side) => side.colors.filter((c) => !c.custom);

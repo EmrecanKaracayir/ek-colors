@@ -91,7 +91,7 @@ export function restartBaselines(): void {
  * @returns  Settings.
  */
 function flat(): Settings {
-  return { ...state.settings, curve: { light: [], dark: [] } };
+  return { ...state.settings, colorfulnessPerHue: { light: [], dark: [] } };
 }
 
 /**
@@ -100,7 +100,7 @@ function flat(): Settings {
  * @returns  True when either mode's curve has an amount.
  */
 function curved(): boolean {
-  return Object.values(state.settings.curve).some((points) => points.some((p) => !p.off && p.amount !== 0));
+  return Object.values(state.settings.colorfulnessPerHue).some((points) => points.some((p) => !p.off && p.amount !== 0));
 }
 
 /** The last solved palette for each use of a baseline, shown while that use's new one solves. */
@@ -199,7 +199,7 @@ export function turn(mode: Mode): number | null {
   if (known !== undefined) return known;
   const pairs = even.colors.flatMap((c) => {
     const [u, h] = [c.tiers[tier]?.default, hued.colors.find((x) => x.key === c.key)?.tiers[tier]?.default];
-    return !c.custom && u && h ? [[model().cam(mode, u.color), model().cam(mode, h.color)] as const] : [];
+    return c.kind === "hue" && u && h ? [[model().cam(mode, u.color), model().cam(mode, h.color)] as const] : [];
   });
   const off = (degrees: number) => {
     const [cos, sin] = [Math.cos((degrees * Math.PI) / 180), Math.sin((degrees * Math.PI) / 180)];

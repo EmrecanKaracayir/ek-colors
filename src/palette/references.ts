@@ -182,13 +182,10 @@ export function system(id: string): ReferenceSystem {
  * A system's guides as hues.
  *
  * @param settings  The bases and rooms.
- * @param id        The system; the settings' chosen one when left out.
+ * @param id        The system.
  * @returns         Each guide's system, label, hue and whether it's a pure hue.
  */
-export function guides(
-  settings: Pick<Settings, "bases" | "rooms" | "guide">,
-  id = settings.guide,
-): Guide[] {
+export function guides(settings: Pick<Settings, "bases" | "rooms">, id: string): Guide[] {
   const chosen = system(id);
   return chosen.guides.map((g) => ({
     system: chosen.id,

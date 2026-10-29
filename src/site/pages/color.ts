@@ -169,7 +169,7 @@ function colorChips(current: string): string {
     `<a href="#${key}" style="--c:${color}"${key === current ? ' aria-current="page"' : ""}><span class="dot"></span>${label(key)}</a>`;
   const hues = colors(tier).map((x) => chip(x.key, x.tiers[tier]!.default.color));
   // A mode whose base is gray or close to it has only the grays: its neutral colors would be the same.
-  const neutrals = p ? [chip(GRAY, p.grays[tier]!.color), ...(p.tinted ? p.neutrals.map((n) => chip(n.key, n.tiers[tier]!.color)) : [])] : [];
+  const neutrals = p ? [chip(GRAY, p.grays[tier]!.color), ...(p.tinted ? p.neutralColors.map((n) => chip(n.key, n.tiers[tier]!.color)) : [])] : [];
   return `<nav class="chips" aria-label="Colors">${hues.join("")}${neutrals.length ? `<span class="chips-gap" aria-hidden="true"></span>${neutrals.join("")}` : ""}</nav>`;
 }
 
@@ -223,7 +223,7 @@ function neutralPage(key: string): string {
   const tier = identityOf(onScreen(), state.mode);
   const { mode } = state;
   if (!p) return `<section class="intro"><h1>${label(key)}</h1><p>Solving…</p></section>`;
-  const neutral = p.neutrals.find((n) => n.key === key);
+  const neutral = p.neutralColors.find((n) => n.key === key);
   if (neutral && !p.tinted)
     return `${colorChips(key)}
       <section class="intro"><h1>${label(key)}</h1><p>The ${mode} base, ${p.base}, is gray or nearly, under M ${String(NEUTRAL_BAND[0])}, so it has no hue to follow and ${label(key)} is <a href="#gray">Gray</a> here. On a base with a hue, ${label(key)} takes that hue.</p></section>`;
@@ -266,7 +266,7 @@ function tintNote(m: number): string {
 
 popSource("share", (path) => {
   const share = Number(read(path) ?? 0);
-  const neutral = path.startsWith("neutrals.");
+  const neutral = path.startsWith("neutralColors.");
   const { mode } = state;
   const of = neutral ? baseTint(mode) : state.settings.colorfulness;
   const m = share * of;
@@ -276,7 +276,7 @@ popSource("share", (path) => {
   const i = Number(path.split(".")[1]);
   const key = neutral ? colorKeys(state.settings).neutrals[i] : customKeys(state.settings)[i];
   // Its distance from Gray on each tier, counting only the tint, not any lightness between them.
-  const colorOn = (t: number) => (neutral ? p?.neutrals.find((n) => n.key === key)?.tiers[t]?.color : p?.colors.find((c) => c.key === key)?.tiers[t]?.default.color);
+  const colorOn = (t: number) => (neutral ? p?.neutralColors.find((n) => n.key === key)?.tiers[t]?.color : p?.colors.find((c) => c.key === key)?.tiers[t]?.default.color);
   const fromGray = (t: number) => {
     const [color, gray] = [colorOn(t), p?.grays[t]?.color];
     if (!color || !gray) return undefined;

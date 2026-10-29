@@ -6,7 +6,7 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import { CONFIG } from "../config";
-import { type CurvePoint, type Custom, GAMUT_NAMES, type Neutral, type Settings } from "../palette/settings";
+import { type CurvePoint, type CustomColor, GAMUT_NAMES, type NeutralColor, type Settings } from "../palette/settings";
 import { type Color, type Swatch, colorKeys, customKeys } from "../palette/solve";
 import { current } from "./derived";
 import { escape, signed } from "./graph";
@@ -67,7 +67,7 @@ export function defaultName(): string {
  */
 export function solvedPart(settings: Settings): Settings {
   const points = (list: readonly CurvePoint[]) => list.map(({ off, ...p }) => (off ? { ...p, off } : p));
-  return { ...settings, guide: "", name: "", curve: { light: points(settings.curve.light), dark: points(settings.curve.dark) } };
+  return { ...settings, name: "", colorfulnessPerHue: { light: points(settings.colorfulnessPerHue.light), dark: points(settings.colorfulnessPerHue.dark) } };
 }
 
 /**
@@ -76,8 +76,8 @@ export function solvedPart(settings: Settings): Settings {
  * @param key  A color's key.
  * @returns    The custom color, or undefined for a hue.
  */
-export function customOf(key: string): Custom | undefined {
-  return state.settings.custom[customKeys(state.settings).indexOf(key)];
+export function customOf(key: string): CustomColor | undefined {
+  return state.settings.customColors[customKeys(state.settings).indexOf(key)];
 }
 
 /**
@@ -86,8 +86,8 @@ export function customOf(key: string): Custom | undefined {
  * @param key  The key.
  * @returns    The neutral color's settings, or undefined for any other color.
  */
-export function neutralOf(key: string): Neutral | undefined {
-  return state.settings.neutrals[colorKeys(state.settings).neutrals.indexOf(key)];
+export function neutralOf(key: string): NeutralColor | undefined {
+  return state.settings.neutralColors[colorKeys(state.settings).neutrals.indexOf(key)];
 }
 
 /**
@@ -326,7 +326,7 @@ popSource("why", (which) => {
       <p>${name} would be M ${own.toFixed(1)} here. On Lc ${String(tier)}, ${limit.toLowerCase()} can't be more colorful than M ${tierTarget.toFixed(1)} on ${gamut} screens, and <strong>Equal per tier</strong> holds every color on the tier to that, so ${name.toLowerCase()} shows M ${s.colorfulness.toFixed(1)} (${share}).</p>
       ${EQUAL_OFF}`;
   }
-  const reason = variant === "muted" ? `${String(Math.round(state.settings.muted * 100))}% of the default's colorfulness` : aimText(key, s, tierTarget);
+  const reason = variant === "muted" ? `${String(Math.round(state.settings.mutedShare * 100))}% of the default's colorfulness` : aimText(key, s, tierTarget);
   return `<h3 class="why gamut">Gamut limit</h3>
     <p>${name} would be M ${s.target.toFixed(1)} here (${reason}), but on Lc ${String(tier)} no ${name.toLowerCase()} that colorful exists on ${gamut} screens. It shows M ${s.colorfulness.toFixed(1)}, the most it can.</p>
     <p class="pop-how">A color's contrast fixes its lightness, and at that lightness a screen can only show so much colorfulness in each hue. ${state.gamut === "ultra" ? "This is already the widest gamut." : "A wider gamut can reach further."}</p>`;

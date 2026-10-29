@@ -108,9 +108,9 @@ function goToBase(mode: Mode): void {
  * @param mode   The mode.
  * @returns      The picks.
  */
-function withoutPick(gamut: Gamut, mode: Mode): Settings["gamutBases"] {
-  const { [mode]: _gone, ...rest } = state.settings.gamutBases[gamut] ?? {};
-  const { [gamut]: _tier, ...others } = state.settings.gamutBases;
+function withoutPick(gamut: Gamut, mode: Mode): Settings["pickedBases"] {
+  const { [mode]: _gone, ...rest } = state.settings.pickedBases[gamut] ?? {};
+  const { [gamut]: _tier, ...others } = state.settings.pickedBases;
   return Object.keys(rest).length ? { ...others, [gamut]: rest } : others;
 }
 
@@ -135,7 +135,7 @@ document.addEventListener("click", (event) => {
     // A color too different to be picked becomes the base itself.
     const field = document.querySelector<HTMLInputElement>(`#set-base-${baseUse}`);
     if (field) setBase(baseUse as Mode, normalColor(field.value));
-  } else write("gamutBases", withoutPick(state.gamut, baseClosest as Mode));
+  } else write("pickedBases", withoutPick(state.gamut, baseClosest as Mode));
   solve();
   render();
 });

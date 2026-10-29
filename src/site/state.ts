@@ -7,6 +7,7 @@
 
 import { CONFIG } from "../config";
 import { readSettings } from "../palette/check";
+import { SYSTEMS } from "../palette/references";
 import type { Gamut, Mode, Settings } from "../palette/settings";
 import { type GamutPalette, PAGES, withNeutrals } from "../palette/solve";
 import type { Format } from "./highlight";
@@ -29,6 +30,9 @@ export const EDITS = "ek-colors:edits";
 /** Remembers Light or Dark, once chosen. */
 export const MODE = "ek-colors:mode";
 
+/** Remembers which reference system the graphs draw as guides. */
+const GUIDE = "ek-colors:guide";
+
 /** Remembers the last palette solved for the gamut tier on screen, drawn at once on the next visit. */
 const PALETTE = "ek-colors:palette";
 
@@ -45,6 +49,9 @@ export const SCREEN: Gamut = matchMedia("(color-gamut: rec2020)").matches
 export const state = {
   settings: load(),
   mode: loadMode(),
+
+  /** The reference system the graphs draw as guides: a way of looking, not part of the palette. */
+  guide: loadGuide(),
   variant: "default" as Variant,
   view: "overview",
 
@@ -101,6 +108,35 @@ function loadMode(): Mode {
     // Storage can be blocked; the system's choice does.
   }
   return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+/**
+ * The guides last chosen in this browser, or CAM16's.
+ *
+ * @returns  The reference system's id.
+ */
+function loadGuide(): string {
+  try {
+    const saved = localStorage.getItem(GUIDE);
+    if (saved && SYSTEMS.some((s) => s.id === saved)) return saved;
+  } catch {
+    // Storage can be blocked; CAM16's do.
+  }
+  return "cam16";
+}
+
+/**
+ * Draws another reference system's guides, and remembers it in this browser.
+ *
+ * @param id  The system.
+ */
+export function setGuide(id: string): void {
+  state.guide = id;
+  try {
+    localStorage.setItem(GUIDE, id);
+  } catch {
+    // Storage can be blocked; it then lasts until the page closes.
+  }
 }
 
 /**

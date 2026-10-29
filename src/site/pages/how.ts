@@ -35,9 +35,9 @@ const STARTS: Readonly<Record<string, (ctx: Context) => string | number>> = {
   "demo-a": (ctx) => hues(ctx)[0]?.key ?? "",
   "demo-b": (ctx) => hues(ctx)[1]?.key ?? "",
   "demo-dtier": (ctx) => identityOf(ctx.settings, ctx.mode),
-  "demo-amount": (ctx) => Math.max(-12, Math.min(12, ctx.settings.curve[ctx.mode][0]?.amount ?? 6)),
-  "demo-center": (ctx) => ctx.settings.curve[ctx.mode][0]?.center ?? 20,
-  "demo-width": (ctx) => Math.max(20, Math.min(180, ctx.settings.curve[ctx.mode][0]?.width ?? 60)),
+  "demo-amount": (ctx) => Math.max(-12, Math.min(12, ctx.settings.colorfulnessPerHue[ctx.mode][0]?.amount ?? 6)),
+  "demo-center": (ctx) => ctx.settings.colorfulnessPerHue[ctx.mode][0]?.center ?? 20,
+  "demo-width": (ctx) => Math.max(20, Math.min(180, ctx.settings.colorfulnessPerHue[ctx.mode][0]?.width ?? 60)),
   "demo-color": (ctx) => ctx.palette?.[ctx.mode].colors[0]?.key ?? "",
 };
 
@@ -128,7 +128,7 @@ function model(settings: Pick<Settings, "bases" | "rooms">, gamut: Gamut): Model
 function hues(ctx: Context) {
   const tier = identityOf(ctx.settings, ctx.mode);
   return (ctx.palette?.[ctx.mode].colors ?? [])
-    .filter((c) => !c.custom)
+    .filter((c) => c.kind === "hue")
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
 }
 
@@ -343,7 +343,7 @@ function reachDemo(ctx: Context): string {
  * @returns    HTML.
  */
 function differenceDemo(ctx: Context): string {
-  const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => !c.custom);
+  const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => c.kind === "hue");
   if (colors.length < 2) return "Solving…";
   const lc = tierSetting(ctx, "demo-dtier");
   const pick = (id: string, fallback: number) => colors.find((c) => c.key === setting(ctx, id)) ?? colors[fallback]!;
@@ -406,7 +406,7 @@ function bumpDemo(ctx: Context): string {
   const target = ctx.palette?.[ctx.mode].targets[tierLc];
   if (!list.length || target === undefined) return "Solving…";
   const point = { amount: Number(setting(ctx, "demo-amount")), center: Number(setting(ctx, "demo-center")), width: Number(setting(ctx, "demo-width")) };
-  const added = (hue: number) => boost({ curve: { light: [point], dark: [point] } }, ctx.mode, hue);
+  const added = (hue: number) => boost({ colorfulnessPerHue: { light: [point], dark: [point] } }, ctx.mode, hue);
   const [left, width, top, height, most] = [36, 564, 10, 120, 12];
   const x = (hue: number) => left + (hue / 360) * width;
   const y = (m: number) => top + height / 2 - (Math.max(-most, Math.min(most, m)) / most) * (height / 2);
@@ -521,7 +521,7 @@ export function updateDemo(ctx: Context, control: HTMLInputElement | HTMLSelectE
 export function howPage(ctx: Context): string {
   const s = ctx.settings;
   const count = hues(ctx).length;
-  const custom = s.custom.length;
+  const custom = s.customColors.length;
   const swatches = (count + custom) * s.tiers.length * 2 * 2 * GAMUTS.length;
   const anchor = anchorSource(s);
   const hueOptions = hues(ctx).map((h) => [h.key, ctx.label(h.key)] as const);
@@ -536,7 +536,7 @@ export function howPage(ctx: Context): string {
 
     <section class="step">
       <h2>What it makes</h2>
-      <p>${String(count)} hues${custom ? ` and ${String(custom)} custom ${custom === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all, with Gray on every tier${s.neutrals.length ? ` and ${String(s.neutrals.length)} neutral ${s.neutrals.length === 1 ? "color" : "colors"}` : ""} beside them. They all follow the same rules, so the rules only have to be learned once.</p>
+      <p>${String(count)} hues${custom ? ` and ${String(custom)} custom ${custom === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all, with Gray on every tier${s.neutralColors.length ? ` and ${String(s.neutralColors.length)} neutral ${s.neutralColors.length === 1 ? "color" : "colors"}` : ""} beside them. They all follow the same rules, so the rules only have to be learned once.</p>
     </section>
 
     <section class="step">
@@ -628,7 +628,7 @@ export function howPage(ctx: Context): string {
 
     <section class="step">
       <h2>Muted and custom colors</h2>
-      <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.muted * 100))}% of the default's colorfulness: quieter, never weaker in contrast. Every tier of one color:</p>
+      <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.mutedShare * 100))}% of the default's colorfulness: quieter, never weaker in contrast. Every tier of one color:</p>
       <div class="demo">
         <div class="demo-controls">
           ${choice(
@@ -641,7 +641,7 @@ export function howPage(ctx: Context): string {
         </div>
         <div id="demo-ladder-out" class="demo-out wide">${ladderDemo(ctx)}</div>
       </div>
-      <p><strong>Custom colors</strong> sit beside the hues${custom ? `, like ${s.custom.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Custom colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed, under Extra colors.</p>
+      <p><strong>Custom colors</strong> sit beside the hues${custom ? `, like ${s.customColors.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Custom colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed, under Extra colors.</p>
     </section>
 
     <section class="step">

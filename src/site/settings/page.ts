@@ -75,8 +75,8 @@ document.addEventListener("click", (event) => {
 
 /** Where Settings keeps custom and neutral colors: their path in the settings, the word in their data attributes, and their keys. */
 const EXTRAS = {
-  custom: { path: "custom", data: "custom", keys: (s: Settings) => customKeys(s) },
-  neutral: { path: "neutrals", data: "neutral", keys: (s: Settings) => colorKeys(s).neutrals },
+  custom: { path: "customColors", data: "custom", keys: (s: Settings) => customKeys(s) },
+  neutral: { path: "neutralColors", data: "neutral", keys: (s: Settings) => colorKeys(s).neutrals },
 } as const;
 
 /**
@@ -110,8 +110,8 @@ function extraBlock(kind: keyof typeof EXTRAS, i: number, dot: string, fields: r
  */
 function customFields(i: number): string {
   return extraBlock("custom", i, customDot(i), [
-    numberField(`custom.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` }),
-    shareField(`custom.${String(i)}.share`, "Colorfulness"),
+    numberField(`customColors.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` }),
+    shareField(`customColors.${String(i)}.share`, "Colorfulness"),
   ]);
 }
 
@@ -123,7 +123,7 @@ function customFields(i: number): string {
  * @returns  HTML.
  */
 function neutralFields(i: number): string {
-  return extraBlock("neutral", i, neutralDot(i), [shareField(`neutrals.${String(i)}.share`, "Colorfulness")]);
+  return extraBlock("neutral", i, neutralDot(i), [shareField(`neutralColors.${String(i)}.share`, "Colorfulness")]);
 }
 
 /**
@@ -135,7 +135,7 @@ function neutralFields(i: number): string {
 function neutralDot(i: number): string {
   const key = colorKeys(state.settings).neutrals[i]!;
   const tier = identityOf(onScreen(), state.mode);
-  const color = currentMode()?.neutrals.find((n) => n.key === key)?.tiers[tier]?.color ?? "transparent";
+  const color = currentMode()?.neutralColors.find((n) => n.key === key)?.tiers[tier]?.color ?? "transparent";
   return `<span class="dot" style="--c:${color}"></span>`;
 }
 
@@ -179,7 +179,7 @@ function customDot(i: number): string {
  * @returns  Text.
  */
 export function hueNote(i: number): string {
-  return composition(state.settings.custom[i]!.hue);
+  return composition(state.settings.customColors[i]!.hue);
 }
 
 /**
@@ -225,7 +225,7 @@ export function settingsPage(): string {
       <h2>Colorfulness (M)</h2>
       <p class="soft">One CAM16 colorfulness every hue aims at, in both modes, before colorfulness per hue adds or takes away; custom colors aim at their share of it. A color the screen can't make that colorful goes as far as it can.</p>
       ${numberField("colorfulness", "Target M", [...LIMITS.colorfulness, 1], { slider: true })}
-      ${numberField("muted", "Muted share", [...LIMITS.muted, 0.05], { slider: true, percent: true })}
+      ${numberField("mutedShare", "Muted share", [...LIMITS.mutedShare, 0.05], { slider: true, percent: true })}
       <label class="field" for="set-equal"><span>Equal per tier</span><input id="set-equal" type="checkbox" data-action="equal" ${s.equalTiers ? "checked" : ""}></label>
       <p class="soft">On: a tier aims at what its least colorful hue can reach, so every color on it is equally colorful. Off: each color goes as far as the screen allows.</p>
       <h3>Per hue</h3>
@@ -242,7 +242,7 @@ export function settingsPage(): string {
             <h3>Custom colors</h3>
             <p class="soft">Each keeps a hue of its own, such as a brand color, at a share of the palette's colorfulness, with a muted version.</p>
           </div>
-          ${s.custom.map((_, i) => customFields(i)).join("")}
+          ${s.customColors.map((_, i) => customFields(i)).join("")}
           <div class="action-row">
             <p><button type="button" data-action="add-custom">Add a custom color</button></p>
           </div>
@@ -253,7 +253,7 @@ export function settingsPage(): string {
             <p class="soft">Mostly for text. Gray is in every palette; each neutral color takes the base's hue at a share of the base's colorfulness.</p>
           </div>
           ${grayRow()}
-          ${s.neutrals.map((_, i) => neutralFields(i)).join("")}
+          ${s.neutralColors.map((_, i) => neutralFields(i)).join("")}
           <div class="action-row">
             <p><button type="button" data-action="add-neutral"${anyTinted() ? "" : " disabled"}>Add a neutral color</button></p>
             <p class="soft" id="neutrals-untinted"${anyTinted() ? " hidden" : ""}>Both bases are gray or nearly, so there's no hue to follow. Give a base a hue in <button type="button" class="link" data-jump="viewing-section" data-focus="set-base-${state.mode}">Viewing</button> to add one.</p>

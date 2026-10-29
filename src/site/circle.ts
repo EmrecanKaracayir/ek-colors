@@ -52,8 +52,8 @@ export function circle(dots: readonly Dot[]): string {
   // The same dots as a table, for reading the numbers, and for screen readers in place of the drawing.
   const rows = dots.map((d) => `<tr><th scope="row"><span class="dot" style="--c:${d.color}"></span> ${d.name}</th><td class="mono num">${d.hue.toFixed(1)}°</td><td class="mono num">${d.m.toFixed(1)}</td></tr>`).join("");
   const table = `<details class="circle-table" id="circle-table"><summary>Show as a table</summary><div class="scroll"><table><thead><tr><th scope="col">Color</th><th scope="col" class="num">Hue</th><th scope="col" class="num">Colorfulness <span class="unit">M</span></th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
-  return `<figure class="circle-block guided" data-guides="circle">${guidePicker(state.settings.guide, "circle")}<svg class="circle" viewBox="-212 -212 424 424" aria-hidden="true">
-    ${rings.join("")}<g class="guide-layer">${circleGuides(guides(state.settings))}</g>${marks.join("")}<text class="dot-label" text-anchor="middle"></text></svg>${legend}${table}</figure>`;
+  return `<figure class="circle-block guided" data-guides="circle">${guidePicker(state.guide, "circle")}<svg class="circle" viewBox="-212 -212 424 424" aria-hidden="true">
+    ${rings.join("")}<g class="guide-layer">${circleGuides(guides(state.settings, state.guide))}</g>${marks.join("")}<text class="dot-label" text-anchor="middle"></text></svg>${legend}${table}</figure>`;
 }
 
 /** The distance between a dot label's two lines, in the circle's units. */

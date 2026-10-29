@@ -36,7 +36,7 @@ export interface BaseIn {
 type Viewing = Pick<Settings, "bases" | "rooms">;
 
 /** The bases, the colors picked for them and the rooms they're seen in. */
-type BaseSettings = Viewing & Pick<Settings, "gamutBases">;
+type BaseSettings = Viewing & Pick<Settings, "pickedBases">;
 
 /**
  * Whether a color can be a base: a CSS color, fully opaque, as a background is.
@@ -159,7 +159,7 @@ export function baseIn(settings: BaseSettings, mode: Mode, gamut: Gamut): BaseIn
   let shown: BaseIn | undefined;
   for (let i = from - 1; i >= at; i--) {
     const g = GAMUTS[i]!;
-    const picked = settings.gamutBases[g]?.[mode];
+    const picked = settings.pickedBases[g]?.[mode];
     const check = picked ? pickCheck(settings, mode, g, picked) : null;
     if (picked && check?.same) {
       shown = { color: picked, written: writtenFor(picked, g), how: "picked", off: check.off };
@@ -200,10 +200,10 @@ export function forGamut<T extends BaseSettings>(settings: T, gamut: Gamut): T {
  */
 export function keptPicks<T extends BaseSettings>(settings: T): { settings: T; dropped: string[] } {
   const dropped: string[] = [];
-  const gamutBases = Object.fromEntries(
+  const pickedBases = Object.fromEntries(
     GAMUTS.flatMap((g) => {
       const kept = MODES.flatMap((m) => {
-        const picked = settings.gamutBases[g]?.[m];
+        const picked = settings.pickedBases[g]?.[m];
         if (!picked) return [];
         if (!pickProblem(settings, m, g, picked)) return [[m, picked]];
         dropped.push(`the ${m} color for ${g} screens`);
@@ -212,5 +212,5 @@ export function keptPicks<T extends BaseSettings>(settings: T): { settings: T; d
       return kept.length ? [[g, Object.fromEntries(kept)]] : [];
     }),
   );
-  return { settings: dropped.length ? { ...settings, gamutBases } : settings, dropped };
+  return { settings: dropped.length ? { ...settings, pickedBases } : settings, dropped };
 }

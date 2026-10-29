@@ -15,7 +15,7 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   down to Standard. That color can be picked by hand while it's still the same background: no more
   than ΔE 2 further from the base than the closest color is. A further one is refused, with Use it
   as the base. A base changed under a pick takes it back to the closest color, and says so.
-- Settings keep the picks under `gamutBases`, per gamut and mode; JSON exports carry it.
+- Settings keep the picks under `pickedBases`, per gamut and mode; JSON exports carry it.
 - In Settings, Base shows the base as the gamut picked in the header writes it, with its form as a
   hint, an amber mark when it's the closest color and a check when picked; it opens how every gamut
   shows it. Every palette is solved, exported and checked against its gamut's base; `--base` and
@@ -27,8 +27,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Custom colors are `custom` in settings and JSON exports, and each one is marked `"custom": true`.
-  Exports that say `extras` no longer paste.
+- Settings and JSON exports use the words Settings shows: `customColors` (was `extras`),
+  `neutralColors`, `mutedShare`, `colorfulnessPerHue` (was `curve`) and `hueReach` (was
+  `hueWindow`); each color is marked `"kind": "hue"` or `"kind": "custom"`, and a palette's neutral
+  colors are `neutralColors`. Exports from before don't paste their renamed parts.
+- The guides drawn on the graphs are a choice kept in the browser, like Light or Dark, rather than
+  a setting, so exports no longer carry `guide`.
 - How many hues goes up to 64; past 32, the field still says solving can take a long time.
 - A just-visible difference is ΔE 2 everywhere: the marker and text in How it works, the Tuned zone
   (now up to 0.2 gap), Even's "worth watching" (now up to 20%) and the margin for picking a base.

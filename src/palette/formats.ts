@@ -34,9 +34,9 @@ function neutralRows(palette: GamutPalette): NeutralRow[] {
   const gray = { key: GRAY, tiers: { light: palette.light.grays, dark: palette.dark.grays } };
   return [
     gray,
-    ...palette.light.neutrals.map((n, i) => ({
+    ...palette.light.neutralColors.map((n, i) => ({
       key: n.key,
-      tiers: { light: n.tiers, dark: palette.dark.neutrals[i]!.tiers },
+      tiers: { light: n.tiers, dark: palette.dark.neutralColors[i]!.tiers },
     })),
   ];
 }
