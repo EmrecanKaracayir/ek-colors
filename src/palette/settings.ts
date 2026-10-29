@@ -81,7 +81,7 @@ export interface Neutral {
 }
 
 /** A color outside the evenly spaced hues: it stays on its own hue at a share of the colorfulness. */
-export interface Extra {
+export interface Custom {
   /** What it's called. */
   readonly name: string;
 
@@ -130,7 +130,7 @@ export interface Settings {
   readonly muted: number;
 
   /** Colors added beside the hues, each on its own hue; they aren't spaced. */
-  readonly extras: readonly Extra[];
+  readonly custom: readonly Custom[];
 
   /** Neutral colors that follow the base; the grays come with every palette. */
   readonly neutrals: readonly Neutral[];
@@ -186,7 +186,7 @@ export const DEFAULTS: Settings = {
   tiers: [15, 30, 45, 60, 75, 90],
   identityTier: { light: "auto", dark: "auto" },
   muted: 0.5,
-  extras: [],
+  custom: [],
   neutrals: [],
   hueWindow: { identity: 20, tier: 6 },
   anchor: "ncs",

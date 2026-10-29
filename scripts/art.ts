@@ -22,7 +22,7 @@ const { settings, palette } = JSON.parse(readFileSync("out/palette.json", "utf8"
 };
 const dark = palette.standard.dark;
 const tier = identityOf(forGamut(settings, "standard"), "dark");
-const hues = dark.colors.filter((c) => !c.extra).map((c) => c.tiers[tier]!.default);
+const hues = dark.colors.filter((c) => !c.custom).map((c) => c.tiers[tier]!.default);
 const [light, base] = [palette.standard.light.base, dark.base];
 
 /**

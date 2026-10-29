@@ -47,7 +47,7 @@
       "dark": "auto"
     },
     "muted": 0.48,
-    "extras": [
+    "custom": [
       {
         "name": "Brown",
         "hue": 40,
@@ -80,7 +80,7 @@
           {
             "key": "red",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -255,7 +255,7 @@
           {
             "key": "orange",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -430,7 +430,7 @@
           {
             "key": "yellow",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -605,7 +605,7 @@
           {
             "key": "green",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -780,7 +780,7 @@
           {
             "key": "mint",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -955,7 +955,7 @@
           {
             "key": "blue",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -1130,7 +1130,7 @@
           {
             "key": "purple",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -1305,7 +1305,7 @@
           {
             "key": "pink",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -1480,7 +1480,7 @@
           {
             "key": "brown",
             "target": 28.16,
-            "extra": true,
+            "custom": true,
             "tiers": {
               "15": {
                 "default": {
@@ -1820,7 +1820,7 @@
           {
             "key": "red",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -1995,7 +1995,7 @@
           {
             "key": "orange",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -2170,7 +2170,7 @@
           {
             "key": "yellow",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -2345,7 +2345,7 @@
           {
             "key": "green",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -2520,7 +2520,7 @@
           {
             "key": "mint",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -2695,7 +2695,7 @@
           {
             "key": "blue",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -2870,7 +2870,7 @@
           {
             "key": "purple",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -3045,7 +3045,7 @@
           {
             "key": "pink",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -3220,7 +3220,7 @@
           {
             "key": "brown",
             "target": 28.16,
-            "extra": true,
+            "custom": true,
             "tiers": {
               "15": {
                 "default": {
@@ -3562,7 +3562,7 @@
           {
             "key": "red",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -3737,7 +3737,7 @@
           {
             "key": "orange",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -3912,7 +3912,7 @@
           {
             "key": "yellow",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -4087,7 +4087,7 @@
           {
             "key": "green",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -4262,7 +4262,7 @@
           {
             "key": "mint",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -4437,7 +4437,7 @@
           {
             "key": "blue",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -4612,7 +4612,7 @@
           {
             "key": "purple",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -4787,7 +4787,7 @@
           {
             "key": "pink",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -4962,7 +4962,7 @@
           {
             "key": "brown",
             "target": 28.16,
-            "extra": true,
+            "custom": true,
             "tiers": {
               "15": {
                 "default": {
@@ -5302,7 +5302,7 @@
           {
             "key": "red",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -5477,7 +5477,7 @@
           {
             "key": "orange",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -5652,7 +5652,7 @@
           {
             "key": "yellow",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -5827,7 +5827,7 @@
           {
             "key": "green",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -6002,7 +6002,7 @@
           {
             "key": "mint",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -6177,7 +6177,7 @@
           {
             "key": "blue",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -6352,7 +6352,7 @@
           {
             "key": "purple",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -6527,7 +6527,7 @@
           {
             "key": "pink",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -6702,7 +6702,7 @@
           {
             "key": "brown",
             "target": 28.16,
-            "extra": true,
+            "custom": true,
             "tiers": {
               "15": {
                 "default": {
@@ -7044,7 +7044,7 @@
           {
             "key": "red",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -7219,7 +7219,7 @@
           {
             "key": "orange",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -7394,7 +7394,7 @@
           {
             "key": "yellow",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -7569,7 +7569,7 @@
           {
             "key": "green",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -7744,7 +7744,7 @@
           {
             "key": "mint",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -7919,7 +7919,7 @@
           {
             "key": "blue",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -8094,7 +8094,7 @@
           {
             "key": "purple",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -8269,7 +8269,7 @@
           {
             "key": "pink",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -8444,7 +8444,7 @@
           {
             "key": "brown",
             "target": 28.16,
-            "extra": true,
+            "custom": true,
             "tiers": {
               "15": {
                 "default": {
@@ -8784,7 +8784,7 @@
           {
             "key": "red",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -8959,7 +8959,7 @@
           {
             "key": "orange",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -9134,7 +9134,7 @@
           {
             "key": "yellow",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -9309,7 +9309,7 @@
           {
             "key": "green",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -9484,7 +9484,7 @@
           {
             "key": "mint",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -9659,7 +9659,7 @@
           {
             "key": "blue",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -9834,7 +9834,7 @@
           {
             "key": "purple",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -10009,7 +10009,7 @@
           {
             "key": "pink",
             "target": 44,
-            "extra": false,
+            "custom": false,
             "tiers": {
               "15": {
                 "default": {
@@ -10184,7 +10184,7 @@
           {
             "key": "brown",
             "target": 28.16,
-            "extra": true,
+            "custom": true,
             "tiers": {
               "15": {
                 "default": {

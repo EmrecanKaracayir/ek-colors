@@ -13,8 +13,8 @@ import { composition, deltaE, hueTurn, JUST_VISIBLE, lightness, makeModel, type 
 import { anchorHue, anchorSource, guides, SYSTEMS } from "../palette/references";
 import { baseIn, type BaseIn, fits, forGamut, home, isBaseColor, keptPicks, pickCheck } from "../palette/bases";
 import { readSettings, SettingsError } from "../palette/check";
-import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Extra, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
-import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, extraKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, NEUTRAL_START, PAGES, tinted, withNeutrals, baseHasHue, huesKey, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
+import { CODEMOS, CODEMOS_MUTED, type CurvePoint, type Custom, type Gamut, GAMUT_NAMES, type Neutral, GAMUTS, LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES, type Settings, SURROUNDS } from "../palette/settings";
+import { autoIdentity, boost, bounds, TEXT_MINIMUM, textScore, type Color, customKeys, hueKeys, identityOf, lineup, neighbors, colorKeys, GRAY, NEUTRAL_BAND, NEUTRAL_START, PAGES, tinted, withNeutrals, baseHasHue, huesKey, swatch, type GamutPalette, type ModePalette, type Palette, strongest, type Swatch } from "../palette/solve";
 import { bindCurves, curveEditor, type CurveView, refreshCurve } from "./curve";
 import { announce, copyText, flash, markField, refill } from "./dom";
 import { type Context, explain, updateDemo } from "./explain";
@@ -436,7 +436,7 @@ function turn(mode: Mode): number | null {
   if (known !== undefined) return known;
   const pairs = even.colors.flatMap((c) => {
     const [u, h] = [c.tiers[tier]?.default, hued.colors.find((x) => x.key === c.key)?.tiers[tier]?.default];
-    return !c.extra && u && h ? [[model().cam(mode, u.color), model().cam(mode, h.color)] as const] : [];
+    return !c.custom && u && h ? [[model().cam(mode, u.color), model().cam(mode, h.color)] as const] : [];
   });
   const off = (degrees: number) => {
     const [cos, sin] = [Math.cos((degrees * Math.PI) / 180), Math.sin((degrees * Math.PI) / 180)];
@@ -571,7 +571,7 @@ function colorfulnessCost(mode: Mode): CurveView["cost"] {
   const [before, after] = [uncurved()?.[mode], current()?.[mode]];
   if (!before || !after) return null;
   return after.colors
-    .filter((c) => !c.extra)
+    .filter((c) => !c.custom)
     .flatMap((c) => {
       const [a, b] = [c.tiers[tier]?.default, before.colors.find((o) => o.key === c.key)?.tiers[tier]?.default];
       if (!a || !b) return [];
@@ -619,7 +619,7 @@ function curveView(mode: Mode): CurveView {
   const palette = current()?.[mode];
   const band = bandOf(mode);
   const dots = (palette?.colors ?? [])
-    .filter((c) => !c.extra && c.tiers[tier])
+    .filter((c) => !c.custom && c.tiers[tier])
     .map((c) => ({ hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
   return {
     settled: upToDate(), mode, points: s.curve[mode], dots, band, cost: colorfulnessCost(mode), guide: s.guide, guides: guides(s) };
@@ -669,7 +669,7 @@ function huesView(): HuesView {
   const twist = turned(mode);
   const gap = evenGap(mode);
   const rows = (palette?.colors ?? [])
-    .filter((c) => !c.extra && c.tiers[tier])
+    .filter((c) => !c.custom && c.tiers[tier])
     .map((c) => {
       const now = c.tiers[tier]!.default;
       const set = c.key === anchored() ? anchorHue(s) : s.placed[c.key] === undefined ? undefined : held[c.key];
@@ -901,13 +901,13 @@ function solvedPart(settings: Settings): Settings {
 }
 
 /**
- * The extra color a key stands for, if it's one.
+ * The custom color a key stands for, if it's one.
  *
  * @param key  A color's key.
- * @returns    The extra color, or undefined for a hue.
+ * @returns    The custom color, or undefined for a hue.
  */
-function extraOf(key: string): Extra | undefined {
-  return state.settings.extras[extraKeys(state.settings).indexOf(key)];
+function customOf(key: string): Custom | undefined {
+  return state.settings.custom[customKeys(state.settings).indexOf(key)];
 }
 
 /**
@@ -937,9 +937,9 @@ function label(key: string): string {
  * @returns    E.g. "Red", "Hue 3", or a custom color's own name.
  */
 function labelText(key: string): string {
-  const extra = extraOf(key) ?? neutralOf(key);
-  const text = extra ? extra.name : key.replace("-", " ");
-  return extra ? text : text.charAt(0).toUpperCase() + text.slice(1);
+  const named = customOf(key) ?? neutralOf(key);
+  const text = named ? named.name : key.replace("-", " ");
+  return named ? text : text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 /** A WCAG 2 level as a class name: "AA large" is "AA-large". */
@@ -1064,7 +1064,7 @@ function setsTier(at: Place): boolean {
 }
 
 /**
- * A color's own target before its tier was lowered: an extra color aims at its share of the
+ * A color's own target before its tier was lowered: a custom color aims at its share of the
  * colorfulness, every other color at the colorfulness plus its M edit.
  *
  * @param key         The color.
@@ -1074,12 +1074,12 @@ function setsTier(at: Place): boolean {
  */
 function ownTarget(key: string, s: Swatch, tierTarget: number): number {
   const { colorfulness } = state.settings;
-  const extra = extraOf(key);
-  return Math.round((extra ? colorfulness * extra.share : s.target + colorfulness - tierTarget) * 10) / 10;
+  const custom = customOf(key);
+  return Math.round((custom ? colorfulness * custom.share : s.target + colorfulness - tierTarget) * 10) / 10;
 }
 
 /**
- * What a default swatch aims at, in words: an extra color's share of the tier's colorfulness, or
+ * What a default swatch aims at, in words: a custom color's share of the tier's colorfulness, or
  * the tier's colorfulness with its colorfulness per hue.
  *
  * @param key         The color.
@@ -1089,8 +1089,8 @@ function ownTarget(key: string, s: Swatch, tierTarget: number): number {
  */
 function aimText(key: string, s: Swatch, tierTarget: number): string {
   const tierM = `the tier's M ${tierTarget.toFixed(1)}`;
-  const extra = extraOf(key);
-  if (extra) return `${String(Math.round(extra.share * 100))}% of ${tierM}`;
+  const custom = customOf(key);
+  if (custom) return `${String(Math.round(custom.share * 100))}% of ${tierM}`;
   const edit = s.target - tierTarget;
   return Math.abs(edit) >= 0.5 ? `${tierM} ${signed(edit)} from colorfulness per hue` : tierM;
 }
@@ -1225,7 +1225,7 @@ interface Dot {
   readonly name: string;
 
   /** A custom color sits among the hues without being spaced, so it's drawn as a diamond to tell it apart. */
-  readonly extra?: boolean;
+  readonly custom?: boolean;
 }
 
 /**
@@ -1249,13 +1249,13 @@ function circle(dots: readonly Dot[]): string {
   const marks = dots.map((d) => {
     const [x, y] = at(d.hue, (Math.min(d.m, max) / max) * R);
     const [cx, cy] = [x.toFixed(1), y.toFixed(1)];
-    const r = d.extra ? (d.hollow ? 8 : 10) : d.hollow ? 7 : 9;
+    const r = d.custom ? (d.hollow ? 8 : 10) : d.hollow ? 7 : 9;
     const paint = `${d.hollow ? `fill="none" stroke="${d.color}" class="ring"` : `fill="${d.color}" class="mark"`} data-name="${d.name}" data-values="M ${d.m.toFixed(0)} • ${d.hue.toFixed(0)}°" data-at="${cx} ${cy} ${String(r)}"`;
-    if (d.extra)
+    if (d.custom)
       return `<rect x="${(x - r / Math.SQRT2).toFixed(1)}" y="${(y - r / Math.SQRT2).toFixed(1)}" width="${(r * Math.SQRT2).toFixed(1)}" height="${(r * Math.SQRT2).toFixed(1)}" rx="${String(r / 4)}" transform="rotate(45 ${cx} ${cy})" ${paint}></rect>`;
     return `<circle cx="${cx}" cy="${cy}" r="${String(r)}" ${paint}></circle>`;
   });
-  const legend = dots.some((d) => d.extra) ? `<figcaption class="circle-key"><span class="diamond" aria-hidden="true"></span> Custom colors</figcaption>` : "";
+  const legend = dots.some((d) => d.custom) ? `<figcaption class="circle-key"><span class="diamond" aria-hidden="true"></span> Custom colors</figcaption>` : "";
   // The same dots as a table, for reading the numbers, and for screen readers in place of the drawing.
   const rows = dots.map((d) => `<tr><th scope="row"><span class="dot" style="--c:${d.color}"></span> ${d.name}</th><td class="mono num">${d.hue.toFixed(1)}°</td><td class="mono num">${d.m.toFixed(1)}</td></tr>`).join("");
   const table = `<details class="circle-table" id="circle-table"><summary>Show as a table</summary><div class="scroll"><table><thead><tr><th scope="col">Color</th><th scope="col" class="num">Hue</th><th scope="col" class="num">Colorfulness <span class="unit">M</span></th></tr></thead><tbody>${rows}</tbody></table></div></details>`;
@@ -1307,19 +1307,19 @@ function overview(): string {
   const room = settings.rooms[mode];
   const list = colors(tier);
   if (!list.length) return `<section class="intro"><h1>${paletteName()}</h1><p>Solving…</p></section>`;
-  const extras = list.filter((c) => c.extra);
-  const hues = list.length - extras.length;
+  const custom = list.filter((c) => c.custom);
+  const hues = list.length - custom.length;
   const ring = current()?.[mode].ring[tier] ?? [];
   // The palette's own icon, its hues on this mode's identity tier.
-  const icon = iconSvg(settings.bases.light, settings.bases.dark, list.filter((c) => !c.extra).map((c) => c.tiers[tier]!.default), 'class="palette-icon" aria-hidden="true"');
+  const icon = iconSvg(settings.bases.light, settings.bases.dark, list.filter((c) => !c.custom).map((c) => c.tiers[tier]!.default), 'class="palette-icon" aria-hidden="true"');
   return `<section class="intro">
       <h1 class="named">${icon}<span>${paletteName()}</span></h1>
-      <p>${extras.length ? `${String(hues)} + ${String(extras.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the custom ${extras.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
+      <p>${custom.length ? `${String(hues)} + ${String(custom.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast. The ${String(hues)} hues aim to look equally colorful, and every pair of neighbors is equally different; the custom ${custom.length === 1 ? "color stays on its" : "colors stay on their"} own hue.` : `${String(list.length)} colors that read the same on the ${mode} base: each sits exactly on its APCA contrast and aims to look as colorful as the rest, and every pair of neighbors is equally different.`}</p>
     </section>
     <section class="glance">
       <h2>At a glance <span class="soft">• Lc ${String(tier)}, ${popButton(`identity:${mode}:${String(tier)}:glance`, "the identity tier", "What the identity tier is", "metric")}</span></h2>
       <div class="split">
-      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, c.tiers[tier]!.muted].map((s, i) => ({ hue: s.hue, m: s.colorfulness, color: s.color, extra: c.extra, name: i ? `${label(c.key)}, muted` : label(c.key) }))))}</div>
+      <div>${circle(list.flatMap((c) => [c.tiers[tier]!.default, c.tiers[tier]!.muted].map((s, i) => ({ hue: s.hue, m: s.colorfulness, color: s.color, custom: c.custom, name: i ? `${label(c.key)}, muted` : label(c.key) }))))}</div>
       <dl class="facts-list">
         <div><dt>Base</dt><dd class="mono">${settings.bases[mode]}</dd></div>
         <div><dt>Room</dt><dd>${String(room.lux)} lux, ${(SURROUNDS[room.surround] ?? "").toLowerCase()} surround</dd></div>
@@ -1643,9 +1643,9 @@ function color(key: string): string {
   const identity = c.tiers[tier]!.default;
   const { colorfulness, equalTiers } = state.settings;
   const own = ownTarget(key, identity, current()?.[state.mode].targets[tier] ?? identity.target);
-  const extra = extraOf(key);
-  const aim = extra
-    ? `${own.toFixed(1)} (${String(Math.round(extra.share * 100))}% of ${String(colorfulness)})`
+  const custom = customOf(key);
+  const aim = custom
+    ? `${own.toFixed(1)} (${String(Math.round(custom.share * 100))}% of ${String(colorfulness)})`
     : Math.abs(own - colorfulness) >= 0.05
       ? `${own.toFixed(1)} (${String(colorfulness)}, ${signed(own - colorfulness)} from colorfulness per hue)`
       : String(colorfulness);
@@ -1726,7 +1726,7 @@ popSource("share", (path) => {
   const p = currentMode();
   const tier = identityOf(onScreen(), mode);
   const i = Number(path.split(".")[1]);
-  const key = neutral ? colorKeys(state.settings).neutrals[i] : extraKeys(state.settings)[i];
+  const key = neutral ? colorKeys(state.settings).neutrals[i] : customKeys(state.settings)[i];
   // Its distance from Gray on each tier, counting only the tint, not any lightness between them.
   const colorOn = (t: number) => (neutral ? p?.neutrals.find((n) => n.key === key)?.tiers[t]?.color : p?.colors.find((c) => c.key === key)?.tiers[t]?.default.color);
   const fromGray = (t: number) => {
@@ -1766,7 +1766,7 @@ const percent1 = (share: number) => `${String(Math.round(share * 1000) / 10)}%`;
 /** One side of a comparison: a palette's colors on a tier, and how different each hue is from the next. */
 interface Side {
   readonly name: string;
-  readonly colors: readonly { readonly key: string; readonly extra: boolean; readonly swatch: Swatch }[];
+  readonly colors: readonly { readonly key: string; readonly custom: boolean; readonly swatch: Swatch }[];
 }
 
 /**
@@ -1804,7 +1804,7 @@ function compareEk(): string {
   const ek = variant(CONFIG, "EK Palette")?.[mode];
   const intro = `<h1>Compare with EK Palette</h1>${ekMade()}<p>Here are EK Palette's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
   if (!ek) return `<section class="intro">${intro}<p class="soft">Solving EK Palette…</p></section>`;
-  const other: Side = { name: "EK Palette", colors: ek.colors.filter((c) => c.tiers[tier]).map((c) => ({ key: c.key, extra: c.extra, swatch: c.tiers[tier]![state.variant] })) };
+  const other: Side = { name: "EK Palette", colors: ek.colors.filter((c) => c.tiers[tier]).map((c) => ({ key: c.key, custom: c.custom, swatch: c.tiers[tier]![state.variant] })) };
   return comparison(other, tier, intro, "");
 }
 
@@ -1827,7 +1827,7 @@ function compareCodemos(): string {
     name: "Codemos",
     colors: colors(tier)
       .filter((c) => source[c.key])
-      .map((c) => ({ key: c.key, extra: c.extra, swatch: swatch(m, base, mode, source[c.key]!, m.cam(mode, source[c.key]!).m) })),
+      .map((c) => ({ key: c.key, custom: c.custom, swatch: swatch(m, base, mode, source[c.key]!, m.cam(mode, source[c.key]!).m) })),
   };
   const intro = `<h1>Compare with Codemos</h1>
       <p>Codemos is the palette of <a href="https://github.com/EmrecanKaracayir/Codemos-Modern#readme">Codemos Modern</a>, an extension for theming VS Code, and EK Palette's predecessor: the first attempt at a uniform palette, and the one this project grew from. Its colors were set by hand, each worked out with the same measures used here; EK Colors solves them instead. Here are Codemos's ${state.variant} colors next to ${paletteName()}'s on Lc ${String(tier)}, on the ${mode} base.</p>`;
@@ -1848,10 +1848,10 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
   const { mode, variant: kind } = state;
   const m = model();
   const name = paletteName();
-  const mine: Side = { name, colors: colors(tier).map((c) => ({ key: c.key, extra: c.extra, swatch: c.tiers[tier]![kind] })) };
+  const mine: Side = { name, colors: colors(tier).map((c) => ({ key: c.key, custom: c.custom, swatch: c.tiers[tier]![kind] })) };
   const theirs = new Map(other.colors.map((c) => [c.key, c.swatch]));
   const pairs = mine.colors.filter((c) => theirs.has(c.key));
-  const hues = (side: Side) => side.colors.filter((c) => !c.extra);
+  const hues = (side: Side) => side.colors.filter((c) => !c.custom);
   const ring = (side: Side) => neighbors(m, mode, hues(side).map((c) => c.swatch.color));
   const [otherRing, myRing] = [ring(other), ring(mine)];
   const most = Math.max(...otherRing, ...myRing);
@@ -1866,13 +1866,13 @@ function comparison(other: Side, tier: number, intro: string, scatter: string): 
       )
       .join("");
   };
-  const dots = (side: Side, hollow: boolean) => side.colors.map((c) => ({ hue: c.swatch.hue, m: c.swatch.colorfulness, color: c.swatch.color, hollow, extra: c.extra, name: `${label(c.key)}, ${side.name}` }));
+  const dots = (side: Side, hollow: boolean) => side.colors.map((c) => ({ hue: c.swatch.hue, m: c.swatch.colorfulness, color: c.swatch.color, hollow, custom: c.custom, name: `${label(c.key)}, ${side.name}` }));
   return `<section class="intro">${intro}</section>
     <section class="split">
       <div>${circle([...dots(other, true), ...dots(mine, false)])}</div>
       <div class="legend">
         <p><span class="key hollow"></span> ${other.name} <span class="key"></span> ${name}</p>
-        <p class="soft">Distance from the center is colorfulness. ${name}'s hues share one ring${offRing ? ", apart from those colorfulness per hue moves on purpose" : ""}${mine.colors.some((c) => c.extra) ? ", and its custom colors sit at their share of it" : ""}${scatter}.</p>
+        <p class="soft">Distance from the center is colorfulness. ${name}'s hues share one ring${offRing ? ", apart from those colorfulness per hue moves on purpose" : ""}${mine.colors.some((c) => c.custom) ? ", and its custom colors sit at their share of it" : ""}${scatter}.</p>
       </div>
     </section>
     ${
@@ -2007,7 +2007,7 @@ function number(
  * A color's share field: a slider over 0–100% and an exact field that takes any share, to a tenth
  * of a percent, with the colorfulness it gives and where the band, M 4–8, falls.
  *
- * @param path   The setting, e.g. "extras.0.share".
+ * @param path   The setting, e.g. "custom.0.share".
  * @param title  Its label.
  * @returns      HTML.
  */
@@ -2054,7 +2054,7 @@ function shareMeter(share: number, of: number): string {
 
 /**
  * What a share gives: its colorfulness and the zone it's in, and under the slider, the zones.
- * An extra color's share is of the palette's colorfulness; a neutral color's, of the mode's base.
+ * A custom color's share is of the palette's colorfulness; a neutral color's, of the mode's base.
  *
  * @param path  The share's setting.
  * @returns     The zones' bar, for under the slider, and the readout, for under the field; HTML.
@@ -2138,19 +2138,19 @@ function write(path: string, value: unknown): void {
 }
 
 /**
- * One extra color's settings: its name, hue and share of the colorfulness, under a title showing
+ * One custom color's settings: its name, hue and share of the colorfulness, under a title showing
  * its color on the identity tier and how its hue reads.
  *
- * @param i  Which extra color.
+ * @param i  Which custom color.
  * @returns  HTML.
  */
-function extraFields(i: number): string {
-  const name = escape(state.settings.extras[i]!.name);
-  return `<div class="extra" data-extra="${String(i)}">
-    <h3 class="extra-title"><span class="extra-name">${extraDot(i)}${label(extraKeys(state.settings)[i]!)}</span><button type="button" class="link" data-action="remove-extra" data-index="${String(i)}" aria-label="Remove ${label(extraKeys(state.settings)[i]!)}">Remove</button></h3>
-    <label class="field grow" for="set-extras-${String(i)}-name"><span>Name</span><input id="set-extras-${String(i)}-name" type="text" data-extra-name="${String(i)}" value="${name}" spellcheck="false"></label>
-    ${number(`extras.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` })}
-    ${shareField(`extras.${String(i)}.share`, "Colorfulness")}
+function customFields(i: number): string {
+  const name = escape(state.settings.custom[i]!.name);
+  return `<div class="extra" data-custom="${String(i)}">
+    <h3 class="extra-title"><span class="extra-name">${customDot(i)}${label(customKeys(state.settings)[i]!)}</span><button type="button" class="link" data-action="remove-custom" data-index="${String(i)}" aria-label="Remove ${label(customKeys(state.settings)[i]!)}">Remove</button></h3>
+    <label class="field grow" for="set-custom-${String(i)}-name"><span>Name</span><input id="set-custom-${String(i)}-name" type="text" data-custom-name="${String(i)}" value="${name}" spellcheck="false"></label>
+    ${number(`custom.${String(i)}.hue`, "Hue", [0, 359.9, 0.1], { slider: true, after: `<span class="share-m soft" data-hue-note="${String(i)}">${hueNote(i)}</span>` })}
+    ${shareField(`custom.${String(i)}.share`, "Colorfulness")}
   </div>`;
 }
 
@@ -2204,26 +2204,26 @@ function grayRow(): string {
 }
 
 /**
- * An extra color's dot: its color on the identity tier.
+ * A custom color's dot: its color on the identity tier.
  *
- * @param i  Which extra color.
+ * @param i  Which custom color.
  * @returns  HTML.
  */
-function extraDot(i: number): string {
-  const key = extraKeys(state.settings)[i]!;
+function customDot(i: number): string {
+  const key = customKeys(state.settings)[i]!;
   const tier = identityOf(onScreen(), state.mode);
   const color = current()?.[state.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
   return `<span class="dot" style="--c:${color}"></span>`;
 }
 
 /**
- * How an extra color's hue reads.
+ * How a custom color's hue reads.
  *
- * @param i  Which extra color.
+ * @param i  Which custom color.
  * @returns  Text.
  */
 function hueNote(i: number): string {
-  return composition(state.settings.extras[i]!.hue);
+  return composition(state.settings.custom[i]!.hue);
 }
 
 /**
@@ -2286,9 +2286,9 @@ function tune(): string {
             <h3>Custom colors</h3>
             <p class="soft">Each keeps a hue of its own, such as a brand color, at a share of the palette's colorfulness, with a muted version.</p>
           </div>
-          ${s.extras.map((_, i) => extraFields(i)).join("")}
+          ${s.custom.map((_, i) => customFields(i)).join("")}
           <div class="action-row">
-            <p><button type="button" data-action="add-extra">Add a custom color</button></p>
+            <p><button type="button" data-action="add-custom">Add a custom color</button></p>
           </div>
         </div>
         <div class="color-column">
@@ -2582,7 +2582,7 @@ function drawComparison(el: Element, mode: Mode): void {
   const rings: [Ring, Ring, Ring, Ring] = [evenRing, twist?.ring ? { gaps: twist.ring, keys: twist.keys ?? evenRing.keys } : evenRing, ringOf(palettes[1]), ringOf(palettes[2])];
   const colors: Change[] = [];
   const items = now.map((c) => {
-    if (c.extra) return "";
+    if (c.custom) return "";
     const found = [...steps, now].map((list) => list.find((b) => b.key === c.key)?.tiers[tier]?.default ?? c.tiers[tier]?.default);
     if (found.some((x) => !x)) return "";
     const [first, hued, last] = found as [Swatch, Swatch, Swatch];
@@ -2612,9 +2612,9 @@ function drawComparison(el: Element, mode: Mode): void {
   });
   // While new results arrive, a strip that can't be drawn whole keeps what it showed, so it never
   // falls back to empty and moves what's below it.
-  const whole = colors.length === now.filter((c) => !c.extra).length;
+  const whole = colors.length === now.filter((c) => !c.custom).length;
   // A palette with nothing on this tier is from older settings, even before the new solve starts.
-  const current = now.length > 0 && now.every((c) => c.extra || c.tiers[tier]);
+  const current = now.length > 0 && now.every((c) => c.custom || c.tiers[tier]);
   if (!whole && (!upToDate() || !current) && el.querySelector(".strip-items")) return;
   changes = { tier, gap, turn: angle, colors, rings, targets };
   if (focusKey && !colors.some((c) => c.key === focusKey)) focusKey = null;
@@ -3037,7 +3037,7 @@ function updateStrip(): void {
 
 /**
  * Refreshes what Settings shows from the palette without redrawing its controls: the strip, the
- * export, the extra colors' titles, the hue graph and the curve editor.
+ * export, the custom colors' titles, the hue graph and the curve editor.
  */
 function updateTune(): void {
   const name = document.querySelector<HTMLInputElement>("#set-name");
@@ -3050,9 +3050,9 @@ function updateTune(): void {
   }
   document.querySelector(".gray-row")?.replaceWith(document.createRange().createContextualFragment(grayRow()));
   updateShares();
-  for (const block of document.querySelectorAll<HTMLElement>("[data-extra]")) {
-    const i = Number(block.dataset.extra);
-    block.querySelector(".extra-name")!.innerHTML = `${extraDot(i)}${label(extraKeys(state.settings)[i]!)}`;
+  for (const block of document.querySelectorAll<HTMLElement>("[data-custom]")) {
+    const i = Number(block.dataset.custom);
+    block.querySelector(".extra-name")!.innerHTML = `${customDot(i)}${label(customKeys(state.settings)[i]!)}`;
     block.querySelector("[data-hue-note]")!.textContent = hueNote(i);
   }
   if (document.querySelector(".hues-editor")) refreshHues(huesView());
@@ -3430,17 +3430,17 @@ document.addEventListener("click", (event) => {
     write("equalTiers", (el as HTMLInputElement).checked);
     return solve();
   }
-  if (action === "add-extra") {
-    const names = new Set(state.settings.extras.map((e) => e.name));
+  if (action === "add-custom") {
+    const names = new Set(state.settings.custom.map((e) => e.name));
     // The first free name: Custom, Custom 2, …
     let n = 1;
     const name = (k: number) => (k === 1 ? "Custom" : `Custom ${String(k)}`);
     while (names.has(name(n))) n++;
-    write("extras", [...state.settings.extras, { name: name(n), hue: 0, share: 0.6 }]);
+    write("custom", [...state.settings.custom, { name: name(n), hue: 0, share: 0.6 }]);
     solve();
   }
-  if (action === "remove-extra") {
-    write("extras", state.settings.extras.filter((_, i) => i !== Number(el.dataset.index)));
+  if (action === "remove-custom") {
+    write("custom", state.settings.custom.filter((_, i) => i !== Number(el.dataset.index)));
     solve();
   }
   if (action === "add-neutral") {
@@ -3570,12 +3570,12 @@ document.addEventListener("input", (event) => {
   }
   if (path.startsWith("curve.")) updateTune();
   // A custom color's hue reads right away; its color, the strip and the export follow the solve.
-  if (path.startsWith("extras.")) for (const note of document.querySelectorAll<HTMLElement>("[data-hue-note]")) note.textContent = hueNote(Number(note.dataset.hueNote));
+  if (path.startsWith("custom.")) for (const note of document.querySelectorAll<HTMLElement>("[data-hue-note]")) note.textContent = hueNote(Number(note.dataset.hueNote));
   if (path === "hues") $("#hues-note").innerHTML = huesNote(state.settings.hues);
   if (path.endsWith(".share") || path === "colorfulness" || path.startsWith("bases.")) updateShares();
   // Custom and neutral colors and the muted share sit on the hues already solved, so they solve at
   // once, even mid-drag; anything that moves the hues waits for the slider to rest.
-  solve(path.startsWith("extras.") || path.startsWith("neutrals.") || path === "muted" ? 0 : 150);
+  solve(path.startsWith("custom.") || path.startsWith("neutrals.") || path === "muted" ? 0 : 150);
 });
 
 // The palette's name loses its outer spaces once it's done being typed.
@@ -3598,13 +3598,13 @@ document.addEventListener("change", (event) => {
   solve();
 });
 
-// An extra color's name is taken when it's done being typed, so its key doesn't change on every letter.
+// A custom color's name is taken when it's done being typed, so its key doesn't change on every letter.
 document.addEventListener("change", (event) => {
   const el = event.target as HTMLInputElement;
-  if (el.dataset.extraName === undefined) return;
-  const i = Number(el.dataset.extraName);
+  if (el.dataset.customName === undefined) return;
+  const i = Number(el.dataset.customName);
   el.value = el.value.trim() || (i === 0 ? "Custom" : `Custom ${String(i + 1)}`);
-  write(`extras.${String(i)}.name`, el.value);
+  write(`custom.${String(i)}.name`, el.value);
   updateTune();
   solve();
 });

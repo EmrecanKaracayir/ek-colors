@@ -68,7 +68,7 @@ export function evenness(closer: number): string {
 /**
  * Text someone typed, safe to put in a page: in its text or in an attribute.
  *
- * @param text  E.g. an extra color's name.
+ * @param text  E.g. a custom color's name.
  * @returns     The text with &, <, >, " and ' written as entities.
  */
 export function escape(text: string): string {

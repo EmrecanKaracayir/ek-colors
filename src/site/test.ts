@@ -143,7 +143,7 @@ function start(ctx: TestContext): boolean {
   const palette = ctx.palette?.[ctx.mode];
   if (!palette) return false;
   const tier = identityOf(ctx.settings, ctx.mode);
-  const hues = palette.colors.filter((c) => !c.extra).map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
+  const hues = palette.colors.filter((c) => !c.custom).map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue }));
   const signs = startSides(hues.length);
   const base = {
     mode: ctx.mode,
@@ -306,7 +306,7 @@ export function testPage(ctx: TestContext): string {
   if (session && session.mode === ctx.mode) return stage();
   const mode = ctx.mode;
   const done = runs().filter((r) => r.mode === ctx.mode);
-  const hues = ctx.palette?.[ctx.mode].colors.filter((c) => !c.extra).length ?? 8;
+  const hues = ctx.palette?.[ctx.mode].colors.filter((c) => !c.custom).length ?? 8;
   return `<section class="intro">
       <h1>Blind colorfulness test</h1>
       <p>Measures how colorful each ${mode}-mode hue looks to you, to set colorfulness per hue. Pairs of colors, one at a time, without names: pick the one that looks more colorful. Up to ${String(CAP * hues)} pairs, fewer once the answers settle; usually about five minutes. Each hue's pairs close in on the point where it looks as colorful as the rest, with an easy pair now and then to check the answers depend on what's shown.</p>

@@ -11,7 +11,7 @@ import { lightness } from "./model";
 import { SYSTEMS } from "./references";
 import {
   type CurvePoint,
-  type Extra,
+  type Custom,
   GAMUTS,
   type Neutral,
   LIMITS,
@@ -211,13 +211,13 @@ function point(value: unknown, name: string): CurvePoint {
 }
 
 /**
- * An extra color.
+ * A custom color.
  *
  * @param value  The value.
  * @param name   Which one, for the message.
- * @returns      The extra color.
+ * @returns      The custom color.
  */
-function extra(value: unknown, name: string): Extra {
+function custom(value: unknown, name: string): Custom {
   const e = record(value, name);
   if (typeof e.name !== "string" || !e.name.trim()) fail(`${name} needs a name.`);
   return {
@@ -266,9 +266,9 @@ function upgrade(given: Record<string, unknown>, defaults: Settings): Record<str
   // One guide at a time was once several; the first is kept.
   if (Array.isArray(given.guides) && given.guides.length && given.guide === undefined)
     s.guide = given.guides[0];
-  // Extra colors were once brown's share, or null without it.
-  if (given.brown !== undefined && given.extras === undefined)
-    s.extras = given.brown === null ? [] : [{ name: "Brown", hue: 40, share: given.brown }];
+  // Custom colors were once brown's share, or null without it.
+  if (given.brown !== undefined && given.custom === undefined)
+    s.custom = given.brown === null ? [] : [{ name: "Brown", hue: 40, share: given.brown }];
   // The identity tier was once one number for both modes.
   if (typeof s.identityTier === "number")
     s.identityTier = { light: s.identityTier, dark: s.identityTier };
@@ -368,8 +368,8 @@ export function readSettings(given: unknown, defaults: Settings): Settings {
     tiers: solved,
     identityTier,
     muted: number(s.muted, "Muted share", LIMITS.muted),
-    extras: list(s.extras, "The custom colors").map((e, i) =>
-      extra(e, `Custom color ${String(i + 1)}`),
+    custom: list(s.custom, "The custom colors").map((e, i) =>
+      custom(e, `Custom color ${String(i + 1)}`),
     ),
     neutrals: list(s.neutrals, "The neutral colors").map((n, i) =>
       neutral(n, `Neutral color ${String(i + 1)}`),

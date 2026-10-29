@@ -42,11 +42,11 @@ export interface Swatch {
 export interface Color {
   readonly key: string;
 
-  /** The colorfulness it aims at before any tier lowers it and before the curve: an extra color's share of the target, or the target. */
+  /** The colorfulness it aims at before any tier lowers it and before the curve: a custom color's share of the target, or the target. */
   readonly target: number;
 
-  /** Whether it's an extra color: on its own hue, not spaced with the others. */
-  readonly extra: boolean;
+  /** Whether it's a custom color: on its own hue, not spaced with the others. */
+  readonly custom: boolean;
   readonly tiers: Readonly<Record<number, { readonly default: Swatch; readonly muted: Swatch }>>;
 }
 
@@ -525,14 +525,14 @@ export const PAGES = [
 ];
 
 /**
- * The extra and neutral colors' keys: each name in lowercase words joined by hyphens, numbered
+ * The custom and neutral colors' keys: each name in lowercase words joined by hyphens, numbered
  * when it would repeat a hue's key, the grays', another color's or a page's.
  *
  * @param settings  The settings.
- * @returns         One key per extra color and per neutral color, in order.
+ * @returns         One key per custom color and per neutral color, in order.
  */
-export function colorKeys(settings: Pick<Settings, "hues" | "extras" | "neutrals">): {
-  extras: string[];
+export function colorKeys(settings: Pick<Settings, "hues" | "custom" | "neutrals">): {
+  custom: string[];
   neutrals: string[];
 } {
   const used = new Set<string>([...PAGES, GRAY, ...hueKeys(settings.hues)]);
@@ -552,19 +552,19 @@ export function colorKeys(settings: Pick<Settings, "hues" | "extras" | "neutrals
     return key;
   };
   return {
-    extras: settings.extras.map((e) => keyOf(e.name, "custom")),
+    custom: settings.custom.map((e) => keyOf(e.name, "custom")),
     neutrals: settings.neutrals.map((n) => keyOf(n.name, "neutral")),
   };
 }
 
 /**
- * The extra colors' keys.
+ * The custom colors' keys.
  *
  * @param settings  The settings.
- * @returns         One key per extra color, in order.
+ * @returns         One key per custom color, in order.
  */
-export const extraKeys = (settings: Pick<Settings, "hues" | "extras" | "neutrals">) =>
-  colorKeys(settings).extras;
+export const customKeys = (settings: Pick<Settings, "hues" | "custom" | "neutrals">) =>
+  colorKeys(settings).custom;
 
 /**
  * A number rounded to a few decimals.
@@ -689,7 +689,7 @@ function solveHues(settings: Settings, model: Model, mode: Mode): HueCore {
 function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore): ModePalette {
   const base = settings.bases[mode];
   const { keys } = seeds(settings);
-  const extras = extraKeys(settings);
+  const customKeyOf = customKeys(settings);
   const tiers: Record<number, Record<string, { default: Swatch; muted: Swatch }>> = {};
   const targets: Record<number, number> = {};
   const limits: Record<number, string | null> = {};
@@ -712,21 +712,21 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
     keys.forEach((key, i) => {
       tiers[tier]![key] = pair(solved.hues[i]!, solved.colors[i]!, solved.targets[i]!);
     });
-    settings.extras.forEach((extra, i) => {
-      const target = solved.target * extra.share;
-      tiers[tier]![extras[i]!] = pair(
-        extra.hue,
-        strongest(model, base, mode, extra.hue, target, tier),
+    settings.custom.forEach((custom, i) => {
+      const target = solved.target * custom.share;
+      tiers[tier]![customKeyOf[i]!] = pair(
+        custom.hue,
+        strongest(model, base, mode, custom.hue, target, tier),
         target,
       );
     });
   }
   const colors = [
-    ...keys.map((key) => ({ key, target: settings.colorfulness, extra: false })),
-    ...settings.extras.map((e, i) => ({
-      key: extras[i]!,
+    ...keys.map((key) => ({ key, target: settings.colorfulness, custom: false })),
+    ...settings.custom.map((e, i) => ({
+      key: customKeyOf[i]!,
       target: settings.colorfulness * e.share,
-      extra: true,
+      custom: true,
     })),
   ].map((c) => ({
     ...c,
@@ -761,7 +761,7 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
  */
 export function huesKey(settings: Settings): string {
   const {
-    extras: _extras,
+    custom: _custom,
     neutrals: _neutrals,
     muted: _muted,
     name: _name,

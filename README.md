@@ -100,7 +100,7 @@ export const CONFIG: Settings = {
   ...DEFAULTS,
   colorfulness: 44,
   anchor: "munsell",
-  extras: [{ name: "Brown", hue: 40, share: 0.64 }],
+  custom: [{ name: "Brown", hue: 40, share: 0.64 }],
 };
 ```
 

@@ -54,12 +54,12 @@ describe("Settings", () => {
   it("name custom colors apart from Gray and the hues", () => {
     const keys = colorKeys({
       ...CONFIG,
-      extras: [
+      custom: [
         { name: "Gray", hue: 0, share: 0.5 },
         { name: "Red", hue: 10, share: 0.5 },
       ],
     });
-    assert.ok(!keys.extras.includes("gray") && !keys.extras.includes("red"), keys.extras.join(" "));
+    assert.ok(!keys.custom.includes("gray") && !keys.custom.includes("red"), keys.custom.join(" "));
   });
 });
 

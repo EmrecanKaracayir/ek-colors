@@ -123,12 +123,12 @@ function model(settings: Pick<Settings, "bases" | "rooms">, gamut: Gamut): Model
  * The hues of the palette on screen, with their keys and identity colors.
  *
  * @param ctx  What the page shows.
- * @returns    One entry per hue (extra colors left out).
+ * @returns    One entry per hue (custom colors left out).
  */
 function hues(ctx: Context) {
   const tier = identityOf(ctx.settings, ctx.mode);
   return (ctx.palette?.[ctx.mode].colors ?? [])
-    .filter((c) => !c.extra)
+    .filter((c) => !c.custom)
     .map((c) => ({ key: c.key, hue: c.tiers[tier]!.default.hue, color: c.tiers[tier]!.default.color }));
 }
 
@@ -343,7 +343,7 @@ function reach(ctx: Context): string {
  * @returns    HTML.
  */
 function difference(ctx: Context): string {
-  const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => !c.extra);
+  const colors = (ctx.palette?.[ctx.mode].colors ?? []).filter((c) => !c.custom);
   if (colors.length < 2) return "Solving…";
   const lc = tierSetting(ctx, "demo-dtier");
   const pick = (id: string, fallback: number) => colors.find((c) => c.key === setting(ctx, id)) ?? colors[fallback]!;
@@ -521,8 +521,8 @@ export function updateDemo(ctx: Context, control: HTMLInputElement | HTMLSelectE
 export function explain(ctx: Context): string {
   const s = ctx.settings;
   const count = hues(ctx).length;
-  const extras = s.extras.length;
-  const swatches = (count + extras) * s.tiers.length * 2 * 2 * GAMUTS.length;
+  const custom = s.custom.length;
+  const swatches = (count + custom) * s.tiers.length * 2 * 2 * GAMUTS.length;
   const anchor = anchorSource(s);
   const hueOptions = hues(ctx).map((h) => [h.key, ctx.label(h.key)] as const);
   // The even difference between neighbors on the identity tier, as the strip measures gaps.
@@ -536,7 +536,7 @@ export function explain(ctx: Context): string {
 
     <section class="step">
       <h2>What it makes</h2>
-      <p>${String(count)} hues${extras ? ` and ${String(extras)} custom ${extras === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all, with Gray on every tier${s.neutrals.length ? ` and ${String(s.neutrals.length)} neutral ${s.neutrals.length === 1 ? "color" : "colors"}` : ""} beside them. They all follow the same rules, so the rules only have to be learned once.</p>
+      <p>${String(count)} hues${custom ? ` and ${String(custom)} custom ${custom === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all, with Gray on every tier${s.neutrals.length ? ` and ${String(s.neutrals.length)} neutral ${s.neutrals.length === 1 ? "color" : "colors"}` : ""} beside them. They all follow the same rules, so the rules only have to be learned once.</p>
     </section>
 
     <section class="step">
@@ -641,7 +641,7 @@ export function explain(ctx: Context): string {
         </div>
         <div id="demo-ladder-out" class="demo-out wide">${ladder(ctx)}</div>
       </div>
-      <p><strong>Custom colors</strong> sit beside the hues${extras ? `, like ${s.extras.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Custom colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed, under Extra colors.</p>
+      <p><strong>Custom colors</strong> sit beside the hues${custom ? `, like ${s.custom.map((e) => escape(e.name)).join(" and ")} here` : ""}. Each has a name, its own hue and a share of the colorfulness: on every tier it's the most colorful color of that hue, up to its share of the tier's target, exactly on the tier's contrast, with a muted version too. Custom colors aren't spaced with the hues and aren't measured by the blind tests; on the hue circle they're drawn as diamonds. Settings adds as many as needed, under Extra colors.</p>
     </section>
 
     <section class="step">
