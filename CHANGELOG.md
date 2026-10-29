@@ -33,6 +33,8 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   colors are `neutralColors`. Exports from before don't paste their renamed parts.
 - The guides drawn on the graphs are a choice kept in the browser, like Light or Dark, rather than
   a setting, so exports no longer carry `guide`.
+- Numbers measured from the palette on screen, such as its gap between neighbors, are set in
+  monospace in the text, apart from the method's fixed numbers, such as ΔE 2.
 - How many hues goes up to 64; past 32, the field still says solving can take a long time.
 - Placed colors can come as close to their neighbors as asked; they only keep their order, at least
   1° apart, rather than a quarter of the even step (45° with two hues). Neighbors under ΔE 2 apart

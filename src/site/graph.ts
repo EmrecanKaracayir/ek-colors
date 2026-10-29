@@ -88,6 +88,16 @@ export function escape(text: string): string {
 }
 
 /**
+ * A value measured from the palette on screen, set apart in text from the method's fixed numbers.
+ *
+ * @param value  The value with its unit, e.g. "18.8 ΔE".
+ * @returns      HTML.
+ */
+export function measured(value: string): string {
+  return `<span class="measured">${value}</span>`;
+}
+
+/**
  * A difference with its sign.
  *
  * @param x  The difference.
@@ -133,9 +143,9 @@ export function evenText(ring: readonly number[], names: readonly string[], even
   if (!ring.length) return "";
   const [low, high] = [ring.indexOf(Math.min(...ring)), ring.indexOf(Math.max(...ring))];
   const pair = (i: number) => `${names[i] ?? ""}–${names[(i + 1) % names.length] ?? ""}`;
-  const off = (d: number) => againstEven(d, even);
-  if (off(ring[low]!) === "even" && off(ring[high]!) === "even") return `Every pair is one even gap apart (${even.toFixed(1)} ΔE).`;
-  return `Closest: ${pair(low)}, ${off(ring[low]!)} (${ring[low]!.toFixed(1)} ΔE): ${evenness(Math.max(0, 1 - ring[low]! / even), even)}. Widest: ${pair(high)}, ${off(ring[high]!)} (${ring[high]!.toFixed(1)} ΔE). Even gap: ${even.toFixed(1)}.`;
+  const off = (d: number) => againstEven(d, even).replace(/^[\d.]+%/, (share) => measured(share));
+  if (off(ring[low]!) === "even" && off(ring[high]!) === "even") return `Every pair is one even gap apart (${measured(`${even.toFixed(1)} ΔE`)}).`;
+  return `Closest: ${pair(low)}, ${off(ring[low]!)} (${measured(`${ring[low]!.toFixed(1)} ΔE`)}): ${evenness(Math.max(0, 1 - ring[low]! / even), even)}. Widest: ${pair(high)}, ${off(ring[high]!)} (${measured(`${ring[high]!.toFixed(1)} ΔE`)}). Even gap: ${measured(even.toFixed(1))}.`;
 }
 
 /** A zone of Bend: its name and what a palette in it is like. */
@@ -227,8 +237,8 @@ export function thresholds(gap: number): string {
   const [uniform, tuned] = zones(gap);
   const [fine, watch] = evenLimits(gap);
   return `<details class="pop-sources"><summary>Where these thresholds come from</summary>
-  <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About ${String(BARELY_VISIBLE)} is the smallest difference careful observers notice under ideal conditions; about ${String(JUST_VISIBLE)} is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). This palette's own gap between neighbors, ${gap.toFixed(1)} ΔE on the identity tier, is what it treats as a different color; it changes with the number of hues, the colorfulness and the bases.</p>
-  <p>The zones put Bend on that scale, in gaps: under ${String(uniform!.upTo)} (${String(BARELY_VISIBLE)} ΔE here) nothing is visible; up to ${String(tuned!.upTo)} (${String(JUST_VISIBLE)} ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: ${String(fine)}% of the gap is ${String(BARELY_VISIBLE)} ΔE, hard to notice; ${String(watch)}% is ${String(JUST_VISIBLE)} ΔE, a visible imbalance between pairs of neighbors.</p>
+  <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About ${String(BARELY_VISIBLE)} is the smallest difference careful observers notice under ideal conditions; about ${String(JUST_VISIBLE)} is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). This palette's own gap between neighbors, ${measured(`${gap.toFixed(1)} ΔE`)} on the identity tier, is what it treats as a different color; it changes with the number of hues, the colorfulness and the bases.</p>
+  <p>The zones put Bend on that scale, in gaps: under ${measured(String(uniform!.upTo))} (${String(BARELY_VISIBLE)} ΔE here) nothing is visible; up to ${measured(String(tuned!.upTo))} (${String(JUST_VISIBLE)} ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: ${measured(`${String(fine)}%`)} of the gap is ${String(BARELY_VISIBLE)} ΔE, hard to notice; ${measured(`${String(watch)}%`)} is ${String(JUST_VISIBLE)} ΔE, a visible imbalance between pairs of neighbors.</p>
   <p>The ΔE figures come from color science; the zone limits are judgment built on them, not results of a study. Eyes and screens differ.</p></details>`;
 }
 

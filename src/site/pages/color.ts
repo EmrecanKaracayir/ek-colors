@@ -9,7 +9,7 @@ import { deltaE, JUST_VISIBLE } from "../../palette/model";
 import { GAMUT_NAMES, type Mode, ROLES } from "../../palette/settings";
 import { GRAY, NEUTRAL_BAND, type Swatch, colorKeys, customKeys, identityOf, tinted } from "../../palette/solve";
 import { current, model, onScreen } from "../derived";
-import { signed } from "../graph";
+import { measured, signed } from "../graph";
 import { FLAG, type Place, badge, colors, copyable, customOf, isLowered, label, lowered, neutralOf, ownTarget, setsTier } from "../parts";
 import { popButton, popSource } from "../popover";
 import { SHARE_ZONES, read, shareMeter, shareZone } from "../settings/fields";
@@ -39,7 +39,7 @@ const COLUMNS: readonly Column[] = [
   { key: "apca", name: () => "APCA", unit: "Lc", what: () => {
       const [low, high] = [Math.min(...state.settings.tiers), Math.max(...state.settings.tiers)];
       const role = (t: number) => (ROLES[t] ?? "").toLowerCase();
-      return `Contrast against the background as APCA's Lc, here from ${String(low)} for ${role(low)} to ${String(high)} for ${role(high)}. Each color is solved to land exactly on its tier.`;
+      return `Contrast against the background as APCA's Lc, here from ${measured(String(low))} for ${role(low)} to ${measured(String(high))} for ${role(high)}. Each color is solved to land exactly on its tier.`;
     },
   },
   { key: "wcag", name: () => "WCAG 2", what: () => "Contrast against the background as WCAG 2's ratio, from 1:1 to 21:1, with the level it reaches. Each level's badge explains what it allows." },
@@ -201,10 +201,10 @@ export function colorPage(key: string): string {
   const own = ownTarget(key, identity, current()?.[state.mode].targets[tier] ?? identity.target);
   const custom = customOf(key);
   const aim = custom
-    ? `${own.toFixed(1)} (${String(Math.round(custom.share * 100))}% of ${String(colorfulness)})`
+    ? `${measured(own.toFixed(1))} (${measured(`${String(Math.round(custom.share * 100))}%`)} of ${measured(String(colorfulness))})`
     : Math.abs(own - colorfulness) >= 0.05
-      ? `${own.toFixed(1)} (${String(colorfulness)}, ${signed(own - colorfulness)} from colorfulness per hue)`
-      : String(colorfulness);
+      ? `${measured(own.toFixed(1))} (${measured(String(colorfulness))}, ${measured(signed(own - colorfulness))} from colorfulness per hue)`
+      : measured(String(colorfulness));
   const table = (variant: Variant) => {
     const rows = state.settings.tiers.filter((t) => c.tiers[t]);
     const html = rows.map((t) => tierRow(c.tiers[t]![variant], t, tier, variant, variant === "default" ? lowered(c.key, t, c.tiers[t]!.default) : "")).join("");
@@ -214,7 +214,7 @@ export function colorPage(key: string): string {
   return `${colorChips(key)}
     <section class="intro hero" style="--c:${identity.color}">
       <h1>${label(key)}</h1>
-      <p>CAM16 hue ${identity.hue.toFixed(1)}°, read as ${identity.name}. Aims at colorfulness ${aim}.${equalTiers ? ` On a tier whose least colorful hue falls short of ${String(colorfulness)}, the ${String(colorfulness)} drops to that hue's reach.` : ""}</p>
+      <p>CAM16 hue ${measured(`${identity.hue.toFixed(1)}°`)}, read as ${identity.name}. Aims at colorfulness ${aim}.${equalTiers ? ` On a tier whose least colorful hue falls short of ${measured(String(colorfulness))}, the ${measured(String(colorfulness))} drops to that hue's reach.` : ""}</p>
     </section>
     ${table("default")}${table("muted")}`;
 }
@@ -239,7 +239,7 @@ function neutralPage(key: string): string {
   const identity = tiers[tier]!;
   const base = baseTint(mode);
   const intro = neutral
-    ? `A neutral color on every tier: the ${mode} base's hue, ${identity.hue.toFixed(0)}°, at ${percent1(neutral.share)} of the base's colorfulness, M ${base.toFixed(1)}, so M ${(base * neutral.share).toFixed(1)}. ${tintNote(base * neutral.share)}`
+    ? `A neutral color on every tier: the ${mode} base's hue, ${measured(`${identity.hue.toFixed(0)}°`)}, at ${measured(percent1(neutral.share))} of the base's colorfulness, ${measured(`M ${base.toFixed(1)}`)}, so ${measured(`M ${(base * neutral.share).toFixed(1)}`)}. ${tintNote(base * neutral.share)}`
     : `A gray on every tier, in every palette: no hue at all, exactly on each tier's contrast against the ${mode} base, as every color is. CAM16 still sees a little colorfulness in a pure gray, which is why the table shows some.`;
   const rows = state.settings.tiers.filter((t) => tiers[t]).map((t) => tierRow(tiers[t]!, t, tier, "default", "", !neutral)).join("");
   return `${colorChips(key)}

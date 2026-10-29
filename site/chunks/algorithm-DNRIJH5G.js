@@ -1,7 +1,7 @@
-import{p as w}from"./chunk-QSMB3AQZ.js";import{a as S}from"./chunk-X2Y5TGFK.js";import"./chunk-R6CCDRJP.js";import{B as L,C as N,D as J,E as d,F as I,G as M,a as m,c as G,f as P,g as a,i as y,v as l,w as v}from"./chunk-X5DVRVZT.js";import{g as $,l as j,q as k}from"./chunk-C34FQDYE.js";import{A as F,B,g as p,h as x,i as T,l as _,o as R}from"./chunk-35RC7DVO.js";var t=(o,e=3)=>o.toFixed(e),A=o=>`${String(Math.round(o*100))}%`;function U(o){return m.map(e=>{let c=o.settings.rooms[e],g=c.lux*x,n=_(o.settings.bases[e]),i=T(o.settings,e),f=.8+c.surround/10;return`<tr><th scope="row">${G[e]}</th>
-      <td class="mono">${String(c.lux)}</td><td class="mono">${t(g,2)}</td><td class="mono">${t(n,1)}</td>
-      <td class="mono">${t(f,1)}</td><td class="mono">${t(i.c,3)}</td><td class="mono">${t(i.fl,3)}</td>
-      <td class="mono">${t(i.fLRoot,3)}</td><td class="mono">${t(i.n,3)}</td><td class="mono">${t(i.z,3)}</td></tr>`}).join("")}function Z(o){let e=o.settings,c=e.hues===y.length?e.hueReach.identity:Math.min(e.hueReach.identity,180/e.hues),g=F(e),n=o.palette,i=s=>n?.[s].colors.filter(r=>r.kind==="hue")??[],f=n?Math.max(0,...i("light").map((s,r)=>{let h=i("dark")[r],[u,E]=[s.tiers[d(e,"light")]?.default.hue,h?.tiers[d(e,"dark")]?.default.hue];return u===void 0||E===void 0?0:Math.abs(R(u,E))})):null,C=n?Math.max(0,...m.flatMap(s=>n[s].colors.flatMap(r=>e.tiers.flatMap(h=>[r.tiers[h]?.default,r.tiers[h]?.muted].map(u=>u?Math.abs(u.apca)-h:0))))):null,b=n?m.flatMap(s=>e.tiers.map(r=>n[s].grays[r]?.colorfulness??0)):[],D=M(e.hues).map((s,r)=>{let h=r===0?void 0:e.placed[s];return`<tr><th scope="row">${o.label(s)}${r===0?" (anchor)":""}</th><td class="mono">${t((g+r*360/e.hues)%360,1)}\xB0</td><td class="mono">${h===void 0?"\u2014":`${t(h,0)}\xB0`}</td></tr>`}).join(""),H=B(e);return`<section class="intro">
+import{p as b}from"./chunk-PA2RORQU.js";import{a as A}from"./chunk-X2Y5TGFK.js";import"./chunk-R6CCDRJP.js";import{B as L,C as J,D as I,E as u,F as j,G as M,a as g,c as P,f as F,g as a,i as v,v as c,w as $}from"./chunk-X5DVRVZT.js";import{g as k,l as D,m as n,r as S}from"./chunk-HAYBHQ35.js";import{A as B,B as N,g as m,h as T,i as _,l as R,o as G}from"./chunk-35RC7DVO.js";var t=(o,e=3)=>o.toFixed(e),C=o=>`${String(Math.round(o*100))}%`;function q(o){return g.map(e=>{let d=o.settings.rooms[e],f=d.lux*T,i=R(o.settings.bases[e]),h=_(o.settings,e),w=.8+d.surround/10;return`<tr><th scope="row">${P[e]}</th>
+      <td class="mono">${String(d.lux)}</td><td class="mono">${t(f,2)}</td><td class="mono">${t(i,1)}</td>
+      <td class="mono">${t(w,1)}</td><td class="mono">${t(h.c,3)}</td><td class="mono">${t(h.fl,3)}</td>
+      <td class="mono">${t(h.fLRoot,3)}</td><td class="mono">${t(h.n,3)}</td><td class="mono">${t(h.z,3)}</td></tr>`}).join("")}function K(o){let e=o.settings,d=e.hues===v.length?e.hueReach.identity:Math.min(e.hueReach.identity,180/e.hues),f=B(e),i=o.palette,h=s=>i?.[s].colors.filter(r=>r.kind==="hue")??[],w=i?Math.max(0,...h("light").map((s,r)=>{let l=h("dark")[r],[p,x]=[s.tiers[u(e,"light")]?.default.hue,l?.tiers[u(e,"dark")]?.default.hue];return p===void 0||x===void 0?0:Math.abs(G(p,x))})):null,E=i?Math.max(0,...g.flatMap(s=>i[s].colors.flatMap(r=>e.tiers.flatMap(l=>[r.tiers[l]?.default,r.tiers[l]?.muted].map(p=>p?Math.abs(p.apca)-l:0))))):null,y=i?g.flatMap(s=>e.tiers.map(r=>i[s].grays[r]?.colorfulness??0)):[],H=M(e.hues).map((s,r)=>{let l=r===0?void 0:e.placed[s];return`<tr><th scope="row">${o.label(s)}${r===0?" (anchor)":""}</th><td class="mono">${t((f+r*360/e.hues)%360,1)}\xB0</td><td class="mono">${l===void 0?"\u2014":`${t(l,0)}\xB0`}</td></tr>`}).join(""),U=N(e);return`<section class="intro">
       <h1>The algorithm</h1>
       <p>Every step the solver takes, with its formulas, constants and search rules, in the order it runs. For the same thing in plain words, see <a href="#how">How it works</a>; the papers, standards and libraries named here are listed under <a href="#references">References</a>. Numbers use the current settings.</p>
     </section>
@@ -12,7 +12,7 @@ import{p as w}from"./chunk-QSMB3AQZ.js";import{a as S}from"./chunk-X2Y5TGFK.js";
   for each mode m in (light, dark):
     VC[m]   \u2190 viewing conditions from room[m] and base[m]
     starts  \u2190 the circle divided evenly from the anchor (${o.label(M(e.hues)[0]).toLowerCase()}), or where a color is placed
-    identity tier: T \u2190 target ceiling; hues \u2190 space(starts, \xB1${t(c,1)}\xB0)   // the tier from step 3
+    identity tier: T \u2190 target ceiling; hues \u2190 space(starts, \xB1${t(d,1)}\xB0)   // the tier from step 3
     other tiers:   T \u2190 target ceiling; hues \u2190 space(identity hues, \xB1${String(e.hueReach.tier)}\xB0)
     per tier, per hue: default \u2190 strongest(h, T + curve(h))
                        muted   \u2190 strongest(h, M(default) \xD7 muted share)
@@ -22,20 +22,20 @@ baselines for the H and M switches: the same solve without placed hues, without 
 the hues are kept, so custom colors, neutral colors and the muted share are placed on them anew (step 11)</pre>
       <p>Every color is produced by one primitive: <code>strongest(h, M, Lc)</code>, the most colorful color of CAM16 hue h, up to colorfulness M, whose APCA contrast against the mode's base is exactly Lc.</p>
       <p>Settings from the site, from a paste or from storage are checked first, and older ones brought up to date; the config the command line solves isn't checked:</p>
-<pre class="formula">hues ${t(a.hues[0],0)}\u2013${t(a.hues[1],0)} \u2022 M_target ${t(a.colorfulness[0],0)}\u2013${t(a.colorfulness[1],0)} \u2022 muted share ${A(a.mutedShare[0])}\u2013${A(a.mutedShare[1])} \u2022 lux ${t(a.lux[0],0)}\u2013${t(a.lux[1],0)}
-curve amount \u2212${t(-a.amount[0],0)}\u2026+${t(a.amount[1],0)} M, width ${t(a.width[0],0)}\u2013${t(a.width[1],0)}\xB0 \u2022 share ${A(a.share[0])} or more, for custom and neutral colors \u2022 hue reach ${t(a.hueReach[0],0)}\u2013${t(a.hueReach[1],0)}\xB0
-tiers        at least one, each one of Lc ${Object.keys(P).join(", ")}
+<pre class="formula">hues ${t(a.hues[0],0)}\u2013${t(a.hues[1],0)} \u2022 M_target ${t(a.colorfulness[0],0)}\u2013${t(a.colorfulness[1],0)} \u2022 muted share ${C(a.mutedShare[0])}\u2013${C(a.mutedShare[1])} \u2022 lux ${t(a.lux[0],0)}\u2013${t(a.lux[1],0)}
+curve amount \u2212${t(-a.amount[0],0)}\u2026+${t(a.amount[1],0)} M, width ${t(a.width[0],0)}\u2013${t(a.width[1],0)}\xB0 \u2022 share ${C(a.share[0])} or more, for custom and neutral colors \u2022 hue reach ${t(a.hueReach[0],0)}\u2013${t(a.hueReach[1],0)}\xB0
+tiers        at least one, each one of Lc ${Object.keys(F).join(", ")}
 identity     set by hand to a tier that isn't solved \u2192 automatic
 bases        any CSS color; one set for a gamut must fit it; L*(light base) > L*(dark base) on every gamut
 name         at most 60 characters
 placed hues  kept only for keys of the current number of hues
-neutrals     none while both bases are under M ${String(l[0])}: nothing to follow
+neutrals     none while both bases are under M ${String(c[0])}: nothing to follow
 older shapes upgraded: one identity tier for both modes \u2192 one per mode; Lc 60 light with Lc 45 dark \u2192 automatic</pre>
     </section>
 
     <section class="step">
       <h2>1. Viewing conditions</h2>
-      <p>CAM16 (Li et al., 2017), as implemented by Google's material-color-utilities ${S.dependencies["@material/material-color-utilities"]}. Each mode gets its own <code>ViewingConditions.make(white, L<sub>A</sub>, Y<sub>b</sub>, surround)</code>:</p>
+      <p>CAM16 (Li et al., 2017), as implemented by Google's material-color-utilities ${A.dependencies["@material/material-color-utilities"]}. Each mode gets its own <code>ViewingConditions.make(white, L<sub>A</sub>, Y<sub>b</sub>, surround)</code>:</p>
 <pre class="formula">white  = D65
 L_A    = E \xD7 0.0586          // cd/m\xB2: E lux on an 18% gray (L* 50): E/\u03C0 \xD7 0.184
 Y_b    = the base's L*        // its lightness, as CAM16 takes the background
@@ -45,7 +45,7 @@ D      = F \xD7 (1 \u2212 (1/3.6)\xB7e^((\u2212L_A \u2212 42)/92)),  clamped to 
 k      = 1/(5\xB7L_A + 1)
 F_L    = k\u2074\xB7L_A + 0.1\xB7(1 \u2212 k\u2074)\xB2\xB7\u221B(5\xB7L_A)
 n      = Y_b / Y_w,   z = 1.48 + \u221An,   N_bb = N_cb = 0.725 / n^0.2</pre>
-      <div class="scroll"><table class="symbols"><thead><tr><th>Mode</th><th>Lux</th><th>L<sub>A</sub></th><th>Base L*</th><th>F</th><th>c</th><th>F<sub>L</sub></th><th>F<sub>L</sub><sup>\xBC</sup></th><th>n</th><th>z</th></tr></thead><tbody>${U(o)}</tbody></table></div>
+      <div class="scroll"><table class="symbols"><thead><tr><th>Mode</th><th>Lux</th><th>L<sub>A</sub></th><th>Base L*</th><th>F</th><th>c</th><th>F<sub>L</sub></th><th>F<sub>L</sub><sup>\xBC</sup></th><th>n</th><th>z</th></tr></thead><tbody>${q(o)}</tbody></table></div>
     </section>
 
     <section class="step">
@@ -62,7 +62,7 @@ in gamut?  every channel within [\u22120.0005, 1.0005]  (Color.js inGamut, \u03B
 
     <section class="step">
       <h2>3. Contrast: exactly on a tier</h2>
-      <p>APCA 0.0.98G (Color.js ${S.dependencies["colorjs.io"]}), always text = the color, background = the base, reported as |Lc|. Luminance is <code>Y = 0.2126729\xB7R<sup>2.4</sup> + 0.7151522\xB7G<sup>2.4</sup> + 0.0721750\xB7B<sup>2.4</sup></code> on sRGB-encoded values; wide-gamut colors use their extended sRGB coordinates.</p>
+      <p>APCA 0.0.98G (Color.js ${A.dependencies["colorjs.io"]}), always text = the color, background = the base, reported as |Lc|. Luminance is <code>Y = 0.2126729\xB7R<sup>2.4</sup> + 0.7151522\xB7G<sup>2.4</sup> + 0.0721750\xB7B<sup>2.4</sup></code> on sRGB-encoded values; wide-gamut colors use their extended sRGB coordinates.</p>
 <pre class="formula">place(h, M, Lc):                       // lightness search at fixed h and M
   lo, hi \u2190 0, 100
   repeat 32 times:                     // 100 / 2\xB3\xB2 \u2248 2\xB710\u207B\u2078 in J, far finer than any output shows
@@ -73,12 +73,12 @@ in gamut?  every channel within [\u22120.0005, 1.0005]  (Color.js inGamut, \u03B
     dark base:  ok \u2192 hi \u2190 J  else lo \u2190 J   // keep the darkest that passes
   x \u2190 color(light ? lo : hi, M, h)
   return x if APCA(x, base) \u2265 Lc after rounding, else none</pre>
-      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces${C===null?"":`, here up to ${C.toFixed(2)} Lc`}. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
+      <p>So each color sits on its tier from above: never below Lc, and above it only by what rounding to the output format forces${E===null?"":`, here up to ${n(`${E.toFixed(2)} Lc`)}`}. A lightness the screen can't show still has a contrast, so the search knows which way to go from it: a color can leave the screen on either side of its tier. A base is dark when its L* is under 50.</p>
       <p><strong>Identity tier.</strong> Unless one is set by hand, each mode's identity tier is the tier where APCA and WCAG 2 together come closest to their minimum for text. It's measured on a gray, so it's known before any color is solved:</p>
 <pre class="formula">g(Lc)     = the 8-bit gray nearest the base with APCA(g, base) \u2265 Lc, or the furthest gray if none
 score(Lc) = (APCA(g, base) / ${String(L.apca)} + WCAG(g, base) / ${String(L.wcag)}) / 2     // 1: both just at their minimum for text
 identity  = the tier with score nearest 1, the lower on a tie
-${m.map(s=>`${s.padEnd(10)}${e.tiers.map(r=>`Lc ${String(r)} ${N(e.bases[s],r).toFixed(2)}`).join(" \u2022 ")}   \u2192 Lc ${String(J(e.bases[s],e.tiers))}${e.identityTier[s]==="auto"?"":`, set by hand to Lc ${String(d(e,s))}`}`).join(`
+${g.map(s=>`${s.padEnd(10)}${e.tiers.map(r=>`Lc ${String(r)} ${J(e.bases[s],r).toFixed(2)}`).join(" \u2022 ")}   \u2192 Lc ${String(I(e.bases[s],e.tiers))}${e.identityTier[s]==="auto"?"":`, set by hand to Lc ${String(u(e,s))}`}`).join(`
 `)}</pre>
 <pre class="formula">strongest(h, M_target, Lc):            // colorfulness search
   if place(h, M_target, Lc) exists \u2192 return it
@@ -121,8 +121,8 @@ curve(h) = \u03A3_i  [ d_i(h) &lt; w_i ]  \xB7  a_i \xB7 (1 + cos(\u03C0 \xB7 d_
 <pre class="formula">start_k = anchor + k \xB7 360\xB0 / n     // k = 0 \u2026 n \u2212 1, yellow first with eight hues
 start_k = placed_k                  // a color placed by hand starts there instead
 order    = named hues by hue, red first; numbered ones by number, Hue 1 at the anchor</pre>
-      <p>The anchor is ${t(g,1)}\xB0 (${H}). It's needed because the spacing (step 7) only evens out differences between neighbors, and turning the whole lineup around the circle leaves those almost unchanged; the anchor fixes where it sits. The anchor and placed colors don't move while the others are spaced. With nothing placed, the result is the uniform lineup.</p>
-      <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Even start</th><th>Placed at</th></tr></thead><tbody>${D}</tbody></table></div>
+      <p>The anchor is ${n(`${t(f,1)}\xB0`)} (${U}). It's needed because the spacing (step 7) only evens out differences between neighbors, and turning the whole lineup around the circle leaves those almost unchanged; the anchor fixes where it sits. The anchor and placed colors don't move while the others are spaced. With nothing placed, the result is the uniform lineup.</p>
+      <div class="scroll"><table class="roles"><thead><tr><th>Color</th><th>Even start</th><th>Placed at</th></tr></thead><tbody>${H}</tbody></table></div>
     </section>
 
     <section class="step">
@@ -142,16 +142,16 @@ a*, b* = M*\xB7cos h, M*\xB7sin h
         h \u2190 hue_i + step;  skip if |h \u2212 start_i| &gt; reach
         try color_i \u2190 strongest(h, target(h));  rescore
         keep it if the score drops by more than 10\u207B\u2074</pre>
-      <p>The identity tier (light Lc ${String(d(e,"light"))}, dark Lc ${String(d(e,"dark"))}) is spaced first from the starting hues with a reach of \xB1${String(e.hueReach.identity)}\xB0${e.hues===y.length?"":`, or halfway to the even neighbor (180\xB0 / ${String(e.hues)}) if that's less: \xB1${t(c,1)}\xB0 here`}. Every other tier starts from the identity tier's hues with \xB1${String(e.hueReach.tier)}\xB0, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land close to each other${f===null?"":`, ${f.toFixed(1)}\xB0 apart at most here`}; a placed color sits exactly where it was placed in both.</p>
-      <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(I)}\xB0 from each, only so they can't swap or overlap, and a spacing step that would bring a color closer than that to a neighbor isn't taken. Neighbors under \u0394E ${String(p)} on any tier are marked, not stopped. Dragging the anchor stops before any color it carries would pass a placed one.</p>
+      <p>The identity tier (light ${n(`Lc ${String(u(e,"light"))}`)}, dark ${n(`Lc ${String(u(e,"dark"))}`)}) is spaced first from the starting hues with a reach of ${n(`\xB1${String(e.hueReach.identity)}\xB0`)}${e.hues===v.length?"":`, or halfway to the even neighbor (180\xB0 / ${n(String(e.hues))}) if that's less: ${n(`\xB1${t(d,1)}\xB0`)} here`}. Every other tier starts from the identity tier's hues with ${n(`\xB1${String(e.hueReach.tier)}\xB0`)}, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land close to each other${w===null?"":`, ${n(`${w.toFixed(1)}\xB0`)} apart at most here`}; a placed color sits exactly where it was placed in both.</p>
+      <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(j)}\xB0 from each, only so they can't swap or overlap, and a spacing step that would bring a color closer than that to a neighbor isn't taken. Neighbors under \u0394E ${String(m)} on any tier are marked, not stopped. Dragging the anchor stops before any color it carries would pass a placed one.</p>
       <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from \u221230\xB0 to 30\xB0 in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square \u0394E to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's \u0394E from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean \u0394E between neighbors in the uniform lineup, on the identity tier
 bend     = \u221A(mean over colors of (\u0394E(color, turned color) / gap)\xB2)
-zone     = Uniform &lt; ${String($)} \u0394E / gap \u2022 Tuned &lt; ${String(p)} \u0394E / gap \u2022 Reshaped &lt; 0.5 \u2022 Departed &lt; 1 \u2022 Distinct
-           // here, with a gap of ${w(o.mode).toFixed(1)} \u0394E: Uniform &lt; ${String(k(w(o.mode))[0].upTo)} \u2022 Tuned &lt; ${String(k(w(o.mode))[1].upTo)}
+zone     = Uniform &lt; ${String(k)} \u0394E / gap \u2022 Tuned &lt; ${String(m)} \u0394E / gap \u2022 Reshaped &lt; 0.5 \u2022 Departed &lt; 1 \u2022 Distinct
+           // here, with a gap of ${b(o.mode).toFixed(1)} \u0394E: Uniform &lt; ${String(S(b(o.mode))[0].upTo)} \u2022 Tuned &lt; ${String(S(b(o.mode))[1].upTo)}
 even     = max over neighbors of |\u0394E(neighbors) / gap \u2212 1|     // the strip's Even: the furthest from even, either way
 closer   = 1 \u2212 (smallest neighbor \u0394E) / gap                     // how much the tightest pair lost
-evenness = fine &lt; ${String($)} \u0394E / gap \u2022 worth watching &lt; ${String(p)} \u0394E / gap \u2022 getting confusable  // of even and of closer</pre>
+evenness = fine &lt; ${String(k)} \u0394E / gap \u2022 worth watching &lt; ${String(m)} \u0394E / gap \u2022 getting confusable  // of even and of closer</pre>
       <p>A change between two colors is split into lightness, colorfulness and hue, each as its share of the three added together:</p>
 <pre class="formula">lightness    = \u0394J*\xB2
 colorfulness = \u0394M*\xB2
@@ -162,14 +162,14 @@ hue          = (2 \xB7 \u221A(M*\u2081 \xB7 M*\u2082) \xB7 sin(\u0394h / 2))\xB2
       <h2>8. Muted, custom and neutral colors</h2>
 <pre class="formula">muted(h, Lc) = strongest(h, M(default at h, Lc) \xD7 ${String(e.mutedShare)}, Lc)     // same hue, same tier
 custom(c, Lc) = strongest(hue(c), T(Lc) \xD7 share(c), Lc)             // not spaced${e.customColors.map(s=>`
-${j(`  ${s.name}`.padEnd(13))}= strongest(${s.hue.toFixed(1)}\xB0, T(Lc) \xD7 ${String(s.share)}, Lc)`).join("")}</pre>
+${D(`  ${s.name}`.padEnd(13))}= strongest(${s.hue.toFixed(1)}\xB0, T(Lc) \xD7 ${String(s.share)}, Lc)`).join("")}</pre>
       <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a base with a hue each neutral color, which takes it:</p>
 <pre class="formula">gray(Lc)     = the 8-bit gray nearest the base with APCA(g, base) \u2265 Lc, or the furthest gray if none
-tinted       = M(base) \u2265 ${String(l[0])}                       // a pure gray still has some M in CAM16${b.length?`: ${Math.min(...b).toFixed(1)}\u2013${Math.max(...b).toFixed(1)} here`:""}
+tinted       = M(base) \u2265 ${String(c[0])}                       // a pure gray still has some M in CAM16${y.length?`: ${Math.min(...y).toFixed(1)}\u2013${Math.max(...y).toFixed(1)} here`:""}
 neutral(n, Lc) = strongest(hue(base), M(base) \xD7 share(n), Lc)    // only on a tinted base
-zones        = Gray under M ${String(l[0])}, Neutral M ${String(l[0])}\u2013${String(l[1])}, Color past it, for custom colors too; a new neutral color starts at M ${String(v)}
-from Gray    = \u0394E(a*, b*) to the tier's gray, the tint alone       // on four test bases: M ${String(l[0])} \u2248 \u0394E 2.3\u20133.9, M ${String(l[1])} \u2248 \u0394E 5.5\u20136.4
-new share    = min(1, ${String(v)} / M(base)), the more colorful tinted base; 1 when neither is tinted
+zones        = Gray under M ${String(c[0])}, Neutral M ${String(c[0])}\u2013${String(c[1])}, Color past it, for custom colors too; a new neutral color starts at M ${String($)}
+from Gray    = \u0394E(a*, b*) to the tier's gray, the tint alone       // on four test bases: M ${String(c[0])} \u2248 \u0394E 2.3\u20133.9, M ${String(c[1])} \u2248 \u0394E 5.5\u20136.4
+new share    = min(1, ${String($)} / M(base)), the more colorful tinted base; 1 when neither is tinted
 exported     = a gray mode's neutral colors are its grays, so every name holds a color in both modes
 two gray bases = no neutral colors at all; Gray alone</pre>
     </section>
@@ -187,7 +187,7 @@ turned         Uniform, solved with the anchor moved by the turn (step 7)   // "
 
     <section class="step">
       <h2>10. Three gamuts</h2>
-      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Hues and colors are never mapped from one gamut to another: each gamut's ceilings, hues and colors come from its own solve, against its own base. Only the base is mapped. Each mode has one base, any opaque CSS color. A gamut that can show it uses it exactly; a narrower one uses the closest color it can show to the next wider gamut's base, by the CSS Color 4 gamut mapping: hue and lightness kept, colorfulness lowered until it fits, so a color picked for Wide carries down to Standard. That color can be picked by hand, as long as it's no more than \u0394E ${String(p)} further from the base than the closest color is; a further one is a different background, and is refused. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: \u2026)</code>.</p>
+      <p>Steps 2 to 9 run once per gamut, with the gamut check (step 2) and the base changing: sRGB, Display P3, Rec. 2020. Hues and colors are never mapped from one gamut to another: each gamut's ceilings, hues and colors come from its own solve, against its own base. Only the base is mapped. Each mode has one base, any opaque CSS color. A gamut that can show it uses it exactly; a narrower one uses the closest color it can show to the next wider gamut's base, by the CSS Color 4 gamut mapping: hue and lightness kept, colorfulness lowered until it fits, so a color picked for Wide carries down to Standard. That color can be picked by hand, as long as it's no more than \u0394E ${String(m)} further from the base than the closest color is; a further one is a different background, and is refused. On the web, a page serves the widest gamut the screen reports through <code>@media (color-gamut: \u2026)</code>.</p>
     </section>
 
     <section class="step">
@@ -198,7 +198,7 @@ labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              \u2265 7 AAA \u2022 \u2265 4.5 AA \u2022 \u2265 3 AA large \u2022 else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(e.tiers.length)} tiers, ${String(e.hues+e.customColors.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker with eight hues, and longer with many more; the header shows how long the one on screen took.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${n(String(e.tiers.length))} tiers, ${n(String(e.hues+e.customColors.length))} colors, default and muted, plus spacing) takes well under a second in a browser worker with eight hues, and longer with many more; the header shows how long the one on screen took.</p>
       <p>The hues are the costly part, and custom colors, neutral colors and the muted share don't move them. So each worker keeps the hues of its last few solves, keyed by every setting but those, and a change to them only places the colors on the kept hues again: a few milliseconds instead of a whole solve, so they follow a slider as it moves.</p>
     </section>
 
@@ -220,4 +220,4 @@ unsure if the range reaches \xB124, or log L(\u03BC\u0302) \u2212 log L\u2080 &l
       <h2>13. The blind hue test</h2>
       <p><strong>Colors.</strong> Per color, a staircase on \u0394, degrees from the palette's hue (start \xB110, half of the colors toward one neighbor and half toward the other, in random order; bounded to \xB130). Each trial shows one color alone at h + \u0394 on the identity tier, at T + curve(h + \u0394), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials. The test runs only with the eight named colors, since it asks about each one's neighbors by name. Leans after \u2192 \u0394 \u2212= step; leans before \u2192 \u0394 += step; neither \u2192 no move. Steps, checks (\u0394 \xB1 12\xB0) and stopping as in step 12, with the range within \xB15\xB0.</p>
       <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, \xBD for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 12, over \u03BC within \xB140\xB0 of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
-    </section>`}export{Z as algorithmPage};
+    </section>`}export{K as algorithmPage};

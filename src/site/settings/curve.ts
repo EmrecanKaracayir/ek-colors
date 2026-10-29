@@ -13,7 +13,7 @@ import type { Guide } from "../../palette/references";
 import { type CurvePoint, LIMITS, type Mode } from "../../palette/settings";
 import { boost } from "../../palette/solve";
 import { refill, steadyReadout } from "../dom";
-import { band, inGaps, INSETS, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, signedWhole, stops, viewBox, WIDTH } from "../graph";
+import { band, inGaps, INSETS, measured, visibility, guideLayer, guidePicker, hueAt, hueScale, pointAt, signedWhole, stops, viewBox, WIDTH } from "../graph";
 
 /** What one mode's editor shows. */
 export interface CurveView {
@@ -150,9 +150,9 @@ function curveReadout(view: CurveView): string {
   const most = moved[0]!;
   // A color the curve doesn't touch can still move: the others re-space around the ones it does.
   const each = moved
-    .map((c) => `${c.label} ${c.added ? `${c.added > 0 ? "+" : "−"}${String(Math.abs(c.added))} M` : "re-spaced"} → ${c.difference.toFixed(1)}`)
+    .map((c) => `${c.label} ${c.added ? measured(`${c.added > 0 ? "+" : "−"}${String(Math.abs(c.added))} M`) : "re-spaced"} → ${measured(c.difference.toFixed(1))}`)
     .join(", ");
-  return `Moves ${most.label} most: ${most.difference.toFixed(1)} ΔE, ${inGaps(most.difference / most.gap) || "under 0.1 gap"}, ${visibility(most.difference, most.gap)}. Each (ΔE): ${each}.`;
+  return `Moves ${most.label} most: ${measured(`${most.difference.toFixed(1)} ΔE`)}, ${inGaps(most.difference / most.gap) || "under 0.1 gap"}, ${visibility(most.difference, most.gap)}. Each (ΔE): ${each}.`;
 }
 
 /**

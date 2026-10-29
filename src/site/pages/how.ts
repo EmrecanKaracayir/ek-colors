@@ -9,7 +9,7 @@ import { apca, composition, JUST_VISIBLE, makeModel, type Model, parts, wcag, wc
 import { anchorHue, anchorSource } from "../../palette/references";
 import { type Gamut, GAMUT_NAMES, GAMUTS, type Mode, MODE_NAMES, MODES, ROLES, type Settings } from "../../palette/settings";
 import { autoIdentity, boost, type GamutPalette, hueKeys, identityOf, lineup, NEUTRAL_BAND, strongest } from "../../palette/solve";
-import { escape, evenLimits, signedWhole, zoneTable } from "../graph";
+import { escape, evenLimits, measured, signedWhole, zoneTable } from "../graph";
 import { evenGap } from "../settings/strip";
 
 /* >----------------------------------------< Context >-----------------------------------------< */
@@ -198,9 +198,9 @@ function roomDemo(ctx: Context): string {
  */
 function autoTiers(s: Settings): string {
   const [light, dark] = [autoIdentity(s.bases.light, s.tiers), autoIdentity(s.bases.dark, s.tiers)];
-  if (light === dark) return `Lc ${String(light)} on both bases`;
+  if (light === dark) return `${measured(`Lc ${String(light)}`)} on both bases`;
   const why = dark < light ? ", since WCAG 2 rates colors on a dark base as more contrasty than APCA does" : "";
-  return `Lc ${String(light)} on the light base and Lc ${String(dark)} on the dark one${why}`;
+  return `${measured(`Lc ${String(light)}`)} on the light base and ${measured(`Lc ${String(dark)}`)} on the dark one${why}`;
 }
 
 /** A room in words, by its CAM16 surround. */
@@ -231,21 +231,21 @@ function modesDemo(ctx: Context): string {
   try {
     colors = { light: strongest(m, ctx.settings.bases.light, "light", first.hue, target, lc), dark: strongest(m, ctx.settings.bases.dark, "dark", first.hue, target, lc) };
   } catch {
-    return `<p class="soft">No color at this hue reaches Lc ${String(lc)} on both bases.</p>`;
+    return `<p class="soft">No color at this hue reaches ${measured(`Lc ${String(lc)}`)} on both bases.</p>`;
   }
   const pair = MODES.map((mode) => {
     const color = colors[mode];
     const cam = m.cam(mode, color);
     return `<figure class="on-base" style="--base:${ctx.settings.bases[mode]};--c:${color};--ink:var(--fg-${mode})">
       <span class="demo-swatch"></span><span class="on-base-sample">Aa</span>
-      <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks M ${cam.m.toFixed(0)} • chroma C ${cam.chroma.toFixed(0)}</span></figcaption>
+      <figcaption><strong>${MODE_NAMES[mode]} mode</strong><span>Looks ${measured(`M ${cam.m.toFixed(0)}`)} • chroma ${measured(`C ${cam.chroma.toFixed(0)}`)}</span></figcaption>
     </figure>`;
   });
   // Which mode needs more color on the screen to look the same: the one whose room and base make
   // colors look quieter.
   const [light, dark] = MODES.map((mode) => m.cam(mode, colors[mode]).chroma) as [number, number];
   const more = Math.abs(light - dark) < 1 ? "Both need about the same chroma on the screen: their rooms and bases make colors look alike." : `${MODE_NAMES[dark > light ? "dark" : "light"]} mode needs more chroma on the screen to look as colorful: its room and base make colors look quieter.`;
-  return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(first.key)}'s hue at M ${String(target)} on Lc ${String(lc)}, in each mode's room. ${more}</p>`;
+  return `<div class="demo-pair">${pair.join("")}</div><p class="soft">${ctx.label(first.key)}'s hue at ${measured(`M ${String(target)}`)} on ${measured(`Lc ${String(lc)}`)}, in each mode's room. ${more}</p>`;
 }
 
 /**
@@ -348,13 +348,13 @@ function reachDemo(ctx: Context): string {
     </svg>
     <p class="demo-verdict" id="reach-note">${
       limited
-        ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach M ${ceiling.toFixed(1)} on Lc ${String(lc)}, so every color on this tier stops there.`
+        ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach ${measured(`M ${ceiling.toFixed(1)}`)} on ${measured(`Lc ${String(lc)}`)}, so every color on this tier stops there.`
         : least.reach[shown]! < target
-          ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach M ${least.reach[shown]!.toFixed(1)} on Lc ${String(lc)}; with Equal per tier off, each color goes as far as it can.`
-          : `On ${GAMUT_NAMES[ctx.gamut]}, every hue reaches the target on Lc ${String(lc)}.`
+          ? `On ${GAMUT_NAMES[ctx.gamut]}, <strong>${ctx.label(least.key)}</strong> can only reach ${measured(`M ${least.reach[shown]!.toFixed(1)}`)} on ${measured(`Lc ${String(lc)}`)}; with Equal per tier off, each color goes as far as it can.`
+          : `On ${GAMUT_NAMES[ctx.gamut]}, every hue reaches the target on ${measured(`Lc ${String(lc)}`)}.`
     }</p>
     <p class="legend-row soft">${GAMUTS.map(key).join("")}
-      <span><i class="line-key target"></i>Target M ${String(target)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span>${limited ? "<span>↓ Lowered</span>" : ""}</p>`;
+      <span><i class="line-key target"></i>Target ${measured(`M ${String(target)}`)}</span><span><i class="line-key ceiling"></i>This tier on ${GAMUT_NAMES[ctx.gamut]}</span>${limited ? "<span>↓ Lowered</span>" : ""}</p>`;
 }
 
 /**
@@ -393,7 +393,7 @@ function differenceDemo(ctx: Context): string {
       <span class="scale-mark" style="left:${at(JUST_VISIBLE)}"><span>Just visible</span></span>
       ${typical ? `<span class="scale-mark" style="left:${at(typical)}"><span>Neighbors on this tier</span></span>` : ""}
     </div>
-    <p class="soft">CAM16-UCS distance, and the share of it each part makes up. About ${String(JUST_VISIBLE)} is the smallest difference most people see with two colors side by side.${ring.length ? ` On Lc ${String(lc)} here, neighbors are ${Math.min(...ring).toFixed(1)} to ${Math.max(...ring).toFixed(1)} apart, ${typical.toFixed(1)} on average: the uniform lineup spaces them as evenly as the screen allows, and placed hues and colorfulness per hue move them on purpose.` : ""}</p>`;
+    <p class="soft">CAM16-UCS distance, and the share of it each part makes up. About ${String(JUST_VISIBLE)} is the smallest difference most people see with two colors side by side.${ring.length ? ` On ${measured(`Lc ${String(lc)}`)} here, neighbors are ${measured(Math.min(...ring).toFixed(1))} to ${measured(Math.max(...ring).toFixed(1))} apart, ${measured(typical.toFixed(1))} on average: the uniform lineup spaces them as evenly as the screen allows, and placed hues and colorfulness per hue move them on purpose.` : ""}</p>`;
 }
 
 /**
@@ -453,7 +453,7 @@ function bumpDemo(ctx: Context): string {
       ${grid.join("")}${ticks.join("")}<path d="${line}" fill="none" class="curve-line"></path>${dots.join("")}
     </svg>
     <div class="swatch-rows"><span class="soft">Without</span>${row(() => target)}<span class="soft">With</span>${row((hue) => target + added(hue))}</div>
-    <p class="soft" id="bump-note">Lc ${String(tierLc)}, aiming at M ${target.toFixed(1)}. The colors move only where the bump reaches; this is a sandbox and changes nothing in the palette.</p>`;
+    <p class="soft" id="bump-note">${measured(`Lc ${String(tierLc)}`)}, aiming at ${measured(`M ${target.toFixed(1)}`)}. The colors move only where the bump reaches; this is a sandbox and changes nothing in the palette.</p>`;
 }
 
 /**
@@ -557,13 +557,13 @@ export function howPage(ctx: Context): string {
 
     <section class="step">
       <h2>What it makes</h2>
-      <p>${String(count)} hues${custom ? ` and ${String(custom)} custom ${custom === 1 ? "color" : "colors"}` : ""}, each on ${String(s.tiers.length)} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${String(swatches)} colors in all, with Gray on every tier${s.neutralColors.length ? ` and ${String(s.neutralColors.length)} neutral ${s.neutralColors.length === 1 ? "color" : "colors"}` : ""} beside them. They all follow the same rules, so the rules only have to be learned once.</p>
+      <p>${measured(String(count))} hues${custom ? ` and ${measured(String(custom))} custom ${custom === 1 ? "color" : "colors"}` : ""}, each on ${measured(String(s.tiers.length))} contrast tiers, in a default and a muted version, for light and dark, for three kinds of screen: ${measured(String(swatches))} colors in all, with Gray on every tier${s.neutralColors.length ? ` and ${measured(String(s.neutralColors.length))} neutral ${s.neutralColors.length === 1 ? "color" : "colors"}` : ""} beside them. They all follow the same rules, so the rules only have to be learned once.</p>
     </section>
 
     <section class="step">
       <h2>Color depends on the room</h2>
       <p>The same red looks stronger in a bright room than in a dim one, and different on a light page than on a dark one. To compare colors fairly, the solver uses <strong>CAM16</strong>, a model of human color vision. It's told what the eye is looking at and where: the page's base color as the background, and the room's light. The light mode's base is always lighter than the dark mode's.</p>
-      <p>Light mode is seen at ${String(s.rooms.light.lux)} lux, ${ROOM_WORDS[s.rooms.light.surround] ?? "a room"}. Dark mode is seen at ${String(s.rooms.dark.lux)} lux, ${ROOM_WORDS[s.rooms.dark.surround] ?? "a room"}. ${s.rooms.light.lux === 200 && s.rooms.dark.lux === 64 ? "Both come from the sRGB standard: its typical room and its reference room." : "By default they're 200 and 64 lux, the sRGB standard's typical and reference rooms."} CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
+      <p>Light mode is seen at ${measured(`${String(s.rooms.light.lux)} lux`)}, ${ROOM_WORDS[s.rooms.light.surround] ?? "a room"}. Dark mode is seen at ${measured(`${String(s.rooms.dark.lux)} lux`)}, ${ROOM_WORDS[s.rooms.dark.surround] ?? "a room"}. ${s.rooms.light.lux === 200 && s.rooms.dark.lux === 64 ? "Both come from the sRGB standard: its typical room and its reference room." : "By default they're 200 and 64 lux, the sRGB standard's typical and reference rooms."} CAM16 then gives three numbers people can feel: <em>lightness</em> (J), <em>colorfulness</em> (M) and <em>hue</em>.</p>
       <div class="demo"><div class="demo-out wide">${roomDemo(ctx)}</div></div>
       <p>So the same target needs different screen colors in each mode. Both of these aim at the same colorfulness.</p>
       <div class="demo"><div class="demo-out wide">${modesDemo(ctx)}</div></div>
@@ -577,7 +577,7 @@ export function howPage(ctx: Context): string {
         .join("")}</tbody></table></div>
       <p>For each hue and tier, the solver searches lightness until the color sits exactly on the tier: never below it, and only as far above as rounding forces. The older WCAG 2 contrast is reported beside every color too, because laws still point to it. Its badge says what that ratio allows: AAA and AA pass for text, AA large only for large text and for icons, borders and controls, and below 3:1 for nothing that must be read. Each badge opens its level.</p>
       <p>One tier stands for each hue: the <strong>identity tier</strong>. It's where the colors look most like themselves: clear enough to read, neither faint nor heavy. The solver picks it as the tier where APCA and WCAG 2, taken together, come closest to their minimum for text: ${autoTiers(s)}.${MODES.filter((m) => s.identityTier[m] !== "auto")
-        .map((m) => ` Here, ${m} mode's is set by hand to Lc ${String(identityOf(s, m))}.`)
+        .map((m) => ` Here, ${m} mode's is set by hand to ${measured(`Lc ${String(identityOf(s, m))}`)}.`)
         .join("")} Any tier can be made the identity on the Tiers page, or in Settings.</p>
       <div class="demo">
         <div class="demo-controls">
@@ -590,7 +590,7 @@ export function howPage(ctx: Context): string {
 
     <section class="step">
       <h2>Equally colorful</h2>
-      <p>Every hue aims at the same colorfulness: M ${String(s.colorfulness)}, apart from what colorfulness per hue (below) adds or takes away. The screen doesn't always allow it. Near white, a screen can show a strong yellow but only a pale red; near black, the opposite. With <strong>Equal per tier</strong> on, each tier's target drops to what its least colorful hue can reach, and every color on the tier follows, so nothing stands out by accident. Switched off in Settings, each color goes as far as the screen allows instead, and a tier is no longer equally colorful.</p>
+      <p>Every hue aims at the same colorfulness: ${measured(`M ${String(s.colorfulness)}`)}, apart from what colorfulness per hue (below) adds or takes away. The screen doesn't always allow it. Near white, a screen can show a strong yellow but only a pale red; near black, the opposite. With <strong>Equal per tier</strong> on, each tier's target drops to what its least colorful hue can reach, and every color on the tier follows, so nothing stands out by accident. Switched off in Settings, each color goes as far as the screen allows instead, and a tier is no longer equally colorful.</p>
       <p>The chart shows how far each hue could go on one tier, on each kind of screen.</p>
       <div class="demo">
         <div class="demo-controls">
@@ -617,8 +617,8 @@ export function howPage(ctx: Context): string {
 
     <section class="step">
       <h2>Evenly different</h2>
-      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space, CAM16-UCS, where distance matches how different colors look. The hues start evenly apart in angle, ${String(count)} hues ${(360 / count).toFixed(count === 8 ? 0 : 1)}° apart. Angles aren't how differences are seen, though, so the solver nudges each one, a few degrees at a time, until the differences around the circle are as even as they can be. That's the <strong>uniform lineup</strong>.</p>
-      <p>Evening out the differences doesn't say where the lineup sits, since turning all of it around the circle keeps them almost the same. So one hue, ${ctx.label(hueKeys(s.hues)[0]!).toLowerCase()}, is the <strong>anchor</strong>, and every other hue is spaced from it. It sits at ${anchorHue(s).toFixed(0)}° here, ${anchor}. It can be the yellow of CAM16, Munsell, NCS, unique-hue studies or the World Color Survey's focal colors, or any hue; the same systems can be drawn as guides on the hue graphs, to see where each puts its hues.</p>
+      <p>Two neighboring colors should be as easy to tell apart as any other two. CAM16 has a uniform space, CAM16-UCS, where distance matches how different colors look. The hues start evenly apart in angle, ${measured(String(count))} hues ${measured(`${(360 / count).toFixed(count === 8 ? 0 : 1)}°`)} apart. Angles aren't how differences are seen, though, so the solver nudges each one, a few degrees at a time, until the differences around the circle are as even as they can be. That's the <strong>uniform lineup</strong>.</p>
+      <p>Evening out the differences doesn't say where the lineup sits, since turning all of it around the circle keeps them almost the same. So one hue, ${ctx.label(hueKeys(s.hues)[0]!).toLowerCase()}, is the <strong>anchor</strong>, and every other hue is spaced from it. It sits at ${measured(`${anchorHue(s).toFixed(0)}°`)} here, ${anchor}. It can be the yellow of CAM16, Munsell, NCS, unique-hue studies or the World Color Survey's focal colors, or any hue; the same systems can be drawn as guides on the hue graphs, to see where each puts its hues.</p>
       <div class="demo">
         <div class="demo-controls">
           ${choice(ctx, "demo-a", "First color", hueOptions, "difference")}
@@ -641,15 +641,15 @@ export function howPage(ctx: Context): string {
     <section class="step">
       <h2>Reading changes</h2>
       <p>Placed hues and colorfulness per hue are edits on top of the uniform lineup. The <strong>H</strong> and <strong>M</strong> switches in the header turn them off and on across the pages, so the palette can be seen with and without them.</p>
-      <p>At the top of Settings, a strip shows the palette a step at a time. <strong>Uniform</strong> is the evenly spaced lineup. <strong>Turned</strong> is the same lineup turned around the circle to best match the placed hues; turning keeps it uniform. <strong>+H</strong> adds the placed hues, and <strong>+M</strong> colorfulness per hue. How far the edits take the palette from the turned lineup is its <strong>bend</strong>, in gaps: one gap is the even difference between neighbors${gap ? `, ${gap.toFixed(1)} ΔE in ${ctx.mode} mode here` : ""}, ΔE being how different two colors look in CAM16-UCS. Here's the strip for this palette; point at a swatch or a row for its numbers, and click a number for what it means.</p>
+      <p>At the top of Settings, a strip shows the palette a step at a time. <strong>Uniform</strong> is the evenly spaced lineup. <strong>Turned</strong> is the same lineup turned around the circle to best match the placed hues; turning keeps it uniform. <strong>+H</strong> adds the placed hues, and <strong>+M</strong> colorfulness per hue. How far the edits take the palette from the turned lineup is its <strong>bend</strong>, in gaps: one gap is the even difference between neighbors${gap ? `, ${measured(`${gap.toFixed(1)} ΔE`)} in ${ctx.mode} mode here` : ""}, ΔE being how different two colors look in CAM16-UCS. Here's the strip for this palette; point at a swatch or a row for its numbers, and click a number for what it means.</p>
       <div class="demo"><div id="palette-strip" class="strip"></div></div>
       ${zoneTable(evenGap(ctx.mode))}
-      <p>Bending colors is what placing is for, so bend isn't the risk in itself. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under ${String(evenLimits(evenGap(ctx.mode))[0])}% closer is fine, ${String(evenLimits(evenGap(ctx.mode))[0])} to ${String(evenLimits(evenGap(ctx.mode))[1])}% is worth watching, and over ${String(evenLimits(evenGap(ctx.mode))[1])}% they're getting confusable, for this palette's gap of ${evenGap(ctx.mode).toFixed(1)} ΔE. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole.</p>
+      <p>Bending colors is what placing is for, so bend isn't the risk in itself. Evenness is: when two neighbors end up closer than the even gap, they're easier to confuse. Under ${measured(`${String(evenLimits(evenGap(ctx.mode))[0])}%`)} closer is fine, ${measured(String(evenLimits(evenGap(ctx.mode))[0]))} to ${measured(`${String(evenLimits(evenGap(ctx.mode))[1])}%`)} is worth watching, and over ${measured(`${String(evenLimits(evenGap(ctx.mode))[1])}%`)} they're getting confusable, for this palette's gap of ${measured(`${evenGap(ctx.mode).toFixed(1)} ΔE`)}. A change is also split into what it's made of, hue, colorfulness and lightness, as shares that add up to the whole.</p>
     </section>
 
     <section class="step">
       <h2>Muted and custom colors</h2>
-      <p>Muted colors are the same hue on the same tier, at ${String(Math.round(s.mutedShare * 100))}% of the default's colorfulness: quieter, never weaker in contrast. Every tier of one color:</p>
+      <p>Muted colors are the same hue on the same tier, at ${measured(`${String(Math.round(s.mutedShare * 100))}%`)} of the default's colorfulness: quieter, never weaker in contrast. Every tier of one color:</p>
       <div class="demo">
         <div class="demo-controls">
           ${choice(

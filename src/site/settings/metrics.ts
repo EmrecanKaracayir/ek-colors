@@ -7,7 +7,7 @@
 
 import { parts, plainSquared } from "../../palette/model";
 import { GAMUT_NAMES } from "../../palette/settings";
-import { bendMeter, evenLimits, evenText, evenness, inGaps, signed, thresholds, visibility, zone, zoneTable } from "../graph";
+import { bendMeter, evenLimits, evenText, evenness, inGaps, measured, signed, thresholds, visibility, zone, zoneTable } from "../graph";
 import { label } from "../parts";
 import { popButton, popSource } from "../popover";
 import { SCREEN, state } from "../state";
@@ -136,7 +136,7 @@ function splitBar(split: ReturnType<typeof parts>): string {
     ["lightness", "Lightness", split.lightness],
   ] as const;
   return `<div class="pop-split" aria-hidden="true">${kinds.map(([kind, , share]) => `<span class="${kind}" style="flex-grow:${share.toFixed(4)}"></span>`).join("")}</div>
-    <p class="pop-legend">${kinds.map(([kind, name, share]) => `<span><i class="${kind}"></i>${name} ${whole(share)}</span>`).join("")}</p>`;
+    <p class="pop-legend">${kinds.map(([kind, name, share]) => `<span><i class="${kind}"></i>${name} ${measured(whole(share))}</span>`).join("")}</p>`;
 }
 
 /**
@@ -161,7 +161,7 @@ popSource("tools", (which) => {
       <p class="pop-how">Settings, the blind tests and Export always use the palette with every edit.</p>`;
   if (which === "variant")
     return `<h3>Variant: Default and Muted</h3>
-      <p>Every color comes in two strengths on every tier: <strong>Default</strong> at the palette's colorfulness, and <strong>Muted</strong> at ${String(Math.round(state.settings.mutedShare * 100))}% of it, for quieter uses like backgrounds and borders. Both keep the same hue and contrast.</p>`;
+      <p>Every color comes in two strengths on every tier: <strong>Default</strong> at the palette's colorfulness, and <strong>Muted</strong> at ${measured(`${String(Math.round(state.settings.mutedShare * 100))}%`)} of it, for quieter uses like backgrounds and borders. Both keep the same hue and contrast.</p>`;
   return `<h3>Gamut: how many colors a screen can show</h3>
     <dl class="pop-facts words">
       <div><dt>Standard</dt><dd>What every screen can show.</dd></div>
@@ -184,7 +184,7 @@ popSource("change", (key) => {
       <div><dt>+M</dt><dd>${inGaps(c.bend[3] / gap) || "no bend"} in all${c.added ? ` • ${signed(c.added)} M, ${percent(c.colorful[3])} of the target` : ""}</dd></div>
       <div><dt>Uniform</dt><dd>${inGaps(c.moved / gap) || "no change"} from the lineup at the anchor, turn ${turnText(angle)} included</dd></div>
     </dl>
-    <p class="pop-how">${c.name} in the turned lineup (the uniform lineup turned ${turnText(angle)}, still uniform) is compared with ${c.name} in use, on Lc ${String(tier)}, as CAM16-UCS ΔE (${c.bend[3].toFixed(1)}), then divided by the even gap (${gap.toFixed(1)}). The bar shows the bend's hue, colorfulness and lightness parts.</p>`;
+    <p class="pop-how">${c.name} in the turned lineup (the uniform lineup turned ${measured(turnText(angle))}, still uniform) is compared with ${c.name} in use, on ${measured(`Lc ${String(tier)}`)}, as CAM16-UCS ΔE (${measured(c.bend[3].toFixed(1))}), then divided by the even gap (${measured(gap.toFixed(1))}). The bar shows the bend's hue, colorfulness and lightness parts.</p>`;
 });
 
 popSource("metric", (which) => {
@@ -195,7 +195,7 @@ popSource("metric", (which) => {
     const split = bendSplit(3);
     const evenOff = Math.max(0, ...offsets(3).map((o) => Math.abs(o.off)));
     const vivid = [...changes.colors].sort((a, b) => Math.abs(b.colorful[3]) - Math.abs(a.colorful[3]))[0];
-    return `<h3>${zone(bend, changes.gap).name}: bend ${bend.toFixed(2)} gap</h3>
+    return `<h3>${zone(bend, changes.gap).name}: bend ${measured(`${bend.toFixed(2)} gap`)}</h3>
       ${bendMeter(bend, gap, true)}
       <p>${zone(bend, gap).note}</p>
       ${bend >= 0.005 ? splitBar(split) : ""}
@@ -204,13 +204,13 @@ popSource("metric", (which) => {
         <div><dt>M</dt><dd>${vivid && Math.abs(vivid.colorful[3]) >= 0.005 ? `${percent(vivid.colorful[3])} (${vivid.name})` : "equal"}</dd></div>
         <div><dt>Turned</dt><dd>${turnText(angle)}, which keeps the lineup uniform</dd></div>
       </dl>
-      <p class="pop-how">You're on safe ground while Bend stays within Tuned or Reshaped and Even under ${String(evenLimits(gap)[0])}%: deliberate adjustments, with every pair of neighbors still about equally easy to tell apart. It gets risky when Even passes ${String(evenLimits(gap)[1])}% (two colors getting confusable) or Bend passes 0.5, where the palette is no longer honestly uniform.</p>
+      <p class="pop-how">You're on safe ground while Bend stays within Tuned or Reshaped and Even under ${measured(`${String(evenLimits(gap)[0])}%`)}: deliberate adjustments, with every pair of neighbors still about equally easy to tell apart. It gets risky when Even passes ${measured(`${String(evenLimits(gap)[1])}%`)} (two colors getting confusable) or Bend passes 0.5, where the palette is no longer honestly uniform.</p>
       ${zoneTable(gap)}`;
   }
   const heads: Record<string, string> = {
-    bend: `<h3>Bend</h3><p>How far the colors are from the nearest uniform lineup. Turning the whole lineup keeps it uniform, so the uniform lineup is first turned to best match the placed hues (${turnText(angle)}); what's left is the bend. Each color's difference, in gaps (one gap is ${gap.toFixed(1)} ΔE), averaged as a root mean square, so one large difference isn't hidden among small ones.</p>${zoneTable(gap)}<p class="pop-how">Rows: Uniform is the lineup at the anchor; Turned is it turned to match; +H adds placed hues; +M adds colorfulness per hue. Point at a swatch for that color; click a row's name to keep it shown, then ↑ and ↓ switch rows.</p>`,
-    even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under ${String(evenLimits(gap)[0])}% is fine, ${String(evenLimits(gap)[0])} to ${String(evenLimits(gap)[1])}% worth watching, over ${String(evenLimits(gap)[1])}% two colors are getting confusable (or, over even, a hole in the palette).</p>${thresholds(gap)}`,
-    colorful: `<h3>M</h3><p>How equally colorful the colors are: the color furthest from the target colorfulness (M ${targets[3].toFixed(1)} on this tier), as a share of it. The uniform lineup aims every color at the same colorfulness, as far as the screen allows; colorfulness per hue changes that on purpose, so this says how far you've pushed.</p>`,
+    bend: `<h3>Bend</h3><p>How far the colors are from the nearest uniform lineup. Turning the whole lineup keeps it uniform, so the uniform lineup is first turned to best match the placed hues (${measured(turnText(angle))}); what's left is the bend. Each color's difference, in gaps (one gap is ${measured(`${gap.toFixed(1)} ΔE`)}), averaged as a root mean square, so one large difference isn't hidden among small ones.</p>${zoneTable(gap)}<p class="pop-how">Rows: Uniform is the lineup at the anchor; Turned is it turned to match; +H adds placed hues; +M adds colorfulness per hue. Point at a swatch for that color; click a row's name to keep it shown, then ↑ and ↓ switch rows.</p>`,
+    even: `<h3>Even</h3><p>How evenly spaced neighbors are: the gap furthest from the even gap, as a share of it. This is the uniform lineup's main promise: every pair of neighbors equally easy to tell apart.</p><p class="pop-how">Under ${measured(`${String(evenLimits(gap)[0])}%`)} is fine, ${measured(String(evenLimits(gap)[0]))} to ${measured(`${String(evenLimits(gap)[1])}%`)} worth watching, over ${measured(`${String(evenLimits(gap)[1])}%`)} two colors are getting confusable (or, over even, a hole in the palette).</p>${thresholds(gap)}`,
+    colorful: `<h3>M</h3><p>How equally colorful the colors are: the color furthest from the target colorfulness (${measured(`M ${targets[3].toFixed(1)}`)} on this tier), as a share of it. The uniform lineup aims every color at the same colorfulness, as far as the screen allows; colorfulness per hue changes that on purpose, so this says how far you've pushed.</p>`,
   };
   if (which2 === "head") return heads[kind] ?? "";
   const row = Number(which2) as Row;
@@ -221,7 +221,7 @@ popSource("metric", (which) => {
       .toSorted((a, b) => b.bend[row] - a.bend[row])
       .map((c) => `<div><dt><span class="dot" style="--c:${c.color}"></span> ${c.name}</dt><dd>${(c.bend[row] / gap).toFixed(2)} gap</dd></div>`)
       .join("");
-    return `<h3>${title}</h3><p class="pop-lead">Average ${averageBend(row).toFixed(2)} gap from the turned lineup: ${zone(averageBend(row), gap).name}.</p>${bendMeter(averageBend(row), gap, true)}${averageBend(row) >= 0.005 ? splitBar(split) : ""}<dl class="pop-facts">${list}</dl>`;
+    return `<h3>${title}</h3><p class="pop-lead">Average ${measured(`${averageBend(row).toFixed(2)} gap`)} from the turned lineup: ${zone(averageBend(row), gap).name}.</p>${bendMeter(averageBend(row), gap, true)}${averageBend(row) >= 0.005 ? splitBar(split) : ""}<dl class="pop-facts">${list}</dl>`;
   }
   if (kind === "even") {
     const ring = changes.rings[row];
@@ -234,5 +234,5 @@ popSource("metric", (which) => {
     .toSorted((a, b) => Math.abs(b.colorful[row]) - Math.abs(a.colorful[row]))
     .map((c) => `<div><dt><span class="dot" style="--c:${c.color}"></span> ${c.name}</dt><dd>${percent(c.colorful[row])}</dd></div>`)
     .join("");
-  return `<h3>${title}</h3><p class="pop-lead">Against the target M ${targets[row].toFixed(1)}.</p><dl class="pop-facts">${list}</dl>`;
+  return `<h3>${title}</h3><p class="pop-lead">Against the target ${measured(`M ${targets[row].toFixed(1)}`)}.</p><dl class="pop-facts">${list}</dl>`;
 });

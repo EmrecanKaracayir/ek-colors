@@ -151,6 +151,8 @@
   .skip { position: fixed; top: calc(env(safe-area-inset-top, 0px) + var(--space-4)); left: var(--space-4); z-index: 30; transform: translateY(calc(-100% - env(safe-area-inset-top, 0px) - 2 * var(--space-4))); }
   .skip:focus-visible { transform: none; }
   .mono { font-family: var(--mono); font-size: var(--type-md); font-variant-numeric: tabular-nums; }
+  /* A value measured from the palette on screen, in text: monospace, a little smaller to sit with the words around it. */
+  .measured { font-family: var(--mono); font-size: 0.95em; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .soft { color: var(--soft); font-weight: 400; }
 
   /* Bar */
@@ -773,7 +775,7 @@
   }
   @media (prefers-reduced-motion: reduce) { .strip-item .cover, .menu-toggle span { transition: none; } }
 </style>
-<link rel="modulepreload" href="chunks/chunk-QSMB3AQZ.js">
+<link rel="modulepreload" href="chunks/chunk-PA2RORQU.js">
 <link rel="modulepreload" href="chunks/chunk-R6CCDRJP.js">
 <link rel="modulepreload" href="chunks/chunk-X5DVRVZT.js">
 <link rel="modulepreload" href="chunks/chunk-35RC7DVO.js">
@@ -812,6 +814,6 @@
 <p id="beyond" class="notice beyond unmet" role="note" hidden>This screen can't show these colors exactly; it shows the closest it can.</p>
 <p id="auto-base" class="notice beyond" role="note" hidden></p>
 <main><noscript><section class="intro"><h1>EK Colors</h1><p>EK Colors solves accessible color palettes in CAM16: every color exactly on its APCA contrast, equally colorful and evenly different, for light and dark and three kinds of screen. Its solver runs in the browser, so it needs JavaScript.</p></section></noscript></main>
-<script type="module" src="app.js?v=d56c8e4c4d"></script>
+<script type="module" src="app.js?v=1b2dfecd66"></script>
 </body>
 </html>

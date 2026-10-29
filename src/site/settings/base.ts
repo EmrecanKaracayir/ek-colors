@@ -8,6 +8,7 @@
 import { type BaseIn, baseIn } from "../../palette/bases";
 import { JUST_VISIBLE } from "../../palette/model";
 import { GAMUTS, GAMUT_NAMES, type Gamut, type Mode, type Settings } from "../../palette/settings";
+import { measured } from "../graph";
 import { hidePopover, popButton, popSource } from "../popover";
 import { render, route } from "../shell";
 import { solve } from "../solver";
@@ -81,7 +82,7 @@ export function updateBaseNote(): void {
   const base = baseIn(state.settings, state.mode, state.gamut);
   note.hidden = base.how !== "closest" || state.view === "references";
   if (note.hidden) return;
-  note.innerHTML = `${GAMUT_NAMES[state.gamut]} screens can't show the ${state.mode} base, so they use the closest color they can, <span class="mono">${base.written}</span>, ΔE ${base.off.toFixed(1)} from it. To pick one by hand, <a href="#tune" data-base-go="${state.mode}">go to Settings, under Viewing</a>.`;
+  note.innerHTML = `${GAMUT_NAMES[state.gamut]} screens can't show the ${state.mode} base, so they use the closest color they can, <span class="mono">${base.written}</span>, ${measured(`ΔE ${base.off.toFixed(1)}`)} from it. To pick one by hand, <a href="#tune" data-base-go="${state.mode}">go to Settings, under Viewing</a>.`;
 }
 
 /**
