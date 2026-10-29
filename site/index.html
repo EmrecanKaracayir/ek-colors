@@ -189,8 +189,6 @@
   .segmented { display: inline-flex; border-radius: var(--radius-control); box-shadow: inset 0 0 0 1px var(--line); padding: 1px; }
   /* One control look: buttons, fields, dropdowns and text boxes; fields and boxes write in mono. */
   button, a.button, .field :is(input[type="number"], input[type="text"], select), .demo-controls select, .test-code, textarea { font: inherit; font-size: var(--type-md); color: var(--fg); background: var(--raised); border: 1px solid var(--line); border-radius: var(--radius-control); padding: var(--space-3) var(--space-5); }
-  /* Buttons that read as text or as a mark: no box of their own, the text around them. */
-  button:where(.tool-info, .guide-info, .icon-button, .segmented button, .pop-trigger.wanted, .tier-pick, .pop-trigger.id-note, .pop-trigger.id-mark, .copy, .pop-trigger.metric, .pop-trigger.metric-scope, .pop-trigger.strip-gap, .strip-labels button, .test-swatch, .link) { font: inherit; background: none; border: 0; padding: 0; }
   .field :is(input[type="number"], input[type="text"], select), .test-code, textarea { font-family: var(--mono); padding-inline: var(--space-4); }
   /* A dropdown's chevron sits inside its padding: room on the right keeps it off the edge. */
   :is(.group, .graph-values) .field select, .demo-controls select { padding-inline: var(--space-4) var(--space-5); }
@@ -201,6 +199,8 @@
      chosen fills and takes the full text color. A button whose class gives it its own background,
      like a test swatch, keeps it. */
   button:where(:hover:not(:disabled)), a.button:hover, select:hover:not(:disabled), input:is([type="number"], [type="text"]):hover:not(:disabled), textarea:hover { background: linear-gradient(var(--hover), var(--hover)), var(--raised); }
+  /* Buttons that read as text or as a mark: no box of their own, the text around them, hovered or not. */
+  button:where(.tool-info, .guide-info, .icon-button, .segmented button, .pop-trigger.wanted, .tier-pick, .pop-trigger.id-note, .pop-trigger.id-mark, .copy, .pop-trigger.metric, .pop-trigger.metric-scope, .pop-trigger.strip-gap, .strip-labels button, .test-swatch, .link) { font: inherit; background: none; border: 0; padding: 0; }
   .segmented button:not([aria-pressed="true"]):hover { color: var(--fg); background: var(--hover); }
 
   /* Page */
