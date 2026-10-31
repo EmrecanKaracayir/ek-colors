@@ -1,9 +1,10 @@
 /*
  * EK Palette, solved with EK Colors.
  * --palette-red-60 is red on Lc 60 against --palette-base, --palette-red-60-muted its muted
- * version and --palette-gray-60 a gray on it; each neutral color is named after itself, in its
- * base's hue. Light and dark follow color-scheme: the system's, or color-scheme: light or dark
- * set on the page. Screens that show a wider gamut get its colors.
+ * version and --palette-gray-60 a gray on it; --palette-gray-min and --palette-gray-max are
+ * gray's ends, white and black, min on the base's side. Each neutral color is named after
+ * itself, in its base's hue. Light and dark follow color-scheme: the system's, or color-scheme:
+ * light or dark set on the page. Screens that show a wider gamut get its colors.
  */
 
 :root {
@@ -127,12 +128,14 @@
   --palette-brown-90: light-dark(#36211A, #F7E1D9);
   --palette-brown-90-muted: light-dark(#2F2421, #F0E3DF);
 
+  --palette-gray-min: light-dark(#FFFFFF, #000000);
   --palette-gray-15: light-dark(#CCCCCC, #565656);
   --palette-gray-30: light-dark(#B1B1B1, #797979);
   --palette-gray-45: light-dark(#949494, #979797);
   --palette-gray-60: light-dark(#757575, #B3B3B3);
   --palette-gray-75: light-dark(#525252, #CDCDCD);
   --palette-gray-90: light-dark(#262626, #E6E6E6);
+  --palette-gray-max: light-dark(#000000, #FFFFFF);
 }
 
 @media (color-gamut: p3) {

@@ -125,6 +125,21 @@ export function marksKey(list: readonly Marked[]): string {
  * @returns         HTML.
  */
 function tierRow(s: Swatch, tier: number, identity: number, variant: Variant, marks: string, hueless = false): string {
+  return `<tr>
+    <th scope="row">${tier === identity ? identityLabel(tier, variant) : ""}Lc ${String(tier)}<span class="soft">${ROLES[tier] ?? ""}</span></th>
+    ${swatchCells(s, marks, hueless)}
+  </tr>`;
+}
+
+/**
+ * A swatch's cells in a color's table, after its row's heading.
+ *
+ * @param s        The swatch.
+ * @param marks    Its labels, as HTML.
+ * @param hueless  Whether it has no hue to name (a gray).
+ * @returns        HTML.
+ */
+function swatchCells(s: Swatch, marks: string, hueless = false): string {
   const cells = [
     `<span class="pair" style="--c:${s.color}"><span class="fill"></span><span class="sample">Aa</span></span>`,
     copyable(s.color),
@@ -135,10 +150,7 @@ function tierRow(s: Swatch, tier: number, identity: number, variant: Variant, ma
     `<span class="facts">${marks}<span>${s.colorfulness.toFixed(1)}</span></span>`,
     hueless ? `<span class="soft">No hue</span>` : `<span class="facts"><span class="soft">${s.name}</span><span>${s.hue.toFixed(1)}°</span></span>`,
   ];
-  return `<tr>
-    <th scope="row">${tier === identity ? identityLabel(tier, variant) : ""}Lc ${String(tier)}<span class="soft">${ROLES[tier] ?? ""}</span></th>
-    ${cells.map((html, i) => columnCell(COLUMNS[i + 1]!, html)).join("")}
-  </tr>`;
+  return cells.map((html, i) => columnCell(COLUMNS[i + 1]!, html)).join("");
 }
 
 /**
@@ -242,12 +254,15 @@ function neutralPage(key: string): string {
     ? `A neutral color on every tier: the ${mode} base's hue, ${identity.hue.toFixed(0)}°, at ${percent1(neutral.share)} of the base's colorfulness, M ${base.toFixed(1)}, so M ${(base * neutral.share).toFixed(1)}. ${tintNote(base * neutral.share)}`
     : `A gray on every tier, in every palette: no hue at all, exactly on each tier's contrast against the ${mode} base, as every color is. CAM16 still sees a little colorfulness in a pure gray, which is why the table shows some.`;
   const rows = state.settings.tiers.filter((t) => tiers[t]).map((t) => tierRow(tiers[t]!, t, tier, "default", "", !neutral)).join("");
+  // Gray's ends, white and black, around its tiers: min on the base's side, for text on a color.
+  const end = (s: Swatch, name: string, note: string) => `<tr><th scope="row">${name}<span class="soft">${note}</span></th>${swatchCells(s, "", true)}</tr>`;
+  const all = neutral ? rows : `${end(p.grayEnds.min, "Min", "Text on a color")}${rows}${end(p.grayEnds.max, "Max", "")}`;
   return `${colorChips(key)}
     <section class="intro hero" style="--c:${identity.color}">
       <h1>${label(key)}</h1>
       <p>${intro}</p>
     </section>
-    ${tierTable("On every tier", "default", rows)}`;
+    ${tierTable("On every tier", "default", all)}`;
 }
 
 /**

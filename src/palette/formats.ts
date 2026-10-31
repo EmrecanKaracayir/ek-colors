@@ -89,6 +89,9 @@ export function toCsv(settings: Settings, palette: Palette): string {
         for (const tier of settings.tiers)
           rows.push(row([gamut, mode, tier, "default"], neutral.key, neutral.tiers[mode][tier]!));
       }
+      const ends = palette[gamut][mode].grayEnds;
+      rows.push(row([gamut, mode, "min", "default"], GRAY, ends.min));
+      rows.push(row([gamut, mode, "max", "default"], GRAY, ends.max));
     }
   }
   return `${rows.join("\n")}\n`;
@@ -126,6 +129,10 @@ export function toMarkdown(settings: Settings, palette: Palette): string {
               `| ${neutral.key} | ${settings.tiers.map((t) => cell(neutral.tiers[mode][t]!)).join(" | ")} |`,
             );
         md.push("");
+        if (variant === "default") {
+          const ends = palette[gamut][mode].grayEnds;
+          md.push(`Gray's ends: min ${cell(ends.min)}, max ${cell(ends.max)}.`, "");
+        }
       }
     }
   }
@@ -141,8 +148,9 @@ const GAMUT_QUERIES: Readonly<Record<Gamut, string | null>> = {
 
 /**
  * Every color as a CSS custom property: --palette-red-60 is red on Lc 60, --palette-red-60-muted
- * its muted version, --palette-gray-60 a gray on it, --palette-sand-60 a neutral color named Sand,
- * and --palette-base the background. Each holds its light and dark color, chosen by color-scheme; a
+ * its muted version, --palette-gray-60 a gray on it, --palette-gray-min and --palette-gray-max
+ * gray's ends (white and black on the base's side and the far side), --palette-sand-60 a neutral
+ * color named Sand, and --palette-base the background. Each holds its light and dark color, chosen by color-scheme; a
  * wider screen gets its gamut's colors.
  *
  * @param settings  The settings (for the bases and tiers).
@@ -181,9 +189,19 @@ export function toCss(settings: Settings, palette: Palette): string {
     );
     for (const neutral of neutralRows(palette[gamut])) {
       if (neutral.key === GRAY && gamut !== "standard" && sameGrays) continue;
+      // Gray's ends, white and black, are the same on every screen: written once, with Standard's.
+      const ends = neutral.key === GRAY && gamut === "standard";
+      if (ends)
+        lines.push(
+          `--palette-${GRAY}-min: light-dark(${light.grayEnds.min.color}, ${dark.grayEnds.min.color});`,
+        );
       for (const tier of settings.tiers)
         lines.push(
           `--palette-${neutral.key}-${String(tier)}: light-dark(${neutral.tiers.light[tier]!.color}, ${neutral.tiers.dark[tier]!.color});`,
+        );
+      if (ends)
+        lines.push(
+          `--palette-${GRAY}-max: light-dark(${light.grayEnds.max.color}, ${dark.grayEnds.max.color});`,
         );
       lines.push("");
     }
@@ -198,9 +216,10 @@ export function toCss(settings: Settings, palette: Palette): string {
     "/*",
     ` * ${(settings.name || "Palette").replaceAll("*/", "* /")}, solved with EK Colors.`,
     " * --palette-red-60 is red on Lc 60 against --palette-base, --palette-red-60-muted its muted",
-    " * version and --palette-gray-60 a gray on it; each neutral color is named after itself, in its",
-    " * base's hue. Light and dark follow color-scheme: the system's, or color-scheme: light or dark",
-    " * set on the page. Screens that show a wider gamut get its colors.",
+    " * version and --palette-gray-60 a gray on it; --palette-gray-min and --palette-gray-max are",
+    " * gray's ends, white and black, min on the base's side. Each neutral color is named after",
+    " * itself, in its base's hue. Light and dark follow color-scheme: the system's, or color-scheme:",
+    " * light or dark set on the page. Screens that show a wider gamut get its colors.",
     " */",
     "",
     block("standard", ""),

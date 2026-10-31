@@ -66,6 +66,12 @@ export interface ModePalette {
   /** Per tier, the gray on it: no color at all, its red, green and blue the same. */
   readonly grays: Readonly<Record<number, Swatch>>;
 
+  /**
+   * Gray's ends: min on the base's side, white in light mode and black in dark mode, for text on a
+   * color; max the far end. Measured against the base like every swatch.
+   */
+  readonly grayEnds: Readonly<{ min: Swatch; max: Swatch }>;
+
   /** Whether the base is tinted: at least M 4, the band's bottom. */
   readonly tinted: boolean;
 
@@ -371,6 +377,9 @@ export function baseHasHue(settings: Settings): boolean {
     return MODES.some((m) => tinted(model, m, on.bases[m]));
   });
 }
+
+/** White and black: the ends of Gray, min on a light base's side. */
+export const GRAY_ENDS = { light: "#FFFFFF", dark: "#000000" } as const;
 
 /** The grays' key, as their page and exports name them; no other color can take it. */
 export const GRAY = "gray";
@@ -760,6 +769,11 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
   const onTiers = (make: (tier: number) => Swatch) =>
     Object.fromEntries(settings.tiers.map((t) => [t, make(t)]));
   const grays = onTiers((t) => swatch(model, base, mode, grayOn(base, t), 0));
+  const far = mode === "light" ? "dark" : "light";
+  const grayEnds = {
+    min: swatch(model, base, mode, GRAY_ENDS[mode], 0),
+    max: swatch(model, base, mode, GRAY_ENDS[far], 0),
+  };
   const tint = tinted(model, mode, base) ? model.cam(mode, base) : null;
   const neutralKeys = colorKeys(settings).neutrals;
   const neutrals = settings.neutralColors.map((n, i) => ({
@@ -779,6 +793,7 @@ function finishMode(settings: Settings, model: Model, mode: Mode, core: HueCore)
     limits,
     ring,
     grays,
+    grayEnds,
     tinted: tint !== null,
     neutralColors: neutrals,
   };

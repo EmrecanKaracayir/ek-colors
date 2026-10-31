@@ -113,6 +113,8 @@ standard,light,45,default,gray,"#949494",209.8,2,1.6,43.7,B 34 G,45.3,2.54,below
 standard,light,60,default,gray,"#757575",209.8,1.7,1.3,30.9,B 34 G,60.2,3.86,AA large
 standard,light,75,default,gray,"#525252",209.8,1.3,1,18.5,B 34 G,75.3,6.55,AA
 standard,light,90,default,gray,"#262626",209.8,0.8,0.6,6.7,B 34 G,90.2,12.69,AAA
+standard,light,min,default,gray,"#FFFFFF",209.8,3,2.4,100,B 34 G,10.9,1.19,below
+standard,light,max,default,gray,"#000000",0,0,0,0,R 20 B,94.2,17.62,AAA
 standard,dark,15,default,red,"#863E43",15.7,59.4,42.7,40.6,R 5 B,15.1,2.35,below
 standard,dark,15,muted,red,"#704C4C",17.5,28,20.1,40.4,R 3 B,15.2,2.39,below
 standard,dark,30,default,red,"#BA5A60",16,67.5,48.5,53.9,R 4 B,30.1,3.99,AA large
@@ -227,6 +229,8 @@ standard,dark,45,default,gray,"#979797",209.6,4.6,3.3,63.7,B 34 G,45,6.08,AA
 standard,dark,60,default,gray,"#B3B3B3",209.6,5,3.6,73.7,B 34 G,60.1,8.47,AAA
 standard,dark,75,default,gray,"#CDCDCD",209.6,5.3,3.8,82.8,B 34 G,75.2,11.17,AAA
 standard,dark,90,default,gray,"#E6E6E6",209.6,5.5,4,91.4,B 34 G,90.5,14.23,AAA
+standard,dark,min,default,gray,"#000000",0,0,0,0,R 20 B,0,1.18,below
+standard,dark,max,default,gray,"#FFFFFF",209.6,5.8,4.1,100,B 34 G,106.8,17.76,AAA
 wide,light,15,default,red,"color(display-p3 1 0.7285 0.7311)",16,33.8,26.7,73.3,R 4 B,15,1.34,below
 wide,light,15,muted,red,"color(display-p3 0.9031 0.7697 0.7682)",16,16.2,12.8,72.4,R 4 B,15,1.34,below
 wide,light,30,default,red,"color(display-p3 0.9694 0.5748 0.587)",16,51.6,40.7,59.8,R 4 B,30,1.8,below
@@ -341,6 +345,8 @@ wide,light,45,default,gray,"#949494",209.8,2,1.6,43.7,B 34 G,45.3,2.54,below
 wide,light,60,default,gray,"#757575",209.8,1.7,1.3,30.9,B 34 G,60.2,3.86,AA large
 wide,light,75,default,gray,"#525252",209.8,1.3,1,18.5,B 34 G,75.3,6.55,AA
 wide,light,90,default,gray,"#262626",209.8,0.8,0.6,6.7,B 34 G,90.2,12.69,AAA
+wide,light,min,default,gray,"#FFFFFF",209.8,3,2.4,100,B 34 G,10.9,1.19,below
+wide,light,max,default,gray,"#000000",0,0,0,0,R 20 B,94.2,17.62,AAA
 wide,dark,15,default,red,"color(display-p3 0.5059 0.2426 0.255)",16,68.5,49.2,40.5,R 4 B,15,2.33,below
 wide,dark,15,muted,red,"color(display-p3 0.4281 0.2959 0.2968)",16,32.9,23.6,40.2,R 4 B,15,2.37,below
 wide,dark,30,default,red,"color(display-p3 0.6827 0.3708 0.3821)",16,68.5,49.2,53.8,R 4 B,30,3.97,AA large
@@ -455,6 +461,8 @@ wide,dark,45,default,gray,"#979797",209.6,4.6,3.3,63.7,B 34 G,45,6.08,AA
 wide,dark,60,default,gray,"#B3B3B3",209.6,5,3.6,73.7,B 34 G,60.1,8.47,AAA
 wide,dark,75,default,gray,"#CDCDCD",209.6,5.3,3.8,82.8,B 34 G,75.2,11.17,AAA
 wide,dark,90,default,gray,"#E6E6E6",209.6,5.5,4,91.4,B 34 G,90.5,14.23,AAA
+wide,dark,min,default,gray,"#000000",0,0,0,0,R 20 B,0,1.18,below
+wide,dark,max,default,gray,"#FFFFFF",209.6,5.8,4.1,100,B 34 G,106.8,17.76,AAA
 ultra,light,15,default,red,"color(rec2020 0.9601 0.75 0.7366)",16,37.8,29.8,73.5,R 4 B,15,1.34,below
 ultra,light,15,muted,red,"color(rec2020 0.8867 0.785 0.7765)",16,18.1,14.3,72.5,R 4 B,15,1.34,below
 ultra,light,30,default,red,"color(rec2020 0.9008 0.6204 0.6065)",16,52.2,41.2,59.8,R 4 B,30,1.81,below
@@ -569,6 +577,8 @@ ultra,light,45,default,gray,"#949494",209.8,2,1.6,43.7,B 34 G,45.3,2.54,below
 ultra,light,60,default,gray,"#757575",209.8,1.7,1.3,30.9,B 34 G,60.2,3.86,AA large
 ultra,light,75,default,gray,"#525252",209.8,1.3,1,18.5,B 34 G,75.3,6.55,AA
 ultra,light,90,default,gray,"#262626",209.8,0.8,0.6,6.7,B 34 G,90.2,12.69,AAA
+ultra,light,min,default,gray,"#FFFFFF",209.8,3,2.4,100,B 34 G,10.9,1.19,below
+ultra,light,max,default,gray,"#000000",0,0,0,0,R 20 B,94.2,17.62,AAA
 ultra,dark,15,default,red,"color(rec2020 0.4866 0.3006 0.2931)",16,68.5,49.2,40.5,R 4 B,15,2.33,below
 ultra,dark,15,muted,red,"color(rec2020 0.4318 0.3398 0.3333)",16,32.9,23.6,40.2,R 4 B,15,2.37,below
 ultra,dark,30,default,red,"color(rec2020 0.6439 0.4241 0.4136)",16,68.5,49.2,53.8,R 4 B,30,3.97,AA large
@@ -683,3 +693,5 @@ ultra,dark,45,default,gray,"#979797",209.6,4.6,3.3,63.7,B 34 G,45,6.08,AA
 ultra,dark,60,default,gray,"#B3B3B3",209.6,5,3.6,73.7,B 34 G,60.1,8.47,AAA
 ultra,dark,75,default,gray,"#CDCDCD",209.6,5.3,3.8,82.8,B 34 G,75.2,11.17,AAA
 ultra,dark,90,default,gray,"#E6E6E6",209.6,5.5,4,91.4,B 34 G,90.5,14.23,AAA
+ultra,dark,min,default,gray,"#000000",0,0,0,0,R 20 B,0,1.18,below
+ultra,dark,max,default,gray,"#FFFFFF",209.6,5.8,4.1,100,B 34 G,106.8,17.76,AAA

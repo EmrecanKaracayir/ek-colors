@@ -20,8 +20,9 @@ What follows describes EK Palette; every number in it is a setting.
   then seven of them are placed where their names fit best.
 - **Custom colors:** any number beside the hues, each on its own hue at a share of the colorfulness.
   EK Palette has one, brown.
-- **Neutrals:** Gray on every tier, and neutral colors that take the base's hue at a share of its
-  colorfulness. EK Palette's bases are gray, so it has Gray alone.
+- **Neutrals:** Gray on every tier with its two ends, white and black, and neutral colors that
+  take the base's hue at a share of its colorfulness. EK Palette's bases are gray, so it has Gray
+  alone.
 - **Modes:** light on `#EBEBEB`, dark on `#181818`. A base can be any opaque CSS color, such as
   hex, `rgb()`, `oklch()` or `color(display-p3 …)`. Each screen gamut shows it exactly where it
   can; a narrower one uses the closest color it can show to the next wider one's, which can be
@@ -71,10 +72,11 @@ WCAG 2 contrast and its level (AAA, AA, AA large or below) are reported for ever
 7. **Muted and custom colors.** Muted is the same hue and tier at a share of the colorfulness. Each
    custom color is the most colorful color of its hue, up to its share of the tier's colorfulness,
    exactly on the tier; custom colors aren't spaced with the hues.
-8. **Neutrals.** Gray on every tier, its red, green and blue the same, exactly on the tier. Each
-   neutral color takes its mode's base's hue at a share of the base's colorfulness; a base needs
-   at least M 4 to have a hue to give. A color's colorfulness puts it in a zone: under M 4 it reads
-   as gray, from M 4 to 12 as a neutral, past that as a color.
+8. **Neutrals.** Gray on every tier, its red, green and blue the same, exactly on the tier, and
+   its two ends: min, white in light mode and black in dark mode, for text on a color, and max, the
+   other way around. Each neutral color takes its mode's base's hue at a share of the base's
+   colorfulness; a base needs at least M 4 to have a hue to give. A color's colorfulness puts it in
+   a zone: under M 4 it reads as gray, from M 4 to 12 as a neutral, past that as a color.
 
 ## Use
 
@@ -111,9 +113,11 @@ The palette is written to `out/`, the Markdown and CSS titled with its `name`:
   values
 - `palette.md`: tables per screen, mode and variant
 - `palette.css`: custom properties for a website, such as `--palette-red-60`,
-  `--palette-red-60-muted`, `--palette-gray-60` and one per neutral color named after it; light
-  and dark through `light-dark()`, wider screens through `@media (color-gamut: …)`, where
-  `--palette-base` and Gray are written again only when they differ
+  `--palette-red-60-muted`, `--palette-gray-60`, Gray's ends `--palette-gray-min` (white on a
+  light base, black on a dark one, for text on a color) and `--palette-gray-max`, and one per
+  neutral color named after it; light and dark through `light-dark()`, wider screens through
+  `@media (color-gamut: …)`, where `--palette-base` and Gray are written again only when they
+  differ
 
 Custom and neutral colors are named in exports from their own names: lowercased, accents dropped,
 and other characters turned into dashes, with a number added when one would clash with another

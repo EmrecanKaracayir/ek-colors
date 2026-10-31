@@ -7,6 +7,12 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Gray has two ends beside its tiers: min, white in light mode and black in dark mode, for text on
+  a color, and max, the other way around. Gray's page lists them, and every export has them: the
+  CSS as `--palette-gray-min` and `--palette-gray-max`, the CSV as tiers `min` and `max`.
+
 ### Changed
 
 - The CSS export names every custom property `--palette-…`, such as `--palette-red-60` and

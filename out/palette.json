@@ -1820,6 +1820,34 @@
             "short": false
           }
         },
+        "grayEnds": {
+          "min": {
+            "color": "#FFFFFF",
+            "hue": 209.8,
+            "chroma": 3,
+            "colorfulness": 2.4,
+            "lightness": 100,
+            "name": "B 34 G",
+            "apca": 10.9,
+            "wcag": 1.19,
+            "wcagLevel": "below",
+            "target": 0,
+            "short": false
+          },
+          "max": {
+            "color": "#000000",
+            "hue": 0,
+            "chroma": 0,
+            "colorfulness": 0,
+            "lightness": 0,
+            "name": "R 20 B",
+            "apca": 94.2,
+            "wcag": 17.62,
+            "wcagLevel": "AAA",
+            "target": 0,
+            "short": false
+          }
+        },
         "tinted": false,
         "neutralColors": []
       },
@@ -3555,6 +3583,34 @@
             "name": "B 34 G",
             "apca": 90.5,
             "wcag": 14.23,
+            "wcagLevel": "AAA",
+            "target": 0,
+            "short": false
+          }
+        },
+        "grayEnds": {
+          "min": {
+            "color": "#000000",
+            "hue": 0,
+            "chroma": 0,
+            "colorfulness": 0,
+            "lightness": 0,
+            "name": "R 20 B",
+            "apca": 0,
+            "wcag": 1.18,
+            "wcagLevel": "below",
+            "target": 0,
+            "short": false
+          },
+          "max": {
+            "color": "#FFFFFF",
+            "hue": 209.6,
+            "chroma": 5.8,
+            "colorfulness": 4.1,
+            "lightness": 100,
+            "name": "B 34 G",
+            "apca": 106.8,
+            "wcag": 17.76,
             "wcagLevel": "AAA",
             "target": 0,
             "short": false
@@ -5302,6 +5358,34 @@
             "short": false
           }
         },
+        "grayEnds": {
+          "min": {
+            "color": "#FFFFFF",
+            "hue": 209.8,
+            "chroma": 3,
+            "colorfulness": 2.4,
+            "lightness": 100,
+            "name": "B 34 G",
+            "apca": 10.9,
+            "wcag": 1.19,
+            "wcagLevel": "below",
+            "target": 0,
+            "short": false
+          },
+          "max": {
+            "color": "#000000",
+            "hue": 0,
+            "chroma": 0,
+            "colorfulness": 0,
+            "lightness": 0,
+            "name": "R 20 B",
+            "apca": 94.2,
+            "wcag": 17.62,
+            "wcagLevel": "AAA",
+            "target": 0,
+            "short": false
+          }
+        },
         "tinted": false,
         "neutralColors": []
       },
@@ -7037,6 +7121,34 @@
             "name": "B 34 G",
             "apca": 90.5,
             "wcag": 14.23,
+            "wcagLevel": "AAA",
+            "target": 0,
+            "short": false
+          }
+        },
+        "grayEnds": {
+          "min": {
+            "color": "#000000",
+            "hue": 0,
+            "chroma": 0,
+            "colorfulness": 0,
+            "lightness": 0,
+            "name": "R 20 B",
+            "apca": 0,
+            "wcag": 1.18,
+            "wcagLevel": "below",
+            "target": 0,
+            "short": false
+          },
+          "max": {
+            "color": "#FFFFFF",
+            "hue": 209.6,
+            "chroma": 5.8,
+            "colorfulness": 4.1,
+            "lightness": 100,
+            "name": "B 34 G",
+            "apca": 106.8,
+            "wcag": 17.76,
             "wcagLevel": "AAA",
             "target": 0,
             "short": false
@@ -8784,6 +8896,34 @@
             "short": false
           }
         },
+        "grayEnds": {
+          "min": {
+            "color": "#FFFFFF",
+            "hue": 209.8,
+            "chroma": 3,
+            "colorfulness": 2.4,
+            "lightness": 100,
+            "name": "B 34 G",
+            "apca": 10.9,
+            "wcag": 1.19,
+            "wcagLevel": "below",
+            "target": 0,
+            "short": false
+          },
+          "max": {
+            "color": "#000000",
+            "hue": 0,
+            "chroma": 0,
+            "colorfulness": 0,
+            "lightness": 0,
+            "name": "R 20 B",
+            "apca": 94.2,
+            "wcag": 17.62,
+            "wcagLevel": "AAA",
+            "target": 0,
+            "short": false
+          }
+        },
         "tinted": false,
         "neutralColors": []
       },
@@ -10519,6 +10659,34 @@
             "name": "B 34 G",
             "apca": 90.5,
             "wcag": 14.23,
+            "wcagLevel": "AAA",
+            "target": 0,
+            "short": false
+          }
+        },
+        "grayEnds": {
+          "min": {
+            "color": "#000000",
+            "hue": 0,
+            "chroma": 0,
+            "colorfulness": 0,
+            "lightness": 0,
+            "name": "R 20 B",
+            "apca": 0,
+            "wcag": 1.18,
+            "wcagLevel": "below",
+            "target": 0,
+            "short": false
+          },
+          "max": {
+            "color": "#FFFFFF",
+            "hue": 209.6,
+            "chroma": 5.8,
+            "colorfulness": 4.1,
+            "lightness": 100,
+            "name": "B 34 G",
+            "apca": 106.8,
+            "wcag": 17.76,
             "wcagLevel": "AAA",
             "target": 0,
             "short": false

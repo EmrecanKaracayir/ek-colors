@@ -246,6 +246,7 @@ hue          = (2 · √(M*₁ · M*₂) · sin(Δh / 2))²      // the chord th
 custom(c, Lc) = strongest(hue(c), T(Lc) × share(c), Lc)             // not spaced${s.customColors.map((e) => `\n${escape(`  ${e.name}`.padEnd(13))}= strongest(${e.hue.toFixed(1)}°, T(Lc) × ${String(e.share)}, Lc)`).join("")}</pre>
       <p><strong>Neutrals.</strong> A gray on every tier, found like the identity tier's gray, and on a base with a hue each neutral color, which takes it:</p>
 <pre class="formula">gray(Lc)     = the 8-bit gray nearest the base with APCA(g, base) ≥ Lc, or the furthest gray if none
+gray min/max = white and black: min on the base's side (white in light mode), for text on a color
 tinted       = M(base) ≥ ${String(NEUTRAL_BAND[0])}                       // a pure gray still has some M in CAM16${grayM.length ? `: ${Math.min(...grayM).toFixed(1)}–${Math.max(...grayM).toFixed(1)} here` : ""}
 neutral(n, Lc) = strongest(hue(base), M(base) × share(n), Lc)    // only on a tinted base
 zones        = Gray under M ${String(NEUTRAL_BAND[0])}, Neutral M ${String(NEUTRAL_BAND[0])}–${String(NEUTRAL_BAND[1])}, Color past it, for custom colors too; a new neutral color starts at M ${String(NEUTRAL_START)}
