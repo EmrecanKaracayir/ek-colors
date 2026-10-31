@@ -78,7 +78,7 @@ WCAG 2 contrast and its level (AAA, AA, AA large or below) are reported for ever
 
 ## Use
 
-Requires Node 22 and pnpm.
+Requires Node 22 (`.nvmrc`; 24 works too) and pnpm.
 
 ```sh
 pnpm install
