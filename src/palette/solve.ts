@@ -102,6 +102,24 @@ function isDark(base: string): boolean {
   return dark;
 }
 
+/** Halvings of the lightness search: 100 / 2³² in J, far finer than any output shows. */
+export const PLACE_STEPS = 32;
+
+/** Halvings of the colorfulness search, from the target down. */
+export const STRONGEST_STEPS = 18;
+
+/** The colorfulness asked of a hue to find how far the gamut lets it go: past any screen. */
+export const REACH_PROBE = 200;
+
+/**
+ * How hues are spaced: at most this many passes over them, the steps tried in degrees, and how
+ * much a step must lower the spread to be kept.
+ */
+export const SPACING = { passes: 8, steps: [-3, 3, -1, 1], gain: 1e-4 } as const;
+
+/** How far below its aim, in M, a color is held by the screen: Gamut limit. */
+export const SHORT_BY = 1;
+
 /**
  * The color at a hue and colorfulness that sits exactly on a tier.
  *
@@ -128,7 +146,7 @@ function place(
   const dark = isDark(base);
   let lo = 0;
   let hi = 100;
-  for (let i = 0; i < 32; i++) {
+  for (let i = 0; i < PLACE_STEPS; i++) {
     const m = (lo + hi) / 2;
     // A color the screen shows is judged as it's written, so the one found passes as written; one
     // it can't show is judged by its contrast all the same, since it can be off the screen on either
@@ -169,7 +187,7 @@ export function strongest(
   if (full) return full;
   let lo = 0;
   let hi = target;
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < STRONGEST_STEPS; i++) {
     const m = (lo + hi) / 2;
     place(model, base, mode, hue, m, tier) ? (lo = m) : (hi = m);
   }
@@ -256,11 +274,11 @@ function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Sp
   const hues = [...start];
   const colors = hues.map((h) => strongest(model, base, mode, h, target(h), tier));
   let best = spread(ring(colors));
-  for (let pass = 0; pass < 8; pass++) {
+  for (let pass = 0; pass < SPACING.passes; pass++) {
     let improved = false;
     for (let i = 0; i < hues.length; i++) {
       if (fixed.includes(i)) continue;
-      for (const step of [-3, 3, -1, 1]) {
+      for (const step of SPACING.steps) {
         const hue = hues[i]! + step;
         if (Math.abs(hue - start[i]!) > reach) continue;
         const [before, after] = [
@@ -272,7 +290,7 @@ function space({ model, base, mode, tier, start, fixed, reach, sep, target }: Sp
         const trial = [...colors];
         trial[i] = strongest(model, base, mode, hue, target(hue), tier);
         const score = spread(ring(trial));
-        if (score < best - 1e-4)
+        if (score < best - SPACING.gain)
           [best, hues[i], colors[i], improved] = [score, hue, trial[i]!, true];
       }
     }
@@ -609,7 +627,7 @@ export function swatch(
     wcag: round(ratio, 2),
     wcagLevel: wcagLevel(ratio),
     target: round(target),
-    short: c.m < target - 1,
+    short: c.m < target - SHORT_BY,
   };
 }
 
@@ -655,7 +673,9 @@ function solveHues(settings: Settings, model: Model, mode: Mode): HueCore {
   // rather than every color on the tier dropping to make room for it.
   const ceiling = (tier: number, hues: readonly number[]) => {
     if (!settings.equalTiers) return { target: settings.colorfulness, limit: null };
-    const reach = hues.map((h) => model.cam(mode, strongest(model, base, mode, h, 200, tier)).m);
+    const reach = hues.map(
+      (h) => model.cam(mode, strongest(model, base, mode, h, REACH_PROBE, tier)).m,
+    );
     const least = reach.indexOf(Math.min(...reach));
     return reach[least]! < settings.colorfulness
       ? { target: reach[least]!, limit: keys[least]! }

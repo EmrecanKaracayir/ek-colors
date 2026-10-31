@@ -51,13 +51,22 @@ export interface HueTestContext {
 }
 
 /** How far the test color may move from the palette, in degrees. */
-const REACH = 30;
+export const REACH = 30;
+
+/** How far from the palette a color's staircase starts, in degrees, half toward each neighbor. */
+export const START = 10;
+
+/** How much wider than REACH the fit looks for the middle of a name, in degrees, either way. */
+export const FIT_MARGIN = 10;
+
+/** The blank between trials, in milliseconds. */
+export const BLANK = 300;
 
 /** How far to one side a check stands, in degrees. */
-const FAR = 12;
+export const FAR = 12;
 
 /** How wide a color's settled result may be, either way, in degrees. */
-const HALF = 5;
+export const HALF = 5;
 
 /** One answer: the hue shown, and whether it leaned toward the next neighbor around the circle. */
 interface Point {
@@ -154,7 +163,7 @@ function start(ctx: HueTestContext): boolean {
     model: makeModel(ctx.settings, ctx.gamut),
     settings: ctx.settings,
     stairs: colors.map((c, i) => ({
-      ...stair(c.key, 10 * signs[i]!),
+      ...stair(c.key, START * signs[i]!),
       hue: c.hue,
       before: colors[(i - 1 + colors.length) % colors.length]!.key,
       after: colors[(i + 1) % colors.length]!.key,
@@ -180,7 +189,7 @@ function pooled(mode: Mode) {
     const near = points[0]!.x;
     const unwrapped = points.map((p) => ({ ...p, x: near + hueTurn(near, p.x) }));
     const center = unwrapped.reduce((s, p) => s + p.x, 0) / unwrapped.length;
-    const found = balance(unwrapped, Math.round(center), REACH + 10);
+    const found = balance(unwrapped, Math.round(center), REACH + FIT_MARGIN);
     // The range is kept as distances from the result, which mean the same on either side of 0°.
     return { key, count: points.length, result: found && { hue: wrapHue(found.at), below: found.at - found.low, above: found.high - found.at, sure: found.sure } };
   });
@@ -346,7 +355,7 @@ function answer(ctx: HueTestContext, answer: Pick): void {
   const t = s.trial;
   const picked = answer === "same" ? 0.5 : (answer === "left") === t.afterLeft ? 1 : 0;
   s.points.push({ key: t.stair.key, x: t.hue, y: picked });
-  record(t.stair, { x: t.hue, y: picked }, t.check, REACH, { center: t.stair.hue, range: REACH + 10, half: HALF });
+  record(t.stair, { x: t.hue, y: picked }, t.check, REACH, { center: t.stair.hue, range: REACH + FIT_MARGIN, half: HALF });
   const next = nextTrial(s, t.stair.key);
   if (!next) {
     keep([...runs(), { mode: s.mode, gamut: s.gamut, tier: s.tier, when: new Date().toISOString(), points: s.points }]);
@@ -362,7 +371,7 @@ function answer(ctx: HueTestContext, answer: Pick): void {
     if (session !== s) return;
     s.resting = false;
     ctx.redraw();
-  }, 300);
+  }, BLANK);
 }
 
 /**

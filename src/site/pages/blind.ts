@@ -20,10 +20,20 @@ interface Answer {
 export const CAP = 16;
 
 /** Fewest answers before a color can settle. */
-const MIN = 8;
+export const MIN = 8;
 
 /** Every this many questions for a color, one is a check well to one side of where it stands. */
-const CHECK_EVERY = 3;
+export const CHECK_EVERY = 3;
+
+/** A staircase's step sizes, and after how many turns it moves to the next. */
+export const STAIR = { steps: [4, 2, 1], after: [2, 4] } as const;
+
+/**
+ * How answers are fitted: where the equal point is tried, in steps of M; the spreads tried; how
+ * far a chance is kept from 0 and 1; the likelihood drop that bounds the range (about 95%) and
+ * marks a result sure; and the stricter gain that lets a color stop early.
+ */
+export const LIKELIHOOD = { step: 0.5, spreads: [1.5, 2.5, 4, 6, 10, 20, 40], clamp: 0.01, sure: 1.92, settle: 4 } as const;
 
 /**
  * One color's staircase: where it is, how big a step it takes, how often it has turned, its answers
@@ -54,7 +64,7 @@ export interface Fit {
  * @returns       The staircase.
  */
 export function stair(key: string, offset: number): Stair {
-  return { key, delta: offset, step: 4, turns: 0, last: 0, done: false, answers: [] };
+  return { key, delta: offset, step: STAIR.steps[0], turns: 0, last: 0, done: false, answers: [] };
 }
 
 /**
@@ -96,7 +106,7 @@ export function nextStair<S extends Stair>(stairs: readonly S[], last?: string):
 }
 
 /**
- * Where a color's next question stands: at its staircase, or every third time a check `far` to a
+ * Where a color's next question stands: at its staircase, or one time in CHECK_EVERY a check `far` to a
  * random side, which a real observer answers easily and a guess doesn't.
  *
  * @param s    The staircase.
@@ -111,7 +121,7 @@ export function ask(s: Stair, far: number): { offset: number; check: boolean } {
 /**
  * Records an answer: a check doesn't move the staircase, the rest do. The color is done at the cap,
  * or sooner once it settles: enough answers, a narrow result, and answers that clearly depend on
- * what was shown (beating a flat guess by 4, stricter than a final result's 1.92, since it's
+ * what was shown (beating a flat guess by LIKELIHOOD.settle, stricter than a final result's LIKELIHOOD.sure, since it's
  * checked after every answer).
  *
  * @param s       The staircase.
@@ -129,7 +139,7 @@ export function record(s: Stair, a: Answer, check: boolean, reach: number, fit: 
   }
   if (s.answers.length < MIN) return;
   const found = balance(s.answers, fit.center, fit.range);
-  s.done = Boolean(found?.sure && (found.high - found.low) / 2 <= fit.half && found.gain >= 4);
+  s.done = Boolean(found?.sure && (found.high - found.low) / 2 <= fit.half && found.gain >= LIKELIHOOD.settle);
 }
 
 /**
@@ -169,7 +179,7 @@ function climb(s: Stair, picked: number, reach: number): void {
   const direction = picked === 1 ? -1 : 1;
   if (s.last && direction !== s.last) {
     s.turns++;
-    s.step = s.turns >= 4 ? 1 : s.turns >= 2 ? 2 : 4;
+    s.step = s.turns >= STAIR.after[1] ? STAIR.steps[2] : s.turns >= STAIR.after[0] ? STAIR.steps[1] : STAIR.steps[0];
   }
   s.last = direction;
   s.delta = Math.max(-reach, Math.min(reach, s.delta + direction * s.step));
@@ -178,8 +188,8 @@ function climb(s: Stair, picked: number, reach: number): void {
 /**
  * Where the answers turn, and how sure that is: a logistic curve fitted to them, read where either
  * answer is equally likely, with the range the answers can't tell apart from it (a likelihood drop
- * of 1.92, about 95%). It's only sure when that range is pinned down and the curve explains the
- * answers clearly better than a flat guess at their average does, by the same 1.92.
+ * of LIKELIHOOD.sure, about 95%). It's only sure when that range is pinned down and the curve explains the
+ * answers clearly better than a flat guess at their average does, by the same LIKELIHOOD.sure.
  *
  * @param answers  One color's answers.
  * @param center   The middle of the range searched.
@@ -189,13 +199,13 @@ function climb(s: Stair, picked: number, reach: number): void {
 export function balance(answers: readonly Answer[], center: number, range: number) {
   if (answers.length < 4) return null;
   const profile: { at: number; likelihood: number }[] = [];
-  for (let at = center - range; at <= center + range; at += 0.5) {
+  for (let at = center - range; at <= center + range; at += LIKELIHOOD.step) {
     let best = -Infinity;
     // Wide spreads let answers that barely depend on x (guessing) come out unsure.
-    for (const spread of [1.5, 2.5, 4, 6, 10, 20, 40]) {
+    for (const spread of LIKELIHOOD.spreads) {
       let likelihood = 0;
       for (const a of answers) {
-        const chance = Math.min(0.99, Math.max(0.01, 1 / (1 + Math.exp(-(a.x - at) / spread))));
+        const chance = Math.min(1 - LIKELIHOOD.clamp, Math.max(LIKELIHOOD.clamp, 1 / (1 + Math.exp(-(a.x - at) / spread))));
         likelihood += a.y * Math.log(chance) + (1 - a.y) * Math.log(1 - chance);
       }
       best = Math.max(best, likelihood);
@@ -203,14 +213,14 @@ export function balance(answers: readonly Answer[], center: number, range: numbe
     profile.push({ at, likelihood: best });
   }
   const peak = profile.reduce((a, b) => (b.likelihood > a.likelihood ? b : a));
-  const inside = profile.filter((p) => p.likelihood >= peak.likelihood - 1.92).map((p) => p.at);
+  const inside = profile.filter((p) => p.likelihood >= peak.likelihood - LIKELIHOOD.sure).map((p) => p.at);
   const [low, high] = [Math.min(...inside), Math.max(...inside)];
   // Answers that don't depend on x (guessing) are explained as well by their average alone.
-  const mean = Math.min(0.99, Math.max(0.01, answers.reduce((s, a) => s + a.y, 0) / answers.length));
+  const mean = Math.min(1 - LIKELIHOOD.clamp, Math.max(LIKELIHOOD.clamp, answers.reduce((s, a) => s + a.y, 0) / answers.length));
   const flat = answers.reduce((s, a) => s + a.y * Math.log(mean) + (1 - a.y) * Math.log(1 - mean), 0);
   // A range that runs off the end can't be pinned down either.
   const gain = peak.likelihood - flat;
-  const sure = low > center - range && high < center + range && gain >= 1.92;
+  const sure = low > center - range && high < center + range && gain >= LIKELIHOOD.sure;
   return { at: peak.at, low, high, sure, gain };
 }
 

@@ -184,13 +184,16 @@ export function plain(): GamutPalette | null {
   return edited(false, false);
 }
 
+/** How far either way, in degrees, the uniform lineup is turned to match placed hues, in tenths. */
+export const TURN_RANGE = 30;
+
 /** The turn found for each pair of palettes and tier: exact by construction, and let go with the palettes. */
 const turns = new WeakMap<ModePalette, WeakMap<ModePalette, Map<number, number>>>();
 
 /**
  * The turn that brings the uniform lineup nearest the palette with placed hues (without
  * colorfulness per hue): every hue of the lineup turned by the same angle. Turning is a rotation
- * in CAM16-UCS, so each angle from −30° to 30° is tried in tenths of a degree without solving; the
+ * in CAM16-UCS, so each angle within TURN_RANGE either way is tried in tenths of a degree without solving; the
  * one with the smallest root-mean-square difference wins.
  *
  * @param mode  The mode.
@@ -219,7 +222,7 @@ export function turn(mode: Mode): number | null {
     return Math.sqrt(sum / pairs.length);
   };
   let [best, score] = [0, off(0)];
-  for (let tenths = -300; tenths <= 300; tenths++) {
+  for (let tenths = -TURN_RANGE * 10; tenths <= TURN_RANGE * 10; tenths++) {
     const value = off(tenths / 10);
     if (value < score - 1e-9) [best, score] = [tenths / 10, value];
   }

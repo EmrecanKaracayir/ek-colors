@@ -24,6 +24,12 @@ export const INSETS = `--graph-inset:${share(LEFT)};--graph-inset-end:${share(RI
 /** The smallest difference careful observers notice under ideal conditions, ΔE: half a just-visible step. */
 export const BARELY_VISIBLE = JUST_VISIBLE / 2;
 
+/** A difference of half the gap between neighbors, in gaps: a different shade. */
+export const DIFFERENT_SHADE = 0.5;
+
+/** A difference of the whole gap between neighbors, in gaps: a different color. */
+export const DIFFERENT_COLOR = 1;
+
 /**
  * How a color difference looks (CAM16-UCS ΔE), against the palette's own scale, the gap between
  * neighbors: half of it is a different shade, all of it a different color. Rough guides, not exact
@@ -35,8 +41,8 @@ export const BARELY_VISIBLE = JUST_VISIBLE / 2;
  */
 export function visibility(difference: number, gap: number): string {
   if (difference < JUST_VISIBLE) return "can't be seen side by side";
-  if (difference < gap / 2) return "visible side by side";
-  if (difference < gap) return "a different shade";
+  if (difference < gap * DIFFERENT_SHADE) return "visible side by side";
+  if (difference < gap * DIFFERENT_COLOR) return "a different shade";
   return "a different color";
 }
 
@@ -155,12 +161,12 @@ interface Zone {
  * @returns    The zones, in order.
  */
 export function zones(gap: number): readonly Zone[] {
-  const [uniform, tuned] = [BARELY_VISIBLE / gap, JUST_VISIBLE / gap].map((g) => Math.min(round(g), 0.5));
+  const [uniform, tuned] = [BARELY_VISIBLE / gap, JUST_VISIBLE / gap].map((g) => Math.min(round(g), DIFFERENT_SHADE));
   return [
     { upTo: uniform!, name: "Uniform", note: "No difference from the uniform palette anyone could see, even side by side." },
     { upTo: tuned!, name: "Tuned", note: "A typical color differs by about a just-visible step side by side: still the uniform palette, adjusted." },
-    { upTo: 0.5, name: "Reshaped", note: "Colors differ clearly side by side: deliberate design choices on top of the uniform palette." },
-    { upTo: 1, name: "Departed", note: "A typical color is a different shade of its uniform one; the uniformity no longer quite holds." },
+    { upTo: DIFFERENT_SHADE, name: "Reshaped", note: "Colors differ clearly side by side: deliberate design choices on top of the uniform palette." },
+    { upTo: DIFFERENT_COLOR, name: "Departed", note: "A typical color is a different shade of its uniform one; the uniformity no longer quite holds." },
     { upTo: Infinity, name: "Distinct", note: "Colors moved more than a whole gap: a palette of its own, not a tuned uniform one." },
   ];
 }
@@ -228,7 +234,7 @@ export function thresholds(gap: number): string {
   const [fine, watch] = evenLimits(gap);
   return `<details class="pop-sources"><summary>Where these thresholds come from</summary>
   <p>ΔE (CAM16-UCS) is built so that equal numbers look equally different. About ${String(BARELY_VISIBLE)} is the smallest difference careful observers notice under ideal conditions; about ${String(JUST_VISIBLE)} is what most people notice with two colors side by side on a screen, which is also where color tolerances in print and manufacturing usually sit (1 to 3). This palette's own gap between neighbors, ${gap.toFixed(1)} ΔE on the identity tier, is what it treats as a different color; it changes with the number of hues, the colorfulness and the bases.</p>
-  <p>The zones put Bend on that scale, in gaps: under ${String(uniform!.upTo)} (${String(BARELY_VISIBLE)} ΔE here) nothing is visible; up to ${String(tuned!.upTo)} (${String(JUST_VISIBLE)} ΔE) differences are around the visible step; 0.5 is half the way to a neighbor, a different shade; 1 is a whole gap, a different color. Evenness uses the same reasoning: ${String(fine)}% of the gap is ${String(BARELY_VISIBLE)} ΔE, hard to notice; ${String(watch)}% is ${String(JUST_VISIBLE)} ΔE, a visible imbalance between pairs of neighbors.</p>
+  <p>The zones put Bend on that scale, in gaps: under ${String(uniform!.upTo)} (${String(BARELY_VISIBLE)} ΔE here) nothing is visible; up to ${String(tuned!.upTo)} (${String(JUST_VISIBLE)} ΔE) differences are around the visible step; ${String(DIFFERENT_SHADE)} is half the way to a neighbor, a different shade; ${String(DIFFERENT_COLOR)} is a whole gap, a different color. Evenness uses the same reasoning: ${String(fine)}% of the gap is ${String(BARELY_VISIBLE)} ΔE, hard to notice; ${String(watch)}% is ${String(JUST_VISIBLE)} ΔE, a visible imbalance between pairs of neighbors.</p>
   <p>The ΔE figures come from color science; the zone limits are judgment built on them, not results of a study. Eyes and screens differ.</p></details>`;
 }
 

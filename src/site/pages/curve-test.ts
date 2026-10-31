@@ -52,13 +52,29 @@ export interface TestContext {
 }
 
 /** How far the test color may move from the palette, in CAM16 M. */
-const REACH = 16;
+export const REACH = 16;
+
+/** How far from the palette a color's staircase starts, in CAM16 M, half above and half below. */
+export const START = 8;
+
+/** The blank between pairs, in milliseconds. */
+export const BLANK = 300;
+
+/**
+ * How the curve is fitted: bump centers every this many degrees, widths from and to and their
+ * step, amounts up to this many M either way, at most this many points, each kept only if it
+ * lowers the weighted error by at least this much.
+ */
+export const CURVE_FIT = { centerStep: 5, widths: [30, 180, 10], amount: 24, points: 3, gain: 6 } as const;
 
 /** How far to one side a check stands, in CAM16 M. */
-const FAR = 12;
+export const FAR = 12;
+
+/** A 95% range spans this many standard deviations: a result's weight is 1 / (width / this)². */
+export const RANGE_SIGMAS = 3.92;
 
 /** How a hue's answers are read: equal colorfulness within ±24 M, settled within ±5. */
-const FIT: Fit = { center: 0, range: 24, half: 5 };
+export const FIT: Fit = { center: 0, range: 24, half: 5 };
 
 /** One answered pair: how much more colorful the test color was, and whether it was picked. */
 interface Point {
@@ -152,7 +168,7 @@ function start(ctx: TestContext): boolean {
     target: palette.targets[tier]!,
     base: ctx.settings.bases[ctx.mode],
     model: makeModel(ctx.settings, ctx.gamut),
-    stairs: hues.map((h, i) => ({ ...stair(h.key, 8 * signs[i]!), hue: h.hue })),
+    stairs: hues.map((h, i) => ({ ...stair(h.key, START * signs[i]!), hue: h.hue })),
     points: [],
     resting: false,
   };
@@ -209,9 +225,10 @@ interface Measured {
  */
 function bestPoint(left: readonly Measured[], mode: Mode) {
   let best = { error: Infinity, point: { amount: 0, center: 0, width: 90 } as CurvePoint };
-  for (let center = 0; center < 360; center += 5) {
-    for (let width = 30; width <= 180; width += 10) {
-      for (let amount = -24; amount <= 24; amount++) {
+  const [fewest, most, every] = CURVE_FIT.widths;
+  for (let center = 0; center < 360; center += CURVE_FIT.centerStep) {
+    for (let width = fewest; width <= most; width += every) {
+      for (let amount = -CURVE_FIT.amount; amount <= CURVE_FIT.amount; amount++) {
         const point = { amount, center, width };
         const settings = { colorfulnessPerHue: { light: [point], dark: [point] } };
         const error = left.reduce((s, m) => s + m.weight * (boost(settings, mode, m.hue) - m.equal) ** 2, 0);
@@ -234,10 +251,10 @@ function fitCurve(measured: readonly Measured[], mode: Mode): CurvePoint[] {
   const points: CurvePoint[] = [];
   let left = [...measured];
   let error = left.reduce((s, m) => s + m.weight * m.equal ** 2, 0);
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < CURVE_FIT.points; i++) {
     const next = bestPoint(left, mode);
     // A point has three numbers; it has to explain clearly more than chance would.
-    if (next.point.amount === 0 || error - next.error < 6) break;
+    if (next.point.amount === 0 || error - next.error < CURVE_FIT.gain) break;
     points.push(next.point);
     const settings = { colorfulnessPerHue: { light: [next.point], dark: [next.point] } };
     left = left.map((m) => ({ ...m, equal: m.equal - boost(settings, mode, m.hue) }));
@@ -370,7 +387,7 @@ function results(ctx: TestContext): string {
   const colorOf = (key: string) => ctx.palette?.[ctx.mode].colors.find((c) => c.key === key)?.tiers[tier]?.default.color ?? "transparent";
   const measured = pooled(ctx.mode).toSorted((a, b) => a.hue - b.hue);
   const usable = measured.flatMap((m) =>
-    m.result?.sure ? [{ hue: m.hue, equal: m.result.equal, weight: 1 / Math.max(1, ((m.result.high - m.result.low) / 3.92) ** 2) }] : [],
+    m.result?.sure ? [{ hue: m.hue, equal: m.result.equal, weight: 1 / Math.max(1, ((m.result.high - m.result.low) / RANGE_SIGMAS) ** 2) }] : [],
   );
   const curve = usable.length >= 3 ? fitCurve(usable, ctx.mode) : null;
   const settings = { colorfulnessPerHue: { light: curve ?? [], dark: curve ?? [] } };
@@ -441,7 +458,7 @@ function answer(ctx: TestContext, answer: Pick): void {
     if (session !== s) return;
     s.resting = false;
     ctx.redraw();
-  }, 300);
+  }, BLANK);
 }
 
 /**

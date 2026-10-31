@@ -8,6 +8,7 @@
 import project from "../../../package.json";
 import { SYSTEMS } from "../../palette/references";
 import { escape } from "../graph";
+import { LIKELIHOOD } from "./blind";
 
 /** One work the site relies on. */
 interface Source {
@@ -139,7 +140,7 @@ const GROUPS: readonly Group[] = [
       {
         cite: "Wilks, S. S. <em>The large-sample distribution of the likelihood ratio for testing composite hypotheses.</em> The Annals of Mathematical Statistics 9(1), 60–62, 1938.",
         link: doi("10.1214/aoms/1177732360"),
-        use: "The 95% range around each result (1.92 below the best log-likelihood), and when a result counts as sure.",
+        use: `The 95% range around each result (${String(LIKELIHOOD.sure)} below the best log-likelihood), and when a result counts as sure.`,
       },
     ],
   },

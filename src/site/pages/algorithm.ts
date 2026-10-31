@@ -7,17 +7,31 @@
 \*------------------------------------------------------------------------------------------------*/
 
 import project from "../../../package.json";
-import { hueTurn, JUST_VISIBLE, lightness, LUX_TO_ADAPTING, viewingConditions } from "../../palette/model";
+import { DECIMALS, GAMUT_EPSILON, hueTurn, JUST_VISIBLE, lightness, LUX_TO_ADAPTING, viewingConditions } from "../../palette/model";
 import { anchorHue, anchorSource } from "../../palette/references";
 import { LIMITS, type Mode, MODE_NAMES, MODES, NAMES, ROLES } from "../../palette/settings";
-import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, NEUTRAL_START, TEXT_MINIMUM, textScore } from "../../palette/solve";
-import { BARELY_VISIBLE, escape, zones } from "../graph";
+import { autoIdentity, CLOSEST, hueKeys, identityOf, NEUTRAL_BAND, NEUTRAL_START, PLACE_STEPS, REACH_PROBE, SHORT_BY, SPACING, STRONGEST_STEPS, TEXT_MINIMUM, textScore } from "../../palette/solve";
+import { TURN_RANGE } from "../baselines";
+import { BARELY_VISIBLE, DIFFERENT_COLOR, DIFFERENT_SHADE, escape, zones } from "../graph";
 import { evenGap } from "../settings/strip";
+import { CAP, CHECK_EVERY, LIKELIHOOD, MIN, STAIR } from "./blind";
+// The two tests share names (REACH, START, BLANK…), so each is read through its own name.
+import * as COLORFULNESS from "./curve-test";
+import * as HUE from "./hue-test";
 import type { Context } from "./how";
 
 /* >-----------------------------------------< Values >-----------------------------------------< */
 
 const fixed = (x: number, d = 3) => x.toFixed(d);
+
+/** A whole number as superscript digits, e.g. 2³² in a formula. */
+const sup = (n: number) => String(n).replace(/\d/g, (d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[Number(d)]!).replace("-", "⁻");
+
+/** A small number as a power of ten, e.g. 10⁻⁴ or 2·10⁻⁸. */
+const power = (x: number) => {
+  const [digit, exponent] = x.toExponential(0).split("e");
+  return `${digit === "1" ? "" : `${digit!}·`}10${sup(Number(exponent))}`;
+};
 const pct = (x: number) => `${String(Math.round(x * 100))}%`;
 
 /**
@@ -123,9 +137,9 @@ n      = Y_b / Y_w,   z = 1.48 + √n,   N_bb = N_cb = 0.725 / n^0.2</pre>
 <pre class="formula">C = M / F_L^¼
 (J, C, h) → CAM16 inverse in VC[m] → XYZ (D65, 0…100)
 XYZ / 100 → the gamut's RGB space: standard sRGB • wide Display P3 • ultra Rec. 2020
-in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0005)
+in gamut?  every channel within [−${String(GAMUT_EPSILON)}, ${String(1 + GAMUT_EPSILON)}]  (Color.js inGamut, ε = ${String(GAMUT_EPSILON)})
               no  → off the screen: the search judges it by its contrast (step 3); a final color must be on it
-              yes → standard: 8-bit hex;  wide/ultra: color(…) rounded to 4 decimals</pre>
+              yes → standard: 8-bit hex;  wide/ultra: color(…) rounded to ${String(DECIMALS)} decimals</pre>
       <p>Every reported number is measured again on the rounded color, so what's shown is what's shipped.</p>
     </section>
 
@@ -134,7 +148,7 @@ in gamut?  every channel within [−0.0005, 1.0005]  (Color.js inGamut, ε = 0.0
       <p>APCA 0.0.98G (Color.js ${project.dependencies["colorjs.io"]}), always text = the color, background = the base, reported as |Lc|. Luminance is <code>Y = 0.2126729·R<sup>2.4</sup> + 0.7151522·G<sup>2.4</sup> + 0.0721750·B<sup>2.4</sup></code> on sRGB-encoded values; wide-gamut colors use their extended sRGB coordinates.</p>
 <pre class="formula">place(h, M, Lc):                       // lightness search at fixed h and M
   lo, hi ← 0, 100
-  repeat 32 times:                     // 100 / 2³² ≈ 2·10⁻⁸ in J, far finer than any output shows
+  repeat ${String(PLACE_STEPS)} times:                     // 100 / 2${sup(PLACE_STEPS)} ≈ ${power(100 / 2 ** PLACE_STEPS)} in J, far finer than any output shows
     J   ← (lo + hi)/2
     x   ← color(J, M, h)
     ok  ← APCA(x, base) ≥ Lc        // x as written; off the screen, by its coordinates past the edge
@@ -151,7 +165,7 @@ ${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textS
 <pre class="formula">strongest(h, M_target, Lc):            // colorfulness search
   if place(h, M_target, Lc) exists → return it
   lo, hi ← 0, M_target
-  repeat 18 times:                     // M_target / 2¹⁸
+  repeat ${String(STRONGEST_STEPS)} times:                     // M_target / 2${sup(STRONGEST_STEPS)}
     mid ← (lo + hi)/2
     place(h, mid, Lc) exists → lo ← mid  else hi ← mid
   return place(h, lo, Lc)              // the most colorful that fits</pre>
@@ -159,13 +173,13 @@ ${MODES.map((m) => `${m.padEnd(10)}${s.tiers.map((t) => `Lc ${String(t)} ${textS
 
     <section class="step">
       <h2>4. Equally colorful: the tier ceiling</h2>
-<pre class="formula">reach(h, Lc)  = M of strongest(h, 200, Lc)               // how far the gamut lets h go
+<pre class="formula">reach(h, Lc)  = M of strongest(h, ${String(REACH_PROBE)}, Lc)               // how far the gamut lets h go
 T(Lc)         = min(M_target, min over hues of reach(h, Lc))   // with equal per tier on; before the curve
 limit(Lc)     = the hue with the smallest reach, if it's below M_target
 target(h, Lc) = max(0, T(Lc) + curve(h))                  // a curve can't go below gray</pre>
       <p>The reach is measured at the hues the tier starts from: the starting hues on the identity tier, the identity tier's spaced hues on every other tier.</p>
       <p>With equal per tier off, T = M<sub>target</sub> and each hue simply goes as far as it can. The ceiling is measured before the curve: a hue the curve asks more of than it can reach on a tier stops at its reach (Gamut limit) rather than the whole tier dropping to make room for it. Each swatch is labeled from these numbers:</p>
-<pre class="formula">Gamut limit    measured M &lt; aim − 1                          // the screen holds it below its aim
+<pre class="formula">Gamut limit    measured M &lt; aim − ${String(SHORT_BY)}                          // the screen holds it below its aim
 aim            hue: target(h, Lc)   custom: T(Lc) × share   muted: M(default) × muted share
 Sets the tier  the color is limit(Lc), default only           // the tier was lowered to its reach
 Lowered        limit(Lc) is another color, not Gamut limit, default only
@@ -204,18 +218,18 @@ a*, b* = M*·cos h, M*·sin h
 <pre class="formula">space(start, reach):                        // coordinate descent
   colors ← strongest(start_i, target(start_i)) for each hue
   score  ← standard deviation of ΔE(color_i, color_(i+1)) around the circle
-  repeat up to 8 passes, stop early if a pass changes nothing:
+  repeat up to ${String(SPACING.passes)} passes, stop early if a pass changes nothing:
     for each hue i except the anchor and placed colors:
-      for step in (−3°, +3°, −1°, +1°):
+      for step in (${SPACING.steps.map((d) => `${d < 0 ? "−" : "+"}${String(Math.abs(d))}°`).join(", ")}):
         h ← hue_i + step;  skip if |h − start_i| &gt; reach
         try color_i ← strongest(h, target(h));  rescore
-        keep it if the score drops by more than 10⁻⁴</pre>
+        keep it if the score drops by more than ${power(SPACING.gain)}</pre>
       <p>The identity tier (light Lc ${String(identityOf(s, "light"))}, dark Lc ${String(identityOf(s, "dark"))}) is spaced first from the starting hues with a reach of ±${String(s.hueReach.identity)}°${s.hues === NAMES.length ? "" : `, or halfway to the even neighbor (180° / ${String(s.hues)}) if that's less: ±${fixed(identityReach, 1)}° here`}. Every other tier starts from the identity tier's hues with ±${String(s.hueReach.tier)}°, so each tier is even in its own right while hues stay recognizably the same across tiers. Both modes use the same starting hues, so light and dark land close to each other${apart === null ? "" : `, ${apart.toFixed(1)}° apart at most here`}; a placed color sits exactly where it was placed in both.</p>
       <p><strong>Order.</strong> Colors keep their order around the circle: a placed color is held between the colors beside it, at least ${String(CLOSEST)}° from each, only so they can't swap or overlap, and a spacing step that would bring a color closer than that to a neighbor isn't taken. Neighbors under ΔE ${String(JUST_VISIBLE)} on any tier are marked, not stopped. Dragging the anchor stops before any color it carries would pass a placed one.</p>
-      <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −30° to 30° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
+      <p><strong>Turn and bend.</strong> Turning every hue by the same angle keeps the lineup uniform, so placed hues are compared with the uniform lineup turned to match them best. In CAM16-UCS a turn is a rotation of a* and b*, so every angle from −${String(TURN_RANGE)}° to ${String(TURN_RANGE)}° in tenths is tried on the uniform colors, keeping the one with the smallest root-mean-square ΔE to the palette with placed hues; the turned lineup is then solved with the anchor moved by that angle. Bend is each color's ΔE from its turned version, divided by the even gap, as a root mean square over the colors.</p>
 <pre class="formula">gap      = mean ΔE between neighbors in the uniform lineup, on the identity tier
 bend     = √(mean over colors of (ΔE(color, turned color) / gap)²)
-zone     = Uniform &lt; ${String(BARELY_VISIBLE)} ΔE / gap • Tuned &lt; ${String(JUST_VISIBLE)} ΔE / gap • Reshaped &lt; 0.5 • Departed &lt; 1 • Distinct
+zone     = Uniform &lt; ${String(BARELY_VISIBLE)} ΔE / gap • Tuned &lt; ${String(JUST_VISIBLE)} ΔE / gap • Reshaped &lt; ${String(DIFFERENT_SHADE)} • Departed &lt; ${String(DIFFERENT_COLOR)} • Distinct
            // here, with a gap of ${evenGap(ctx.mode).toFixed(1)} ΔE: Uniform &lt; ${String(zones(evenGap(ctx.mode))[0]!.upTo)} • Tuned &lt; ${String(zones(evenGap(ctx.mode))[1]!.upTo)}
 even     = max over neighbors of |ΔE(neighbors) / gap − 1|     // the strip's Even: the furthest from even, either way
 closer   = 1 − (smallest neighbor ΔE) / gap                     // how much the tightest pair lost
@@ -265,27 +279,27 @@ labels                  Gamut limit, Sets the tier, Lowered, step 4
 APCA Lc                 step 3
 WCAG 2 ratio            (L1 + 0.05)/(L2 + 0.05), relative luminance, Color.js
 WCAG level              ≥ 7 AAA • ≥ 4.5 AA • ≥ 3 AA large • else below</pre>
-      <p>The cost is dominated by <code>strongest</code>: each call is up to about 20 lightness searches of 32 steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.customColors.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker with eight hues, and longer with many more; the header shows how long the one on screen took.</p>
+      <p>The cost is dominated by <code>strongest</code>: each call is up to about ${String(STRONGEST_STEPS + 2)} lightness searches of ${String(PLACE_STEPS)} steps each. A full solve of one gamut (two modes, ${String(s.tiers.length)} tiers, ${String(s.hues + s.customColors.length)} colors, default and muted, plus spacing) takes well under a second in a browser worker with eight hues, and longer with many more; the header shows how long the one on screen took.</p>
       <p>The hues are the costly part, and custom colors, neutral colors and the muted share don't move them. So each worker keeps the hues of its last few solves, keyed by every setting but those, and a change to them only places the colors on the kept hues again: a few milliseconds instead of a whole solve, so they follow a slider as it moves.</p>
     </section>
 
     <section class="step">
       <h2>12. The blind colorfulness test</h2>
-      <p><strong>Pairs.</strong> Per hue, a staircase on Δ, the test color's offset from the palette (start ±8, half of the hues above and half below, in random order; bounded to ±16). Each pair shows the test hue at T + Δ against a different, randomly chosen hue at T, on the identity tier, sides random, a 300 ms blank between pairs. Picked as more colorful → Δ −= step; not picked → Δ += step; "can't tell" → no move. The step is 4, then 2 after two reversals, then 1 after four.</p>
-      <p><strong>Checks and stopping.</strong> Every third pair for a hue is a check at Δ ± 12, to a random side, which doesn't move the staircase: a real observer answers it easily, a guess doesn't. A hue is done at 16 answers, or sooner once it settles: at least 8 answers, a sure result whose range is within ±5 either way, and log L(μ̂) − log L₀ ≥ 4, stricter than the final 1.92 since it's checked after every answer. Progress is the mean over hues of 1 when done, else answers/16. In simulation a consistent observer takes about 10 to 13 answers per hue, while answering at random still ends sure for about one hue in twelve, so one run is a rough answer and several pooled are steadier.</p>
+      <p><strong>Pairs.</strong> Per hue, a staircase on Δ, the test color's offset from the palette (start ±${String(COLORFULNESS.START)}, half of the hues above and half below, in random order; bounded to ±${String(COLORFULNESS.REACH)}). Each pair shows the test hue at T + Δ against a different, randomly chosen hue at T, on the identity tier, sides random, a ${String(COLORFULNESS.BLANK)} ms blank between pairs. Picked as more colorful → Δ −= step; not picked → Δ += step; "can't tell" → no move. The step is ${String(STAIR.steps[0])}, then ${String(STAIR.steps[1])} after ${String(STAIR.after[0])} reversals, then ${String(STAIR.steps[2])} after ${String(STAIR.after[1])}.</p>
+      <p><strong>Checks and stopping.</strong> One pair in ${String(CHECK_EVERY)} for a hue is a check at Δ ± ${String(COLORFULNESS.FAR)}, to a random side, which doesn't move the staircase: a real observer answers it easily, a guess doesn't. A hue is done at ${String(CAP)} answers, or sooner once it settles: at least ${String(MIN)} answers, a sure result whose range is within ±${String(COLORFULNESS.FIT.half)} either way, and log L(μ̂) − log L₀ ≥ ${String(LIKELIHOOD.settle)}, stricter than the final ${String(LIKELIHOOD.sure)} since it's checked after every answer. Progress is the mean over hues of 1 when done, else answers/${String(CAP)}. In simulation a consistent observer takes about 10 to 13 answers per hue, while answering at random still ends sure for about one hue in twelve, so one run is a rough answer and several pooled are steadier.</p>
       <p><strong>Equal point.</strong> Each answer is (x, y) with x = measured M<sub>test</sub> − M<sub>other</sub> and y ∈ {1, ½, 0}. Fitted by maximum likelihood to</p>
 <pre class="formula">P(test picked | x) = 1 / (1 + e^(−(x − μ)/s))
-μ ∈ [−24, 24] step 0.5,   s ∈ {1.5, 2.5, 4, 6, 10, 20, 40}
-log L(μ) = max over s of Σ y·ln P + (1 − y)·ln(1 − P),   P clamped to [0.01, 0.99]
-μ̂ = argmax log L;   range = { μ : log L(μ) ≥ log L(μ̂) − 1.92 }   // ≈ 95%
+μ ∈ [−${String(COLORFULNESS.FIT.range)}, ${String(COLORFULNESS.FIT.range)}] step ${String(LIKELIHOOD.step)},   s ∈ {${LIKELIHOOD.spreads.join(", ")}}
+log L(μ) = max over s of Σ y·ln P + (1 − y)·ln(1 − P),   P clamped to [${String(LIKELIHOOD.clamp)}, ${String(1 - LIKELIHOOD.clamp)}]
+μ̂ = argmax log L;   range = { μ : log L(μ) ≥ log L(μ̂) − ${String(LIKELIHOOD.sure)} }   // ≈ 95%
 log L₀ = Σ y·ln ȳ + (1 − y)·ln(1 − ȳ)   // a flat guess at the answers' average
-unsure if the range reaches ±24, or log L(μ̂) − log L₀ &lt; 1.92</pre>
-      <p><strong>Curve fit.</strong> Hues with a sure result, weighted w = 1/max(1, (range width/3.92)²). Points are added greedily, at most three: each is the single bump (center step 5°, width 30–180° step 10°, amount −24…24) that minimizes Σ w·(curve(h) − μ̂)² on what's left, kept only if it lowers that error by at least 6, so a point has to explain clearly more than noise would.</p>
+unsure if the range reaches ±${String(COLORFULNESS.FIT.range)}, or log L(μ̂) − log L₀ &lt; ${String(LIKELIHOOD.sure)}</pre>
+      <p><strong>Curve fit.</strong> Hues with a sure result, weighted w = 1/max(1, (range width/${String(COLORFULNESS.RANGE_SIGMAS)})²). Points are added greedily, at most ${String(COLORFULNESS.CURVE_FIT.points)}: each is the single bump (center step ${String(COLORFULNESS.CURVE_FIT.centerStep)}°, width ${String(COLORFULNESS.CURVE_FIT.widths[0])}–${String(COLORFULNESS.CURVE_FIT.widths[1])}° step ${String(COLORFULNESS.CURVE_FIT.widths[2])}°, amount −${String(COLORFULNESS.CURVE_FIT.amount)}…${String(COLORFULNESS.CURVE_FIT.amount)}) that minimizes Σ w·(curve(h) − μ̂)² on what's left, kept only if it lowers that error by at least ${String(COLORFULNESS.CURVE_FIT.gain)}, so a point has to explain clearly more than noise would.</p>
     </section>
 
     <section class="step">
       <h2>13. The blind hue test</h2>
-      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±10, half of the colors toward one neighbor and half toward the other, in random order; bounded to ±30). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a 300 ms blank between trials. The test runs only with the eight named colors, since it asks about each one's neighbors by name. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± 12°) and stopping as in step 12, with the range within ±5°.</p>
-      <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 12, over μ within ±40° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
+      <p><strong>Colors.</strong> Per color, a staircase on Δ, degrees from the palette's hue (start ±${String(HUE.START)}, half of the colors toward one neighbor and half toward the other, in random order; bounded to ±${String(HUE.REACH)}). Each trial shows one color alone at h + Δ on the identity tier, at T + curve(h + Δ), with no name, and asks whether it leans toward the neighbor before it or after it around the circle (named, sides random), or neither; a ${String(HUE.BLANK)} ms blank between trials. The test runs only with the eight named colors, since it asks about each one's neighbors by name. Leans after → Δ −= step; leans before → Δ += step; neither → no move. Steps, checks (Δ ± ${String(HUE.FAR)}°) and stopping as in step 12, with the range within ±${String(HUE.HALF)}°.</p>
+      <p><strong>Middle of the name.</strong> Each answer is (x, y) with x = the hue shown and y = 1 for after, ½ for neither, 0 for before; runs are pooled per color with hues unwrapped next to each other. The same fit as step 12, over μ within ±${String(HUE.REACH + HUE.FIT_MARGIN)}° of the answers' mean hue, gives the hue where the color leans neither way, its range, and whether it's sure. Sure colors can be placed there; yellow's sets the anchor.</p>
     </section>`;
 }

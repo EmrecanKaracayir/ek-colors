@@ -74,6 +74,12 @@ export const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const sat
   unknown
 >;
 
+/** How far past a gamut's edge a channel may be and still fit, as Color.js allows by default. */
+export const GAMUT_EPSILON = 0.0005;
+
+/** Decimals in a wide or ultra color's coordinates. */
+export const DECIMALS = 4;
+
 /**
  * Whether a gamut tier's screens can show a color.
  *
@@ -83,12 +89,12 @@ export const SPACES = { standard: sRGB, wide: P3, ultra: REC_2020 } as const sat
  */
 export function fits(color: string | PlainColorObject, gamut: Gamut): boolean {
   return inGamut(typeof color === "string" ? getColor(color) : color, SPACES[gamut], {
-    epsilon: 0.0005,
+    epsilon: GAMUT_EPSILON,
   });
 }
 
 /**
- * A color written as a gamut tier's colors are: hex on standard screens, four decimals in the
+ * A color written as a gamut tier's colors are: hex on standard screens, DECIMALS decimals in the
  * tier's color space on wider ones.
  *
  * @param color  A color the tier can show, CSS or parsed.
@@ -100,7 +106,7 @@ export function writtenFor(color: string | PlainColorObject, gamut: Gamut): stri
   if (gamut === "standard")
     return serialize(inSpace, { format: "hex", collapse: false }).toUpperCase();
   const coords = inSpace.coords.map(
-    (c) => Math.round(Math.min(1, Math.max(0, c ?? 0)) * 10_000) / 10_000,
+    (c) => Math.round(Math.min(1, Math.max(0, c ?? 0)) * 10 ** DECIMALS) / 10 ** DECIMALS,
   );
   return serialize({ ...inSpace, coords: coords as [number, number, number] });
 }
