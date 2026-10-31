@@ -140,10 +140,10 @@ const GAMUT_QUERIES: Readonly<Record<Gamut, string | null>> = {
 };
 
 /**
- * Every color as a CSS custom property: --red-60 is red on Lc 60, --red-60-muted its muted
- * version, --gray-60 a gray on it, --sand-60 a neutral color named Sand, and --base the
- * background. Each holds its light and dark color, chosen by color-scheme; a wider screen gets its
- * gamut's colors.
+ * Every color as a CSS custom property: --palette-red-60 is red on Lc 60, --palette-red-60-muted
+ * its muted version, --palette-gray-60 a gray on it, --palette-sand-60 a neutral color named Sand,
+ * and --palette-base the background. Each holds its light and dark color, chosen by color-scheme; a
+ * wider screen gets its gamut's colors.
  *
  * @param settings  The settings (for the bases and tiers).
  * @param palette   The solved palette.
@@ -159,12 +159,12 @@ export function toCss(settings: Settings, palette: Palette): string {
       gamut === "standard" || MODES.some((m) => palette[gamut][m].base !== standard[m].base);
     const lines = [
       ...(gamut === "standard" ? ["color-scheme: light dark;"] : []),
-      ...(ownBase ? [`--base: light-dark(${light.base}, ${dark.base});`, ""] : []),
+      ...(ownBase ? [`--palette-base: light-dark(${light.base}, ${dark.base});`, ""] : []),
     ];
     for (const color of light.colors) {
       for (const tier of settings.tiers) {
         for (const variant of ["default", "muted"] as const) {
-          const name = `--${color.key}-${String(tier)}${variant === "muted" ? "-muted" : ""}`;
+          const name = `--palette-${color.key}-${String(tier)}${variant === "muted" ? "-muted" : ""}`;
           lines.push(
             `${name}: light-dark(${color.tiers[tier]![variant].color}, ${darkOf.get(color.key)!.tiers[tier]![variant].color});`,
           );
@@ -183,7 +183,7 @@ export function toCss(settings: Settings, palette: Palette): string {
       if (neutral.key === GRAY && gamut !== "standard" && sameGrays) continue;
       for (const tier of settings.tiers)
         lines.push(
-          `--${neutral.key}-${String(tier)}: light-dark(${neutral.tiers.light[tier]!.color}, ${neutral.tiers.dark[tier]!.color});`,
+          `--palette-${neutral.key}-${String(tier)}: light-dark(${neutral.tiers.light[tier]!.color}, ${neutral.tiers.dark[tier]!.color});`,
         );
       lines.push("");
     }
@@ -197,10 +197,10 @@ export function toCss(settings: Settings, palette: Palette): string {
   const css = [
     "/*",
     ` * ${(settings.name || "Palette").replaceAll("*/", "* /")}, solved with EK Colors.`,
-    " * --red-60 is red on Lc 60 against --base, --red-60-muted its muted version and --gray-60 a",
-    " * gray on it; each neutral color is named after itself, in its base's hue. Light and dark",
-    " * follow color-scheme: the system's, or color-scheme: light or dark set on the page. Screens",
-    " * that show a wider gamut get its colors.",
+    " * --palette-red-60 is red on Lc 60 against --palette-base, --palette-red-60-muted its muted",
+    " * version and --palette-gray-60 a gray on it; each neutral color is named after itself, in its",
+    " * base's hue. Light and dark follow color-scheme: the system's, or color-scheme: light or dark",
+    " * set on the page. Screens that show a wider gamut get its colors.",
     " */",
     "",
     block("standard", ""),

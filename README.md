@@ -110,10 +110,10 @@ The palette is written to `out/`, the Markdown and CSS titled with its `name`:
 - `palette.csv`: one row per swatch (gamut, mode, tier and variant), with CAM16, APCA and WCAG 2
   values
 - `palette.md`: tables per screen, mode and variant
-- `palette.css`: custom properties for a website, such as `--red-60`, `--red-60-muted`,
-  `--gray-60` and one per neutral color named after it; light and dark through `light-dark()`,
-  wider screens through `@media (color-gamut: …)`, where `--base` and Gray are written again only
-  when they differ
+- `palette.css`: custom properties for a website, such as `--palette-red-60`,
+  `--palette-red-60-muted`, `--palette-gray-60` and one per neutral color named after it; light
+  and dark through `light-dark()`, wider screens through `@media (color-gamut: …)`, where
+  `--palette-base` and Gray are written again only when they differ
 
 Custom and neutral colors are named in exports from their own names: lowercased, accents dropped,
 and other characters turned into dashes, with a number added when one would clash with another

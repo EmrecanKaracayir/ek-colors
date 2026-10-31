@@ -7,6 +7,11 @@ follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The CSS export names every custom property `--palette-…`, such as `--palette-red-60` and
+  `--palette-base`, so a site's own properties, like its color roles, stay apart from it.
+
 ## [2.4.0] - 2026-10-30
 
 ### Added
